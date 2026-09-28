@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "_comment": "initiation (Playtest 6 L): live-tunable team-fight numbers, read by CireInitiation (console: cire.ReloadInitiation). setUp = the debuff every Initiation-group spell puts on its victims; blinkDagger = the Blink Dagger active (Items.json 'blink_dagger' keeps the catalogue entry; these values override its use block when present).",
+  "setUp": {
+    "seconds": 3.5,
+    "teamDamageBonus": 0.15,
+    "areaDamageBonus": 0.25,
+    "calloutIntervalSeconds": 1.0
+  },
+  "blinkDagger": {
+    "range": 1200,
+    "cooldown": 14,
+    "lockoutSeconds": 3,
+    "minDistance": 150
+  }
+}

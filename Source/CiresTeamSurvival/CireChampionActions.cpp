@@ -384,6 +384,7 @@ bool CireChampionActions::Hold(ACireHero& Hero, const FString& Clip, float Phase
 
 #if !UE_BUILD_SHIPPING
 #include "CireChampionRoster.h"
+#include "CireParagonChampions.h" // paragon-champions
 #include "Engine/World.h"
 
 bool CireChampionActions::RunSmoke(ACireGameMode* Mode)
@@ -422,7 +423,9 @@ bool CireChampionActions::RunSmoke(ACireGameMode* Mode)
     // Every drafted profile resolves a weapon class, and every weapon class resolves clips.
     for (const auto& Profile : CireChampionRoster::All())
     {
+        if (CireParagonChampions::IsParagon(Profile.Id)) continue; // paragon-champions: the hero's own Paragon clips (ParagonChampions.json bindings)
         const FString* Motion = D.ProfileMotion.Find(Profile.Id);
+
         Check(Motion && D.Motions.Contains(*Motion), TEXT("weapon motion for profile ") + Profile.Id);
     }
     Check(SkillKind(TEXT("war_cry")) == TEXT("shout") && SkillKind(TEXT("bear_roar")) == TEXT("shout"), TEXT("shouts use war_cry"));

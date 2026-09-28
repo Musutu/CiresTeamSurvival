@@ -44,7 +44,7 @@ constexpr KeyedEffect EffectTable[] = {
     {"tauntArea", EffectKind::TauntArea}, {"healAllies", EffectKind::HealAllies},
     {"haste", EffectKind::Haste},
     {"partyBarrier", EffectKind::PartyBarrier}, {"partyBuff", EffectKind::PartyBuff},
-    {"healTarget", EffectKind::HealTarget},
+    {"healTarget", EffectKind::HealTarget}, {"blink", EffectKind::Blink}, // initiation: Blink Dagger
 };
 
 struct KeyedPassive { const char* Key; PassiveKind Kind; };

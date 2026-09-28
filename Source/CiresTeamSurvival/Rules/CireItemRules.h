@@ -76,7 +76,8 @@ enum class EffectKind : std::uint8_t
     // items-v2: group on-use actives
     PartyBarrier,   // allies within Radius gain an absorb shield of Amount + Scaling * INT for Duration
     PartyBuff,      // allies within Radius gain the Buff stats for Duration (e.g. +250 armor)
-    HealTarget      // heal the targeted ally (yourself when none) for Amount + Scaling * INT, Radius = range
+    HealTarget,     // heal the targeted ally (yourself when none) for Amount + Scaling * INT, Radius = range
+    Blink           // initiation: instant blink toward the aim, Radius = max range; Duration = lockout after champion damage
 };
 bool ParseEffectKind(const std::string& key, EffectKind& out);
 const char* EffectKey(EffectKind kind);

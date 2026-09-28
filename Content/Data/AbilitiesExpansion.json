@@ -8249,6 +8249,1121 @@
    "recipe": {
     "delivery": "zone"
    }
+  },
+  "tidal_ravage": {
+   "id": "tidal_ravage",
+   "name": "Tidal Ravage",
+   "icon": "/Game/UI/Abilities/T_tidal_ravage",
+   "types": [
+    "TANK",
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "tide",
+   "targeting": "self",
+   "castTime": 0.0,
+   "base": {
+    "effect": 70,
+    "manaCost": 90,
+    "energyCost": 0,
+    "cooldown": 30,
+    "castTime": 0.0,
+    "range": 0,
+    "radius": 700,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Tentacles of the deep burst around you: {effect} damage, enemies within 7m are knocked up and stunned for 1.5s.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "target",
+     "duration": 1.5,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer",
+    "aetheri_warden",
+    "bear",
+    "drakish_footman",
+    "dwarf_miner",
+    "ether_golem_bruiser",
+    "ether_golem_tank",
+    "evergrove_centaur",
+    "gunblade",
+    "huntress",
+    "knight",
+    "lancer",
+    "orc_chieftain",
+    "paladin_righteous",
+    "ranger",
+    "summoner",
+    "totemic_behemoth",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "witch_slayer",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 70,
+    "primary": 1.1
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Stun",
+    "Set-up"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "nova",
+    "knockup": 650,
+    "warning": 0.3,
+    "setup": true
+   }
+  },
+  "reverse_polarity": {
+   "id": "reverse_polarity",
+   "name": "Reverse Polarity",
+   "icon": "/Game/UI/Abilities/T_reverse_polarity",
+   "types": [
+    "TANK",
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "storm",
+   "targeting": "self",
+   "castTime": 0.0,
+   "base": {
+    "effect": 60,
+    "manaCost": 85,
+    "energyCost": 0,
+    "cooldown": 28,
+    "castTime": 0.0,
+    "range": 0,
+    "radius": 550,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Enemies within 5.5m are yanked to you and stunned for 1.25s: {effect} damage.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "target",
+     "duration": 1.25,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer",
+    "aetheri_warden",
+    "bear",
+    "drakish_footman",
+    "dwarf_miner",
+    "ether_golem_bruiser",
+    "ether_golem_tank",
+    "evergrove_centaur",
+    "gunblade",
+    "huntress",
+    "knight",
+    "lancer",
+    "orc_chieftain",
+    "paladin_righteous",
+    "ranger",
+    "summoner",
+    "totemic_behemoth",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "witch_slayer",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 60,
+    "primary": 1.1
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Pull",
+    "Stun"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "nova",
+    "pull": 1.0,
+    "warning": 0.25,
+    "setup": true
+   }
+  },
+  "vacuum_rift": {
+   "id": "vacuum_rift",
+   "name": "Vacuum Rift",
+   "icon": "/Game/UI/Abilities/T_vacuum_rift",
+   "types": [
+    "DPS",
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "void",
+   "targeting": "aim",
+   "castTime": 0.0,
+   "base": {
+    "effect": 60,
+    "manaCost": 70,
+    "energyCost": 0,
+    "cooldown": 22,
+    "castTime": 0.0,
+    "range": 900,
+    "radius": 420,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "After 0.5s every enemy in the rift is dragged to its centre: {effect} damage and a 0.6s stun.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "target",
+     "duration": 0.6,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer",
+    "aetheri_warden",
+    "bear",
+    "drakish_footman",
+    "dwarf_miner",
+    "ether_golem_bruiser",
+    "ether_golem_tank",
+    "evergrove_centaur",
+    "gunblade",
+    "huntress",
+    "knight",
+    "lancer",
+    "orc_chieftain",
+    "paladin_righteous",
+    "ranger",
+    "summoner",
+    "totemic_behemoth",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "witch_slayer",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 60,
+    "primary": 1.0
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Pull",
+    "Stun"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "vacuum",
+    "pullCenter": 1.0,
+    "warning": 0.5,
+    "setup": true
+   }
+  },
+  "black_hole": {
+   "id": "black_hole",
+   "name": "Black Hole",
+   "icon": "/Game/UI/Abilities/T_black_hole",
+   "types": [
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "void",
+   "targeting": "aim",
+   "castTime": 0.0,
+   "base": {
+    "effect": 40,
+    "manaCost": 90,
+    "energyCost": 0,
+    "cooldown": 30,
+    "castTime": 0.0,
+    "range": 900,
+    "radius": 450,
+    "duration": 3
+   },
+   "effectLabel": "damage per second",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "A black hole for 3s: {effect} damage per second, enemies are sucked toward its centre and slowed 50%.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "target",
+     "duration": 1,
+     "magnitude": 0.5,
+     "radius": 0.0,
+     "label": "Move -50%"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer",
+    "ether_golem_bruiser",
+    "evergrove_centaur",
+    "gunblade",
+    "huntress",
+    "lancer",
+    "ranger",
+    "summoner",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "witch_slayer",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 40,
+    "primary": 0.8
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Pull",
+    "Slow"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "zone",
+    "pullCenter": 0.3,
+    "setup": true
+   }
+  },
+  "chronofield": {
+   "id": "chronofield",
+   "name": "Chronofield",
+   "icon": "/Game/UI/Abilities/T_chronofield",
+   "types": [
+    "DPS",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "arcane",
+   "targeting": "aim",
+   "castTime": 0.0,
+   "base": {
+    "effect": 30,
+    "manaCost": 95,
+    "energyCost": 0,
+    "cooldown": 32,
+    "castTime": 0.0,
+    "range": 900,
+    "radius": 380,
+    "duration": 0
+   },
+   "effectLabel": "impact damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Freeze time in a 3.8m circle after 0.5s: enemies inside are stunned for 2s ({effect} damage).",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "target",
+     "duration": 2,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer",
+    "aetheri_warden",
+    "dryad",
+    "ether_golem_bruiser",
+    "ether_golem_support",
+    "evergrove_centaur",
+    "gunblade",
+    "huntress",
+    "keeper_of_light",
+    "lancer",
+    "orc_chieftain",
+    "paladin_holy",
+    "ranger",
+    "scholar",
+    "summoner",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "whisp",
+    "witch_slayer",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 30,
+    "primary": 0.6
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Stun"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "circle",
+    "warning": 0.5,
+    "setup": true
+   }
+  },
+  "warpath_charge": {
+   "id": "warpath_charge",
+   "name": "Warpath Charge",
+   "icon": "/Game/UI/Abilities/T_warpath_charge",
+   "types": [
+    "TANK",
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "physical",
+   "targeting": "enemy",
+   "castTime": 0.0,
+   "base": {
+    "effect": 70,
+    "manaCost": 0,
+    "energyCost": 30,
+    "cooldown": 24,
+    "castTime": 0.0,
+    "range": 1400,
+    "radius": 300,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Charge the selected enemy (up to 14m) and slam on arrival: {effect} damage and a 1s stun around you.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "target",
+     "duration": 1,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer",
+    "aetheri_warden",
+    "bear",
+    "drakish_footman",
+    "dwarf_miner",
+    "ether_golem_bruiser",
+    "ether_golem_tank",
+    "evergrove_centaur",
+    "gunblade",
+    "huntress",
+    "knight",
+    "lancer",
+    "orc_chieftain",
+    "paladin_righteous",
+    "ranger",
+    "summoner",
+    "totemic_behemoth",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "witch_slayer",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 70,
+    "primary": 1.2
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Gap Closer",
+    "Stun"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "charge",
+    "setup": true
+   }
+  },
+  "titanfall_leap": {
+   "id": "titanfall_leap",
+   "name": "Titanfall Leap",
+   "icon": "/Game/UI/Abilities/T_titanfall_leap",
+   "types": [
+    "TANK",
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0.0,
+   "base": {
+    "effect": 70,
+    "manaCost": 0,
+    "energyCost": 40,
+    "cooldown": 24,
+    "castTime": 0.0,
+    "range": 900,
+    "radius": 380,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Leap up to 9m and crash down: {effect} damage, enemies are knocked up and stunned for 1s.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "target",
+     "duration": 1,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer",
+    "aetheri_warden",
+    "bear",
+    "drakish_footman",
+    "dwarf_miner",
+    "ether_golem_bruiser",
+    "ether_golem_tank",
+    "evergrove_centaur",
+    "gunblade",
+    "huntress",
+    "knight",
+    "lancer",
+    "orc_chieftain",
+    "paladin_righteous",
+    "ranger",
+    "summoner",
+    "totemic_behemoth",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "witch_slayer",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 70,
+    "primary": 1.2
+   },
+   "level15": {
+    "bonus": "slow",
+    "label": "Lv 15: +35% slow for 2.5s",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Gap Closer",
+    "Stun"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "leap",
+    "knockup": 500,
+    "setup": true
+   }
+  },
+  "challengers_roar": {
+   "id": "challengers_roar",
+   "name": "Challenger's Roar",
+   "icon": "/Game/UI/Abilities/T_challengers_roar",
+   "types": [
+    "TANK"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "self",
+   "castTime": 0.0,
+   "base": {
+    "effect": 40,
+    "manaCost": 0,
+    "energyCost": 35,
+    "cooldown": 22,
+    "castTime": 0.0,
+    "range": 0,
+    "radius": 400,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Roar: enemies within 4m must attack you for 2.5s ({effect} damage).",
+   "effects": [
+    {
+     "type": "taunt",
+     "zone": "target",
+     "duration": 2.5,
+     "magnitude": 0.0,
+     "radius": 0.0
+    }
+   ],
+   "champions": [
+    "aetheri_warden",
+    "bear",
+    "drakish_footman",
+    "dwarf_miner",
+    "ether_golem_bruiser",
+    "ether_golem_tank",
+    "knight",
+    "orc_chieftain",
+    "paladin_righteous",
+    "totemic_behemoth"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 40,
+    "primary": 0.8
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Taunt"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "nova",
+    "warning": 0.1,
+    "setup": true
+   }
+  },
+  "hallowed_cage": {
+   "id": "hallowed_cage",
+   "name": "Hallowed Cage",
+   "icon": "/Game/UI/Abilities/T_hallowed_cage",
+   "types": [
+    "TANK",
+    "HEAL"
+   ],
+   "kind": "active",
+   "school": "holy",
+   "targeting": "aim",
+   "castTime": 0.0,
+   "base": {
+    "effect": 40,
+    "manaCost": 80,
+    "energyCost": 0,
+    "cooldown": 26,
+    "castTime": 0.0,
+    "range": 900,
+    "radius": 400,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "A ring of holy blades walls in a 4m circle for 3.5s (allies pass): {effect} damage and a 40% slow inside.",
+   "effects": [
+    {
+     "type": "slow",
+     "zone": "target",
+     "duration": 2,
+     "magnitude": 0.4,
+     "radius": 0.0,
+     "label": "Move -40%"
+    }
+   ],
+   "champions": [
+    "aetheri_warden",
+    "bear",
+    "drakish_footman",
+    "dryad",
+    "dwarf_miner",
+    "ether_golem_bruiser",
+    "ether_golem_support",
+    "ether_golem_tank",
+    "evergrove_centaur",
+    "keeper_of_light",
+    "knight",
+    "orc_chieftain",
+    "paladin_holy",
+    "paladin_righteous",
+    "scholar",
+    "totemic_behemoth",
+    "whisp",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 40,
+    "primary": 0.8
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Wall",
+    "Slow"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "cage",
+    "warning": 0.2,
+    "cageSeconds": 3.5,
+    "cageSegments": 12,
+    "setup": true
+   }
+  },
+  "upheaval": {
+   "id": "upheaval",
+   "name": "Upheaval",
+   "icon": "/Game/UI/Abilities/T_upheaval",
+   "types": [
+    "TANK",
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "aim",
+   "castTime": 0.0,
+   "base": {
+    "effect": 75,
+    "manaCost": 70,
+    "energyCost": 0,
+    "cooldown": 20,
+    "castTime": 0.0,
+    "range": 1000,
+    "radius": 110,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Tear the ground up along a 10m line after 0.35s: {effect} damage, enemies are knocked up and stunned for 0.8s.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "target",
+     "duration": 0.8,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer",
+    "aetheri_warden",
+    "bear",
+    "drakish_footman",
+    "dwarf_miner",
+    "ether_golem_bruiser",
+    "ether_golem_tank",
+    "evergrove_centaur",
+    "gunblade",
+    "huntress",
+    "knight",
+    "lancer",
+    "orc_chieftain",
+    "paladin_righteous",
+    "ranger",
+    "summoner",
+    "totemic_behemoth",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "witch_slayer",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 75,
+    "primary": 1.3
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Stun"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "line",
+    "warning": 0.35,
+    "knockup": 700,
+    "setup": true
+   }
+  },
+  "soul_hook": {
+   "id": "soul_hook",
+   "name": "Soul Hook",
+   "icon": "/Game/UI/Abilities/T_soul_hook",
+   "types": [
+    "TANK",
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "shadow",
+   "targeting": "aim",
+   "castTime": 0.0,
+   "base": {
+    "effect": 80,
+    "manaCost": 60,
+    "energyCost": 0,
+    "cooldown": 18,
+    "castTime": 0.0,
+    "range": 1100,
+    "radius": 50,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Throw a spectral hook: the first enemy on the 11m line is dragged to you, stunned 0.5s ({effect} damage).",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "target",
+     "duration": 0.5,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer",
+    "aetheri_warden",
+    "bear",
+    "drakish_footman",
+    "dwarf_miner",
+    "ether_golem_bruiser",
+    "ether_golem_tank",
+    "evergrove_centaur",
+    "gunblade",
+    "huntress",
+    "knight",
+    "lancer",
+    "orc_chieftain",
+    "paladin_righteous",
+    "ranger",
+    "summoner",
+    "totemic_behemoth",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "witch_slayer",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 80,
+    "primary": 1.3
+   },
+   "level15": {
+    "bonus": "healCut",
+    "label": "Lv 15: +healing on the target -40% for 4s",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Pull",
+    "Stun"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "hook",
+    "setup": true
+   }
+  },
+  "echo_slam": {
+   "id": "echo_slam",
+   "name": "Echo Slam",
+   "icon": "/Game/UI/Abilities/T_echo_slam",
+   "types": [
+    "TANK",
+    "DPS"
+   ],
+   "kind": "active",
+   "school": "earth",
+   "targeting": "self",
+   "castTime": 0.0,
+   "base": {
+    "effect": 80,
+    "manaCost": 90,
+    "energyCost": 0,
+    "cooldown": 30,
+    "castTime": 0.0,
+    "range": 0,
+    "radius": 550,
+    "duration": 0
+   },
+   "effectLabel": "damage",
+   "curve": {
+    "effectGrowth": 0.35,
+    "effectHalfLevels": 4,
+    "effectCap": 0,
+    "costCapMultiplier": 1.5,
+    "costRampLevels": 10,
+    "cooldownFloorFraction": 0.6,
+    "cooldownDecayLevels": 15,
+    "minCooldownSeconds": 1.0
+   },
+   "status": "implemented",
+   "description": "Slam the ground: {effect} damage (+20% per extra enemy caught) within 5.5m and a 0.5s stun.",
+   "effects": [
+    {
+     "type": "stun",
+     "zone": "target",
+     "duration": 0.5,
+     "magnitude": 0.0,
+     "radius": 0.0,
+     "label": "Stunned"
+    }
+   ],
+   "champions": [
+    "aetheri_artificer",
+    "aetheri_warden",
+    "bear",
+    "drakish_footman",
+    "dwarf_miner",
+    "ether_golem_bruiser",
+    "ether_golem_tank",
+    "evergrove_centaur",
+    "gunblade",
+    "huntress",
+    "knight",
+    "lancer",
+    "orc_chieftain",
+    "paladin_righteous",
+    "ranger",
+    "summoner",
+    "totemic_behemoth",
+    "troll_berserker_melee",
+    "troll_berserker_ranged",
+    "witch_slayer",
+    "wizard"
+   ],
+   "signatureOf": [],
+   "scaling": {
+    "component": "damage",
+    "base": 80,
+    "primary": 1.3
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "section": "initiation",
+   "effectTags": [
+    "Initiation",
+    "Stun",
+    "Damage"
+   ],
+   "categories": [
+    "Initiation",
+    "Crowd Control"
+   ],
+   "recipe": {
+    "delivery": "nova",
+    "echo": 0.2,
+    "warning": 0.15,
+    "setup": true
+   }
   }
  },
  "champions": {
@@ -8289,7 +9404,17 @@
     "iron_hide",
     "last_bastion",
     "serrated_edge",
-    "sanguine_pact"
+    "sanguine_pact",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "rime_spike",
@@ -8321,7 +9446,17 @@
     "iron_hide",
     "last_bastion",
     "serrated_edge",
-    "sanguine_pact"
+    "sanguine_pact",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "ranger": {
@@ -8362,7 +9497,17 @@
     "umbral_scythe",
     "gloom_lance",
     "shadow_dart",
-    "heavens_wrath"
+    "heavens_wrath",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "glacial_eruption",
@@ -8395,7 +9540,17 @@
     "umbral_scythe",
     "gloom_lance",
     "shadow_dart",
-    "heavens_wrath"
+    "heavens_wrath",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "scholar": {
@@ -8427,7 +9582,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ],
    "purchasableImplemented": [
     "sunlance",
@@ -8451,7 +9608,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ]
   },
   "lancer": {
@@ -8492,7 +9651,17 @@
     "gale_arrow",
     "cinder_shot",
     "adrenaline",
-    "heavens_wrath"
+    "heavens_wrath",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "glacial_eruption",
@@ -8525,7 +9694,17 @@
     "gale_arrow",
     "cinder_shot",
     "adrenaline",
-    "heavens_wrath"
+    "heavens_wrath",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "summoner": {
@@ -8565,7 +9744,17 @@
     "arcane_echo",
     "serrated_edge",
     "sanguine_pact",
-    "fleetfoot"
+    "fleetfoot",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "venom_dart",
@@ -8597,7 +9786,17 @@
     "arcane_echo",
     "serrated_edge",
     "sanguine_pact",
-    "fleetfoot"
+    "fleetfoot",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "bear": {
@@ -8635,7 +9834,17 @@
     "awaken_the_colossus",
     "aegis_of_ages",
     "warlords_anthem",
-    "earthshatter"
+    "earthshatter",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "umbral_ward",
@@ -8665,7 +9874,17 @@
     "awaken_the_colossus",
     "aegis_of_ages",
     "warlords_anthem",
-    "earthshatter"
+    "earthshatter",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "paladin_righteous": {
@@ -8705,7 +9924,17 @@
     "opportunist",
     "iron_hide",
     "last_bastion",
-    "serrated_edge"
+    "serrated_edge",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "rime_spike",
@@ -8737,7 +9966,17 @@
     "opportunist",
     "iron_hide",
     "last_bastion",
-    "serrated_edge"
+    "serrated_edge",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "paladin_holy": {
@@ -8762,7 +10001,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ],
    "purchasableImplemented": [
     "sunlance",
@@ -8779,7 +10020,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ]
   },
   "dwarf_miner": {
@@ -8816,7 +10059,17 @@
     "awaken_the_colossus",
     "aegis_of_ages",
     "warlords_anthem",
-    "earthshatter"
+    "earthshatter",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "umbral_ward",
@@ -8845,7 +10098,17 @@
     "awaken_the_colossus",
     "aegis_of_ages",
     "warlords_anthem",
-    "earthshatter"
+    "earthshatter",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "ether_golem_tank": {
@@ -8882,7 +10145,17 @@
     "awaken_the_colossus",
     "aegis_of_ages",
     "warlords_anthem",
-    "earthshatter"
+    "earthshatter",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "umbral_ward",
@@ -8911,7 +10184,17 @@
     "awaken_the_colossus",
     "aegis_of_ages",
     "warlords_anthem",
-    "earthshatter"
+    "earthshatter",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "ether_golem_support": {
@@ -8939,7 +10222,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ],
    "purchasableImplemented": [
     "riptide_bolt",
@@ -8959,7 +10244,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ]
   },
   "ether_golem_bruiser": {
@@ -9001,7 +10288,19 @@
     "clockwork_scarabs",
     "hex_lantern",
     "reapers_instinct",
-    "first_blood"
+    "first_blood",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "toxic_bubble",
@@ -9034,7 +10333,19 @@
     "clockwork_scarabs",
     "hex_lantern",
     "reapers_instinct",
-    "first_blood"
+    "first_blood",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "orc_chieftain": {
@@ -9075,7 +10386,18 @@
     "fleetfoot",
     "battle_trance",
     "mana_font",
-    "frostbite"
+    "frostbite",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "rime_spike",
@@ -9107,7 +10429,18 @@
     "fleetfoot",
     "battle_trance",
     "mana_font",
-    "frostbite"
+    "frostbite",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "totemic_behemoth": {
@@ -9143,7 +10476,17 @@
     "awaken_the_colossus",
     "aegis_of_ages",
     "warlords_anthem",
-    "earthshatter"
+    "earthshatter",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "umbral_ward",
@@ -9171,7 +10514,17 @@
     "awaken_the_colossus",
     "aegis_of_ages",
     "warlords_anthem",
-    "earthshatter"
+    "earthshatter",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "drakish_footman": {
@@ -9211,7 +10564,17 @@
     "fleetfoot",
     "battle_trance",
     "meteor_rain",
-    "frozen_eternity"
+    "frozen_eternity",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "sanguine_lash",
@@ -9243,7 +10606,17 @@
     "fleetfoot",
     "battle_trance",
     "meteor_rain",
-    "frozen_eternity"
+    "frozen_eternity",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "wizard": {
@@ -9284,7 +10657,18 @@
     "clockwork_knight",
     "frost_sentry",
     "siege_ballista",
-    "venom_totem"
+    "venom_totem",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "glacial_eruption",
@@ -9316,7 +10700,18 @@
     "clockwork_knight",
     "frost_sentry",
     "siege_ballista",
-    "venom_totem"
+    "venom_totem",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "troll_berserker_melee": {
@@ -9356,7 +10751,17 @@
     "shadow_dart",
     "cinder_shot",
     "adrenaline",
-    "skeletal_warband"
+    "skeletal_warband",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "crimson_crystals",
@@ -9388,7 +10793,17 @@
     "shadow_dart",
     "cinder_shot",
     "adrenaline",
-    "skeletal_warband"
+    "skeletal_warband",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "troll_berserker_ranged": {
@@ -9428,7 +10843,17 @@
     "umbral_scythe",
     "gloom_lance",
     "shadow_dart",
-    "adrenaline"
+    "adrenaline",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "crimson_crystals",
@@ -9460,7 +10885,17 @@
     "umbral_scythe",
     "gloom_lance",
     "shadow_dart",
-    "adrenaline"
+    "adrenaline",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "dryad": {
@@ -9494,7 +10929,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ],
    "purchasableImplemented": [
     "riptide_bolt",
@@ -9520,7 +10957,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ]
   },
   "whisp": {
@@ -9552,7 +10991,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ],
    "purchasableImplemented": [
     "sunlance",
@@ -9576,7 +11017,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ]
   },
   "evergrove_centaur": {
@@ -9618,7 +11061,18 @@
     "wind_ward",
     "skeletal_warband",
     "spirit_wolves",
-    "eye_of_the_void"
+    "eye_of_the_void",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "toxic_bubble",
@@ -9651,7 +11105,18 @@
     "wind_ward",
     "skeletal_warband",
     "spirit_wolves",
-    "eye_of_the_void"
+    "eye_of_the_void",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "keeper_of_light": {
@@ -9677,7 +11142,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ],
    "purchasableImplemented": [
     "sunlance",
@@ -9695,7 +11162,9 @@
     "frostbite",
     "sanctified_ground",
     "aegis_of_ages",
-    "tidal_cataclysm"
+    "tidal_cataclysm",
+    "chronofield",
+    "hallowed_cage"
    ]
   },
   "gunblade": {
@@ -9736,7 +11205,17 @@
     "gale_arrow",
     "cinder_shot",
     "adrenaline",
-    "eye_of_the_void"
+    "eye_of_the_void",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "crimson_crystals",
@@ -9769,7 +11248,17 @@
     "gale_arrow",
     "cinder_shot",
     "adrenaline",
-    "eye_of_the_void"
+    "eye_of_the_void",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "witch_slayer": {
@@ -9809,7 +11298,17 @@
     "umbral_scythe",
     "gloom_lance",
     "shadow_dart",
-    "gale_arrow"
+    "gale_arrow",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "crimson_crystals",
@@ -9841,7 +11340,17 @@
     "umbral_scythe",
     "gloom_lance",
     "shadow_dart",
-    "gale_arrow"
+    "gale_arrow",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "huntress": {
@@ -9882,7 +11391,17 @@
     "shadow_rend",
     "umbral_scythe",
     "gloom_lance",
-    "heavens_wrath"
+    "heavens_wrath",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "glacial_eruption",
@@ -9915,7 +11434,17 @@
     "shadow_rend",
     "umbral_scythe",
     "gloom_lance",
-    "heavens_wrath"
+    "heavens_wrath",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "aetheri_artificer": {
@@ -9956,7 +11485,17 @@
     "opportunist",
     "first_blood",
     "legions_bond",
-    "eye_of_the_void"
+    "eye_of_the_void",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "toxic_bubble",
@@ -9989,7 +11528,17 @@
     "opportunist",
     "first_blood",
     "legions_bond",
-    "eye_of_the_void"
+    "eye_of_the_void",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "black_hole",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   },
   "aetheri_warden": {
@@ -10030,7 +11579,18 @@
     "serrated_edge",
     "sanguine_pact",
     "fleetfoot",
-    "battle_trance"
+    "battle_trance",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ],
    "purchasableImplemented": [
     "riptide_bolt",
@@ -10062,7 +11622,18 @@
     "serrated_edge",
     "sanguine_pact",
     "fleetfoot",
-    "battle_trance"
+    "battle_trance",
+    "tidal_ravage",
+    "reverse_polarity",
+    "vacuum_rift",
+    "chronofield",
+    "warpath_charge",
+    "titanfall_leap",
+    "challengers_roar",
+    "hallowed_cage",
+    "upheaval",
+    "soul_hook",
+    "echo_slam"
    ]
   }
  },
@@ -10134,6 +11705,35 @@
     }
    ],
    "line": "Bleeding: takes damage over time."
+  },
+  "xp_setup": {
+   "type": "curse",
+   "name": "Set Up",
+   "mods": [
+    {
+     "stat": "Damage taken (enemy team)",
+     "value": 15,
+     "unit": "%"
+    },
+    {
+     "stat": "Area damage taken",
+     "value": 25,
+     "unit": "%"
+    }
+   ],
+   "line": "Caught by an initiation: the initiator's team deals +15% damage to it (+25% with area follow-ups)."
+  },
+  "xp_blink_locked": {
+   "type": "physical",
+   "name": "Blink Disrupted",
+   "mods": [
+    {
+     "stat": "Blink Dagger",
+     "value": 0,
+     "unit": ""
+    }
+   ],
+   "line": "Hit by an enemy champion: the Blink Dagger cannot be used for a moment."
   }
  }
 }

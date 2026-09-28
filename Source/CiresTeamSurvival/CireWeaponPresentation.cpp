@@ -1,4 +1,6 @@
 #include "CireWeaponPresentation.h"
+#include "CireParagonChampions.h" // paragon-champions
+
 #include "Misc/CommandLine.h"
 #include "Misc/PackageName.h"
 #include "CireGame.h"
@@ -210,7 +212,7 @@ bool CireWeapons::Reload(FString& Error)
     FString Text;const FString Path=FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/WeaponLoadouts.json"));
     if(!FFileHelper::LoadFileToString(Text,*Path)||Text.Len()>200000){Error=TEXT("Missing or oversized WeaponLoadouts.json");return false;}
     FDatabase Candidate;if(!Parse(Text,Candidate,Error))return false;
-    for(const auto& Profile:CireChampionRoster::All())if(!Candidate.Profiles.Contains(Profile.Id))
+    for(const auto& Profile:CireChampionRoster::All())if(!Candidate.Profiles.Contains(Profile.Id)&&!CireParagonChampions::IsParagon(Profile.Id)) // paragon-champions: weapons are in the Paragon mesh
     {Error=TEXT("Missing profile loadout: ")+Profile.Id;return false;}
     Database=MoveTemp(Candidate);bLoaded=true;++Revision;return true;
 }
@@ -221,7 +223,9 @@ bool CireWeapons::RunValidationSmoke(bool bRequireAssets)
     TSet<FString> Paths;
     for(const auto& Profile:CireChampionRoster::All())
     {
+        if(CireParagonChampions::IsParagon(Profile.Id))continue; // paragon-champions: weapons are skinned into the Paragon mesh
         const FString* Preset=Database.Profiles.Find(Profile.Id);Check(Preset!=nullptr,Profile.Id+TEXT(" has an explicit loadout"));
+
         if(Preset){const auto* Loadout=Database.Presets.Find(*Preset);Check(Loadout!=nullptr,Profile.Id+TEXT(" preset exists"));
             if(Loadout)Check(NaturalAttacks(Profile.Id)==Loadout->Parts.IsEmpty(),Profile.Id+TEXT(" natural attacks are unarmed"));}
     }

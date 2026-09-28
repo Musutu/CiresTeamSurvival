@@ -2,6 +2,7 @@
 #include "CireItemsPvP.h" // bonus-loot
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
+#include "CireInitiation.h" // initiation: Blink Dagger
 #include "CireSkillShop.h" // progression-shop: Skill Shop
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireBuffs.h" // aura-vfx
@@ -1114,6 +1115,8 @@ bool UCireInventory::ApplyEffect(const Effect& Use, FName ItemId, FString& Messa
         Message = Ally == Owner ? EffectName : FString::Printf(TEXT("%s: %s"), *EffectName, *Ally->HeroName);
         return true;
     }
+    case EffectKind::Blink: // initiation: Blink Dagger
+        return CireInitiation::Blink(Owner, static_cast<float>(Use.Radius), Message);
     case EffectKind::Haste:
         Owner->SlowUntil = 0;
         AddBuff(static_cast<float>(Use.Duration));
@@ -1147,6 +1150,7 @@ bool UCireInventory::UseSlot(int32 Index, bool bBeltSlot, FString& Message)
     // Preconditions first so a missing target never spends a charge or cooldown.
     if (Item->Use.Kind == EffectKind::DamageArea && (!Owner->IsHostile(Owner->Target) || !Owner->InRange(Owner->Target, 1200.f)))
         return Fail(TEXT("Select a hostile target within 12 m."));
+    if (Item->Use.Kind == EffectKind::Blink) { FString Why; if (!CireInitiation::CanBlink(Owner, Why)) return Fail(Why); } // initiation: disrupted by champion damage
     Inventory Rules = ToRules();
     Effect Use;
     if (Cires::Items::UseSlot(CireItems::Get().Catalog, Rules, Index, bBeltSlot, Now(), Use) != UseResult::Used)
@@ -1154,6 +1158,8 @@ bool UCireInventory::UseSlot(int32 Index, bool bBeltSlot, FString& Message)
     FromRules(Rules);
     FString EffectMessage;
     ApplyEffect(Use, ItemId, EffectMessage);
+    if (Use.Kind == EffectKind::Blink) // initiation: the cooldown is live-tunable (Initiation.json)
+        (bBeltSlot ? Belt : Equipment)[Index].ReadyAt = static_cast<float>(Now()) + CireInitiation::Tuning().BlinkCooldown;
     EndShopVisit(); // LoL rule: using an item ends the undo history
     AfterChange();
     Message = EffectMessage;
@@ -1305,6 +1311,7 @@ void UCireInventory::ServerBuy_Implementation(FName ItemId) { FString Message; B
 void UCireInventory::ServerSell_Implementation(int32 Index, bool bBeltSlot) { FString Message; SellSlot(Index, bBeltSlot, Message); }
 void UCireInventory::ServerUndo_Implementation() { FString Message; UndoLast(Message); }
 void UCireInventory::ServerUse_Implementation(int32 Index, bool bBeltSlot) { FString Message; UseSlot(Index, bBeltSlot, Message); }
+void UCireInventory::ServerUseAt_Implementation(int32 Index, bool bBeltSlot, FVector_NetQuantize Aim) { FString Message; CireInitiation::SetUseAim(Hero(), Aim); UseSlot(Index, bBeltSlot, Message); } // initiation
 void UCireInventory::ServerSwap_Implementation(int32 From, int32 To) { SwapSlots(From, To); }
 void UCireInventory::ServerShopOpen_Implementation(bool bOpen)
 {

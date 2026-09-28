@@ -718,6 +718,7 @@ const FSectionDef SkillSections[] = {
     {TEXT("summon"), TEXT("SUMMONS"), TEXT("SUMMONS"), nullptr, FLinearColor(.25f, .85f, .82f, 1)},
     {TEXT("construct"), TEXT("CONSTRUCTS"), TEXT("CONSTRUCTS"), nullptr, FLinearColor(.95f, .62f, .22f, 1)},
     {TEXT("passive"), TEXT("PASSIVES"), TEXT("PASSIVES"), nullptr, FLinearColor(.84f, .80f, .68f, 1)},
+    {TEXT("initiation"), TEXT("INITIATION  ·  TEAMFIGHT ENGAGE"), TEXT("INITIATION"), TEXT("ENGAGE · GROUP CC · SET-UP FOR YOUR TEAM"), FLinearColor(1.f, .6f, .16f, 1)}, // initiation (Playtest 6 L)
     {TEXT("ultimate"), TEXT("ULTIMATES"), TEXT("ULTIMATES"), nullptr, FLinearColor(.78f, .56f, 1.f, 1)},
 };
 constexpr int32 SectionCount = UE_ARRAY_COUNT(SkillSections);

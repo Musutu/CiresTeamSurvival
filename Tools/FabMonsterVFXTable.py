@@ -34,6 +34,44 @@ CC_TINT = {
     "npc_ink": [0.15, 0.2, 0.45],       # blind: ink navy
 }
 
+# pack-usage-3: C-rated systems (visible on the catalogue stage but weak / nearly invisible / broken material, see
+# Art/Fab/FabVFXInventory.json quality) are swapped for an A/B system of the same theme wherever a table names them.
+# Projectiles, orbs and muzzles are small by design and stay; stage-blank systems (need motion or a target) are unrated.
+# A race / CC tint on the pick still wins over the replacement's own tint.
+GREEN = [0.45, 0.85, 0.3]
+DEMOTED = {
+    "Stab_Med": "BulletHit_High", "Fire_Magic_Hit": ("Fire_Magic_Splash", 0.8), "Earth_Magic_Stone2": "Earth_Magic_Stone1",
+    "Blood_Magic_Crystal1": "Blood_Magic_Crystal2", "BloodSplash_Med": ("BloodSplash_High", 0.8), "Blood_Magic_Spike2": "Blood_Magic_Spike1",
+    "Explosion_Grenade_Nature": {"s": "Earth_Spells_Hit2", "tint": GREEN}, "Explosion_Nature": {"s": "Earth_Spells_Hit3", "tint": GREEN},
+    "Explosion_Cast_Nature": {"s": "Earth_Spells_Buff", "tint": GREEN}, "Wing_Nature": "TextureParticle_Forest",
+    "Ice_Magic_Frozen": "Ice_Magic_Aura", "Dark_Magic_Shield": "Dark_Magic_Buff", "Fire_Magic_Circle": "Fire_Magic_Shockwave",
+    "Lightning_Magic_Orb3": "Lightning_Magic_Orb2", "Earth_Spells_Slash": "Earth_Spells_Cone", "Fire_Magic_Flamethrower": "Fire_Magic_Flame1",
+    "Light_Magic_Sword_Area": "Light_Magic_Sword_Line_Area1", "Light_Magic_Slash2": "Light_Magic_Slash1",
+    "Light_Magic_Sword_Line": "Light_Magic_Sword_Circle", "Posion_Magic_Rain": "Posion_Magic_SpikeArea", "Blood_Magic_Wall1": "Blood_Magic_Wall2",
+    "P_ky_magicCircle1": "Lightning_Magic_Tunder_Circle1", "Posion_Magic_Target": "Posion_Magic_Buff", "Dark_Magic_Slash2": "Dark_Magic_Slash1",
+    "Shadow_Magic_Slash2": "Shadow_Magic_Slash3", "Ice_Magic_Circle2": "Ice_Magic_Circle1", "Ice_Magic_Circle3": "Ice_Magic_Circle1",
+    "Water_Magic_Slash3": "Water_Magic_Slash1", "Water_Magic_Wave1": "Water_Magic_Waterflow1", "Water_Magic_Wall": "Water_Magic_Wall2",
+    "Dark_Magic_Area_Line": "Dark_Magic_Cone1", "Air_Magic_Air_Wall": "Air_Magic_Shield", "P_ky_shootingStar1": "Light_Magic_Top",
+    "Earth_Magic_Slash1": "Earth_Magic_Splash", "Earth_Magic_Slash2": "Earth_Magic_Spike3", "Air_Magic_Buff": "Air_Magic_Aura",
+    "Earth_Spells_Arena": "Earth_Magic_Shockwave", "Air_Magic_Airflow": "Air_Magic_Tornado3", "Earth_Magic_Circle1": "Earth_Spells_Circle",
+    "Shadow_Magic_Dash2": "Shadow_Magic_Blink1", "Lightning_Magic_Dash": "Lightning_Magic_Blink1", "P_ky_shotShockwave": "Light_Magic_Blink2",
+    "Earth_Spells_Orb": "Earth_Spells_Buff", "Ice_Magic_Sheild": "Ice_Magic_Sheild2", "P_ky_laser01": "Lightning_Magic_Line1",
+    "Posion_Magic_Debuff": "State_VFX_Poison1", "State_VFX_Freeze1": "Ice_Magic_Aura",
+}
+
+
+def demote(pick):
+    """pack-usage-3: swap a C-rated stem for its replacement; the pick's own tint / scale win."""
+    if pick.get("s") in DEMOTED:
+        rep = as_dict(DEMOTED[pick["s"]])
+        pick["s"] = rep["s"]
+        if "tint" not in pick and rep.get("tint"):
+            pick["tint"] = rep["tint"]
+        if "scale" not in pick and rep.get("scale"):
+            pick["scale"] = rep["scale"]
+    return pick
+
+
 # Race kits: ordered pools per slot kind (first = preferred). Systems are stems; a (stem, scale) or dict entry is allowed.
 # Tints: "tint" recolours the whole kit (borrowed kits), "variants" are the recolour tints for repeats inside a unit.
 def kit(**pools):
@@ -232,7 +270,7 @@ RACE_KITS = {
             self=["Earth_Spells_Shockwave", "Ice_Magic_Shockwave", "Earth_Magic_Shockwave", "Ice_Magic_Circle4"],
             target=["Earth_Spells_Meteorites", "Ice_Magic_IceSpike", "Ice_Magic_Target", "Air_Magic_Tornado3", "Posion_Magic_Rain"],
             area=["Earth_Spells_Area3", "Ice_Magic_Arena", "Posion_Magic_Area1", "Ice_Magic_Snowstorm1"],
-            hit=["Slash_Low", "Stab_Low", "Ice_Magic_Hit", "Earth_Spells_Hit1", "Air_Magic_Hit3", "Ice_Magic_FrontSpike"],
+            hit=["Slash_Low", "Stab_Low", "Ice_Magic_Hit", "Earth_Spells_Hit1", "Blood_Magic_Hit", "Ice_Magic_FrontSpike"],
             charge=["Earth_Magic_Dash", "Ice_Magic_Dash", "Air_Magic_Dash"],
             buff=["Earth_Spells_Shield", "Ice_Magic_Sheild", "Ice_Magic_Sheild2", "Blood_Magic_Buff", "Earth_Magic_Buff", "Ice_Magic_Wall"],
             heal=["Light_Magic_Heal", "Ice_Magic_Buff"], healhit=["Light_Magic_Heal_Hit", "State_VFX_Heal1"],
@@ -245,6 +283,46 @@ RACE_KITS = {
         )),
 }
 # Keyword kits for legacy / Bestiary ids (first match wins), else "_legacy".
+# pack-usage-3: the hit / target / buff pools that wrapped (the same system recoloured 3-4 times inside a race) take the
+# still-unused A/B systems of their theme first (quality first; a recolour only after every good system of the theme is
+# drawn). Shadow_Magic_Hit2 (a small teal ribbon swirl) leaves the Hollow kit, where the grave-green tint made it the
+# "greenish-blue swirl on every hit" of playtest 6, and goes last in the Voidborn pool, where it suits.
+_G = [0.35, 0.8, 0.25]
+POOL_ADDITIONS = {
+    "aetheri": {"hit": ["Lightning_Magic_Blink2", "P_ky_lightning2", "Lightning_Magic_Projectile2"], "deploy": ["Lightning_Magic_Buff2"],
+                "target": ["P_ky_thunderStorm", "P_ky_lightning1"]},
+    "blightwood": {"hit": ["Posion_Magic_Explosion3", "Posion_Magic_Shild_Splash", "State_VFX_Poison1"],
+                   "target": ["Posion_Magic_SpikeArea", {"s": "Earth_Spells_Area_Spike_Line3", "tint": _G}]},
+    "drakkari": {"hit": ["Fire_Magic_Spike2"], "buff": ["Fire_Magic_Flame3"], "target": ["Fire_Magic_Arena"]},
+    "drowned_deep": {"hit": ["P_ky_waterBallHit"], "target": ["P_ky_aquaStorm", "Water_Magic_Splash2"]},
+    "fallen_order": {"hit": ["Light_Magic_Explosion1", "Dark_Magic_Shield_Splash"], "charge": ["Light_Magic_Blink2"], "target": ["Dark_Magic_Wall2"]},
+    "feral_kin": {"hit": ["Earth_Magic_Hit", "Blood_Magic_Crystal5"], "charge": ["Blood_Magic_Slash1"], "buff": ["Blood_Magic_Shield"]},
+    "hollow": {"hit": ["Earth_Spells_Hit3"], "buff": ["Shadow_Magic_Wall2"], "target": ["Shadow_Magic_Area4"]},
+    "ironhide": {"hit": ["Blood_Magic_Explo2", "BloodSplash_High", "Blood_Magic_Crystal5"]},
+    "stoneborn": {"hit": ["Earth_Magic_Hit", "Earth_Magic_Spike6"], "target": ["Earth_Spells_Area_Spike_Line3", "Earth_Spells_Wall4"]},
+    "voidborn": {"hit": ["Shadow_Magic_Ray1", "Dark_Magic_Dark_Flame"], "area": ["Shadow_Magic_Wall1", "Dark_Magic_Wall2", "P_ky_darkStorm"]},
+    "_legacy": {"target": ["Ice_Magic_IceSpike2"]},
+}
+for _race, _add in POOL_ADDITIONS.items():
+    for _pool, _stems in _add.items():
+        _p = RACE_KITS[_race]["pools"].setdefault(_pool, [])
+        _p.extend(x for x in _stems if x not in _p)
+# ...and the unused A/B systems with one obvious owner go straight to it (MONSTER_OVERRIDES is defined below; merged there).
+PACK_USAGE_3_OVERRIDES = {
+    "frostfang_hamstring": {"c": "Ice_Magic_Slash1", "i": "Ice_Magic_IceSpike"}, "frostfang_howl": {"c": "Ice_Magic_Snowstorm1"},
+    "lich_frost_nova": {"c": "Ice_Magic_Shockwave", "i": "Ice_Magic_IceSpike2"},
+    "ironhide_chain_hook": {"c": "Blood_Magic_Beam2"}, "fallen_consecrated_wall": {"c": "Dark_Magic_Wall1"},
+    "aether_psi_sweep": {"c": "Lightning_Magic_Slash1"}, "aether_psionic_storm": {"c": "P_ky_thunderStorm"},
+    "aether_orbital_strike": {"i": "P_ky_lightning1"}, "aether_core_burst": {"i": "P_ky_lightning3"},
+    "void_event_horizon": {"c": "Shadow_Magic_Shield_Splash1"}, "void_gravity_well": {"c": "P_ky_darkStorm"},
+    "void_titan_slam": {"c": "Shadow_Magic_Wall1"}, "stoneborn_forge_sentinels": {"c": "Earth_Spells_Wall4"},
+}
+_hollow_hit = RACE_KITS["hollow"]["pools"]["hit"]
+_hollow_hit[:] = [x for x in _hollow_hit if x != "Shadow_Magic_Hit2"]
+_void_hit = RACE_KITS["voidborn"]["pools"]["hit"]
+_void_hit[:] = [x for x in _void_hit if x != "Shadow_Magic_Hit2"] + ["Shadow_Magic_Hit2"]
+
+
 LEGACY_KIT_BY_KEYWORD = [("lich", "_legacy"), ("frostfang", "_legacy"), ("shambler", "blightwood"), ("griffon", "aetheri"), ("centaur", "feral_kin"),
                          ("brute", "ironhide"), ("drake", "drakkari"), ("bone_volley", "hollow"), ("npc_shadow_bolt", "voidborn"), ("npc_blight_pool", "blightwood"),
                          ("boss_leader", "feral_kin"), ("boss_siege", "ironhide")]
@@ -293,6 +371,10 @@ MONSTER_OVERRIDES = {
 
 # Hit signatures (steel-school impacts with no ability of their own: basic attacks, monster melee, weapon strikes) by
 # target body layer and attacker weapon: hit.<layer>[.<weapon>][.crit]. Restrained: Low on hits, Med/High only on crits.
+for _ab, _roles in PACK_USAGE_3_OVERRIDES.items():
+    MONSTER_OVERRIDES.setdefault(_ab, {}).update(_roles)
+
+SPARK, SPARK_HOT, SPARK_STEEL = [1.0, 0.82, 0.45], [1.0, 0.6, 0.2], [0.85, 0.85, 0.7]
 HIT_VFX = {
     "hit.flesh": {"i": ("Slash_Low", 0.9)}, "hit.flesh.crit": {"i": ("Slash_High", 1.0)},
     "hit.flesh.sword": {"i": ("Slash_Low", 0.9)}, "hit.flesh.sword.crit": {"i": ("Slash_High", 1.0)},
@@ -307,19 +389,28 @@ HIT_VFX = {
     "hit.flesh.mace": {"i": ("BloodSplash_Low", 0.9)}, "hit.flesh.mace.crit": {"i": ("BloodSplash_Med", 1.0)},
     "hit.flesh.shield": {"i": ("BloodSplash_Low", 0.85)}, "hit.flesh.shield.crit": {"i": ("BloodSplash_Med", 1.0)},
     "hit.flesh.staff": {"i": ("BloodSplash_Low", 0.8)}, "hit.flesh.staff.crit": {"i": ("BloodSplash_Med", 0.95)},
-    "hit.flesh.pistol": {"i": ("BulletHit_Low", 0.9)}, "hit.flesh.pistol.crit": {"i": ("BulletHit_High", 1.0)},
-    "hit.flesh.blunderbuss": {"i": ("BulletHit_Med", 0.95)}, "hit.flesh.blunderbuss.crit": {"i": ("BulletHit_High", 1.05)},
-    # armour: white steel sparks; stone / bark: debris; nothing (whisps): a spirit puff
-    "hit.armor": {"i": ("Air_Magic_Hit3", 0.55)}, "hit.armor.crit": {"i": ("Air_Magic_Hit1", 0.7)},
+    "hit.flesh.pistol": {"i": ("BulletHit_Sample", 0.9)}, "hit.flesh.pistol.crit": {"i": ("BulletHit_High", 1.0)},
+    "hit.flesh.blunderbuss": {"i": ("BulletHit_Med", 0.95)}, "hit.flesh.blunderbuss.crit": {"i": ("BloodBurst_High", 0.8)},
+    # armour: warm steel sparks, a different spark per weapon family (pack-usage-3: the green Air_Magic_Hit3 crescent swirl
+    # used to fire on every plate / mail target - playtest 6 "greenish-blue swirl on too many hits"); stone / bark: debris;
+    # nothing (whisps): the pale wind swirl stays here, where a spirit puff suits it.
+    "hit.armor": {"i": {"s": "Light_Magic_Hit3", "scale": 0.5, "tint": SPARK}},
+    "hit.armor.crit": {"i": {"s": "Lightning_Magic_Blink2", "scale": 0.5, "tint": SPARK}},
+    **{"hit.armor." + w: {"i": {"s": "Light_Magic_Hit1", "scale": 0.5, "tint": SPARK}} for w in ("sword", "gunblade", "glaive")},
+    **{"hit.armor." + w: {"i": {"s": "Lightning_Magic_Projectile2", "scale": 0.45, "tint": SPARK_HOT}} for w in ("axe", "claws")},
+    **{"hit.armor." + w: {"i": {"s": "State_VFX_Shock1", "scale": 0.55, "tint": SPARK}} for w in ("mace", "shield", "staff")},
+    **{"hit.armor." + w: {"i": {"s": "Ice_Magic_Hit", "scale": 0.5, "tint": SPARK_STEEL, "strength": 0.8}} for w in ("dagger", "spear", "bow", "crossbow")},
+    **{"hit.armor." + w: {"i": {"s": "Light_Magic_Hit2", "scale": 0.45, "tint": SPARK_HOT}} for w in ("pistol", "blunderbuss")},
+    **{"hit.armor.%s.crit" % w: {"i": {"s": "Fire_Magic_Explosion", "scale": 0.35, "tint": SPARK}} for w in ("mace", "shield", "staff", "axe")},
     "hit.stone": {"i": ("Earth_Spells_Hit1", 0.6)}, "hit.stone.crit": {"i": ("Earth_Magic_Stone1", 0.75)},
-    "hit.wood": {"i": ("Explosion_Small_Nature", 0.55)}, "hit.wood.crit": {"i": ("Explosion_Nature", 0.6)},
+    "hit.wood": {"i": ("Explosion_Small_Nature", 0.55)}, "hit.wood.crit": {"i": {"s": "State_VFX_Root1", "scale": 0.6}},
     "hit.none": {"i": ("Air_Magic_Splash", 0.5)}, "hit.none.crit": {"i": ("Air_Magic_Hit2", 0.6)},
 }
 # Kill bursts (UCireMonsterArt::MulticastDeath): one system per death by body class; decals only on bosses.
 KILL_VFX = {
     "kill.humanoid": {"i": ("BloodBurst_Med", 0.8)}, "kill.creature": {"i": ("BloodSplash_Med", 0.85)},
     "kill.golem": {"i": ("Earth_Spells_Explosion", 0.55)}, "kill.ethereal": {"i": ("Shadow_Magic_Explosion2", 0.6)},
-    "kill.boss": {"i": ("BloodBurst_High", 1.0)}, "kill": {"i": ("BloodBurst_Low", 0.8)},
+    "kill.boss": {"i": ("BloodBurst_Extreme", 0.9)}, "kill": {"i": ("BloodBurst_Low", 0.8)},
 }
 EVENT_VFX = {"level_up": {"c": ("Light_Magic_Top", 0.9)}}
 
@@ -377,11 +468,11 @@ def build_monster_table():
             pool = pools.get(pool_name) or pools["self"]
             override = MONSTER_OVERRIDES.get(ability, {}).get(letter)
             if override is not None:
-                pick = as_dict(override)
+                pick = demote(as_dict(override))
             else:
                 n = used.get((kit_key, pool_name), 0)
                 used[(kit_key, pool_name)] = n + 1
-                pick = as_dict(pool[n % len(pool)])
+                pick = demote(as_dict(pool[n % len(pool)]))
                 lap = n // len(pool)
                 if lap > 0 and pick.get("tint", "unset") in ("unset", None):
                     variants = kit_def.get("variants") or [[1, 1, 1]]

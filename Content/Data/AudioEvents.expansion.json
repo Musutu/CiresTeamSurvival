@@ -575,6 +575,76 @@
    "name": "Tidal Cataclysm",
    "element": "water",
    "kind": "spell"
+  },
+  "tidal_ravage": {
+   "name": "Tidal Ravage",
+   "element": "water",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "reverse_polarity": {
+   "name": "Reverse Polarity",
+   "element": "lightning",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "vacuum_rift": {
+   "name": "Vacuum Rift",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "black_hole": {
+   "name": "Black Hole",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "chronofield": {
+   "name": "Chronofield",
+   "element": "arcane",
+   "kind": "spell"
+  },
+  "warpath_charge": {
+   "name": "Warpath Charge",
+   "element": "physical",
+   "kind": "spell"
+  },
+  "titanfall_leap": {
+   "name": "Titanfall Leap",
+   "element": "earth",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "challengers_roar": {
+   "name": "Challenger's Roar",
+   "element": "earth",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "hallowed_cage": {
+   "name": "Hallowed Cage",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "upheaval": {
+   "name": "Upheaval",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "soul_hook": {
+   "name": "Soul Hook",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "echo_slam": {
+   "name": "Echo Slam",
+   "element": "earth",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "blink_dagger": {
+   "name": "Blink Dagger",
+   "element": "arcane",
+   "kind": "spell"
   }
  }
 }

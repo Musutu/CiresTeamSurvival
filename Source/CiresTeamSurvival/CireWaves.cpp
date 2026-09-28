@@ -1,5 +1,6 @@
 // wave-director: authoritative wave runtime, neutral challenge packs and bot lane defence.
 #include "CireWaves.h"
+#include "CireAbilityTuner.h" // ability-tuner
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "CireItems.h" // progression-shop: ready flags on the inventory
@@ -226,7 +227,7 @@ void CireWaveDirector::Initialize(ACireGameMode* Mode)
         // waves-modes: the host's game type (kept across a layout restart), or -CireWavePreset=<id>; else Waves.json as saved.
         FString Arg; FName Pick = S->WavePreset;
         if (FParse::Value(FCommandLine::Get(), TEXT("CireWavePreset="), Arg) && !Arg.IsEmpty()) Pick = FName(*Arg);
-        if (const FCireWavePreset* P = Pick.IsNone() ? nullptr : FindPreset(Pick)) { ApplyPreset(R.Config, *P); Validate(R.Config, nullptr, true); S->WavePreset = P->Id; }
+        if (const FCireWavePreset* P = Pick.IsNone() ? nullptr : FindPreset(Pick)) { ApplyPreset(R.Config, *P); Validate(R.Config, nullptr, true); S->WavePreset = P->Id; CireAbilityTuner::ApplyWavePreset(Mode->GetWorld(), P->Id); } // ability-tuner: preset tuningProfile / allowTuning
     }
     ApplyPacing(Mode, R.Config);
     Publish(Mode);
@@ -1358,6 +1359,7 @@ bool CireWaveDirector::SelectPreset(ACireGameMode* Mode, FName Id, FString* Erro
     ApplyPreset(C, *P);
     if (!ApplyLive(Mode, C, Error)) return false;
     if (S->WavePreset != P->Id) { S->WavePreset = P->Id; S->ForceNetUpdate(); }
+    CireAbilityTuner::ApplyWavePreset(Mode->GetWorld(), P->Id); // ability-tuner: preset tuningProfile / allowTuning
     UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_PRESET %s \"%s\" damage=%d fightBack=%d scale=%.2f/%.2f/%.2f packBonus=%d"), *P->Id.ToString(), *P->Label,
         P->bDefaultDamage ? 1 : 0, P->DefaultFightBack.Num(), P->Scale.Health, P->Scale.Damage, P->Scale.Speed, P->PackSizeBonus);
     return true;
