@@ -33,10 +33,21 @@ Brief: Playtest 6 section A (Docs/EricFeedback/2026-09-27/PLAYTEST-6.md) + the p
 
 ## Not done / next
 
-- See "Gate logs" and "Galleries" below for what ran. Blood decals (Splatter_*, SphericalDecalSplatter_*) and drips stay
+- Blood decals (Splatter_*, SphericalDecalSplatter_*) and drips stay
   unused: one system per kill key, and decals need a surface-projection spawn path (code work, not data).
 - Remaining unused Big Pack / Shadow / Earth systems are almost all `stage-blank` projectiles / lines (need a live motion
   review before rating) or C-rated.
+
+## Galleries (2026-09-28, all captures PASS; raw PNG frames deleted to save disk, sheets + comparisons kept)
+
+- After: `Saved/AbilityVFX/after-packusage3-{champion,voidborn,stoneborn,hollow}-*/sheets`.
+- Before/after (before = `cts-pack-usage-2/Saved/AbilityVFX/before-packusage2-*`): champion `compare-20260928T055052Z`,
+  voidborn `compare-20260928T062412Z`, stoneborn `compare-20260928T062547Z`.
+- Eye-check: hits read smaller and none of the champion basic attacks shows the green swirl any more (basic_sword's cyan rune
+  ring in the gallery is the lingering mass_aegis / wellspring zone from the previous casts, not a hit). New Voidborn dark
+  storm (gravity well) and crystal-wall picks read well. Tinted kits: the Hollow grave-green tint is subtle on Shadow Magic
+  (dark, low-saturation systems keep most of their ink look), which is fine for undead; Stoneborn cyan rune variants read
+  as intended. No broken / missing-material systems seen.
 
 ## Assumptions / questions for Eric
 
