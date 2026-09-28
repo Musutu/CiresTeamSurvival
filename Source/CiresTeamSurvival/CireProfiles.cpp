@@ -39,6 +39,7 @@ FString GProfileRootOverride;
 TMap<FName, FString> GActiveProfiles;
 FString GLayoutOverride;
 FString GActiveWorldEdit;
+FString GLastBundleKey; // the last game type (and bundle) applied by ApplyGameType
 CireGameProfiles::FWorldEditApply GWorldEditApply;
 CireGameProfiles::FWorldEditList GWorldEditList;
 
@@ -603,8 +604,16 @@ void CireGameProfiles::ApplyGameType(ACireGameMode* Mode, const FCireWavePreset*
     if (!World || !Mode->HasAuthority()) return;
     if (P) CireAbilityTuner::ApplyWavePreset(World, P->Id); // ability-tuner: tuningProfile / allowTuning
     ApplyLayoutChoice(Mode, P ? Get(*P, KeyLayout) : FString(), bAtInit);
+    // F8 match overrides reset with every new match (CireDeveloperTools::Initialize): keep the active name honest.
+    if (!CireDeveloperTools::Get(World).bEnabled) CireProfiles::SetActive(CireProfiles::Match, CireProfiles::DefaultName);
+    // A layout restart (Alt+F5) re-runs match init with the same game type: profiles loaded by hand in F8 stay live then.
+    FString BundleKey = P ? P->Id.ToString() : FString(TEXT("none"));
+    if (P) for (const FString& Key : Keys()) BundleKey += TEXT("|") + Get(*P, Key);
     FString Report;
-    const int32 Changed = ApplyDataProfiles(World, P, &Report);
+    int32 Changed = 0;
+    if (bAtInit && BundleKey == GLastBundleKey) Report = TEXT("same game type as before: profiles unchanged");
+    else Changed = ApplyDataProfiles(World, P, &Report);
+    GLastBundleKey = BundleKey;
     ApplyWorldEditChoice(World, P ? Get(*P, KeyWorldEdit) : FString());
     // Hero kits: CireKitEditor reads the game type's kitProfile from ACireGameState::WavePreset when a champion is drafted.
     UE_LOG(LogCireProfiles, Display, TEXT("CIRE_GAME_TYPE_APPLIED id=%s init=%d layout=%s tuning=%s kit=%s economy=%s packs=%s movement=%s match=%s spacing=%s worldEdit=%s changed=%d %s"),

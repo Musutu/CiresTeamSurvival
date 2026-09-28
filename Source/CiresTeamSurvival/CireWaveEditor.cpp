@@ -9,6 +9,7 @@
 #include "CireMonsterExpansion.h" // monster-expansion
 #include "CireBalanceLab.h"
 #include "CireDeveloperTools.h"
+#include "CireProfileBar.h" // game-profiles
 #include "Engine/World.h"
 
 namespace
@@ -18,7 +19,6 @@ const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment,
 const FLinearColor Teal(.2f, .71f, .59f, 1), Row(.045f, .06f, .07f, .96f), RowSelected(.1f, .13f, .12f, 1), Red(.75f, .2f, .23f, 1);
 // waves-modes: the "MODES & SCALE" sub-page replaces the wave composer pane (dev UI, one HUD per client).
 bool bWaveModesPage = false;
-bool bWaveBundleView = false; // game-profiles: MODES & SCALE shows the game type bundle instead of scale & damage
 
 TArray<FName> ArchetypeIds()
 {
@@ -136,6 +136,8 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     WaveSelected = FMath::Clamp(WaveSelected, 0, WaveDraft.Waves.Num() - 1);
 
     // ---- waves-modes: MODES & SCALE sub-page (right pane) ------------------------------
+    if (CireProfileUI::ConsumeForceWaveModes()) bWaveModesPage = true; // game-profiles: review capture
+    bool& bWaveBundleView = CireProfileUI::WaveBundleView(); // game-profiles
     if (bWaveModesPage)
     {
         const float EX = L + 190, EW = 410;

@@ -12,6 +12,13 @@
 #include "Engine/World.h"
 #include "HAL/PlatformTime.h"
 #include "InputCoreTypes.h"
+#if !UE_BUILD_SHIPPING
+#include "Containers/Ticker.h"
+#include "Engine/Engine.h"
+#include "HAL/IConsoleManager.h"
+#include "Misc/Paths.h"
+#include "UnrealClient.h"
+#endif
 
 namespace
 {
@@ -43,6 +50,47 @@ void BeginTyping(EProfileTyping Mode, FName Domain, const FString& Initial) { GB
 bool TypingFor(FName Domain) { return GBar.Typing != EProfileTyping::None && GBar.TypingDomain == Domain; }
 }
 
+#if !UE_BUILD_SHIPPING
+namespace
+{
+// Review capture (console cire.ProfilesCapture, e.g. -ExecCmds="cire.ProfilesCapture"): opens F8 and screenshots the PROFILE bar
+// on the Economy and Packs / Spacing pages into Saved/ProfilesCapture, then quits. Standalone development game only.
+int32 GForcePage = -1; bool GForceSpacing = false; bool GForceWaveModes = false;
+FAutoConsoleCommand GProfilesCaptureCommand(TEXT("cire.ProfilesCapture"), TEXT("game-profiles: screenshot the F8 PROFILE bar pages, then quit."), FConsoleCommandDelegate::CreateLambda([]()
+{
+    const double Start = FPlatformTime::Seconds();
+    TSharedRef<int32> Step = MakeShared<int32>(0);
+    FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Start, Step](float)
+    {
+        const double Age = FPlatformTime::Seconds() - Start;
+        const FString Dir = FPaths::ProjectSavedDir() / TEXT("ProfilesCapture");
+        APlayerController* PC = nullptr;
+        if (GEngine) for (const FWorldContext& C : GEngine->GetWorldContexts()) if (C.World() && C.World()->IsGameWorld()) PC = C.World()->GetFirstPlayerController();
+        ACireHUD* HUD = PC ? Cast<ACireHUD>(PC->GetHUD()) : nullptr;
+        if (!HUD) return Age < 60;
+        struct FShot { double At; int32 Page; bool bSpacing; const TCHAR* Name; };
+        static const FShot Shots[] = {{4, 9, false, TEXT("economy")}, {7, 10, false, TEXT("packs")}, {10, 10, true, TEXT("spacing")}, {13, 1, false, TEXT("spawn")}, {16, 6, false, TEXT("movement")}, {19, 7, false, TEXT("gametype")}};
+        if (*Step == 0 && Age > 2) { HUD->ToggleDeveloperTools(); ++*Step; }
+        for (int32 I = 0; I < UE_ARRAY_COUNT(Shots); ++I)
+        {
+            if (*Step == 1 + I * 2 && Age > Shots[I].At - 1.5) { GForcePage = Shots[I].Page; GForceSpacing = Shots[I].bSpacing; GForceWaveModes = Shots[I].Page == 7; CireProfileUI::WaveBundleView() = true; ++*Step; }
+            if (*Step == 2 + I * 2 && Age > Shots[I].At) { FScreenshotRequest::RequestScreenshot(Dir / FString::Printf(TEXT("profiles_%s.png"), Shots[I].Name), true, false); ++*Step; }
+        }
+        if (*Step >= 1 + UE_ARRAY_COUNT(Shots) * 2 && Age > 21) { UE_LOG(LogTemp, Display, TEXT("CIRE_PROFILES_CAPTURE_DONE %s"), *Dir); FPlatformMisc::RequestExit(false); return false; }
+        return true;
+    }));
+}));
+}
+#endif
+
+bool& CireProfileUI::WaveBundleView() { static bool bView = false; return bView; }
+bool CireProfileUI::ConsumeForceWaveModes()
+{
+#if !UE_BUILD_SHIPPING
+    if (GForceWaveModes) { GForceWaveModes = false; return true; }
+#endif
+    return false;
+}
 bool CireProfileUI::OwnsKeyboard() { return GBar.Typing != EProfileTyping::None && BarNow() - GBar.LastDrawn < .3; }
 bool CireProfileUI::HandleChar(TCHAR Ch)
 {
@@ -62,6 +110,7 @@ void ACireHUD::DrawProfileFooter(float X, float Y)
 #if !UE_BUILD_SHIPPING
     UWorld* World = GetWorld();
     if (!World || !CireDeveloperTools::CanEdit(World)) return;
+    if (GForcePage >= 0) { DeveloperPage = GForcePage; GBar.bSpacingTab = GForceSpacing; GForcePage = -1; } // review capture
     FName Domain;
     if (DeveloperPage >= 0 && DeveloperPage <= 2) Domain = CireProfiles::Match;
     else if (DeveloperPage == 9) Domain = CireProfiles::Economy;
@@ -133,7 +182,7 @@ void ACireHUD::DrawProfileFooter(float X, float Y)
     if (TypingFor(Domain))
     {
         if (PlayerOwner && PlayerOwner->WasInputKeyJustPressed(EKeys::BackSpace) && !GBar.Buffer.IsEmpty()) GBar.Buffer.LeftChopInline(1);
-        const bool bEnter = PlayerOwner && (PlayerOwner->WasInputKeyJustPressed(EKeys::Enter) || PlayerOwner->WasInputKeyJustPressed(EKeys::Virtual_Accept));
+        const bool bEnter = PlayerOwner && PlayerOwner->WasInputKeyJustPressed(EKeys::Enter);
         if (PlayerOwner && PlayerOwner->WasInputKeyJustPressed(EKeys::Escape)) { GBar.Typing = EProfileTyping::None; return; }
         Painter().Rect(BX, Y, NameW, H, FLinearColor(0, 0, 0, .6f));
         Painter().Rect(BX, Y + H - 2, NameW, 2, CireUIColors::Teal);
@@ -201,7 +250,7 @@ void ACireHUD::DrawGameTypeBundle(float X, float Y, float W)
         if (bOver && Clicked) { Clicked = false; PlayUIFeedback(); return true; }
         return false;
     };
-    Label(Painter().Fit(FString::Printf(TEXT("GAME TYPE BUNDLE  |  %s"), Current ? *Current->Label.ToUpper() : TEXT("select a preset above")), 8.5f, W, ECireFont::Heading), X, Y, 8.5f, CireUIColors::Muted);
+    Label(Painter().Fit(FString::Printf(TEXT("%s  |  click a slot for the next profile (saved at once)"), Current ? *Current->Label.ToUpper() : TEXT("SELECT A PRESET BELOW")), 8.5f, W, ECireFont::Heading), X, Y, 8.5f, CireUIColors::Muted);
     // One cycling button per bundle key; a click saves the choice into WavePresets.json at once.
     const TArray<FString>& Keys = CireGameProfiles::Keys();
     const float CW = (W - 8) / 3.f, RowH = 24;

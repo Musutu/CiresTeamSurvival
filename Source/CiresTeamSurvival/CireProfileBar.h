@@ -10,4 +10,8 @@ namespace CireProfileUI
     CIRESTEAMSURVIVAL_API bool HandleChar(TCHAR Ch);
     /** Escape while typing cancels the name box instead of closing Options; true = consumed. */
     CIRESTEAMSURVIVAL_API bool CancelTyping();
+    /** F8 > Waves > MODES & SCALE shows the game type bundle (instead of scale & damage). */
+    CIRESTEAMSURVIVAL_API bool& WaveBundleView();
+    /** Review capture: open Waves > MODES & SCALE once (true once, then false). */
+    CIRESTEAMSURVIVAL_API bool ConsumeForceWaveModes();
 }
