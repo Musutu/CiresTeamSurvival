@@ -1,4 +1,5 @@
 #include "CireCombatExpansionProbe.h"
+#include "CireAbilityTuner.h" // ability-tuner
 #include "CireLeash.h" // layout-wiring
 #include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireLayoutWiring.h" // layout-wiring
@@ -104,6 +105,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireLanePath::RunSmoke(Mode)&&Good;
     Good=CireSkillTuning::RunValidationSmoke()&&Good;
     Good=CireSkillTuning::RunCastRulesSmoke()&&Good; // casting-rules
+    Good=CireAbilityTuner::RunSmoke(Mode)&&Good; // ability-tuner: override layer, profiles, authority
     Good=CireThreat::RunSmoke(Mode)&&Good;
     Good=CireSkillshots::RunSkillshotSmoke(Mode)&&Good;
     Good=CireConstructs::RunConstructSmoke(Mode)&&Good;

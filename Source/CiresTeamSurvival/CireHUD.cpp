@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireAbilityTunerUI.h" // ability-tuner
 #include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // kits-complete
@@ -186,6 +187,7 @@ bool ACireHUD::IsPointerOverInterface() const
     float CursorX=0,CursorY=0;
     if(!PlayerOwner||!PlayerOwner->GetMousePosition(CursorX,CursorY))return true;
     CursorX/=Scale;CursorY/=Scale;
+    if(CireAbilityTunerUI::ContainsPoint(FVector2D(CursorX,CursorY)))return true; // ability-tuner
     if(IsDeveloperLauncherVisible()){const auto R=DeveloperLauncherRect();if(CursorX>=R.X&&CursorX<=R.X+R.W&&CursorY>=R.Y&&CursorY<=R.Y+R.H)return true;}
     if(bLayoutEditor)for(const FCireUIRect& R:LayoutUIRects)if(CursorX>=R.X&&CursorX<=R.X+R.W&&CursorY>=R.Y&&CursorY<=R.Y+R.H)return true; // dev-route-tools
     for(FName Id:VisiblePanels) {
@@ -205,7 +207,7 @@ void ACireHUD::ToggleDeveloperTools()
     if(bEditLayout)ToggleLayoutEditor();
     RevertVideoPreview();bSettings=true;OptionsTab=5;DeveloperPage=5;bVideoLoaded=false;
 }
-bool ACireHUD::HandleEscape() { if(bQuickKeybind){ToggleQuickKeybind();return true;}if(bLayoutEditor&&!bSettings&&LayoutEditorEscape())return true;/* dev-route-tools */if(bRouteEditor&&!bSettings){OpenRouteEditor(false);return true;}/* nav-paths */if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
+bool ACireHUD::HandleEscape() { if(!bSettings&&CireAbilityTunerUI::HandleEscape())return true;/* ability-tuner */if(bQuickKeybind){ToggleQuickKeybind();return true;}if(bLayoutEditor&&!bSettings&&LayoutEditorEscape())return true;/* dev-route-tools */if(bRouteEditor&&!bSettings){OpenRouteEditor(false);return true;}/* nav-paths */if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
 void ACireHUD::HandleMouseWheel(float Delta)
 {
     if(bSettings&&OptionsTab==0&&ControlsPage==1){KeybindScroll=FMath::Max(0,KeybindScroll+(Delta>0?-2:2));return;}
@@ -755,6 +757,7 @@ void ACireHUD::DrawHUD()
     if(bEditLayout){VisiblePanels.AddUnique(TEXT("Tooltip"));VisiblePanels.AddUnique(TEXT("Threat"));VisiblePanels.AddUnique(TEXT("Boss"));}
     if(!bModal&&!bSettings&&!bEditLayout)UpdateHoverUnit(Hero);else HoverUnit.Reset();
     UpdateQuickKeybind();DrawQuickKeybind();
+    ResetTransform();CireAbilityTunerUI::Draw(*this,Hero,Controller); // ability-tuner (F7)
     DrawLayoutEditor();DrawDeveloperLauncher();DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();
 }
 

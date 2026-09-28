@@ -1,5 +1,6 @@
 // new-champions: signature kits of the Gunblade, Witch Slayer, Huntress, Aetheri Artificer and Aetheri Warden.
 #include "CireSignatureSkills.h"
+#include "CireAbilityTuner.h" // ability-tuner
 #include "CireSkillCasting.h" // casting-rules
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
@@ -246,6 +247,7 @@ const TArray<FName>& CireSignatureSkills::BuffIds()
 // ============================================================================================ casting
 bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
 {
+    if (CireAbilityTuner::IsDisabled(Id)) { if (Hero) Hero->Notice = TEXT("That ability is disabled in this match (Ability Tuner)."); return false; } // ability-tuner
     if (CireKitSkills::Knows(Id)) return CireKitSkills::Cast(Hero, Slot, Id); // kits-complete
     if (CireAbilityExpansion::Knows(Id)) return CireAbilityExpansion::Cast(Hero, Slot, Id); // ability-expansion
     const FSig* Sig = FindSig(Id);

@@ -1,4 +1,6 @@
 #include "CireVideoSettings.h"
+#include "CireAbilityTuner.h" // ability-tuner
+#include "CireAbilityTunerUI.h" // ability-tuner
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLocomotionLab.h" // movement-feel
 #include "CireWaves.h" // wave-director
@@ -141,6 +143,8 @@ bool TickClientProbe(ACireController* Controller) {
             FMath::IsNearlyEqual(Hero->Mana,Hero->MaxMana)&&FMath::IsNearlyEqual(Hero->Energy,100.f)&&
             Hero->Target==Probe.Selected.Get()&&Hero->IsHostile(Hero->Target);
         if(!Valid) {Fail(TEXT("invalid action mutated authoritative state"));return true;}
+        {FString TunerWhy;const bool bTuned=CireAbilityTuner::VerifyNetProbeOnClient(Controller,&TunerWhy); // ability-tuner: the server's override replicated
+         UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_TUNER %s %s"),bTuned?TEXT("PASS"):TEXT("FAIL"),*TunerWhy);if(!bTuned){Fail(TEXT("ability tuner override did not replicate"));return true;}}
         UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_PASS team=%d phase=%d gold=%d skills=%d target_replicated=1 rejection_ack=1"),Hero->TeamId,State->Phase,Hero->Gold,Hero->Skills.Num());
         Probe.Done=true;FPlatformMisc::RequestExitWithStatus(false,0);
     }
@@ -235,6 +239,8 @@ void ACireController::PlayerTick(float Dt) {
         if(Camera.bClick){CireTargeting::Confirm(this);bClickUsed=true;}
         else if(Camera.bRightClick&&(!Interface||Interface->UISettings.bRightClickCancelsAim)){CireTargeting::Cancel(this);H->Notice=TEXT("Aim cancelled.");}
     }
+    // ability-tuner: a focused Ability Tuner text box owns the keyboard.
+    if(CireAbilityTunerUI::OwnsKeyboard()){CireTargeting::Cancel(this);CireAbilityTunerUI::TickKeys(this);return;}
     // champion-select: while the draft search box is focused it owns the keyboard.
     if(bDraftSearch) {
         if(H->bDrafted){bDraftSearch=false;}
@@ -259,6 +265,7 @@ void ACireController::PlayerTick(float Dt) {
     if(Keys.WasPressed(this,TEXT("ToggleLayoutEditor"))&&Interface)Interface->ToggleLayoutEditor();
     if(Keys.WasPressed(this,TEXT("ToggleOptions"))&&Interface)Interface->ToggleSettings();
     if(Keys.WasPressed(this,TEXT("ToggleDeveloperTools"))&&Interface)Interface->ToggleDeveloperTools();
+    if(Keys.WasPressed(this,TEXT("ToggleAbilityTuner")))CireAbilityTunerUI::Toggle(this); // ability-tuner
 #if !UE_BUILD_SHIPPING
     // layout-wiring: Alt+F5 restarts the match on the applied map layout (host / standalone).
     if(WasInputKeyJustPressed(EKeys::F5)&&(IsInputKeyDown(EKeys::LeftAlt)||IsInputKeyDown(EKeys::RightAlt))&&!CireTownMap::IsExplore())CireLayoutRuntime::RequestRestart(this);
