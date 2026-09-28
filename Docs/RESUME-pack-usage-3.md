@@ -65,8 +65,8 @@ Gallery: python Tools/RunAbilityVFXGallery.py --set champion --tag after-packusa
 
 ## Gate logs
 
-- BLOCKED 2026-09-28: F: has 0.1 GB free; the rebuild failed at link with LNK1106 "disk full". The first build of this
-  branch (before the swirl test was added) did succeed. Commits: 104b4612 (ratings), 107ab96f (code + data), ad8ee1e6 (audit).
-- To resume once space is freed: build, then the three gates on port 17500, then the galleries
-  (`--set champion --tag after-packusage3`, `--set voidborn`, `--set hollow`, `--set stoneborn`) and `--compare` against
-  `cts-pack-usage-2/Saved/AbilityVFX/before-packusage2-*` (copy those first if the pack-usage-2 worktree gets cleaned).
+- Space freed by the coordinator; main a5e640e1 merged in (52498b62). Build: Succeeded.
+- native: PASS `Saved/ExpansionChecks/20260928T052554538942Z/report.json` (the vfx-scale test now expects EffectScale
+  1.3 x hitEffectScale on hits; small splashes grow 20-35% because of a fixed rim).
+- network: PASS `Saved/NetworkSmoke/20260928T053050130657Z/report.json`
+- interface: PASS `Saved/InterfaceSmoke/20260928T053225230633Z/report.json`
