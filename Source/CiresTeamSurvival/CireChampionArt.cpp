@@ -295,9 +295,12 @@ const FChampionArtDefinition* FabProfileArt(const FString& Id)
         FString Json;TSharedPtr<FJsonObject> Root;const TArray<TSharedPtr<FJsonValue>>* Rows=nullptr;double Version=0;
         auto Present=[](const FString& Path){const FString Package=FPackageName::ObjectPathToPackageName(Path);
             return Path.StartsWith(TEXT("/Game/"))&&FPackageName::IsValidLongPackageName(Package)&&FPackageName::DoesPackageExist(Package);};
-        if(FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/ChampionArtBindings.fab.json")))&&
+        // paragon-champions: Content/Data/ParagonChampions.json "bindings" use the same monster_native row shape (local packs only).
+        for(const TCHAR* BindingFile:{TEXT("Data/ChampionArtBindings.fab.json"),TEXT("Data/ParagonChampions.json")})
+        if(Json.Reset(),Root.Reset(),Rows=nullptr,Version=0;FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),BindingFile))&&
            FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),Root)&&Root&&Root->TryGetNumberField(TEXT("schemaVersion"),Version)&&Version==1&&
            Root->TryGetArrayField(TEXT("bindings"),Rows))
+
             for(const auto& Row:*Rows)
             {
                 const TSharedPtr<FJsonObject>* O=nullptr;const TSharedPtr<FJsonObject>* Animations=nullptr;FString Profile,Status,Idle,Walk,Run;FChampionArtDefinition D;double Height=0;

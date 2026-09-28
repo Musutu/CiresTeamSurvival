@@ -50,6 +50,7 @@
 #include "ContentStreaming.h"
 #include "UObject/Package.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "CireParagonChampions.h" // paragon-champions: locally captured portraits
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireDraft,Log,All);
 
@@ -236,6 +237,8 @@ UTexture2D* Portrait(const FString& Id)
     if(const auto* Found=Cache.Find(Id))return Found->Get();
     const FString Path=FString::Printf(TEXT("/Game/UI/Draft/Portraits/T_Portrait_%s.T_Portrait_%s"),*Id,*Id);
     UTexture2D* Texture=FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))?LoadObject<UTexture2D>(nullptr,*Path):nullptr;
+    if(!Texture)Texture=CireParagonChampions::Portrait(Id); // paragon-champions: /Game/ParagonDerived/Portraits (local only)
+
     Cache.Add(Id,TStrongObjectPtr<UTexture2D>(Texture));
     return Texture;
 }
@@ -361,6 +364,8 @@ FString BackgroundId(const FString& ProfileId)
     for(const TCHAR* Family:{TEXT("ether_golem"),TEXT("paladin"),TEXT("troll_berserker")})if(ProfileId.StartsWith(Family))return Family;
     if(const FDraftBackgroundRow* Row=DraftBackgroundRows().Find(ProfileId))
         return HasBackgroundTexture(Row->Background)?Row->Background:Row->Fallback; // new-champions: painted slot, or the role-themed stand-in
+    if(const FString Paragon=CireParagonChampions::DraftBackground(ProfileId);!Paragon.IsEmpty())return Paragon; // paragon-champions: closest-theme painting
+
     return ProfileId;
 }
 UTexture2D* Background(const FString& Id)

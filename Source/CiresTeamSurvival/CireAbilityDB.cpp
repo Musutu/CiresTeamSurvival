@@ -2,6 +2,7 @@
 #include "CireAbilityShapes.h" // aoe-scale
 #include "CireChampionProfiles.h"
 #include "CireChampionRoster.h"
+#include "CireParagonChampions.h" // paragon-champions
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -166,7 +167,9 @@ bool CireAbilityDB::Reload()
     const FString Path=FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/Abilities.json"));
     if(!FFileHelper::LoadFileToString(Json,*Path)||!ParseJson(Json,A,K,M,Error))
     {UE_LOG(LogCireAbilityDB,Error,TEXT("Ability database rejected; keeping previous: %s"),*Error);return false;}
-    GAbilities=MoveTemp(A);GKits=MoveTemp(K);GModifiers=MoveTemp(M);GIndex.Reset();GNameIndex.Reset();
+    CireParagonChampions::MergeAbilities(A,K); // paragon-champions: Paragon kits + Skill Shop pool (installed packs only)
+    GAbilities=MoveTemp(A);GKits=MoveTemp(K);
+GModifiers=MoveTemp(M);GIndex.Reset();GNameIndex.Reset();
     for(int32 I=0;I<GAbilities.Num();++I){GIndex.Add(GAbilities[I].Id,I);GNameIndex.Add(GAbilities[I].Name,I);}
     UE_LOG(LogCireAbilityDB,Display,TEXT("CIRE_ABILITY_DB_LOADED abilities=%d champions=%d"),GAbilities.Num(),GKits.Num());
     return true;

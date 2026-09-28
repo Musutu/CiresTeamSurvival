@@ -48,6 +48,8 @@
 #include "CirePets.h" // pets
 #include "CireVendors.h" // vendors
 #include "CireArenaPortal.h" // arena-portal
+#include "CireParagonChampions.h" // paragon-champions
+
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireExpansion,Log,All);
@@ -136,6 +138,8 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireKits::RunSmoke(Mode)&&Good; // scaling-kits: primary scaling, inheritance, construct threat, shield block, Mech Tank, level 15, Headshot, Artillery
     Good=CireKitSkills::RunSmoke(Mode)&&Good; // kits-complete: the 63 roster signature skills, potency, heal casts, shield gating, big Bear
     Good=CirePets::RunSmoke(Mode)&&Good; // pets: companions (summon, follow, stances, commands, threat share, death/revive, scaling, on-foot Huntress)
+    Good=CireParagonChampions::RunSmoke(Mode)&&Good; // paragon-champions: registration, DB/pool merge, Paragon bodies + clips, every own ability casts, buffs
+
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }
 #endif
