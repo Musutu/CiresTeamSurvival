@@ -27,6 +27,11 @@
 #include "ShaderCompiler.h"
 #include "Animation/AnimSequence.h"
 #include "UnrealClient.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "UObject/UObjectIterator.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireParagonGallery, Log, All);
 
@@ -46,7 +51,8 @@ struct FPgGallery
     FVector Hold, Forward = FVector(1, 0, 0), Right = FVector(0, 1, 0);
     double Started = 0, StageStarted = 0;
     int32 Stage = -1, Casts = 0, CastFails = 0, Clips = 0;
-    bool bCaptured = false, bDone = false, bPass = true, bBuilt = false;
+    bool bCaptured = false, bDone = false, bPass = true, bBuilt = false, bCastPending = false;
+    double CastAt = 0;
 };
 FPgGallery PG;
 
@@ -76,6 +82,11 @@ void PgLook(const FVector& Eye, const FVector& Target, float Fov = 55.f)
 }
 void PgClear()
 {
+    // Paragon particle systems still fading from the previous shot.
+    for (TObjectIterator<UParticleSystemComponent> It; It; ++It)
+        if (It->GetWorld() == PgWorld() && It->Template && It->Template->GetPathName().StartsWith(TEXT("/Game/Paragon"))) It->DestroyComponent();
+    for (TObjectIterator<UNiagaraComponent> It; It; ++It)
+        if (It->GetWorld() == PgWorld() && It->GetAsset() && It->GetAsset()->GetPathName().StartsWith(TEXT("/Game/Paragon"))) It->DestroyComponent();
     for (auto& Actor : PG.Scene) if (Actor.IsValid()) Actor->Destroy();
     PG.Scene.Reset(); PG.Focus.Reset(); PG.Dummy.Reset();
     if (PG.Mode.IsValid())
@@ -149,18 +160,28 @@ void PgEnter(const FPgStage& S)
         PgLook(C + (-PG.Forward) * (Height * 2.3f + 160.f) + PG.Right * (Height * .9f) + FVector(0, 0, Height * .25f), C + FVector(0, 0, Height * .05f), 45);
         return;
     }
-    ACireMonster* Dummy = PgDummy(-520, 0); PG.Dummy = Dummy;
-    const FVector Aim = Dummy ? Dummy->GetActorLocation() - FVector(0, 0, Dummy->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()) : PgGround(-520, 0);
-    H->Skills = {S.Ability}; H->Cooldowns = {0}; H->GlobalCooldown = 0; H->Mana = H->MaxMana; H->Energy = 100;
+    // The dummy stands inside the ability's reach (melee strikes need to be close).
     const FCireAbilityDef* Def = CireAbilityDB::Find(S.Ability);
+    const float Reach = Def && Def->Targeting == TEXT("enemy") ? FMath::Clamp(Def->Range - 90.f, 150.f, 520.f) : 520.f;
+    ACireMonster* Dummy = PgDummy(-Reach, 0); PG.Dummy = Dummy;
+    const FVector Aim = Dummy ? Dummy->GetActorLocation() - FVector(0, 0, Dummy->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()) : PgGround(-Reach, 0);
+    H->Skills = {S.Ability}; H->Cooldowns = {0}; H->GlobalCooldown = 0; H->Mana = H->MaxMana; H->Energy = 100;
     const bool bAlly = Def && (Def->Targeting == TEXT("ally") || Def->Targeting == TEXT("self"));
     H->Target = bAlly ? static_cast<AActor*>(H) : static_cast<AActor*>(Dummy); H->bHasCastAim = true; H->CastAimPoint = Aim;
+    // Cast a beat later: the body must be applied first so the cooldown start plays the ability clip.
+    PG.bCastPending = true; PG.CastAt = FPlatformTime::Seconds() + .6;
+    const FVector Mid = (C + Aim) * .5f;
+    PgLook(Mid + PG.Right * 900.f + (-PG.Forward) * 200.f + FVector(0, 0, 420), Mid + FVector(0, 0, 60), 60);
+}
+void PgCastNow(const FPgStage& S)
+{
+    PG.bCastPending = false;
+    ACireHero* H = PG.Focus.Get(); if (!H) return;
+    H->Cooldowns = {0}; H->GlobalCooldown = 0; H->Mana = H->MaxMana; H->Energy = 100; H->bHasCastAim = true;
     const bool bCast = CireSignatureSkills::Cast(H, 0, S.Ability);
     H->bHasCastAim = false;
     ++PG.Casts; if (!bCast) ++PG.CastFails;
     UE_LOG(LogCireParagonGallery, Display, TEXT("CIRE_PARAGON_GALLERY_CAST %s %s %s"), *S.Hero, *S.Ability, bCast ? TEXT("ok") : *H->Notice);
-    const FVector Mid = (C + Aim) * .5f;
-    PgLook(Mid + PG.Right * 900.f + (-PG.Forward) * 200.f + FVector(0, 0, 420), Mid + FVector(0, 0, 60), 60);
 }
 bool PgBuild(ACireGameMode& Mode, ACireController& Controller)
 {
@@ -212,7 +233,7 @@ bool CireParagonGallery::Tick(ACireGameMode* Mode)
     if (PG.Mode.Get() != Mode) return false;
     if (PG.bDone) return true;
     const double Now = FPlatformTime::Seconds();
-    if (Now - PG.Started > 2400) { PgFail(TEXT("gallery exceeded 2400 seconds")); PgFinish(); return true; }
+    if (Now - PG.Started > 5400) { PgFail(TEXT("gallery exceeded 5400 seconds")); PgFinish(); return true; }
     if (!PG.bBuilt)
     {
         auto* Controller = Cast<ACireController>(Mode->GetWorld()->GetFirstPlayerController());
@@ -227,6 +248,10 @@ bool CireParagonGallery::Tick(ACireGameMode* Mode)
         PgEnter(PG.Stages[PG.Stage]);
         return true;
     }
-    if (!PG.bCaptured && Now - PG.StageStarted >= PG.Stages[PG.Stage].Settle) { PgCapture(PG.Stages[PG.Stage]); PG.bCaptured = true; }
+    const FPgStage& Current = PG.Stages[PG.Stage];
+    if (PG.bCastPending) { if (Now >= PG.CastAt) { PgCastNow(Current); PG.StageStarted = Now; } return true; }
+    // Paragon materials compile on first use: hold each hero's close-up until the shader queue drains (cap 150 s).
+    if (Current.Ability.IsEmpty() && GShaderCompilingManager && GShaderCompilingManager->GetNumRemainingJobs() > 0 && Now - PG.StageStarted < 150) return true;
+    if (!PG.bCaptured && Now - PG.StageStarted >= Current.Settle) { PgCapture(Current); PG.bCaptured = true; }
     return true;
 }

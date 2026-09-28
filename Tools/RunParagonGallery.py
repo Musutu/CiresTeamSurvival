@@ -44,7 +44,7 @@ def main() -> int:
     creation = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
     child = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation, env=EDITOR_ENV)
     try:
-        code = child.wait(timeout=2700)
+        code = child.wait(timeout=5700)
     except subprocess.TimeoutExpired:
         kill_tree(child)
         child.kill()

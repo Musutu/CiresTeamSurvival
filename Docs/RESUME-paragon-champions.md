@@ -39,5 +39,12 @@ Worktree `F:\CiresTeamSurvival-agents\cts-paragon-champions`, ports 17600-17609.
 - `Content/Data/BuffVisuals.json` and `BuffModifiers.json`: five `pg_*` rows.
 - `Content/UI/Draft/Portraits/Exposure.json`: RunDraftPortraits merges exposure trims for the `pg_*` ids.
 
-## Gate logs
-(filled in when run)
+## Gate logs (2026-09-28, branch up to date with main 25ad73dc)
+- **Native, packs installed:** PASS (`CIRE_PARAGON_SMOKE_PASS checks=591`: 38 registered, 5-hero body/clip/cast sample). Log: `Saved/ExpansionChecks/20260928T050918765882Z/native.log`.
+- **Native, clean clone (junctions removed):** PASS (`installed=0`, nothing registers). Log: `Saved/ExpansionChecks/20260928T052449864900Z/native.log`.
+- **Network:** PASS. Log: `Saved/NetworkSmoke/20260928T052038615392Z/report.json`.
+- **Interface:** PASS. Log: `Saved/InterfaceSmoke/20260928T052206257886Z/report.json`.
+
+The network and interface smokes were run with the Paragon junctions temporarily removed (clean-clone mode), then the junctions were restored. **Environmental finding:** with the 39 packs junctioned in, a cold `-game` start spends over 60 s gathering the asset registry (about 83 GB of headers). The network probe's client then times out at the 90 s cap (twice). This is not caused by the code: without the junctions, both smokes pass. The same slowdown will hit any worktree or main that has `Content/Paragon*` mounted. Coordinator options: raise the probe cap, or keep the packs out of the smoke worktrees.
+
+For the full 38-hero cast/clip sweep, run the probe with `-CireParagonFullSmoke`, or run `Tools/RunParagonGallery.py`.
