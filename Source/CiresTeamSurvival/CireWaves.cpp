@@ -224,8 +224,7 @@ void CireWaveDirector::Initialize(ACireGameMode* Mode)
         // waves-modes: the host's game type (kept across a layout restart), or -CireWavePreset=<id>; else Waves.json as saved.
         FString Arg; FName Pick = S->WavePreset;
         if (FParse::Value(FCommandLine::Get(), TEXT("CireWavePreset="), Arg) && !Arg.IsEmpty()) Pick = FName(*Arg);
-        if (const FCireWavePreset* P = Pick.IsNone() ? nullptr : FindPreset(Pick)) { ApplyPreset(R.Config, *P); Validate(R.Config, nullptr, true); }
-        S->WavePreset = R.Config.Preset;
+        if (const FCireWavePreset* P = Pick.IsNone() ? nullptr : FindPreset(Pick)) { ApplyPreset(R.Config, *P); Validate(R.Config, nullptr, true); S->WavePreset = P->Id; }
     }
     ApplyPacing(Mode, R.Config);
     Publish(Mode);
@@ -1349,3 +1348,33 @@ bool CireWaveDirector::UpdateBreatherReady(ACireGameMode* Mode)
     // Bots-only matches (soak) keep the full breather: early continue needs at least one human.
     return R.Config.bEarlyContinue && Humans > 0 && Ready >= Humans && IsBreather(Mode);
 }
+
+// ---------------------------------------------------------------- waves-modes: console
+static FAutoConsoleCommandWithWorldAndArgs CireWaveScaleCommand(TEXT("cire.WaveScale"),
+    TEXT("cire.WaveScale <health> [damage] [speed]: the live wave scale (server; living wave monsters included). No arguments prints it."),
+    FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& Args, UWorld* World)
+    {
+        auto* Mode = World ? World->GetAuthGameMode<ACireGameMode>() : nullptr;
+        if (!Mode) { UE_LOG(LogCireWaves, Display, TEXT("cire.WaveScale works on the server (host).")); return; }
+        FCireWaveScale Scale = CireWaveDirector::Config(World).Live;
+        if (Args.Num() > 0) Scale.Health = FCString::Atof(*Args[0]);
+        if (Args.Num() > 1) Scale.Damage = FCString::Atof(*Args[1]);
+        if (Args.Num() > 2) Scale.Speed = FCString::Atof(*Args[2]);
+        FString Error;
+        if (Args.Num() > 0 && !CireWaveDirector::SetLiveScale(Mode, Scale, &Error)) { UE_LOG(LogCireWaves, Warning, TEXT("cire.WaveScale: %s"), *Error); return; }
+        const FCireWaveScale& Now = CireWaveDirector::Config(World).Live;
+        UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_LIVE_SCALE health=%.2f damage=%.2f speed=%.2f"), Now.Health, Now.Damage, Now.Speed);
+    }));
+static FAutoConsoleCommandWithWorldAndArgs CireWavePresetCommand(TEXT("cire.WavePreset"),
+    TEXT("cire.WavePreset <id>: pick the game type (host, before the first wave). No arguments lists the presets."),
+    FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& Args, UWorld* World)
+    {
+        auto* Mode = World ? World->GetAuthGameMode<ACireGameMode>() : nullptr;
+        if (Args.IsEmpty())
+        {
+            for (const FCireWavePreset& P : CireWaveDirector::Presets(true)) UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_PRESET_LIST %s \"%s\" %s"), *P.Id.ToString(), *P.Label, *P.Description);
+            return;
+        }
+        FString Error;
+        if (!Mode || !CireWaveDirector::SelectPreset(Mode, FName(*Args[0]), &Error)) UE_LOG(LogCireWaves, Warning, TEXT("cire.WavePreset: %s"), Mode ? *Error : TEXT("host only"));
+    }));

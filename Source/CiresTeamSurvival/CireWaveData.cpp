@@ -238,10 +238,8 @@ FCireWaveConfig CireWaveDirector::Defaults()
     // the cycle-2 and cycle-3 bosses, and the Aetheri (the construct race) show up in cycles 2 and 3.
     C.Campaign.RaceRotation = {TEXT("hollow"), TEXT("blightwood"), TEXT("ironhide"), TEXT("drowned_deep"), TEXT("hollow"),
         TEXT("stoneborn"), TEXT("aetheri"), TEXT("feral_kin"), TEXT("drakkari"), TEXT("blightwood"),
-        TEXT("voidborn"), TEXT("fallen_order"), TEXT("aetheri+ironhide"), TEXT("stoneborn+feral_kin"), TEXT("drowned_deep"),
-        // waves-modes: cycles 4 and 5
-        TEXT("ironhide"), TEXT("feral_kin+drakkari"), TEXT("hollow"), TEXT("voidborn"), TEXT("blightwood"),
-        TEXT("fallen_order"), TEXT("drowned_deep+aetheri"), TEXT("stoneborn"), TEXT("drakkari"), TEXT("drowned_deep")};
+        TEXT("voidborn"), TEXT("fallen_order"), TEXT("aetheri+ironhide"), TEXT("stoneborn+feral_kin"), TEXT("drowned_deep")};
+    // waves-modes: the 15-entry rotation wraps for waves 16-25 with palette variant 1 (reskinOnWrap).
     C.Campaign.bRotatePerWave = true;
     // rules-conformance: every rank is reachable in 3 cycles (veteran from cycle 2; elite and champion, alternating, in cycle 3).
     C.Campaign.VeteranFromCycle = 2; C.Campaign.EliteFromCycle = 3; C.Campaign.ChampionFromCycle = 3;
@@ -1009,7 +1007,7 @@ FString CireWaveDirector::PresetsToJson(const TArray<FCireWavePreset>& List)
 {
     auto Root = MakeShared<FJsonObject>();
     Root->SetNumberField(TEXT("schemaVersion"), 1);
-    Root->SetStringField(TEXT("_comment"), TEXT("Wave game-mode presets (Docs/Waves.md). Hosting lists them under GAME TYPE. defaultDamage: every wave attacks heroes (true) or only paths to the castle (false); defaultFightBack: packs (1-based) that fight back when a wave's damage is off; waves: per-wave overrides {wave, damage, fightBack}; scale: live health/damage/speed; packSizeBonus: added to every pack; pvpAfterWaves: optional PvP schedule override. Save the current F8 settings as a preset with F8 > Waves > Save preset."));
+    Root->SetStringField(TEXT("_comment"), TEXT("Wave game-mode presets (Docs/Waves.md). Hosting lists them under GAME TYPE. defaultDamage: every wave attacks heroes (true) or only paths to the castle (false); defaultFightBack: packs (1-based) that fight back when a wave's damage is off; waves: per-wave overrides {wave, damage, fightBack}; scale: live health/damage/speed; packSizeBonus: added to every pack; pvpAfterWaves: optional PvP schedule override. Save the current F8 settings as a preset with F8 > Waves > Modes & Scale."));
     TArray<TSharedPtr<FJsonValue>> Out;
     for (const auto& P : List)
     {
