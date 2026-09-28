@@ -4,6 +4,8 @@
 #include "CireLanePath.h"
 #include "CireMapLayout.h"
 #include "CireNav.h"
+#include "CireProfiles.h"
+#include "Misc/CoreDelegates.h"
 #include "CireRouteEditMode.h"
 #include "CireTownMap.h"
 #include "Components/AudioComponent.h"
@@ -736,6 +738,7 @@ void CireWorldEdit::SetOverride(const FCireWorldEditSet* Set)
 }
 void CireWorldEdit::BeginLoad(UWorld* World)
 {
+    RegisterWithGameProfiles();
     WELoadNamed(WEResolveName(), GWECurrent);
     bWEFrozen = true;
     for (FWEStats& S : GWEStats) S = FWEStats();
@@ -849,6 +852,36 @@ bool CireWorldEdit::ApplySet(UWorld* World, const FString& InName)
     WESyncReplicated(World);
     UE_LOG(LogCireWorldEdit, Display, TEXT("CIRE_WORLD_EDIT_LIVE set=%s units=%d removed=%d restored=%d restart_to_restore=%d not_found=%d live=%d"), Name.IsEmpty() ? TEXT("none") : *Name, Next.Removed.Num(), Removed, Restored, Restart, NotFound, bLive ? 1 : 0);
     return true;
+}
+bool CireWorldEdit::ApplyDefault(UWorld* World)
+{
+    bWEChosen = false;
+    const FString Name = WEResolveName();
+    if (!bWEFrozen) return true;
+    const bool bOk = ApplySet(World, Name.IsEmpty() ? FString(TEXT("off")) : Name);
+    bWEChosen = false; // later loads read WorldEdit.json again
+    return bOk;
+}
+void CireWorldEdit::RegisterWithGameProfiles()
+{
+    static bool bDone = false;
+    if (bDone) return;
+    bDone = true;
+    CireGameProfiles::RegisterWorldEdit(
+        [](UWorld* World, const FString& SetName, FString& Error)
+        {
+            const bool bOk = SetName.IsEmpty() ? ApplyDefault(World) : ApplySet(World, SetName);
+            const FCireWorldEditSavings Sv = Savings(Current());
+            Error = bOk ? FString::Printf(TEXT("world edit %s: %d pieces removed"), ActiveSet().IsEmpty() ? TEXT("none") : *ActiveSet(), Sv.Units)
+                        : FString::Printf(TEXT("no world edit set named %s (Content/Data/WorldEdits)"), *SetName);
+            return bOk;
+        },
+        []() { return ListNamed(); });
+}
+namespace
+{
+struct FWERegistration { FWERegistration() { FCoreDelegates::OnPostEngineInit.AddStatic(&CireWorldEdit::RegisterWithGameProfiles); } };
+FWERegistration GWERegistration;
 }
 void CireWorldEdit::SetFromServer(UWorld* World, const FString& Name, const FString& ServerHash)
 {

@@ -175,6 +175,11 @@ namespace CireWorldEdit
         live (hide + no collision + navmesh update; LIs removed at load come back by reloading). On a server the choice
         replicates to every client. Returns false when the named file is missing or unreadable. */
     CIRESTEAMSURVIVAL_API bool ApplySet(UWorld* World, const FString& Name);
+    /** Back to the default set (-CireWorldEdit= / WorldEdit.json "active"), live when the town is loaded. */
+    CIRESTEAMSURVIVAL_API bool ApplyDefault(UWorld* World);
+    /** feat/game-profiles: register ApplySet / ListNamed with CireGameProfiles (a game type's "worldEdit": "<set>";
+        Default = ApplyDefault). Idempotent; runs at engine init and when the town loads. */
+    CIRESTEAMSURVIVAL_API void RegisterWithGameProfiles();
     /** The set frozen for this load (empty set when none). */
     CIRESTEAMSURVIVAL_API const FCireWorldEditSet& Current();
     /** The world edit applies in this process (a set with entries, the town, not the layout editor). */

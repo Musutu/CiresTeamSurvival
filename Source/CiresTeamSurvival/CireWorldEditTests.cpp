@@ -5,6 +5,8 @@
 #include "CireGame.h"
 #include "CireMapLayout.h"
 #include "CireNavCache.h"
+#include "CireProfiles.h"
+#include "CireWaves.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
@@ -176,6 +178,29 @@ bool CireWorldEdit::RunTests(ACireGameMode* Mode)
         Check(KeyOther != CireNavCache::Key(), TEXT("a different set, a different key"));
         SetOverride(nullptr);
         Check(CireNavCache::Key() == KeyOff, TEXT("switched off: the old key"));
+    }
+
+    // ---- game types (feat/game-profiles): a game type's "worldEdit": "<set>" selects the set; Default goes back ------------
+    if (Mode && Mode->GetWorld())
+    {
+        RegisterWithGameProfiles();
+        const FString Name = TEXT("GameTypeTest_WE");
+        FCireWorldEditSet GT = Set; GT.Name = Name;
+        const FString File = NamedPath(Name);
+        Check(Save(GT, File), TEXT("game type fixture set saved"));
+        ON_SCOPE_EXIT { IFileManager::Get().Delete(*File); };
+        const ACireGameState* State = Mode->GetGameState<ACireGameState>();
+        const FCireWavePreset* CurPreset = State && !State->WavePreset.IsNone() ? CireWaveDirector::FindPreset(State->WavePreset) : nullptr;
+        FCireWavePreset P;
+        if (CurPreset) P = *CurPreset; else { P.Id = TEXT("we_test"); P.Label = TEXT("WE Test"); } // no other keys: every other editor stays on Default
+        const FCireWavePreset Before = P;
+        CireGameProfiles::Set(P, CireGameProfiles::KeyWorldEdit, Name);
+        Check(CireGameProfiles::Choices(CireGameProfiles::KeyWorldEdit, Mode->GetWorld()).Contains(Name), TEXT("the game type editor lists the world edit sets"));
+        CireGameProfiles::ApplyGameType(Mode, &P, true);
+        Check(ActiveSet() == Name && CireGameProfiles::ActiveWorldEdit() == Name && Hash(Current()) == Hash(GT), FString::Printf(TEXT("a game type with \"worldEdit\": \"%s\" applies that set (active: %s)"), *Name, *ActiveSet()));
+        FCireWavePreset Back = Before; CireGameProfiles::Set(Back, CireGameProfiles::KeyWorldEdit, FString());
+        CireGameProfiles::ApplyGameType(Mode, CurPreset ? &Back : nullptr, true);
+        Check(ActiveSet() == Settings().Active && CireGameProfiles::ActiveWorldEdit().IsEmpty(), TEXT("a Default game type goes back to the default set (WorldEdit.json)"));
     }
 
     // ---- world fixture: reversible removal (the editor and the live switch) -----------------------------------------------------

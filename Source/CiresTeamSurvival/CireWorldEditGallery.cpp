@@ -60,9 +60,29 @@ void CireWorldEdit::TickGallery(UWorld* World)
     if (!E || !CireTownMap::IsActive() || CireTownMap::LoadedLevels(World) == 0) { GWEG.StageAt = Now; return; }
     if (Now - GWEG.StageAt < (GWEG.Stage == 0 ? 10.0 : 3.0)) return;
     GWEG.StageAt = Now;
-    // The house the session works on: SL_Houses/LevelInstance_65 (a large timber house) in DAYLIGHT.
-    const FString Key = TEXT("0|SL_Houses/LevelInstance_65");
+    // The house the session works on: the DAYLIGHT building nearest the market square that no marker depends on.
+    static FString Key;
     FCireWorldEditorState* W = E->WorldEdit.Get();
+    if (GWEG.Stage == 1 && W && Key.IsEmpty())
+    {
+        double Best = TNumericLimits<double>::Max();
+        for (const FCireWorldUnit& U : W->Units)
+        {
+            if (U.Realm != 0 || !U.bLevelInstance || U.Kind != TEXT("Building")) continue;
+            const FCireWorldEditEntry En = EntryOf(U);
+            if (Guard(E->Layout, En, Settings()).Level != ECireWorldEditGuard::Ok) continue;
+            const double D = FVector2D::Distance(FVector2D(En.Local), FVector2D(-4370, 2706));
+            if (D < Best) { Best = D; Key = U.Key(); }
+        }
+        if (const int32* I = W->ByKey.Find(Key))
+        {
+            const FBox B = W->Units[*I].Bounds;
+            E->Focus = FVector(B.GetCenter().X, B.GetCenter().Y, B.Min.Z);
+        }
+        UE_LOG(LogCireWorldEditGallery, Display, TEXT("CIRE_WORLD_EDIT_GALLERY_UNIT %s"), *Key);
+        GWEG.StageAt = Now - 2.0; // one more second to settle the camera
+        return;
+    }
     switch (GWEG.Stage++)
     {
     case 0:

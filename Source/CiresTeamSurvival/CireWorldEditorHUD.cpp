@@ -29,7 +29,7 @@ namespace ML = CireMapLayout;
 const FLinearColor WERealmColor[2] = {FLinearColor(.25f, .56f, 1.f, 1.f), FLinearColor(.96f, .3f, .24f, 1.f)};
 const FLinearColor WEGhost(1.f, .25f, .2f, .9f), WEHoverC(1.f, .86f, .35f, .85f), WESelC(1.f, .95f, .6f, 1.f), WEProtC(1.f, .2f, .15f, 1.f);
 FString WEMeters(const FVector& Size) { return FString::Printf(TEXT("%.1f x %.1f x %.1f m"), Size.X / 100., Size.Y / 100., Size.Z / 100.); }
-FString WEShortLabel(const FString& Label) { FString L = Label; L.RemoveFromStart(TEXT("LI_")); L.RemoveFromStart(TEXT("SM_")); return L.Replace(TEXT("_"), TEXT(" ")).Left(34); }
+FString WEShortLabel(const FString& Label) { FString L = Label; L.RemoveFromStart(TEXT("LI_")); L.RemoveFromStart(TEXT("SM_")); L.RemoveFromEnd(TEXT("_Fix")); return L.Replace(TEXT("_"), TEXT(" ")).Left(34); }
 FLinearColor WEGuardColor(ECireWorldEditGuard G) { return G == ECireWorldEditGuard::Protected ? WEProtC : G == ECireWorldEditGuard::Warn ? CireUIColors::Orange : CireUIColors::Teal; }
 }
 
@@ -603,8 +603,8 @@ void ACireHUD::TickWorldEditor()
             const bool bSel = W.Sel.Contains(Key), bOver = Hit(ListX + 8, RY, ListW - 16, RowH - 2);
             Painter().Rect(ListX + 8, RY, ListW - 16, RowH - 2, bSel ? FLinearColor(.3f, .1f, .08f, .8f) : bOver ? FLinearColor(1, 1, 1, .06f) : FLinearColor(0, 0, 0, .25f));
             Painter().Rect(ListX + 10, RY + 3, 4, RowH - 8, WERealmColor[FMath::Clamp(R.Realm, 0, 1)]);
-            Label(WEShortLabel(R.Label).Left(24), ListX + 20, RY + 4, 9.f, bSel ? CireUIColors::BrightGold : CireUIColors::Parchment);
-            Label(R.Kind.Left(6).ToUpper(), ListX + ListW - 118, RY + 6, 7.5f, CireUIColors::Muted);
+            Label(WEShortLabel(R.Label).Left(22), ListX + 20, RY + 4, 9.f, bSel ? CireUIColors::BrightGold : CireUIColors::Parchment);
+            Label(R.Kind.ToUpper(), ListX + ListW - 80 - TextWidth(R.Kind.ToUpper(), 7.5f), RY + 6, 7.5f, CireUIColors::Muted);
             const float BX = ListX + ListW - 74, BY = RY + 2, BWd = 60, BH = RowH - 6;
             const bool bOverBtn = Hit(BX, BY, BWd, BH);
             CireUIStyle::Button(Painter(), BX, BY, BWd, BH, TEXT("RESTORE"), bOverBtn ? ECireButtonState::Hover : ECireButtonState::Normal, CireUIColors::Teal, 7.5f);
@@ -666,7 +666,7 @@ void ACireHUD::TickWorldEditor()
         Label(FString::Printf(TEXT("%d pieces  |  ~%d draw calls"), Pieces, Calls), IX, Y, 9.f, CireUIColors::Parchment); Y += 18;
         if (Prot || Warn)
         {
-            Wrapped(FString::Printf(TEXT("%s%s"), Prot ? *FString::Printf(TEXT("%d PROTECTED (stay). "), Prot) : TEXT(""), *FirstGuard.Why), IX, Y, IW, 8.5f, WEGuardColor(FirstGuard.Level), 3);
+            Wrapped(FString::Printf(TEXT("%s%s"), Prot ? *FString::Printf(TEXT("%d PROTECTED (stays): "), Prot) : TEXT(""), *FirstGuard.Why.Replace(TEXT("PROTECTED: "), TEXT(""))), IX, Y, IW, 8.5f, WEGuardColor(FirstGuard.Level), 3);
             Y += 40;
         }
         else if (Removed < W.Sel.Num()) { Label(TEXT("Free to remove: no marker depends on it."), IX, Y, 8.5f, CireUIColors::Teal); Y += 16; }
