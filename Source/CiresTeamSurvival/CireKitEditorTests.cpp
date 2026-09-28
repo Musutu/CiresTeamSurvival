@@ -5,6 +5,7 @@
 #include "CireAbilityDB.h"
 #include "CireAbilityTuner.h"
 #include "CireAttackSystem.h"
+#include "CireTunerLink.h"
 #include "CireChampionRoster.h"
 #include "CireFabVFX.h"
 #include "CireGame.h"
@@ -324,6 +325,9 @@ bool CireKitEditor::RunTests(ACireGameMode* Mode)
         Fake.Muzzles.Remove(KnightId);
         H->SetActorRotation(FRotator::ZeroRotator);
     }
+
+    // ---------------- EDIT badge -> Ability Tuner ----------------
+    T.Check(CireTunerLink::RunTests(), TEXT("EDIT badge opens the Ability Tuner on its ability, hidden when tuning is not allowed"));
 
     UE_LOG(LogCireKitEditorTests, Display, TEXT("CIRE_KIT_EDITOR_TESTS_%s checks=%d"), T.bPassed ? TEXT("PASS") : TEXT("FAIL"), T.Count);
     return T.bPassed;

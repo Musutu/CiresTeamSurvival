@@ -18,6 +18,8 @@
 #include "CireAbilityDB.h"
 #include "CireAbilityIcons.h"
 #include "CireAbilityTuner.h" // ability-tuner: refresh on live retunes
+#include "CireAbilityTunerUI.h"
+#include "CireTunerLink.h" // EDIT badge -> Ability Tuner
 #include "CireAbilityVFX.h"
 #include "CireChampionActions.h"
 #include "CireChampionProfiles.h"
@@ -745,6 +747,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
                     : Target == INDEX_NONE ? FString(TEXT("All six key buttons are filled: select one to replace it."))
                     : FString::Printf(TEXT("Click: put it on %s  ·  or drag it onto a button"), *KitSlotWord(HUD, Target));
                 CireShopUI::TipSkill(HUD, Hero, C.Id, Foot);
+                if (CireTunerLink::Badge(HUD, P, M, X + CW, Y2, C.Id, bInteractive)) S.PressId.Reset(); // EDIT -> Ability Tuner (takes the click)
             }
         }
         // A press on a card starts a click or a drag (resolved on release, below).
@@ -1158,7 +1161,8 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
                 KitBorder(P, X - 3, SlotY - 3, SlotS + 6, SlotS + 6, bOk ? (SlotWarning(I, S.PressId).IsEmpty() ? KitGood : KitWarn) : KitBad, 2.f);
             }
             const FString Warn = SlotWarning(I, Id);
-            if (!Warn.IsEmpty()) { P.Disc(X + SlotS - 5, SlotY + 5, 7.f, FLinearColor(.55f, .35f, .02f, 1), 16); P.Text(TEXT("!"), X + SlotS - 7, SlotY - 3, 10.f, Parchment, ECireFont::Bold, false, false); }
+            const bool bEditBadge = HoverSlot == I && !Id.IsEmpty() && S.PressId.IsEmpty() && CireTunerLink::Available(PC); // the badge takes the corner
+            if (!Warn.IsEmpty() && !bEditBadge) { P.Disc(X + SlotS - 5, SlotY + 5, 7.f, FLinearColor(.55f, .35f, .02f, 1), 16); P.Text(TEXT("!"), X + SlotS - 7, SlotY - 3, 10.f, Parchment, ECireFont::Bold, false, false); }
             if (!Id.IsEmpty() && S.Tab == 0 && (S.SelectedSlot == I || HoverSlot == I))
             {
                 const float CX = X + 6, CY = SlotY + 6;
@@ -1174,13 +1178,14 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
                 if (!Id.IsEmpty()) CireShopUI::TipSkill(HUD, Hero, Id, Warn.IsEmpty() ? Foot : Warn + TEXT("\n") + Foot);
                 else HUD.SetRichTooltip(FCireTooltipSpec().Text(FString::Printf(TEXT("%s. %s"), *KitSlotWord(HUD, I), *Foot), Parchment));
             }
-            if (Click(X, SlotY, SlotS, SlotS))
+            const bool bOverEdit = bEditBadge && CireTunerLink::Badge(HUD, P, M, X + SlotS, SlotY, Id, bInteractive); // EDIT -> Ability Tuner
+            if (!bOverEdit && Click(X, SlotY, SlotS, SlotS))
             {
                 if (S.Tab == 1) { if (!Id.IsEmpty()) { S.Selected = Id; S.BoneCursor = -1; } }
                 else S.SelectedSlot = S.SelectedSlot == I ? INDEX_NONE : I;
                 HUD.PlayInterfaceSound(4, .35f);
             }
-            if (HoverSlot == I && bRight && !Id.IsEmpty()) { S.Work.Slots[I].Reset(); Compact(S.Work); if (S.SelectedSlot == I) S.SelectedSlot = INDEX_NONE; }
+            if (HoverSlot == I && bRight && !Id.IsEmpty() && !bOverEdit) { S.Work.Slots[I].Reset(); Compact(S.Work); if (S.SelectedSlot == I) S.SelectedSlot = INDEX_NONE; }
         }
         const float TX = SlotX[FCireKitLoadout::PassiveSlot] + SlotS + 24, TW = VW - Pad - 16 - TX;
         if (TW > 120)

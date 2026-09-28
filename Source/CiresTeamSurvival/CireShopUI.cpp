@@ -5,6 +5,8 @@
 #include "CireVendors.h" // vendors: merchant tabs
 #include "CireSkillShop.h" // progression-shop: Skill Shop tab
 #include "CireAbilityDB.h" // progression-shop: scroll card numbers
+#include "CireAbilityTunerUI.h" // kit-editor: the tuner window sits above the shop
+#include "CireTunerLink.h" // kit-editor: EDIT badge
 // progression-shop: League-style shop, bag/belt/teleport bar and purchase/loot feedback.
 #include "CireHUD.h"
 #include "CireGame.h"
@@ -1109,7 +1111,8 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
             Body += FString::Printf(TEXT("\n%s: %dg"), bOwned ? TEXT("Level up") : TEXT("Learn"), Price);
             if (bBlocked) Body += TEXT("\n") + Blocker;
             CireShopUI::Tip(HUD, ACireHero::SkillName(Id), Body);
-            if (Click(Sc.X, Sc.Y, Sc.W, Sc.H) || bRightClick)
+            const bool bOverEdit = CireTunerLink::Badge(HUD, P, M, CX + CW, CY, Id, bInteractive); // kit-editor: EDIT -> Ability Tuner
+            if (!bOverEdit && (Click(Sc.X, Sc.Y, Sc.W, Sc.H) || bRightClick))
             {
                 if (bBlocked) ShowError(HUD, FName(*Id), -1, false, Blocker);
                 else if (bOwned) Hero->Inventory->ServerLevelSkill(Id);
@@ -1161,7 +1164,10 @@ void DrawTeleportGlyph(const FCireUIPainter& P, float X, float Y, float S, FLine
 // ------------------------------------------------------------------ helpers
 FVector2D CireShopUI::Pointer(const ACireHUD& HUD)
 {
-    return VirtualPointer.X >= 0 ? VirtualPointer : HUD.LogicalMouse();
+    if (VirtualPointer.X >= 0) return VirtualPointer;
+    const FVector2D Mouse = HUD.LogicalMouse();
+    // kit-editor: the Ability Tuner window draws above the shop / Hero Creator: they must not take its clicks.
+    return CireAbilityTunerUI::ContainsPoint(Mouse) ? FVector2D(-10000.0, -10000.0) : Mouse;
 }
 
 void CireShopUI::Tip(ACireHUD& HUD, const FString& Title, const FString& Body)
