@@ -1,5 +1,6 @@
 // new-champions: signature kits of the Gunblade, Witch Slayer, Huntress, Aetheri Artificer and Aetheri Warden.
 #include "CireSignatureSkills.h"
+#include "CireSkillCasting.h" // casting-rules
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireAbilityDB.h"
@@ -411,7 +412,7 @@ bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     }
     case EDelivery::Construct:
     {
-        if (!NeedGround(true)) return false;
+        if (!CireSkillCasting::PlacementAim(Hero, Aim, Range)) return false; // casting-rules: placement ignores clipping
         FString Why;
         if (CireTechConstructs::Deploy(Hero, FName(*Id), Aim, &Why).IsEmpty()) return Fail(Why);
         break;

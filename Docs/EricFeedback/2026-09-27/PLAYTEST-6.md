@@ -69,3 +69,7 @@ Each section names the owning branch. Anything ambiguous: pick the sensible defa
 ## L. Initiation spells + Blink Dagger (feat/initiation) — Eric, 2026-09-28
 - Initiation spells: good PvP spells for starting a team fight and enabling team synergies (engage + group CC that allies can follow up on).
 - Blink Dagger item.
+
+## M. Hero Creator + Ability Tuner — Eric, 2026-09-28
+- Hero Creator (feat/kit-editor): Skill-Shop-style picking of ALL skills (not class-limited), assign to action-bar slots, multiple named presets; kit PROFILES that span all champions and are hardwired to game modes (WavePresets `kitProfile`).
+- Ability Tuner (feat/ability-tuner): adjust ability names, effects, durations and numbers live while playing/testing — in the testing build AND the final release — for balancing.

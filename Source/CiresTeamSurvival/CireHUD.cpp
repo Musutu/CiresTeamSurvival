@@ -25,6 +25,7 @@
 #include "EngineUtils.h"
 #include "CireVideoSettings.h"
 #include "InputCoreTypes.h"
+#include "CireArenaPortal.h" // arena-flow
 
 namespace
 {
@@ -388,7 +389,7 @@ void ACireHUD::DrawMatch(ACireGameState* State)
     Label(Phase,(250-TextWidth(Phase,9))/2,7,9,State->Phase==2?Red:Teal);
     // Sentinel / frozen clocks (huge or non-finite) show as "--:--" instead of leaking.
     const bool bClockValid=FMath::IsFinite(State->SecondsLeft)&&State->SecondsLeft<100*60;
-    const int32 Seconds=bClockValid?FMath::Max(0,FMath::CeilToInt(State->SecondsLeft)):0;
+    const int32 Seconds=bClockValid?FMath::Max(0,FMath::CeilToInt(CireArenaFlow::PrepSecondsLeft(State))):0; // arena-flow: prep excludes the countdown
     const FString Time=State->Phase==0?FString::Printf(TEXT("%d / %d"),State->CycleWavesDone,State->WavesPerCycle):bClockValid?FString::Printf(TEXT("%02d:%02d"),Seconds/60,Seconds%60):FString(TEXT("--:--"));
     Label(Time,(250-TextWidth(Time,22))/2,20,22,Parchment);
     Label(FString::Printf(TEXT("%02d"),State->EmberLives),14,19,21,Gold);Label(TEXT("EMBER"),13,44,8,Muted);

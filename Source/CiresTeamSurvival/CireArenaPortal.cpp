@@ -4,6 +4,8 @@
 #include "CireBanners.h"
 #include "CireFabVFX.h"
 #include "CireGame.h"
+#include "CireItems.h"
+#include "CireWaves.h" // arena-flow: the PvP schedule (feat/waves-modes)
 #include "CireLanePath.h"
 #include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
@@ -112,6 +114,20 @@ void LoadConfig(FConfig& C)
         }
     }
     else C.Errors.Add(TEXT("Arenas.json has no top-level 'portal' block"));
+    // arena-flow: prep, countdown and rewards (the PvP schedule lives in Waves.json "match").
+    const TSharedPtr<FJsonObject>* FO = nullptr;
+    if (Root->TryGetObjectField(TEXT("flow"), FO))
+    {
+        const TSharedPtr<FJsonObject>& F = *FO;
+        C.PrepSeconds = FMath::Clamp(PNum(F, TEXT("prepSeconds"), C.PrepSeconds), 5.f, 300.f);
+        C.CountdownSeconds = FMath::Clamp(PNum(F, TEXT("countdownSeconds"), C.CountdownSeconds), 1.f, 30.f);
+        C.KillGold = FMath::Clamp(static_cast<int32>(PNum(F, TEXT("killGold"), C.KillGold)), 0, 100000);
+        C.WinGold = FMath::Clamp(static_cast<int32>(PNum(F, TEXT("winGold"), C.WinGold)), 0, 1000000);
+        C.PvEBuffPercent = FMath::Clamp(PNum(F, TEXT("pveBuffPercent"), C.PvEBuffPercent), 0.f, 500.f);
+        C.PvEDebuffPercent = FMath::Clamp(PNum(F, TEXT("pveDebuffPercent"), C.PvEDebuffPercent), 0.f, 90.f);
+        bool bLegacy = false; if (F->TryGetBoolField(TEXT("legacyPowerLoot"), bLegacy)) C.bLegacyPowerLoot = bLegacy;
+    }
+    else C.Errors.Add(TEXT("Arenas.json has no top-level 'flow' block"));
     const TArray<TSharedPtr<FJsonValue>>* Arenas = nullptr;
     if (Root->TryGetArrayField(TEXT("arenas"), Arenas))
         for (const auto& V : *Arenas)
@@ -137,6 +153,33 @@ void LoadConfig(FConfig& C)
 }
 
 FPortalServer* ServerState(const UWorld* World) { return World ? GPortalServer.Find(const_cast<UWorld*>(World)) : nullptr; }
+
+ACireGameState* FlowState(UWorld* World) { return World ? World->GetGameState<ACireGameState>() : nullptr; }
+void PublishStage(UWorld* World, uint8 Stage)
+{
+    if (ACireGameState* State = FlowState(World))
+    { State->ArenaStage = Stage; State->ArenaCountdownLength = Config().CountdownSeconds; State->ForceNetUpdate(); }
+}
+
+/** arena-flow: everyone is in the arena: cut the prep to the countdown (the phase change fires when it ends). */
+void BeginCountdown(ACireGameMode* Mode, FPortalServer& S, int32 Humans)
+{
+    if (S.bAllThrough) return;
+    S.bAllThrough = true;
+    UWorld* World = Mode->GetWorld();
+    const float Countdown = Config().CountdownSeconds;
+    const double Left = Mode->Clock.RemainingSeconds();
+    if (Left > Countdown) Mode->Clock.Advance(Left - Countdown); // stays in prep
+    PublishStage(World, 2);
+    if (auto* State = Mode->GetGameState<ACireGameState>())
+    {
+        State->SecondsLeft = static_cast<float>(Mode->Clock.RemainingSeconds());
+        State->Announcement = FString::Printf(TEXT("ALL THROUGH | %s | The arena begins in %.0f seconds."), *CireArenas::DisplayName(Mode->ArenaIndex), FMath::CeilToFloat(State->SecondsLeft));
+        State->ForceNetUpdate();
+    }
+    for (ACireArenaPortal* P : CireArenaPortal::Portals(World)) { P->bAllThrough = true; P->ForceNetUpdate(); P->OnRep_AllThrough(); }
+    UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_PORTAL_ALL_THROUGH humans=%d prep_left_before=%.1f countdown=%.1f"), Humans, Left, Mode->Clock.RemainingSeconds());
+}
 
 /** Ground under a point (the town or the arena floor), or the point itself when nothing is below. */
 FVector Ground(UWorld* World, const FVector& At, const AActor* Ignore)
@@ -248,7 +291,29 @@ void CireArenaPortal::TickServer(ACireGameMode* Mode)
 {
     if (!Mode || Mode->Clock.Phase() != Cires::MatchPhase::Intermission) return;
     FPortalServer& S = GPortalServer.FindOrAdd(Mode->GetWorld());
+    // arena-flow: the portals open with the prep (OnPhaseChanged(1)); this is the late fallback (developer skips).
     if (!S.bOpened && Mode->Clock.RemainingSeconds() <= Config().LeadSeconds) ServerOpen(Mode);
+    // arena-flow: the prep timer ran out: anyone still in town is drawn through, then the countdown runs.
+    if (S.bOpened && !S.bAllThrough && Mode->Clock.RemainingSeconds() <= Config().CountdownSeconds + .01) ServerPullAll(Mode);
+}
+
+int32 CireArenaPortal::ServerPullAll(ACireGameMode* Mode)
+{
+    if (!Mode || Mode->Clock.Phase() != Cires::MatchPhase::Intermission) return 0;
+    UWorld* World = Mode->GetWorld();
+    FPortalServer& S = GPortalServer.FindOrAdd(World);
+    int32 Moved = 0, Humans = 0;
+    const TArray<ACireHero*> Heroes = Mode->Heroes;
+    for (ACireHero* H : Heroes)
+    {
+        if (!IsValid(H) || !H->bDrafted || H->TeamId < 0 || H->TeamId > 1) continue;
+        Humans += H->bBot ? 0 : 1;
+        if (S.Staged.Contains(H) || H->bDead) continue; // the dead are revived at the arena spawns when the fight starts
+        if (ServerEnter(Mode, H, nullptr)) { ++Moved; if (!H->bBot) H->Notice = FString::Printf(TEXT("The prep is over: the shadow portal drew you into %s."), *CireArenas::DisplayName(Mode->ArenaIndex)); }
+    }
+    BeginCountdown(Mode, S, Humans);
+    UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_FLOW_PULL moved=%d humans=%d countdown=%.1f"), Moved, Humans, Mode->Clock.RemainingSeconds());
+    return Moved;
 }
 
 int32 CireArenaPortal::ServerOpen(ACireGameMode* Mode)
@@ -273,7 +338,8 @@ int32 CireArenaPortal::ServerOpen(ACireGameMode* Mode)
             if (SpawnPortal(World, Mode->ArenaIndex, EKind::Entry, Team, Ground(World, Base + FVector(0, 0, 100), nullptr), 0, FString())) ++Count;
         }
     if (auto* State = Mode->GetGameState<ACireGameState>())
-        State->Announcement = FString::Printf(TEXT("SHADOW PORTAL | %s | Step in now, or be drawn through when the prep minute ends."), *CireArenas::DisplayName(Mode->ArenaIndex));
+        State->Announcement = FString::Printf(TEXT("SHADOW PORTAL | %s | Step in now, or be drawn through when the prep ends."), *CireArenas::DisplayName(Mode->ArenaIndex));
+    PublishStage(World, 1);
     UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_PORTAL_OPEN arena=%s portals=%d seconds_left=%.1f"),
         *CireArenas::Get(Mode->ArenaIndex)->Id.ToString(), Count, Mode->Clock.RemainingSeconds());
     return Count;
@@ -293,30 +359,21 @@ bool CireArenaPortal::ServerEnter(ACireGameMode* Mode, ACireHero* Hero, ACireAre
     Hero->SetActorLocation(To, false, nullptr, ETeleportType::TeleportPhysics);
     Hero->SetActorRotation(FRotator(0, (CireArenas::Origin() - To).GetSafeNormal2D().Rotation().Yaw, 0));
     if (AController* C = Hero->GetController()) C->SetControlRotation(Hero->GetActorRotation());
-    Hero->Notice = FString::Printf(TEXT("Through the shadow portal: %s. The fight begins when the prep minute ends."), *CireArenas::DisplayName(Mode->ArenaIndex));
+    Hero->Notice = FString::Printf(TEXT("Through the shadow portal: %s. The fight begins when everyone is through."), *CireArenas::DisplayName(Mode->ArenaIndex));
     GPortalServer.FindOrAdd(World).Staged.Add(Hero);
     if (Through) { ++Through->Entered; Through->MulticastSwallow(From); Through->ForceNetUpdate(); }
     Hero->ForceNetUpdate();
     UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_PORTAL_ENTER hero=%s team=%d arena=%s at=%s"), *Hero->HeroName, Hero->TeamId,
         *CireArenas::Get(Mode->ArenaIndex)->Id.ToString(), *To.ToString());
-    // Eric: once every human is through, the arena does not wait for the rest of the prep minute: a short countdown starts.
+    // Eric: once every human is through, the arena does not wait for the rest of the prep: the countdown starts.
     FPortalServer& S = GPortalServer.FindOrAdd(World);
     int32 Humans = 0, InArena = 0;
     for (ACireHero* H : Mode->Heroes) if (IsValid(H) && !H->bBot && H->bDrafted && H->TeamId >= 0 && H->TeamId < 2) { ++Humans; InArena += S.Staged.Contains(H) ? 1 : 0; }
     if (!S.bAllThrough && Humans > 0 && InArena == Humans)
     {
-        S.bAllThrough = true;
-        const float Countdown = Config().CountdownSeconds;
-        const double Left = Mode->Clock.RemainingSeconds();
-        if (Left > Countdown) Mode->Clock.Advance(Left - Countdown); // stays in prep: the phase change fires when the countdown ends
-        if (auto* State = Mode->GetGameState<ACireGameState>())
-        {
-            State->SecondsLeft = static_cast<float>(Mode->Clock.RemainingSeconds());
-            State->Announcement = FString::Printf(TEXT("ALL THROUGH | %s | The arena begins in %.0f seconds."), *CireArenas::DisplayName(Mode->ArenaIndex), FMath::CeilToFloat(State->SecondsLeft));
-            State->ForceNetUpdate();
-        }
-        for (ACireArenaPortal* P : Portals(World)) { P->bAllThrough = true; P->ForceNetUpdate(); P->OnRep_AllThrough(); }
-        UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_PORTAL_ALL_THROUGH humans=%d prep_left_before=%.1f countdown=%.1f"), Humans, Left, Mode->Clock.RemainingSeconds());
+        BeginCountdown(Mode, S, Humans);
+        // Bots walk through with the last human so the arena is complete when the countdown starts.
+        for (ACireHero* H : TArray<ACireHero*>(Mode->Heroes)) if (IsValid(H) && H->bBot && H->bDrafted && !H->bDead && !S.Staged.Contains(H)) ServerEnter(Mode, H, nullptr);
     }
     return true;
 }
@@ -359,7 +416,23 @@ void CireArenaPortal::OnPhaseChanged(ACireGameMode* Mode, int32 NewPhase)
             if (auto* P = SpawnPortal(World, Mode->ArenaIndex, EKind::Return, Team, Ground(World, At + FVector(0, 0, 100), nullptr), Yaw, FString())) P->SetLifeSpan(C.ReturnSeconds + 1.5f);
         }
     }
-    else ServerClear(World);
+    else
+    {
+        ServerClear(World);
+        // arena-flow: a PvP prep (phase 1): the prep length plus the countdown, and a portal beside every champion at once.
+        if (NewPhase == 1 && CireArenas::Get(Mode->ArenaIndex))
+        {
+            if (!Mode->bSmoke)
+            {
+                Cires::PhaseDurations D = Mode->Clock.GetDurations();
+                D.Intermission = C.PrepSeconds + C.CountdownSeconds;
+                Mode->Clock.SetDurations(D);
+                if (auto* State = Mode->GetGameState<ACireGameState>()) State->SecondsLeft = static_cast<float>(Mode->Clock.RemainingSeconds());
+            }
+            ServerOpen(Mode);
+        }
+    }
+    if (NewPhase != 1) PublishStage(World, 0);
 }
 
 bool CireArenaPortal::LocalViewInArena(const UWorld* World)
@@ -633,6 +706,102 @@ void ACireArenaPortal::Tick(float DeltaSeconds)
     UpdateMotes(Age);
 }
 
+// ======================================================================== arena flow
+TArray<int32> CireArenaFlow::PvPAfterWaves(const UWorld* World)
+{
+    // feat/waves-modes owns the schedule (Waves.json "match.pvpAfterWaves", a game-type preset may override it).
+    return CireWaveDirector::Schedule(World).PvpAfterWaves;
+}
+bool CireArenaFlow::IsPvPAfterWave(const UWorld* World, int32 WavesCleared)
+{
+    // Sudden Death waves (after match.totalWaves) never lead to an arena, whatever the list says.
+    if (CireWaveDirector::IsSuddenDeath(CireWaveDirector::Config(World), WavesCleared)) return false;
+    return PvPAfterWaves(World).Contains(WavesCleared);
+}
+void CireArenaFlow::SkipArena(ACireGameMode* Mode)
+{
+    // The clock has no "skip": walk it through its phases silently (no phase side effects), then start the next cycle.
+    if (!Mode || !Mode->Clock.BeginIntermission()) return;
+    Mode->Clock.Advance(Mode->Clock.RemainingSeconds());  // -> arena
+    Mode->Clock.ResolveArena();                           // -> recovery
+    Mode->Clock.Advance(Mode->Clock.RemainingSeconds());  // -> survival, next round
+    const auto* State = Mode->GetGameState<ACireGameState>();
+    UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_FLOW_SKIP wave=%d round=%d (not a PvP wave)"), State ? State->Wave : -1, Mode->Clock.Round());
+    Mode->ChangePhase(0);
+}
+
+ACireHero* CireArenaFlow::KillerHero(AActor* Causer)
+{
+    for (AActor* A = Causer; A; A = A->GetOwner())
+    {
+        if (auto* Hero = Cast<ACireHero>(A)) return Hero;
+        if (auto* Hero = Cast<ACireHero>(A->GetInstigator())) return Hero;
+    }
+    return nullptr;
+}
+
+void CireArenaFlow::OnHeroKilled(ACireGameMode* Mode, ACireHero* Victim, AActor* Causer)
+{
+    if (!Mode || !Victim || Mode->Clock.Phase() != Cires::MatchPhase::Arena) return;
+    ACireHero* Killer = KillerHero(Causer);
+    if (!IsValid(Killer) || Killer == Victim || Killer->TeamId == Victim->TeamId) return;
+    const int32 Gold = CireArenaPortal::Config().KillGold; if (Gold <= 0) return;
+    Killer->Gold += Gold;
+    Killer->Notice = FString::Printf(TEXT("Killing blow on %s: +%d gold."), *Victim->HeroName, Gold);
+    if (Killer->Inventory && !Killer->bBot && Killer->IsPlayerControlled()) Killer->Inventory->ClientGoldGain(Gold, Victim->GetActorLocation() + FVector(0, 0, 120), 0);
+    Killer->ForceNetUpdate();
+    UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_FLOW_KILL killer=%s victim=%s gold=%d"), *Killer->HeroName, *Victim->HeroName, Gold);
+}
+
+FString CireArenaFlow::AwardResult(ACireGameMode* Mode, int32 Winner, bool bGrantExperience)
+{
+    auto* State = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    if (!State || Winner < 0 || Winner > 1) return TEXT("Arena drawn | No gold, no blessing: both teams return as they were.");
+    const FConfig& C = CireArenaPortal::Config();
+    const int32 Loser = 1 - Winner;
+    if (C.bLegacyPowerLoot) Cires::AwardArenaWin(Mode->Rewards[Winner]); else ++Mode->Rewards[Winner].ArenaWins;
+    TArray<ACireHero*> Team;
+    for (ACireHero* H : Mode->Heroes) if (IsValid(H) && H->bDrafted && H->TeamId == Winner) Team.Add(H);
+    const int32 Share = Team.Num() > 0 ? C.WinGold / Team.Num() : 0;
+    for (ACireHero* H : Team)
+    {
+        if (bGrantExperience) H->GrantExperience(100);
+        H->Gold += Share;
+        if (H->Inventory && !H->bBot && H->IsPlayerControlled() && Share > 0) H->Inventory->ClientGoldGain(Share, H->GetActorLocation() + FVector(0, 0, 120), 0);
+    }
+    (Winner == 0 ? State->EmberArenaBuffs : State->DuskArenaBuffs) += 1;
+    (Loser == 0 ? State->EmberArenaDebuffs : State->DuskArenaDebuffs) += 1;
+    State->ForceNetUpdate();
+    const TCHAR* Names[] = {TEXT("EMBER"), TEXT("DUSK")};
+    UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_FLOW_RESULT winner=%d share=%d buffs=%d/%d debuffs=%d/%d pve=%.2f/%.2f"), Winner, Share,
+        State->EmberArenaBuffs, State->DuskArenaBuffs, State->EmberArenaDebuffs, State->DuskArenaDebuffs, PvEDamageMultiplier(Mode->GetWorld(), 0), PvEDamageMultiplier(Mode->GetWorld(), 1));
+    return FString::Printf(TEXT("%s won the arena | +%d gold each, Arena Victor: +%.0f%% damage to monsters (x%d) | %s: Arena Vanquished, -%.0f%% (x%d)"),
+        Names[Winner], Share, C.PvEBuffPercent, BuffStacks(Mode->GetWorld(), Winner), Names[Loser], C.PvEDebuffPercent, DebuffStacks(Mode->GetWorld(), Loser));
+}
+
+int32 CireArenaFlow::BuffStacks(const UWorld* World, int32 Team)
+{
+    const auto* State = World ? World->GetGameState<ACireGameState>() : nullptr;
+    return !State || Team < 0 || Team > 1 ? 0 : Team == 0 ? State->EmberArenaBuffs : State->DuskArenaBuffs;
+}
+int32 CireArenaFlow::DebuffStacks(const UWorld* World, int32 Team)
+{
+    const auto* State = World ? World->GetGameState<ACireGameState>() : nullptr;
+    return !State || Team < 0 || Team > 1 ? 0 : Team == 0 ? State->EmberArenaDebuffs : State->DuskArenaDebuffs;
+}
+float CireArenaFlow::PvEDamageMultiplier(const UWorld* World, int32 Team)
+{
+    const FConfig& C = CireArenaPortal::Config();
+    const float Pct = C.PvEBuffPercent * BuffStacks(World, Team) - C.PvEDebuffPercent * DebuffStacks(World, Team);
+    return FMath::Clamp(1.f + Pct / 100.f, .1f, 10.f);
+}
+float CireArenaFlow::PrepSecondsLeft(const ACireGameState* State)
+{
+    if (!State) return 0.f;
+    if (State->Phase == 1 && State->ArenaStage == 1) return FMath::Max(0.f, State->SecondsLeft - State->ArenaCountdownLength);
+    return State->SecondsLeft;
+}
+
 // ======================================================================== tests
 #if !UE_BUILD_SHIPPING
 bool CireArenaPortal::RunTests(UWorld* World)
@@ -642,7 +811,7 @@ bool CireArenaPortal::RunTests(UWorld* World)
     const FConfig& C = Config(true);
     Check(C.Errors.IsEmpty(), TEXT("portal data parses without errors"));
     Check(C.LeadSeconds >= 5 && C.LeadSeconds <= 30, TEXT("lead time between 5 and 30 s"));
-    Check(C.CountdownSeconds >= 2 && C.CountdownSeconds < C.LeadSeconds, TEXT("all-through countdown shorter than the lead time"));
+    Check(C.CountdownSeconds >= 2 && C.CountdownSeconds < C.PrepSeconds, TEXT("all-through countdown shorter than the prep"));
     TSet<int32> Styles; TSet<FString> Views;
     for (int32 Index : CireArenas::Rotation())
     {
@@ -671,6 +840,7 @@ bool CireArenaPortal::RunTests(UWorld* World)
             Check(P && P->LabelText == CireArenas::DisplayName(Index), TEXT("portal names its arena"));
             if (P) { P->Tick(.8f); Check(P->Open > .95f, TEXT("portal opens")); P->Collapse(.2f); P->Tick(.3f); Check(P->Open <= .01f, TEXT("portal collapses")); P->Destroy(); }
         }
+    if (auto* FlowMode = World ? World->GetAuthGameMode<ACireGameMode>() : nullptr) Check(CireArenaFlow::RunTests(FlowMode), TEXT("arena flow checks (CIRE_ARENA_FLOW_TESTS)")); // arena-flow
     UE_LOG(LogCireArenaPortal, Display, TEXT("CIRE_ARENA_PORTAL_TESTS_%s checks=%d looks=%d"), bPass ? TEXT("PASS") : TEXT("FAIL"), Checks, C.Looks.Num());
     return bPass;
 }

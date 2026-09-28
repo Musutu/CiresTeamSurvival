@@ -39,6 +39,7 @@
 #include "CireFabVFX.h" // pack-usage: level-up flourish
 #include "CireAbilityVFX.h" // pack-usage: spell-effect scale
 #include "UObject/ConstructorHelpers.h"
+#include "CireArenaPortal.h" // arena-flow
 
 namespace
 {
@@ -1379,6 +1380,7 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
     LayoutAndDraw();
     DrawVendorPlates(Hero);
     DrawPortalPlates(Hero); // arena-portal
+    DrawArenaCountdown(); // arena-flow: the 7 s countdown once everyone is in
 }
 
 // vendors: WoW-style merchant plates: emblem, keeper name in the shop colour, <Shop name> under it, and the
@@ -1434,11 +1436,11 @@ void ACireHUD::UpdateBanners(ACireHero* Hero,ACireGameState* State)
     else if(!State->bSuddenDeath)bBannerSuddenDeath=false;
     if(!bFirst&&State->Phase!=BannerSeenPhase)
     {
-        const int32 Seconds=FMath::Max(0,FMath::RoundToInt(State->SecondsLeft));
+        const int32 Seconds=FMath::Max(0,FMath::RoundToInt(CireArenaFlow::PrepSecondsLeft(State))); // arena-flow
         switch(State->Phase)
         {
         case 0:CireBanners::Show(ECireBanner::WaveIncoming,TEXT("Survival"),TEXT("Hold your lane. Three cleared waves lead back to town."),TEXT("THE GATES OPEN"));break;
-        case 1:CireBanners::Show(ECireBanner::PrepPhase,TEXT("Prep Phase"),FString::Printf(TEXT("%d seconds to buy gear and tomes. The portal opens onto %s."),Seconds,*CireArenas::DisplayName(State->ArenaIndex)));break; // arenas
+        case 1:CireBanners::Show(ECireBanner::PrepPhase,TEXT("PvP Prep"),FString::Printf(TEXT("%d seconds to prepare. A shadow portal to %s is open beside you: enter early, or be drawn through."),Seconds,*CireArenas::DisplayName(State->ArenaIndex)));break; // arenas, arena-flow
         case 2: // arenas: announce the randomly picked arena by name
         {
             const CireArenas::FArena* ArenaDef=CireArenas::Get(State->ArenaIndex);

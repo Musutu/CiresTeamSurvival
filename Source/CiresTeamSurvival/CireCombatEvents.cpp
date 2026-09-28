@@ -1,4 +1,5 @@
 #include "CireCombatEvents.h"
+#include "CireSkillTuning.h" // casting-rules
 #include "CireKitSkills.h" // kits-complete
 #include "CireSignatureSkills.h" // new-champions
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
@@ -187,6 +188,7 @@ float CireCombat::ApplyHealing(ACireHero* Source, ACireHero* Target, float Amoun
         !FMath::IsFinite(Amount) || Amount <= 0) return 0;
     auto* Mode = Source->GetWorld()->GetAuthGameMode<ACireGameMode>();
     if (!Mode || !Mode->IsCombatPhase()) return 0;
+    Amount *= CireSkillTuning::HealScaleFor(AbilityName); // casting-rules: ability healing nerf + AoE-heal cut (CastRules.json)
     Amount = CireKitSkills::ModifyHealing(Source, Target, Amount, AbilityName); // kits-complete: Steady Gait
     const float Multiplier = (Source->HasSkill(TEXT("soul_conduit")) ? 1.f + CireKits::ScaledEffect(Source, TEXT("soul_conduit"), 25.f) / 100.f : 1.f) // kits-complete: potency
         * CireItems::HealingMultiplier(Source, AbilityName) // progression-shop: + Skill Shop level

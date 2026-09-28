@@ -81,6 +81,11 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     FName Aura15;                        // passives: attackSpeed, doubleAttack, crit, ... (team aura at level 15)
     FString Aura15Label;
     FCireUltimateUpgrade Upgrade;        // items-v2: ultimates only ("ultimateUpgrade")
+    // casting-rules (CireSkillTuning::ApplyCastRules, Content/Data/CastRules.json): derived at load, never authored.
+    FName CastRule;                      // none, aoeDamage, directHeal, aoeHeal
+    float AuthoredCastTime = 0;          // the row's own castTime before the rule
+    float HealScale = 1.f;               // multiplier on every heal this ability applies (CireCombat::ApplyHealing)
+    float CastMetric = 0;                // impact / heal power the rule placed the cast time with
     bool IsImplemented() const { return Status == TEXT("implemented"); }
     bool IsPassive() const { return Kind == TEXT("passive"); }
     bool IsUltimate() const { return Kind == TEXT("ultimate"); }

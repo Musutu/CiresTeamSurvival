@@ -37,6 +37,9 @@ struct CIRESTEAMSURVIVAL_API FCireWaveUnit
     /** Lives lost when this unit reaches the castle; 0 = archetype/default rule. */
     int32 LeakCost = 0;
     // monster-races
+    /** waves-modes: 1-based pack this row belongs to (0 = a legacy row, no pack). Pack waves are expanded into these rows
+     *  by ResolveWave; Hybrid presets pick fight-back packs by this number. */
+    int32 Pack = 0;
     /** Race slot (line, bruiser, tank, caster, ranged, special, warlord, colossus, boss): the row follows the wave's
      *  race. None = the explicit Archetype. Archetype keeps the hollow unit of the slot so old callers still work. */
     FName Slot;
@@ -68,6 +71,14 @@ struct CIRESTEAMSURVIVAL_API FCireWaveDef
     float RewardMultiplier = 1.f;
     /** monster-races: race of this wave's slot rows; None = the campaign rotation for the cycle. */
     FName Race;
+    /** waves-modes (Waves.json "packs"): 0 = legacy rows spawned as authored. N > 0 = the wave spawns N packs of
+     *  PackSizeMin..PackSizeMax monsters (plus the global pack-size modifier); the non-boss rows are the pack recipe
+     *  (their counts are weights) and boss / escortee rows march after / ahead of the packs as authored. */
+    int32 Packs = 0, PackSizeMin = 5, PackSizeMax = 5;
+    /** waves-modes (Waves.json "damage"): false = this wave's monsters never attack (they path to the castle like an
+     *  armored wave) except the packs listed in FightBackPacks (the Hybrid mode). Armored units never attack. */
+    bool bDealsDamage = true;
+    TArray<int32> FightBackPacks;
     int32 UnitsPerLane() const;
     bool operator==(const FCireWaveDef& O) const;
 };
@@ -111,6 +122,69 @@ struct CIRESTEAMSURVIVAL_API FCireBonusWaveRules
     bool operator==(const FCireBonusWaveRules& O) const;
 };
 
+/** waves-modes (Waves.json "match"): the 25-wave match, its PvP rounds and Sudden Death.
+ *  feat/arena-flow reads this through CireWaveDirector::Schedule / IsPvpAfterWave (Docs/RESUME-waves-modes.md). */
+struct CIRESTEAMSURVIVAL_API FCireMatchSchedule
+{
+    /** Regular waves in a match; waves after this are Sudden Death waves. 0 = no Sudden Death. */
+    int32 TotalWaves = 25;
+    /** Global wave numbers (1-based) after which a PvP arena round runs, ascending. Default 5, 10, 15, 20. */
+    TArray<int32> PvpAfterWaves = {5, 10, 15, 20};
+    /** Sudden Death waves: monster health and damage multipliers (on top of all other scaling). */
+    float SuddenDeathHealth = 2.f, SuddenDeathDamage = 2.f;
+    /** Sudden Death replays the last N regular waves in a loop (their compositions, doubled). */
+    int32 SuddenDeathLoop = 5;
+    bool operator==(const FCireMatchSchedule& O) const;
+};
+
+/** waves-modes: wave monster movement and the armored traits (Waves.json "monsters"). */
+struct CIRESTEAMSURVIVAL_API FCireWaveMonsterRules
+{
+    /** Every wave monster's speed (Eric: -20% across the board, more packs per wave). */
+    float Speed = .8f;
+    /** Armored (non-attacking) wave units: extra speed multiplier, slow immunity, stun duration multiplier. */
+    float ArmoredSpeed = .5f;
+    bool bArmoredSlowImmune = true;
+    float ArmoredStunMultiplier = 2.f;
+    /** Pack waves: seconds between one pack's last spawn and the next pack's first (so packs read as groups). */
+    float PackGapSeconds = 1.5f;
+    bool operator==(const FCireWaveMonsterRules& O) const;
+};
+
+/** waves-modes: the in-game live scale Eric sets while playing (F8 > Waves, cire.WaveScale). Applied to new spawns and
+ *  rescaled onto the living wave monsters when changed. */
+struct CIRESTEAMSURVIVAL_API FCireWaveScale
+{
+    float Health = 1.f, Damage = 1.f, Speed = 1.f;
+    bool operator==(const FCireWaveScale& O) const;
+};
+
+/** waves-modes: a saveable game-mode preset (Content/Data/WavePresets.json). Hosting lists them as game types. */
+struct CIRESTEAMSURVIVAL_API FCireWavePreset
+{
+    FName Id = TEXT("standard");
+    FString Label = TEXT("Standard"), Description;
+    /** Default for every wave: monsters attack heroes (true) or just path to the castle (false). */
+    bool bDefaultDamage = true;
+    /** Default fight-back packs when a wave's damage is off (Hybrid). */
+    TArray<int32> DefaultFightBack;
+    /** Per global wave (1-based) overrides: damage on/off and fight-back packs. */
+    struct FWave
+    {
+        int32 Wave = 1; bool bDamage = true; TArray<int32> FightBack;
+        bool operator==(const FWave& O) const { return Wave == O.Wave && bDamage == O.bDamage && FightBack == O.FightBack; }
+    };
+    TArray<FWave> Waves;
+    FCireWaveScale Scale;
+    /** Difficulty modifier: added to every pack's size (-3..+3). */
+    int32 PackSizeBonus = 0;
+    /** Optional PvP schedule override (empty = Waves.json "match"). */
+    TArray<int32> PvpAfterWaves;
+    /** Shipped preset (Standard / Hero TD/PvP / Hybrid): it can be saved over but always comes back if missing. */
+    bool bBuiltIn = false;
+    bool operator==(const FCireWavePreset& O) const;
+};
+
 struct CIRESTEAMSURVIVAL_API FCireWaveConfig
 {
     /** Seconds between a cleared wave and the next spawn: the Skill Shop window (progression-shop reads it). */
@@ -152,6 +226,12 @@ struct CIRESTEAMSURVIVAL_API FCireWaveConfig
     /** monster-expansion: rare spawns and the bonus loot wave. */
     FCireRareSpawnRules Rare;
     FCireBonusWaveRules Bonus;
+    /** waves-modes: match schedule, monster movement / armored rules, live scale, pack-size modifier, active preset. */
+    FCireMatchSchedule Match;
+    FCireWaveMonsterRules Monsters;
+    FCireWaveScale Live;
+    int32 PackSizeBonus = 0;
+    FName Preset = TEXT("standard");
     bool operator==(const FCireWaveConfig& O) const;
 };
 
@@ -166,6 +246,9 @@ struct CIRESTEAMSURVIVAL_API FCireWaveUnitInfo
     bool bArmored = false;  // non-attacking marcher (armored wave or escortee)
     bool bEscortee = false, bBoss = false, bElite = false;
     bool bRare = false, bBonus = false; // monster-expansion
+    int32 Pack = 0;             // waves-modes: 1-based pack in its wave (0 = none)
+    bool bPassive = false;      // waves-modes: damage off for its wave/pack (never attacks; not armored for gold)
+    bool bSuddenDeath = false;  // waves-modes: spawned in a Sudden Death wave
 };
 
 /** Replicated one-line summary for the HUD match plate. */
@@ -267,6 +350,56 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API void SpecialCounts(const ACireGameMode* Mode, int32& Rares, int32& BonusWaves);
     /** Rare roll for a wave (deterministic per match seed and wave number). Appends the rare row when it hits. */
     CIRESTEAMSURVIVAL_API bool RollRare(const FCireWaveConfig& Config, FCireWaveDef& Wave, int32 GlobalWave, int32 Seed, int32 RaresThisCycle, bool bForce = false);
+
+    // ---- waves-modes: match schedule (consumed by feat/arena-flow; see Docs/RESUME-waves-modes.md) ----
+    /** The live match schedule (the active preset's PvP override applied). World = null reads Waves.json. */
+    CIRESTEAMSURVIVAL_API FCireMatchSchedule Schedule(const UWorld* World = nullptr);
+    /** True when a PvP arena round follows global wave GlobalWave (1-based). */
+    CIRESTEAMSURVIVAL_API bool IsPvpAfterWave(const UWorld* World, int32 GlobalWave);
+    /** 1-based PvP round that follows GlobalWave (1..4 by default), 0 = none. */
+    CIRESTEAMSURVIVAL_API int32 PvpRoundAfterWave(const UWorld* World, int32 GlobalWave);
+    /** Global wave of the next PvP round at or after GlobalWave (0 = none left). */
+    CIRESTEAMSURVIVAL_API int32 NextPvpWave(const UWorld* World, int32 GlobalWave);
+    /** True for waves after the schedule's TotalWaves. */
+    CIRESTEAMSURVIVAL_API bool IsSuddenDeath(const FCireWaveConfig& Config, int32 GlobalWave);
+    /** Global wave number (1-based) of wave WaveInCycle (0-based) of Cycle (0-based). */
+    CIRESTEAMSURVIVAL_API int32 GlobalWaveOf(const FCireWaveConfig& Config, int32 WaveInCycle, int32 Cycle);
+
+    // ---- waves-modes: wave-type roll hook (feat/bonus-loot extends this) ----
+    /** Called for every live wave just before it is queued: may replace the planned wave (a bonus loot stage or another
+     *  special type). Default: returns Planned unchanged. Rules: never replace a Boss wave; deterministic per Seed and
+     *  GlobalWave. Tests call it directly. */
+    CIRESTEAMSURVIVAL_API FCireWaveDef RollWaveType(const FCireWaveConfig& Config, const FCireWaveDef& Planned, int32 GlobalWave, int32 Seed);
+
+    // ---- waves-modes: armored traits, live scale, damage toggle ----
+    /** Movement multiplier for a wave monster: Monsters.Speed x Live.Speed (x ArmoredSpeed when armored). 1 otherwise. */
+    CIRESTEAMSURVIVAL_API float SpeedFactor(const ACireMonster* Monster);
+    /** Armored wave units ignore slows (CireCrowdControl::Slow and the movement slow factor). */
+    CIRESTEAMSURVIVAL_API bool IsSlowImmune(const ACireMonster* Monster);
+    /** Stun duration multiplier (armored: 2x). 1 for everything else. */
+    CIRESTEAMSURVIVAL_API float StunMultiplier(const AActor* Target);
+    /** Damage-off wave unit: marches to the castle and never attacks (CireNPCCombat marcher branch). */
+    CIRESTEAMSURVIVAL_API bool IsPassive(const ACireMonster* Monster);
+    /** Live scale: validated, stored on the runtime config and rescaled onto living wave units. */
+    CIRESTEAMSURVIVAL_API bool SetLiveScale(ACireGameMode* Mode, const FCireWaveScale& Scale, FString* Error = nullptr);
+
+    // ---- waves-modes: presets / game types (Content/Data/WavePresets.json) ----
+    CIRESTEAMSURVIVAL_API FString PresetsPath();
+    /** Shipped presets: Standard, Hero TD/PvP, Hybrid. */
+    CIRESTEAMSURVIVAL_API TArray<FCireWavePreset> BuiltInPresets();
+    CIRESTEAMSURVIVAL_API bool ParsePresets(const FString& Json, TArray<FCireWavePreset>& Out, FString& Error);
+    CIRESTEAMSURVIVAL_API FString PresetsToJson(const TArray<FCireWavePreset>& Presets);
+    /** All presets (file, else built-ins; built-ins missing from the file are added). Cached; bReload re-reads. */
+    CIRESTEAMSURVIVAL_API const TArray<FCireWavePreset>& Presets(bool bReload = false);
+    CIRESTEAMSURVIVAL_API const FCireWavePreset* FindPreset(FName Id);
+    /** Writes the preset (per-wave damage / fight-back, scale, pack modifier, PvP override) into Config. */
+    CIRESTEAMSURVIVAL_API void ApplyPreset(FCireWaveConfig& Config, const FCireWavePreset& Preset);
+    /** Captures Config's current settings as a preset. */
+    CIRESTEAMSURVIVAL_API FCireWavePreset CapturePreset(const FCireWaveConfig& Config, FName Id, const FString& Label, const FString& Description = FString());
+    /** Adds or replaces a preset (by Id) and saves the file (Path empty = PresetsPath()). */
+    CIRESTEAMSURVIVAL_API bool SavePreset(const FCireWavePreset& Preset, FString* Error = nullptr, const FString& Path = FString());
+    /** Host: select the match's game type (before the first wave). Replicates on ACireGameState::WavePreset. */
+    CIRESTEAMSURVIVAL_API bool SelectPreset(ACireGameMode* Mode, FName Id, FString* Error = nullptr);
 
     // ---- neutral challenge packs ----
     /** Challenge-pack units start neutral; a player's attack turns the whole pack hostile. */

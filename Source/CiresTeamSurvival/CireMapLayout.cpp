@@ -485,7 +485,7 @@ bool CireMapLayout::SetPackType(FCireMapLayout& L, const FString& Id, FName Type
 bool CireMapLayout::SetComposition(FCireMapLayout& L, const FString& Id, const FCirePackComposition& Comp)
 {
     FCireMapMarker* M = Find(L, Id); if (!M || M->Type != ChallengePack) return false;
-    const bool bAuto = Comp.Tanks <= 0 && Comp.Healers <= 0 && Comp.Dps <= 0;
+    const bool bAuto = Comp.IsZero();
     M->Comp = bAuto ? FCirePackComposition{0, 0, 0} : CireJunglePacks::Clamp(Comp);
     SyncTwin(L, Id); return true;
 }
@@ -780,8 +780,8 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
         if (M.Type == ChallengePack && (M.Tier < 1 || M.Tier > FCireChallengeBay::MaxTier || M.Radius < FCireChallengeBay::MinRadius || M.Radius > FCireChallengeBay::MaxRadius))
             Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s needs a tier 1..4 and a radius of 2..15 m"), *Label));
         if (M.Type == ChallengePack && M.HasCompOverride() && !CireJunglePacks::IsValid(M.Comp))
-            Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s: composition %d tank / %d healer / %d DPS breaks the rules (1-2 tanks, 1-2 healers, 1-3 DPS, 3-6 monsters)"),
-                *Label, M.Comp.Tanks, M.Comp.Healers, M.Comp.Dps));
+            Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s: composition %d tank / %d healer / %d DPS breaks the rules (1-3 tanks, 1-3 healers, 1-6 DPS, 3-8 monsters)"),
+                *Label, M.Comp.Tanks, M.Comp.Healers, M.Comp.DpsTotal()));
         if (M.bMirror && IsTeam(M.Owner))
         {
             const FCireMapMarker* T = M.Pair.IsEmpty() ? nullptr : Find(L, M.Pair);
@@ -902,7 +902,7 @@ FString CireMapLayout::ToJson(const FCireMapLayout& L)
         if (M.Type == ChallengePack) // jungle-packs
         {
             F.Add(FString::Printf(TEXT("\"pack\": %s"), *Q(M.PackType.ToString())));
-            if (M.HasCompOverride()) F.Add(FString::Printf(TEXT("\"comp\": [%d,%d,%d]"), M.Comp.Tanks, M.Comp.Healers, M.Comp.Dps));
+            if (M.HasCompOverride()) F.Add(TEXT("\"comp\": ") + CireJunglePacks::CompJson(M.Comp)); // pack-formations: DPS kinds ride along
         }
         if (M.Type == Vendor)
         {
@@ -976,8 +976,7 @@ bool CireMapLayout::ParseJson(const FString& Json, FCireMapLayout& Out, FString&
             // jungle-packs: pack type (missing or unknown = mixed), composition override, tiers 1..4 (older 5..10 read as 4).
             FString Pack; O->TryGetStringField(TEXT("pack"), Pack); M.PackType = CireJunglePacks::NormalizeType(Pack);
             const TArray<TSharedPtr<FJsonValue>>* Comp = nullptr;
-            if (O->TryGetArrayField(TEXT("comp"), Comp) && Comp && Comp->Num() == 3)
-                M.Comp = {FMath::RoundToInt32((*Comp)[0]->AsNumber()), FMath::RoundToInt32((*Comp)[1]->AsNumber()), FMath::RoundToInt32((*Comp)[2]->AsNumber())};
+            if (O->TryGetArrayField(TEXT("comp"), Comp) && Comp) CireJunglePacks::CompFromJson(*Comp, M.Comp); // [t,h,d] or [t,h,d,melee,ranged,caster]
             if (M.Tier > FCireChallengeBay::MaxTier) M.Tier = FCireChallengeBay::MaxTier;
         }
         if (M.Type == Vendor)

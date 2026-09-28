@@ -104,6 +104,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireTargeting::RunRuntimeSmoke(Mode)&&Good;
     Good=CireLanePath::RunSmoke(Mode)&&Good;
     Good=CireSkillTuning::RunValidationSmoke()&&Good;
+    Good=CireSkillTuning::RunCastRulesSmoke()&&Good; // casting-rules
     Good=CireThreat::RunSmoke(Mode)&&Good;
     Good=CireSkillshots::RunSkillshotSmoke(Mode)&&Good;
     Good=CireConstructs::RunConstructSmoke(Mode)&&Good;

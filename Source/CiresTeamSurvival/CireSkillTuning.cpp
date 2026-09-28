@@ -261,3 +261,211 @@ bool CireSkillTuning::RunValidationSmoke()
     return bPassed;
 }
 #endif
+
+// ============================================================================ casting-rules
+#include "CireAbilityDB.h"
+#include "CireGame.h"
+#include "HAL/IConsoleManager.h"
+
+namespace
+{
+FCireCastRules GCastRules;
+bool bCastRulesLoaded = false;
+void LoadCastRulesOnce()
+{
+    if (bCastRulesLoaded) return;
+    bCastRulesLoaded = true;
+    FString Json, Error; FCireCastRules R;
+    if (FFileHelper::LoadFileToString(Json, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/CastRules.json"))) && CireSkillTuning::ParseCastRules(Json, R, Error)) GCastRules = MoveTemp(R);
+    else UE_LOG(LogCireSkillTuning, Warning, TEXT("Cast rules unavailable, using defaults: %s"), *Error);
+}
+float CastNumber(const TSharedPtr<FJsonObject>& O, const TCHAR* Key, float Default, float Min, float Max, bool& bOk)
+{
+    double V = Default;
+    if (O.IsValid() && O->HasField(Key) && (!O->TryGetNumberField(Key, V) || !FMath::IsFinite(V))) { bOk = false; return Default; }
+    if (V < Min || V > Max) { bOk = false; return Default; }
+    return static_cast<float>(V);
+}
+TSet<FString> CastStrings(const TSharedPtr<FJsonObject>& O, const TCHAR* Key)
+{
+    TSet<FString> Out; const TArray<TSharedPtr<FJsonValue>>* A = nullptr;
+    if (O.IsValid() && O->TryGetArrayField(Key, A)) for (const auto& V : *A) { FString S; if (V->TryGetString(S)) Out.Add(S.ToLower()); }
+    return Out;
+}
+float CastRamp(float V, float Low, float High) { return High > Low ? FMath::Clamp((V - Low) / (High - Low), 0.f, 1.f) : (V >= High ? 1.f : 0.f); }
+float CastSnap(float V, float Step) { return Step > 0 ? FMath::RoundToFloat(V / Step) * Step : V; }
+bool CastLabelHas(const FCireAbilityDef& D, std::initializer_list<const TCHAR*> Words)
+{
+    for (const TCHAR* W : Words) if (D.EffectLabel.Contains(W)) return true;
+    return false;
+}
+// One application at the reference PRIMARY: base + coef x primary, or % of max health; per-second / per-pulse x duration.
+float CastReferenceAmount(const FCireAbilityDef& D, const FCireCastRules& R)
+{
+    float P = D.EffectLabel.Contains(TEXT("%")) ? D.Base.Effect / 100.f * R.ReferenceMaxHealth
+        : (D.ScalePrimary > 0 || D.ScaleBase > 0 ? D.ScaleBase + D.ScalePrimary * R.ReferencePrimary : D.Base.Effect);
+    if (CastLabelHas(D, {TEXT("per second"), TEXT("per tick"), TEXT("per pulse"), TEXT("per mote")})) P *= FMath::Max(1.f, D.Duration);
+    return FMath::Max(0.f, P);
+}
+}
+
+FCireCastVerdict CireSkillTuning::EvaluateCastRule(const FCireAbilityDef& D, const FCireCastRules& R, const FString& ForcedIn)
+{
+    FCireCastVerdict V;
+    const FString Forced = ForcedIn.ToLower();
+    const bool bHeal = D.ScaleComponent == TEXT("heal");
+    if (bHeal) V.HealScale = R.HealingScale;
+    if (!R.bEnabled || D.IsPassive() || Forced == TEXT("exempt") || R.Exempt.Contains(D.Id.ToLower())) return V;
+    const float Radius = D.Radius / FMath::Max(.01f, CireAbilityShapes::AoERadiusScale()); // authored radius (the DB row is already aoe-scaled)
+    if (Forced.IsEmpty())
+    {
+        // Rolls, constructs, summons and pets are placement / movement skills: no cast rule.
+        if (D.EffectTags.Contains(TEXT("Roll")) || D.Section == TEXT("construct") || D.Section == TEXT("summon") || D.IsConstruct() || D.IsPet()) return V;
+        if (bHeal)
+        {
+            if (D.Targeting == TEXT("self") && Radius <= R.AoEHealMinRadius) return V; // self-only emergency heals keep their authored cast
+            V.Rule = Radius > R.AoEHealMinRadius && D.Targeting != TEXT("ally") ? ECireCastRule::AoEHeal : ECireCastRule::DirectHeal;
+        }
+        else if (D.ScaleComponent == TEXT("damage") && Radius >= R.AoEMinRadius && D.Section != TEXT("attack") &&
+            (D.Targeting == TEXT("aim") || D.Targeting == TEXT("self") || D.Targeting == TEXT("enemy")) &&
+            !(D.Targeting == TEXT("self") && D.Duration >= R.SelfAuraSeconds) && // persistent self auras / transforms
+            !CastLabelHas(D, {TEXT("per bounce"), TEXT("per target"), TEXT("per hit"), TEXT("per slash"), TEXT("per tick")}))
+            V.Rule = ECireCastRule::AoEDamage;
+    }
+    else if (Forced == TEXT("aoedamage")) V.Rule = ECireCastRule::AoEDamage;
+    else if (Forced == TEXT("directheal")) V.Rule = ECireCastRule::DirectHeal;
+    else if (Forced == TEXT("aoeheal")) V.Rule = ECireCastRule::AoEHeal;
+    const float Amount = CastReferenceAmount(D, R);
+    switch (V.Rule)
+    {
+    case ECireCastRule::AoEDamage:
+    {
+        bool bControl = false;
+        for (const auto& E : D.Effects) bControl |= E.Type == TEXT("stun") || E.Type == TEXT("root") || E.Type == TEXT("silence") || E.Type == TEXT("interrupt");
+        V.Metric = Amount * FMath::Sqrt(FMath::Max(Radius, 1.f) / FMath::Max(1.f, R.AoEAreaReference)) * (bControl ? 1.f + R.AoEControlBonus : 1.f);
+        V.CastTime = FMath::Lerp(R.AoEDamageMinCast, R.AoEDamageMaxCast, CastRamp(V.Metric, R.AoEImpactLow, R.AoEImpactHigh));
+        V.CastTime = FMath::Clamp(CastSnap(V.CastTime, R.CastStep), R.AoEDamageMinCast, R.AoEDamageMaxCast);
+        break;
+    }
+    case ECireCastRule::DirectHeal:
+        V.Metric = Amount;
+        V.CastTime = FMath::Clamp(CastSnap(FMath::Lerp(R.DirectHealMinCast, R.DirectHealMaxCast, CastRamp(Amount, R.DirectHealPowerLow, R.DirectHealPowerHigh)), R.CastStep),
+            R.DirectHealMinCast, R.DirectHealMaxCast);
+        break;
+    case ECireCastRule::AoEHeal:
+    {
+        V.Metric = Amount;
+        V.CastTime = FMath::Clamp(CastSnap(R.AoEHealMaxCast * CastRamp(Amount, R.AoEHealPowerLow, R.AoEHealPowerHigh), R.CastStep), 0.f, R.AoEHealMaxCast);
+        const float Speed = R.AoEHealMaxCast > 0 ? V.CastTime / R.AoEHealMaxCast : 1.f;
+        V.HealScale = R.HealingScale * FMath::Lerp(R.AoEHealInstantEffect, R.AoEHealFullCastEffect, Speed); // faster cast -> weaker heal
+        break;
+    }
+    default: break;
+    }
+    return V;
+}
+
+void CireSkillTuning::ApplyCastRules(FCireAbilityDef& D, const FString& Forced, bool bCastWhileMovingAuthored)
+{
+    const FCireCastVerdict V = EvaluateCastRule(D, CastRules(), Forced);
+    D.AuthoredCastTime = D.CastTime;
+    D.CastRule = FName(*CastRuleName(V.Rule));
+    D.HealScale = V.HealScale;
+    D.CastMetric = V.Metric;
+    if (V.Rule == ECireCastRule::None) return;
+    D.CastTime = D.Base.CastTime = V.CastTime;
+    if (!bCastWhileMovingAuthored) D.bCastWhileMoving = D.CastTime <= 0; // WoW: cast-time spells stand still (bots are exempt)
+}
+
+FString CireSkillTuning::CastRuleName(ECireCastRule Rule)
+{
+    switch (Rule)
+    {
+    case ECireCastRule::AoEDamage: return TEXT("aoeDamage");
+    case ECireCastRule::DirectHeal: return TEXT("directHeal");
+    case ECireCastRule::AoEHeal: return TEXT("aoeHeal");
+    default: return TEXT("none");
+    }
+}
+
+bool CireSkillTuning::ParseCastRules(const FString& Json, FCireCastRules& Out, FString& Error)
+{
+    TSharedPtr<FJsonObject> Root;
+    if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Root) || !Root.IsValid()) { Error = TEXT("CastRules.json is not a JSON object"); return false; }
+    double Schema = 0; FString Profile;
+    if (!Root->TryGetNumberField(TEXT("schemaVersion"), Schema) || Schema != 1 || !Root->TryGetStringField(TEXT("profile"), Profile) || Profile != TEXT("CireCastRules"))
+    { Error = TEXT("CastRules.json needs schemaVersion 1 and profile CireCastRules"); return false; }
+    FCireCastRules R; bool bOk = true;
+    auto Sub = [&](const TCHAR* Key) { const TSharedPtr<FJsonObject>* O = nullptr; return Root->TryGetObjectField(Key, O) && O ? *O : TSharedPtr<FJsonObject>(); };
+    Root->TryGetBoolField(TEXT("enabled"), R.bEnabled);
+    const auto Ref = Sub(TEXT("reference")), Cls = Sub(TEXT("classification")), Aoe = Sub(TEXT("aoeDamage")), Dh = Sub(TEXT("directHeal")),
+        Ah = Sub(TEXT("aoeHeal")), Heal = Sub(TEXT("healing")), Pierce = Sub(TEXT("piercing"));
+    R.ReferencePrimary = CastNumber(Ref, TEXT("primary"), R.ReferencePrimary, 0, 1000, bOk);
+    R.ReferenceMaxHealth = CastNumber(Ref, TEXT("maxHealth"), R.ReferenceMaxHealth, 1, 100000, bOk);
+    R.AoEMinRadius = CastNumber(Cls, TEXT("aoeMinRadius"), R.AoEMinRadius, 0, 3000, bOk);
+    R.AoEHealMinRadius = CastNumber(Cls, TEXT("aoeHealMinRadius"), R.AoEHealMinRadius, 0, 3000, bOk);
+    R.SelfAuraSeconds = CastNumber(Cls, TEXT("selfAuraSeconds"), R.SelfAuraSeconds, 0, 120, bOk);
+    R.Exempt = CastStrings(Cls, TEXT("exempt"));
+    R.AoEDamageMinCast = CastNumber(Aoe, TEXT("minCast"), R.AoEDamageMinCast, 0, 10, bOk);
+    R.AoEDamageMaxCast = CastNumber(Aoe, TEXT("maxCast"), R.AoEDamageMaxCast, 0, 10, bOk);
+    R.AoEImpactLow = CastNumber(Aoe, TEXT("impactLow"), R.AoEImpactLow, 0, 100000, bOk);
+    R.AoEImpactHigh = CastNumber(Aoe, TEXT("impactHigh"), R.AoEImpactHigh, 0, 100000, bOk);
+    R.AoEAreaReference = CastNumber(Aoe, TEXT("areaReference"), R.AoEAreaReference, 1, 5000, bOk);
+    R.AoEControlBonus = CastNumber(Aoe, TEXT("controlBonus"), R.AoEControlBonus, 0, 5, bOk);
+    R.DirectHealMinCast = CastNumber(Dh, TEXT("minCast"), R.DirectHealMinCast, 0, 10, bOk);
+    R.DirectHealMaxCast = CastNumber(Dh, TEXT("maxCast"), R.DirectHealMaxCast, 0, 10, bOk);
+    R.DirectHealPowerLow = CastNumber(Dh, TEXT("powerLow"), R.DirectHealPowerLow, 0, 100000, bOk);
+    R.DirectHealPowerHigh = CastNumber(Dh, TEXT("powerHigh"), R.DirectHealPowerHigh, 0, 100000, bOk);
+    R.AoEHealMaxCast = CastNumber(Ah, TEXT("maxCast"), R.AoEHealMaxCast, 0, 10, bOk);
+    R.AoEHealPowerLow = CastNumber(Ah, TEXT("powerLow"), R.AoEHealPowerLow, 0, 100000, bOk);
+    R.AoEHealPowerHigh = CastNumber(Ah, TEXT("powerHigh"), R.AoEHealPowerHigh, 0, 100000, bOk);
+    R.AoEHealInstantEffect = CastNumber(Ah, TEXT("instantEffect"), R.AoEHealInstantEffect, 0, 2, bOk);
+    R.AoEHealFullCastEffect = CastNumber(Ah, TEXT("fullCastEffect"), R.AoEHealFullCastEffect, 0, 2, bOk);
+    R.HealingScale = CastNumber(Heal, TEXT("abilityHealingScale"), R.HealingScale, 0, 2, bOk);
+    R.CastStep = CastNumber(Root, TEXT("castStep"), R.CastStep, 0, 1, bOk);
+    if (Pierce.IsValid())
+    {
+        Pierce->TryGetBoolField(TEXT("championSkillshots"), R.bPierceChampionSkillshots);
+        R.PierceHitLimit = FMath::RoundToInt(CastNumber(Pierce, TEXT("hitLimit"), static_cast<float>(R.PierceHitLimit), 1, 32, bOk));
+        R.PierceFalloff = CastNumber(Pierce, TEXT("falloffPerTarget"), R.PierceFalloff, 0, 1, bOk);
+        R.PierceMinDamage = CastNumber(Pierce, TEXT("minDamageFraction"), R.PierceMinDamage, 0, 1, bOk);
+        R.NeverPierce = CastStrings(Pierce, TEXT("never"));
+    }
+    if (!bOk || R.AoEDamageMinCast > R.AoEDamageMaxCast || R.DirectHealMinCast > R.DirectHealMaxCast) { Error = TEXT("CastRules.json has an out-of-range number"); return false; }
+    Out = MoveTemp(R); Error.Reset(); return true;
+}
+
+const FCireCastRules& CireSkillTuning::CastRules() { LoadCastRulesOnce(); return GCastRules; }
+bool CireSkillTuning::ReloadCastRules(FString* Error)
+{
+    FString Json, Reason; FCireCastRules R;
+    const bool bOk = FFileHelper::LoadFileToString(Json, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/CastRules.json"))) && ParseCastRules(Json, R, Reason);
+    bCastRulesLoaded = true;
+    if (bOk) GCastRules = MoveTemp(R);
+    if (Error) *Error = Reason;
+    CireAbilityDB::Reload();
+    UE_LOG(LogCireSkillTuning, Display, TEXT("CIRE_CAST_RULES_%s %s"), bOk ? TEXT("LOADED") : TEXT("REJECTED"), *Reason);
+    return bOk;
+}
+#if !UE_BUILD_SHIPPING
+void CireSkillTuning::DebugSetCastRules(const FCireCastRules& Rules) { bCastRulesLoaded = true; GCastRules = Rules; }
+#endif
+
+float CireSkillTuning::HealScaleFor(const FString& AbilityName)
+{
+    const FCireAbilityDef* D = CireAbilityDB::FindByName(AbilityName);
+    if (!D) D = CireAbilityDB::Find(AbilityName);
+    return D ? D->HealScale : 1.f;
+}
+
+bool CireSkillTuning::ShouldPierce(const AActor* Source, const FString& AbilityName)
+{
+    const FCireCastRules& R = CastRules();
+    if (!R.bPierceChampionSkillshots || !Cast<ACireHero>(Source)) return false;
+    const FCireAbilityDef* D = CireAbilityDB::FindByName(AbilityName);
+    return D && !R.NeverPierce.Contains(D->Id.ToLower());
+}
+
+static FAutoConsoleCommand GCireReloadCastRules(TEXT("cire.ReloadCastRules"),
+    TEXT("casting-rules: reload Content/Data/CastRules.json and re-derive every ability's cast time and healing."),
+    FConsoleCommandDelegate::CreateLambda([] { FString Error; CireSkillTuning::ReloadCastRules(&Error); }));

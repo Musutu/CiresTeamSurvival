@@ -50,6 +50,7 @@
 #include "ContentStreaming.h"
 #include "UObject/Package.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "CireWaves.h" // waves-modes: GAME TYPE picker
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireDraft,Log,All);
 
@@ -221,6 +222,7 @@ struct FDraftUI
     bool bInitialized=false;
     FRect FigurePx;float FigureUV[4]={0,0,1,1}; // last live figure draw (gallery diagnostics)
     uint8 LastMode=255;double ModeFlashAt=-100; // rules-conformance: game-mode picker feedback (any client sees the host's change)
+    bool bTypeDropdown=false;FRect TypeR;FName LastType;double TypeFlashAt=-100; // waves-modes: GAME TYPE (wave preset) picker
 };
 TMap<TWeakObjectPtr<const ACireHUD>,FDraftUI> States;
 FDraftUI& StateFor(const ACireHUD* HUD)
@@ -980,6 +982,39 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                         FString(ModeBlurbs[I])+TEXT("\n")+Why,R.X,R.Y,R.W,R.H);
                 }
             }
+            // waves-modes: GAME TYPE picker (the Custom game type: the saved wave presets, Standard / Hero TD / Hybrid shipped)
+            // left of the mode picker; the host opens the list, everyone sees the pick (ACireGameState::WavePreset).
+            {
+                const FName TypeId=GS&&!GS->WavePreset.IsNone()?GS->WavePreset:CireWaveDirector::Config(World).Preset;
+                const FCireWavePreset* Type=CireWaveDirector::FindPreset(TypeId);
+                const FString TypeLabel=Type?Type->Label.ToUpper():TypeId.ToString().ToUpper();
+                if(S.LastType!=TypeId){if(!S.LastType.IsNone()){S.TypeFlashAt=Now;PlayWowSound(4,.5f);}S.LastType=TypeId;}
+                const float TypeW=FMath::Clamp(TW(TypeLabel,BS,ECireFont::Heading)+34,96.f,200.f);
+                const float TX=LX+CW-ModeW-10-TypeW;
+                S.TypeR=FRect{TX,PY,TypeW,BH};
+                // Caption left of the box at the GAME MODE caption size (readability floor), only when it fits.
+                const FString TypeCap=TEXT("GAME TYPE");const float TypeCapW=TW(TypeCap,CapS,ECireFont::Heading)+12;
+                if(bCaption&&TX-TypeCapW>=MinX)Txt(TypeCap,TX-TypeCapW,PY+(BH-LH(CapS,ECireFont::Heading))*.5f,CapS,Gold,FRect{TX-TypeCapW,PY,TypeCapW,BH},ECireFont::Heading);
+                if(TX>=MinX)
+                {
+                    const FRect& R=S.TypeR;
+                    const bool bCan=Interactive&&bHost&&!bModeLocked,bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H);
+                    const float FlashAge=static_cast<float>(Now-S.TypeFlashAt);
+                    if(FlashAge<.9f)CireUIStyle::Glow(Pen(),R.X-8,R.Y-8,R.W+16,R.H+16,FLinearColor(1.f,.8f,.35f,.55f*(1.f-FlashAge/.9f)));
+                    Panel(R.X,R.Y,R.W,R.H,S.bTypeDropdown?SRGB(46,36,14,242):bOver&&bCan?SRGB(24,30,42,235):SRGB(10,14,22,215));
+                    Outline(R,1,S.bTypeDropdown||(bOver&&bCan)?Gold:WithAlpha(GoldDim,.9f));
+                    Line(TypeLabel,R.X+8,R.Y+(BH-LH(BS,ECireFont::Heading))*.5f,R.W-26,BS,Text,R,ECireFont::Heading);
+                    const float CX=R.R()-11,CY=R.Y+R.H*.5f; // chevron
+                    if(bCan)Tri(FVector2D(CX-4,CY-2),FVector2D(CX+4,CY-2),FVector2D(CX,CY+3),S.bTypeDropdown?BrightGold:Gold);
+                    else{const float LkX=R.R()-9,LkY=R.Y+7;Panel(LkX-3,LkY+2,7,5,Muted);Circle(LkX+.5f,LkY+1,2.5f,Muted,1.f,10);}
+                    if(bOver&&Clicked&&bCan){S.bTypeDropdown=!S.bTypeDropdown;PlayWowSound(4,.35f);Clicked=false;}
+                    const FString Why=!bHost?FString(TEXT("Only the host picks the game type; everyone sees the choice here.")):bModeLocked?FString(TEXT("Locked: the game type is fixed once the first wave starts.")):
+                        FString(TEXT("Click to choose the game type. New types are saved from F8 > Waves > Modes & Scale."));
+                    Tip(FString(TEXT("Game type: "))+(Type?Type->Label:TypeId.ToString()),(Type?Type->Description+TEXT("\n"):FString())+Why,R.X,R.Y,R.W,R.H);
+                }
+                else S.bTypeDropdown=false;
+                if(!bHost||bModeLocked)S.bTypeDropdown=false;
+            }
         }
     }
 
@@ -1171,6 +1206,29 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             if(bOver&&Clicked){SetFilter(Scopes[I]);Clicked=false;}
         }
         if(Clicked&&!Hit(L.X,L.Y,L.W,L.H)){S.bDropdown=false;}
+    }
+    // waves-modes: GAME TYPE list (over the page): every wave preset with its description; the host's pick goes to the server.
+    if(S.bTypeDropdown&&!bLockedView)
+    {
+        const TArray<FCireWavePreset>& Types=CireWaveDirector::Presets();
+        const ACireGameState* TGS=World?World->GetGameState<ACireGameState>():nullptr;
+        const FName Now2=TGS&&!TGS->WavePreset.IsNone()?TGS->WavePreset:CireWaveDirector::Config(World).Preset;
+        const float IH=40.f,LW=FMath::Max(S.TypeR.W,340.f);
+        const FRect L{S.TypeR.R()-LW,S.TypeR.B()+4,LW,Types.Num()*IH+30};
+        Panel(L.X,L.Y,L.W,L.H,ThemeUI(8,12,20,250));Outline(L,1,Gold);
+        Line(TEXT("CUSTOM GAME TYPE  |  WAVE PRESETS"),L.X+10,L.Y+6,L.W-20,9.5f,Gold,L,ECireFont::Heading);
+        for(int32 I=0;I<Types.Num();++I)
+        {
+            const FCireWavePreset& P=Types[I];
+            const FRect R{L.X+4,L.Y+24+I*IH,L.W-8,IH-2};const bool bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H),bOn=P.Id==Now2;
+            if(bOver||bOn)Panel(R.X,R.Y,R.W,R.H,bOver?ThemeUI(30,38,54,250):ThemeUI(22,28,40,250));
+            if(bOn)Panel(R.X,R.Y,3,R.H,BrightGold);
+            Line(P.Label+(P.bBuiltIn?FString():FString(TEXT("  (custom)"))),R.X+10,R.Y+3,R.W-20,11.5f,bOn?Gold:Text,R,ECireFont::Heading);
+            Line(P.Description,R.X+10,R.Y+21,R.W-20,9.f,Muted,R,ECireFont::Body);
+            Tip(P.Label,P.Description,R.X,R.Y,R.W,R.H);
+            if(bOver&&Clicked){if(Controller)Controller->ServerAction(11,I,nullptr);S.bTypeDropdown=false;PlayWowSound(4,.45f);Clicked=false;}
+        }
+        if(Clicked&&!Hit(L.X,L.Y,L.W,L.H)&&!Hit(S.TypeR.X,S.TypeR.Y,S.TypeR.W,S.TypeR.H)){S.bTypeDropdown=false;}
     }
 
     // ---------- Identity column (right): who they are, the key facts, the trait, how they play ----------
