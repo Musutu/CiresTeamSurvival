@@ -3,7 +3,7 @@
   "units": "centimeters",
   "frame": "realm-local",
   "map": "castletown",
-  "name": "Challenge pack and path setting",
+  "name": "Challenge pack s paths spawns bosses",
   "markers": [
     { "id": "challengePack_1", "type": "challengePack", "team": 1, "x": 7930.7, "y": -4864.5, "radius": 450, "tier": 1, "pack": "drowned_deep", "mirror": true, "pair": "challengePack_2" },
     { "id": "challengePack_2", "type": "challengePack", "team": 2, "x": 7930.7, "y": -4864.5, "radius": 450, "tier": 1, "pack": "drowned_deep", "mirror": true, "pair": "challengePack_1" },

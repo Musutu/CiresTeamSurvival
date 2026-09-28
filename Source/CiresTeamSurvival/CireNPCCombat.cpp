@@ -1,4 +1,5 @@
 #include "CireNPCCombat.h"
+#include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLeash.h" // layout-wiring
 #include "CireScalingKits.h" // scaling-kits
@@ -583,7 +584,8 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     // layout-wiring: a leashed unit whose holders all stand outside its zone may still take a new target on its path.
     if(!M->Victim&&(M->Threat.IsEmpty()||CireLeash::Applies(M))&&!CireWaveDirector::AggroSuppressed(M)) // wave-director: dropped/unreachable targets
     {
-        ACireHero* Closest=nullptr;double Best=FMath::Square(700.f);
+        // outdoor-bosses: a sudden-death world boss spots champions from farther (OutdoorBosses.json hostileAggroRadius).
+        ACireHero* Closest=nullptr;double Best=FMath::Square(M->bAlwaysHostile?CireOutdoorBosses::Rules().HostileAggroRadius:700.f);
         for(TCireActorIterator<ACireHero> It(M->GetWorld());It;++It)
         {
             auto* H=*It;if(H->bDead||!H->bDrafted||H->Health<=0||H->TeamId!=M->Lane||!CireRealm::CanObserve(H,M)||!CireLeash::CanPursue(M,H))continue;

@@ -45,6 +45,7 @@
 #include "CireRigAudit.h" // blender-rig
 #include "CireSpellGallery.h"
 #include "CireAuraGallery.h" // aura-vfx
+#include "CireFabVFXCatalog.h" // pack-usage: Fab VFX system catalogue
 #include "CireAbilityVFXGallery.h" // ability-vfx
 #include "CireOptionsGallery.h"
 #include "CireCombatExpansionProbe.h"
@@ -157,7 +158,7 @@ void ACireGameState::OnRepLaneRoutes() { CireLanePath::ReceiveState(this); }
 void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ACireGameState,Phase); DOREPLIFETIME(ACireGameState,SecondsLeft);
-    DOREPLIFETIME(ACireGameState,Round); DOREPLIFETIME(ACireGameState,Wave);
+    DOREPLIFETIME(ACireGameState,Round); DOREPLIFETIME(ACireGameState,Wave); DOREPLIFETIME(ACireGameState,bSuddenDeath); // outdoor-bosses
     DOREPLIFETIME(ACireGameState,CycleWavesDone); DOREPLIFETIME(ACireGameState,WavesPerCycle);
     DOREPLIFETIME(ACireGameState,NextWaveSeconds);
     DOREPLIFETIME(ACireGameState,MonsterSkillSeed); DOREPLIFETIME(ACireGameState,WaveRace); // monster-races
@@ -255,6 +256,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireOptionsGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireSpellGallery::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireAuraGallery::Initialize(this); // aura-vfx
+    if(!bFeedbackPreview)bFeedbackPreview = CireFabVFXCatalog::Initialize(this); // pack-usage
     if(!bFeedbackPreview)bFeedbackPreview = CireAbilityVFXGallery::Initialize(this); // ability-vfx
     if(!bFeedbackPreview)bFeedbackPreview = CireCombatArtPreview::Initialize(this);
     if(!bFeedbackPreview)bFeedbackPreview = CireArtPreview::Initialize(this);
@@ -532,6 +534,7 @@ void ACireGameMode::Tick(float Dt) {
     if(CireOptionsGallery::Tick(this)) return;
     if(CireSpellGallery::Tick(this)) return;
     if(CireAuraGallery::Tick(this)) return; // aura-vfx
+    if(CireFabVFXCatalog::Tick(this)) return; // pack-usage
     if(CireAbilityVFXGallery::Tick(this)) return; // ability-vfx
     if(CireCombatArtPreview::Tick(this)) return;
     if(CireArtPreview::Tick(this)) return;

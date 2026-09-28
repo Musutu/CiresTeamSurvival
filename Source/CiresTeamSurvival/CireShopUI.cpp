@@ -30,7 +30,7 @@ namespace
 // ------------------------------------------------------------------ local UI state
 struct FFly { FName Id; FVector2D From, To; double Start = 0; float Size = 40; bool bSell = false; int32 bLootRow = -1; int32 ToSlot = -1; bool bSkill = false; int32 ToSkillSlot = -1; };
 struct FWorldGold { FVector Where = FVector::ZeroVector; int32 Amount = 0; uint8 Kind = 0; double Start = 0; };
-struct FToast { FString Title, Body; FName Icon; double Start = 0; float Life = 4.f; FLinearColor Accent = Gold; };
+struct FToast { FString Title, Body; FName Icon; double Start = 0; float Life = 4.f; FLinearColor Accent = Gold; bool bSounded = false; }; // pack-usage: bSounded = its ui_toast cue played
 struct FFloater { FString Text; FVector2D Pos; double Start = 0; FLinearColor Color = Gold; };
 struct FFlash { FName Id; int32 Slot = -1; bool bBelt = false; double Start = -10; bool bError = false; };
 struct FLootWindow { FCireLootReport Report; double Start = 0; bool bClosed = false; };
@@ -62,6 +62,7 @@ struct FShopState
     double GoldChangeAt = -10;
     float GoldFrom = 0;
     bool bWasShopOpen = false;
+    double LastPlayAt = -10; // pack-usage: last shop sound (toast chime gate)
     // Personal loot presentation
     TArray<FLootWindow> LootWindows;
     TArray<FLootLogEntry> LootLog;
@@ -126,6 +127,7 @@ void Play(ACireHUD& HUD, const TCHAR* Name, float Volume = 1.f)
 {
     const auto& O = HUD.UISettings;
     if (O.bMuteAudio) return;
+    State.LastPlayAt = Now(); // pack-usage: toasts only chime when no other shop sound just played
     if (CireAudio::PlayShopSound(&HUD, Name, Volume)) return; // audio: recorded CC0 cue (AudioCues.json shopLegacy)
     if (USoundBase* Sound = ShopSound(Name)) UGameplayStatics::PlaySound2D(&HUD, Sound, O.MasterVolume * O.UIVolume * Volume);
     else HUD.PlayInterfaceSound(1, .6f * Volume);
@@ -1356,6 +1358,7 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
             State.Vendor = State.PendingVendor;
             if (State.Vendor >= 0) State.Category = 1;
         }
+        else Play(HUD, TEXT("S_ShopClose"), .5f); // pack-usage: the window closes with its own cue (AudioCues shopLegacy -> ui_shop_close)
         State.PendingTab = -1; State.PendingVendor = -1;
     }
 
@@ -2127,9 +2130,14 @@ void CireShopUI::DrawOverlay(ACireHUD& HUD, ACireHero* Hero, ACireController* Co
     float TY = bShopTop ? 4.f : View.Y * .28f;
     for (int32 Index = State.Toasts.Num() - 1; Index >= 0; --Index)
     {
-        const FToast& Toast = State.Toasts[Index];
+        FToast& Toast = State.Toasts[Index];
         const float Age = static_cast<float>(T - Toast.Start);
         if (Age > Toast.Life) { State.Toasts.RemoveAt(Index); continue; }
+        if (!Toast.bSounded && Age >= 0.f) // pack-usage: a toast chimes (AudioCues shopLegacy -> ui_toast) unless another shop sound just carried it
+        {
+            Toast.bSounded = true;
+            if (T - State.LastPlayAt > .35) Play(HUD, TEXT("S_Toast"), .5f);
+        }
         const float In = FMath::Clamp(Age / .25f, 0.f, 1.f), Out = FMath::Clamp((Toast.Life - Age) / .5f, 0.f, 1.f);
         FCireUIPainter Q = P; Q.Alpha = FMath::Min(In, Out);
         // Right of centre, over the world view (clear of the minimap/boss/threat column).

@@ -21,6 +21,7 @@
 #include "Sound/SoundWave.h"
 #include "Sound/SoundConcurrency.h"
 #include "CireSoundEvents.h" // audio-overhaul
+#include "CireFootsteps.h" // pack-usage: target armour class picks the hit signature (blood / sparks / stone / wood)
 #include <limits>
 
 namespace
@@ -631,6 +632,7 @@ void ACireSpellVisual::UpdateFabVFX()
     case EMode::Impact: FabRole=CireFabVFX::ERole::Impact;bAttach=false;break;
     case EMode::TargetMark: FabRole=Shape.bHeal?CireFabVFX::ERole::Cast:CireFabVFX::ERole::Impact;bAttach=false;break;
     case EMode::CasterFlare: case EMode::SelfShock: case EMode::Channel: FabRole=CireFabVFX::ERole::Cast;break;
+    case EMode::Gather: FabRole=CireFabVFX::ERole::Cast;break; // pack-usage: monster wind-ups flare on the caster too (the telegraph stays procedural)
     case EMode::AreaFollow:
         if(const ACireAreaEffect* Area=FollowedArea.Get();Area&&Area->IsActive()&&!bHarmlessArea)
         {
@@ -652,7 +654,35 @@ void ACireSpellVisual::UpdateFabVFX()
     // kits-complete: area visuals follow their zone's ability.
     FName AbilityKey=Skill;
     if(Mode==EMode::AreaFollow)if(const ACireAreaEffect* Area=FollowedArea.Get())AbilityKey=FName(*Area->AreaSpec.AbilityName);
-    const CireFabVFX::FEntry* Entry=CireFabVFX::FindFor(AbilityKey,School,FabRole);
+    const CireFabVFX::FEntry* Entry=nullptr;
+    // pack-usage: a critical hit may carry its own signature ("<id>.crit"), and physical hits without an ability of their own
+    // (basic attacks, monster melee, weapon strikes) pick a hit signature by the target's body and the attacker's weapon:
+    // hit.<flesh|armor|stone|wood|none>.<weapon>, then hit.<layer>, then hit (each tried as ".crit" first on a critical).
+    const bool bCritical=Cue==ECireSpellCue::Critical;
+    if(FabRole==CireFabVFX::ERole::Impact)
+    {
+        const CireFabVFX::FEntry* Own=CireFabVFX::FindAbility(AbilityKey,FabRole);
+        if(bCritical)if(const auto* Crit=CireFabVFX::FindKey(AbilityKey.ToString()+TEXT(".crit"),FabRole);Crit&&CireFabVFX::Resolve(Crit))Entry=Crit;
+        if(!Entry&&Own&&CireFabVFX::Resolve(Own))Entry=Own;
+        if(!Entry&&School==ECireSchool::Steel)
+        {
+            const ACharacter* Caster=CireSoundEvents::CharacterNear(GetWorld(),Start,220.f);
+            const ACharacter* Target=CireSoundEvents::CharacterNear(GetWorld(),End,220.f);
+            const FName Weapon=CireSoundEvents::WeaponOf(Caster);
+            const FName Armor=Target?CireFootsteps::ForCharacter(Target).Class:NAME_None;
+            const FName* LayerPtr=Armor.IsNone()?nullptr:CireSoundEvents::Data().ArmorLayers.Find(Armor);
+            const FString Layer=LayerPtr?LayerPtr->ToString():TEXT("flesh");
+            TArray<FString> Keys;
+            if(!Weapon.IsNone())Keys.Add(FString::Printf(TEXT("hit.%s.%s"),*Layer,*Weapon.ToString()));
+            Keys.Add(TEXT("hit.")+Layer);Keys.Add(TEXT("hit"));
+            for(const FString& K:Keys)
+            {
+                if(bCritical)if(const auto* E=CireFabVFX::FindKey(K+TEXT(".crit"),FabRole);E&&CireFabVFX::Resolve(E)){Entry=E;break;}
+                if(const auto* E=CireFabVFX::FindKey(K,FabRole);E&&CireFabVFX::Resolve(E)){Entry=E;break;}
+            }
+        }
+    }
+    if(!Entry)Entry=CireFabVFX::FindFor(AbilityKey,School,FabRole);
     // telegraphs: a ground overlay takes the first candidate on the curated allow-list (square / diamond footprints and
     // systems that do not scale are never used on a zone).
     UFXSystemAsset* System=bFabGround?CireFabVFX::ResolveGround(Entry,&FabSkipReason):CireFabVFX::Resolve(Entry);
@@ -667,7 +697,7 @@ void ACireSpellVisual::UpdateFabVFX()
     if(bFabGround)Scale=FMath::Clamp(FabTargetRadius*CireFabVFX::GroundFitFraction/FMath::Max(1.f,CireFabVFX::NativeGroundRadius(System)),.02f,5.f);
     UFXSystemComponent* C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)
         :CireFabVFX::SpawnAt(GetWorld(),System,GetActorLocation(),GetActorRotation(),Scale);
-    CireFabVFX::ApplyTint(C,Entry->Tint);
+    CireFabVFX::ApplyEntryTint(C,*Entry); // pack-usage: recolour variants
     FabFX=C;FabScale=Scale;
     if(bFabGround&&C)CireFabVFX::DimColors(C,CireAbilityVFX::FabGroundBrightness(CireAbilityVFX::GroundIntensity(GetWorld()))); // ground overlays follow the slider
     UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_SPAWN skill=%s role=%s school=%s system=%s ok=%d"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole),

@@ -1,0 +1,120 @@
+Make bosses 5x Bigger.  Give them a different kind of health bar, that is Boss Like – large and epic.
+
+Reference Image :
+On hit Effects are Similar across many characters, a greenish blue circlular swirl.  Its nice, but not for every attack I see too many of them going off.  (It could be the Test arena, I will know more when I play test the game and not the preview of route adjustments.
+
+Adjust Feature:
+Skills and Items from the shop can be purchased at anytime from any location, there is a 10% discount for buying from the respective vender, and a 10% surcharge for buying out of town.  There is a confirmation box when buying out of town – with a button to choose to not see those messages again AS WELL AS – a settings button in the options menu to disable Confirmation Dialogs.
+
+MONSTERS:
+Reference Image : "C:\Users\Eric\Desktop\Playtest Fixes\latest\Pack Size and formation.png"
+Key for Image : Blue = tank / Green = Healer / Red is DPS (Ranged or Melee or Ranged Caster)
+Pack composition max 6 units, lets change to max pack size of 8, and include a ranged caster dps option.
+we also need to change pack formation to a few preset types Viewable in the Reference Image (Pack Size and formation.png).
+Also need to change pack facing.
+Formations and pack sizing covered in Pack Size and formation.PNG
+ 
+Along these changes, Tier 3 and Tier 4 packs do not currently register in the games Route Editor and playtest after route editing – although you can place them I don’t believe they actually spawn yet.  Additionally we need to be able to scale the challenge mobs health and damage.  Set a base damage of 200, and I can scale them from there either down or up.  And base health of the Support Casters to 50% of the challenge Tanks HP, and base health of MELEE DPS is 75% of the tanks – Ranged DPS Caster or physical ranged is 65% of the Challenge tanks health.  Tanks base health can be 1500 and I will scale it from that.
+
+Armored monster waves move too fast, reduce armored wave movespeed by 50% and add slow immunity, but suffer 2x stun Length. (Armored units cannot be slowed, but they can be stunned for longer, and are susceptible to path blocking)
+Monster waves should have an in game scale I can adjust and set as I play, if it seems too easy, by a certain time, or too hard, I can fix it then and there.  
+
+Wave monsters should have a reduced movement speed as well, since there are more packs per wave.  Reduce movement speed of Wave monsters by 20% across the board.
+
+GAME MECHANICS AND SETTINGS:
+
+Wave monster damage can be toggled off or on PER wave.  And presets for these adjustments can be saved, this will be for creating Games modes.  In the game creation interface : We will need a Custom game type when hosting, where I can make these Presets into different game modes.  Such as- Hero TD/PVP where the waves do not attack, its pure hero Tower defense and the waves just path to the castle and do not interact (like the armored rounds).
+Or a mix of Hero TD/PVP/PVE by having specific wave packs Fight back.
+Standard game – all waves other than armored – attack heros
+a WAVE spawns 7 packs of 5-7 monsters, totaling 35-49 monsters.  The pack Size is an Additional Custom or Difficulty Modifier.
+
+Aim for a 25 Wave game, waves after 25 become Sudden death waves, monster damage and health doubles.
+with 4 pvp rounds.
+
+Bonus loot Stage should path to the castle, and maintain their behavior, the duration before they de-spawn, should not occur until the monsters are attacked, and the time they remain before de-spawning should be doubled.
+Bonus loot stages are random and can replace any wave type except bosses.
+The level of random Bonus loot stages should be very low, and include some other special wave types
+So instead of just Bonus Loot stage, the bonus loot can be of various value, depending on the Bonus loot stage “roll”
+Low tier bonus – Drops current wave value x2 in gold.
+Low tier bonus – Drops items used in basic recipes (Components)
+Low tier bonus – Drops consumable items from the shop – can be tomes of primary stat or consumable items.
+Mid tier bonus – Drops current wave value x5 in gold.
+Mid tier bonus – Drops 1 Item for each player of shop value of 350-500g
+Mid tier bonus – Drops a single Completed PVP Unique item From a list of items the shop cannot procure. (create 10 Different than what is in the shop items of mid value for this unique drop table – These items are specifically tuned for PVP combat each should have an effect for PVP combat)
+RARE High tier bonus – Drops up to 3 Chests of loot each containing either: 100g a free skill point (forgo next upgrade or spell purchase cost.)
+
+Waves 1-5 spawn 5 packs of 5, totaling 25 monsters.
+After the 5th wave completes – A Portal opens next to each player, to the designated arena. 
+both teams receive a 30 second prep to purchase and prepare for pvp.  
+Players can enter the portal early if they are ready. If they have not entered when the timer expires, they are automatically teleported to the arena.
+Once the timer expires and everyone loads into the arena, a 7 second count down is displayed before the arena match begins.
+
+Killing any player in the arena by killing blow – awards that player 50g regardless of win or loss of match.
+
+Winning the Arena, gives a team wide stacking buff to the winning team.  Damage to PVE monsters +15%.  *Meaning this does not affect PVP.
+Losing the Arena, gives a team wide stacking debuff to the losing team minus -15% damage to PVE monsters.
+
+Winning team of the pvp round receives 250g split between the team (50g each)
+
+Losing the round gives no bonus.
+
+Units:
+Generally, all
+Units can be surrounded rather easily, and there can be character overlap quite a bit, lets address collision size and melee range slightly to spread units out and reduce clumping.
+Skill Assignment:
+Since the pool of abilities after this round of updates will be extensive as will the number of playable characters we need to allow for a Skill Assignment editor where I can goto Champion select, and build each hero out with appropriate skills as base-kits, then I can save that as a static “template” but also so I can take the skill set and have the Ability effects Match per set, to really get the effects in the correct locations and matching to the champion they are designed for.
+Skills:
+Barriers - constructed objects - summons should IGNORE clipping currently they can only be placed in very specific places.
+Ground effects can be Line / barrier / cone / circle(I’ve noticed some abnormal shapes on ground effects.)
+Skill effect sizes can be reduced by 10% across the board, hit effects can be reduced by 20%.
+*AoE effects should have Cast times Ranging from .5 seconds to 3.5 seconds depending on the impact and damage of the ability. *
+Projectile effects that continue through the target but only effect the first contacted target should become piercing, to match the animation.
+Healing Skills that are direct should have a cast time – from 1.5 seconds to 3.5 seconds depending on the power of the heal.
+AoE healing skills can be instant cast – or have a cast time of up to 1.5 seconds but their effects should be cut accordingly.  Currently healing is too powerful.
+
+
+We need to expand the skills available with more Ultimates – More Constructs – More summons – More Passives – and for the remaining Skill Effects not used make Active Spells.
+The spell addition is extensive as I want there to be a large ability pool and many different play styles accessible.
+
+I recently added the Entire Paragon Character package, and want to add them to the game, this is an extensive list of characters that will all need abilities, if they have pre made abilities and effects with animations – great take them as is – and modify the skill values to match the current game or simply add them to the ability pool, but maintain a Base-kit of their abilities they have complete packages for.
+
+
+How much of each pack is now used:
+
+??????????????????????????????????????????????????
+?        Pack        ?      Before ? After       ?
+??????????????????????????????????????????????????
+? Big Pack Magic     ? 69% ? 82%                 ?
+??????????????????????????????????????????????????
+? Earth Spells       ? 65% ? 84%                 ?
+??????????????????????????????????????????????????
+? Shadow Magic       ? 53% ? 70%                 ?
+??????????????????????????????????????????????????
+? FX Variety         ? 38% ? 57%                 ?
+??????????????????????????????????????????????????
+? Realistic Blood    ? 21% ? 39%                 ?
+??????????????????????????????????????????????????
+? Fantasy UI SFX     ? 24% ? 39%                 ?
+??????????????????????????????????????????????????
+? Forest / State VFX ? 100% / 93% (already high) ?
+??????????????????????????????????????????????????
+
+What changed in game:
+- Monster abilities: all 344 now use pack effects with a look per race. Where two share an effect, it's recoloured.
+- Crowd-control colours: tinted by type (listed in the questions below).
+- Monster wind-ups: cast flares before they attack.
+- Hits and crits: the effect depends on what's hit and with what. Blood slashes, stabs and splashes, sparks on armour, debris on stone, leaves on bark.
+- Kills and level-up: kill bursts on monster deaths and a level-up flourish.
+- Champions: skills that shared an effect with another are recoloured.
+- Sounds: new sounds for toasts and closing the shop, banner sounds, and more UI sounds.
+
+Not finished:
+- The A/B/C quality grading of the 538 effects.
+- The before/after screenshots.
+- Checking the tinted monster kits by eye in game.
+
+Your playtest will be the first real look at them. The next steps are in Docs/RESUME-pack-usage.md.
+
+Two questions for your playtest:
+1. Are these crowd-control colours right: root green, silence magenta, stun gold, slow ice-blue, charm teal, blind navy?
+2. Now that recolouring works, should the arena portals use real recolours?

@@ -191,6 +191,13 @@ bool CireLayoutWiring::RunTests(ACireGameMode* Mode)
         Check(ML::CompileRoutes(B, Base, BC, BossNotes) && BC.Bosses[0].Num() == 1 && BC.Bosses[1].Num() == 1 && BC.Bosses[0][0].Kind == Pick.ToString() && BC.Bosses[1][0].Kind == Pick.ToString() &&
             CireOutdoorBosses::ResolveSpot(BC, 1, 0) == Pick && CireOutdoorBosses::ResolveMarker(B, *ML::Find(B, BossId)) == Pick, TEXT("both realms compile the marker's boss"));
         Check(ML::DisplayLabel(B, *ML::Find(B, BossId)).Contains(CireOutdoorBosses::BossName(Pick)), TEXT("the marker's label names its boss"));
+        {   // Eric: HP x per marker, mirrored, saved, compiled into both realms.
+            FCireMapLayout H = B; ML::SetHealthScale(H, BossId, 2.5f);
+            FCireMapLayout HRound; FString HError; FCireBattlefieldRoutes HC; TArray<FString> HNotes;
+            Check(ML::Find(H, ML::Find(H, BossId)->Pair)->HealthScale == 2.5f && ML::ParseJson(ML::ToJson(H), HRound, HError) && ML::Find(HRound, BossId)->HealthScale == 2.5f &&
+                ML::CompileRoutes(H, Base, HC, HNotes) && HC.Bosses[0][0].HealthScale == 2.5f && HC.Bosses[1][0].HealthScale == 2.5f,
+                TEXT("a Boss marker's HP x mirrors, round-trips and compiles into both realms"));
+        }
         ML::SetKind(B, BossId, TEXT("not_a_boss"));
         bool bUnknown = false; for (const FCireLayoutIssue& I : ML::Validate(B)) bUnknown |= I.bError && I.MarkerId == BossId && I.Message.Contains(TEXT("unknown boss"));
         Check(bUnknown, TEXT("Validate flags a Boss marker holding an unknown boss"));

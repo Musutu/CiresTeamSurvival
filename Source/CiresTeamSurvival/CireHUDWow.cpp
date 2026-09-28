@@ -36,6 +36,8 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Sound/SoundBase.h"
 #include "CireAudio.h" // audio: recorded cues for level-up, aggro and phase banners
+#include "CireFabVFX.h" // pack-usage: level-up flourish
+#include "CireAbilityVFX.h" // pack-usage: spell-effect scale
 #include "UObject/ConstructorHelpers.h"
 
 namespace
@@ -239,7 +241,7 @@ FInsight Describe(UWorld* World,AActor* Actor,const ACireHero* Self)
         }
         U.Victim=M->Victim;
         if(IsValid(M->Victim))U.VictimLine=M->Victim==Self?TEXT("You"):M->Victim->HeroName;
-        else if(bWorldBoss)U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the world boss"):M->LeashState==2?TEXT("Evading: returning to its lair"):TEXT("Guarding its lair"); // outdoor-bosses
+        else if(bWorldBoss)U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the world boss"):M->GetWorld()&&M->GetWorld()->GetGameState<ACireGameState>()&&M->GetWorld()->GetGameState<ACireGameState>()->bSuddenDeath?TEXT("SUDDEN DEATH: hunting champions near its lair"):M->LeashState==2?TEXT("Evading: returning to its lair"):TEXT("Guarding its lair"); // outdoor-bosses
         else U.VictimLine=M->bNeutral?TEXT("Neutral: attack to provoke the pack"):M->bArmoredEscort?TEXT("Marching on your keep"):M->LeashTimer>0?TEXT("Returning to camp"):M->LeashState==2?TEXT("Evading: returning to its path"):TEXT("Advancing toward town"); // wave-director; layout-wiring: leash
         if(M->NPCState)
         {
@@ -825,6 +827,11 @@ void ACireHUD::UpdateLevelUps(ACireHero* Hero)
         if(H->Level>*Seen&&H->bDrafted&&UISettings.bLevelUpEffect)
         {
             LevelBursts.Add({H,H->Level,Now,H==Hero});
+            // pack-usage: a Fab level-up flourish on the champion (FabVFX.json abilities "level_up".cast) beside the procedural burst.
+            if(CireFabVFX::Enabled()&&H->GetRootComponent())
+                if(const auto* E=CireFabVFX::FindKey(TEXT("level_up"),CireFabVFX::ERole::Cast))
+                    if(UFXSystemAsset* S=CireFabVFX::Resolve(E))
+                        CireFabVFX::ApplyEntryTint(CireFabVFX::SpawnAttached(S,H->GetRootComponent(),FVector(0,0,-88.f),E->Scale*CireAbilityVFX::SpellEffectScale(GetWorld()),true),*E);
             if(H==Hero){PlayWowSound(0,1.f);CireBanners::Show(ECireBanner::LevelUp,FString::Printf(TEXT("Level %d"),H->Level),TEXT("+2 primary attribute  /  +1 to the others"));}
         }
         *Seen=H->Level;
@@ -1421,6 +1428,9 @@ void ACireHUD::UpdateBanners(ACireHero* Hero,ACireGameState* State)
 {
     if(!Hero||!State)return;
     const bool bFirst=BannerSeenPhase<0;
+    // outdoor-bosses: SUDDEN DEATH, telegraphed once when it begins.
+    if(State->bSuddenDeath&&!bBannerSuddenDeath){bBannerSuddenDeath=true;if(!bFirst)CireBanners::Show(ECireBanner::BossSpawned,TEXT("SUDDEN DEATH \u2014 the world bosses return"),TEXT("Every fallen world boss rises at its lair, hostile: they attack any champion who comes near."),TEXT("SUDDEN DEATH"));}
+    else if(!State->bSuddenDeath)bBannerSuddenDeath=false;
     if(!bFirst&&State->Phase!=BannerSeenPhase)
     {
         const int32 Seconds=FMath::Max(0,FMath::RoundToInt(State->SecondsLeft));

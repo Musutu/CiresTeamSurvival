@@ -395,6 +395,9 @@ def generated_cues() -> "OrderedDict[str, dict]":
     out["ui_skill_learned"] = cue(["/Game/UI/Draft/Sounds/S_SkillLearned"], .85, None, cooldown=.3, **ui)
     out["ui_skill_hover"] = cue(["UI/UI_Hover_{01..04}"], .3, [1.05, 1.1], cooldown=.05, **ui)
     out["ui_undo"] = cue(["UI/UI_Close"], .5, [1.1, 1.15], cooldown=.1, **ui)
+    # pack-usage: the shop window closing and every toast get their own cue (Fantasy UI kit; shipped click/close underneath).
+    out["ui_shop_close"] = cue(["UI/UI_Close"], .55, [.96, 1.0], cooldown=.2, **ui)
+    out["ui_toast"] = cue(["UI/UI_Hover_{01..04}"], .4, [1.2, 1.28], cooldown=.35, **ui)
     out["loot_common"] = cue(["SFX/SFX_LootPickup"], .65, [.98, 1.04], cooldown=.1, **ui)
     out["loot_magic"] = cue(["SFX/SFX_LootPickup"], .75, [1.05, 1.1], cooldown=.1, with_=["loot_shine"], **ui)
     out["loot_rare"] = cue(["SFX/SFX_LootPickup"], .8, [1.08, 1.12], cooldown=.1, with_=["loot_shine", "coins_buy"], **ui)
@@ -430,7 +433,7 @@ HUD_LEGACY = OrderedDict([("0", "level_up"), ("1", "aggro_taken"), ("2", "ui_thr
 SHOP_LEGACY = OrderedDict([
     ("S_ShopBuy", "coins_buy"), ("S_ShopSell", "coins_sell"), ("S_LootPickup", "loot_pickup"), ("S_TeleportArrive", "teleport_arrive"),
     ("S_TeleportChannel", ""), ("S_ShopOpen", "ui_open"), ("S_ShopTab", "ui_tab"), ("S_ShopUndo", "ui_undo"), ("S_ShopError", "ui_error"),
-    ("S_ShopErrorGold", "ui_error_gold"), ("S_SkillLearn", "ui_skill_buy"),
+    ("S_ShopErrorGold", "ui_error_gold"), ("S_SkillLearn", "ui_skill_buy"), ("S_ShopClose", "ui_shop_close"), ("S_Toast", "ui_toast"),
     ("S_LootCommon", "loot_common"), ("S_LootMagic", "loot_magic"), ("S_LootRare", "loot_rare"), ("S_LootEpic", "loot_epic"),
 ])
 UI_LEGACY = OrderedDict([

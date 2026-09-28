@@ -29,7 +29,8 @@ namespace CireFabVFX
     {
         TArray<FString> Candidates;  // object paths, first existing one wins
         float Scale = 1.f;           // uniform scale applied on spawn
-        FLinearColor Tint = FLinearColor(0, 0, 0, 0); // A>0: pushed to common colour user parameters
+        FLinearColor Tint = FLinearColor(0, 0, 0, 0); // A>0: recolour (pack-usage: Recolor / ApplyEntryTint)
+        float TintStrength = 1.f;    // pack-usage: 0..1, how far every exposed colour moves to the tint's hue / saturation
     };
 
     CIRESTEAMSURVIVAL_API bool Enabled();
@@ -49,8 +50,17 @@ namespace CireFabVFX
     // Spawners (nullptr when the overlay is off or the pack is missing).
     CIRESTEAMSURVIVAL_API UFXSystemComponent* SpawnAttached(UFXSystemAsset* System, USceneComponent* Parent, FVector Offset, float Scale, bool bAutoDestroy);
     CIRESTEAMSURVIVAL_API UFXSystemComponent* SpawnAt(UWorld* World, UFXSystemAsset* System, FVector Location, FRotator Rotation, float Scale);
-    // Tints the common Lord Enot / UrtanoVFX / SoftTofu colour user parameters when present.
+    // Sets the generic "Color" / "Tint" user parameters when a system exposes one (legacy; the arena portals use it).
     CIRESTEAMSURVIVAL_API void ApplyTint(UFXSystemComponent* Component, FLinearColor Tint);
+    // pack-usage: recolour variant. Every exposed LinearColor user parameter of a Niagara system (Lord Enot exposes one per
+    // part: Color_Trail, Color_Sparks, Color_Smoke...) keeps its brightness (HSV value, HDR intensity) and alpha and moves its
+    // hue and saturation towards Tint by Strength; near-white flashes (saturation < .12) stay white so the read is kept.
+    // Returns the number of parameters changed (0 for Cascade or a system without colour parameters).
+    CIRESTEAMSURVIVAL_API int32 Recolor(UFXSystemComponent* Component, FLinearColor Tint, float Strength = 1.f);
+    // Applies the entry's tint (Recolor) when it has one; a no-op otherwise. Used by every data-driven spawn.
+    CIRESTEAMSURVIVAL_API void ApplyEntryTint(UFXSystemComponent* Component, const FEntry& Entry);
+    // The entry for a data key in the "abilities" table (hit.<layer>.<weapon>, kill.<class>, level_up...), or nullptr.
+    CIRESTEAMSURVIVAL_API const FEntry* FindKey(const FString& Key, ERole Role);
     // Stops emitting and lets the live particles finish, then destroys the component (Niagara or Cascade).
     CIRESTEAMSURVIVAL_API void Release(UFXSystemComponent* Component);
 

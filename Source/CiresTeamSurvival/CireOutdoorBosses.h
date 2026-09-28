@@ -26,13 +26,21 @@ struct FCireMapMarker;
 struct CIRESTEAMSURVIVAL_API FCireOutdoorBossRules
 {
     bool bEnabled = true;
-    /** Seconds before a slain outdoor boss returns to its marker (<= 0: it stays dead for the match). */
-    float RespawnSeconds = 300.f;
+    /** Seconds before a slain outdoor boss returns to its marker (<= 0: it stays dead until sudden death; Eric's default). */
+    float RespawnSeconds = 0.f;
+    /** SUDDEN DEATH (Eric 2026-09-26): after this many match minutes every dead world boss returns to its marker (0 = never). */
+    float SuddenDeathMinutes = 60.f;
+    /** Bosses of the sudden death are hostile: they aggro champions within HostileAggroRadius on sight (still leashed). */
+    bool bSuddenDeathHostile = true;
+    float HostileAggroRadius = 1500.f;
+    /** Health: BaseHealth x the boss's multiplier (bossHealth) x the marker's multiplier (the layout editor's HP x). */
+    float BaseHealth = 10000.f;
+    TMap<FName, float> BossHealth;
     /** false: wave bosses spawn at their wave's monster spawn (the Boss markers are the outdoor bosses' lairs). */
     bool bWaveBossesAtMarkers = false;
-    /** Strength: configured like a wave boss of at least this global wave (the live wave when later), times the multipliers. */
+    /** Damage and skills: configured like a wave boss of at least this global wave (the live wave when later). */
     int32 StrengthWave = 12;
-    float HealthMultiplier = 1.5f, DamageMultiplier = 1.f;
+    float DamageMultiplier = 1.f;
     /** Challenge tier of the boss (the nameplate T#, and the tier the pack-completion loot table rolls at). */
     int32 LootTier = 4;
     /** Multiplier on the boss bounty (Eric: a boss is worth 10x the current mob value). */
@@ -56,6 +64,8 @@ namespace CireOutdoorBosses
     CIRESTEAMSURVIVAL_API FString BossName(FName Id);
     /** The boss of a marker: its kind, else byMarker[name], else roster[index] (index = its order among the realm's boss markers). */
     CIRESTEAMSURVIVAL_API FName Resolve(const FString& Kind, const FString& MarkerName, int32 Index, const FCireOutdoorBossRules& Rules);
+    /** A boss's health: BaseHealth x bossHealth[boss] x the marker's multiplier. */
+    CIRESTEAMSURVIVAL_API float HealthFor(FName BossId, float MarkerScale, const FCireOutdoorBossRules& Rules);
     CIRESTEAMSURVIVAL_API FName ResolveSpot(const FCireBattlefieldRoutes& Routes, int32 Realm, int32 Index);
     /** The layout editor's view of a Boss Spawn marker: the boss it will hold (same order as the compile), and whether the
      *  marker chose it itself (false: OutdoorBosses.json picked it). */
@@ -72,7 +82,12 @@ namespace CireOutdoorBosses
     // ---- match runtime (server) ----
     /** Spawns every marker's boss in both realms (those already alive are kept). Returns how many were spawned. */
     CIRESTEAMSURVIVAL_API int32 SpawnAll(ACireGameMode* Mode);
-    CIRESTEAMSURVIVAL_API ACireMonster* SpawnOne(ACireGameMode* Mode, int32 Realm, int32 Index);
+    CIRESTEAMSURVIVAL_API ACireMonster* SpawnOne(ACireGameMode* Mode, int32 Realm, int32 Index, bool bHostile = false);
+    /** Sudden death now: every dead world boss returns (hostile per the rules), banner + announcement. Once per match. */
+    CIRESTEAMSURVIVAL_API int32 BeginSuddenDeath(ACireGameMode* Mode);
+    CIRESTEAMSURVIVAL_API bool IsSuddenDeath(const ACireGameMode* Mode);
+    /** Match seconds the respawn clock has counted (sudden death starts at SuddenDeathMinutes x 60). */
+    CIRESTEAMSURVIVAL_API double MatchSeconds(const ACireGameMode* Mode);
     /** A boss died: its respawn timer starts (or it stays dead). */
     CIRESTEAMSURVIVAL_API void OnKilled(ACireGameMode* Mode, ACireMonster* Monster);
     /** Respawn timers. */

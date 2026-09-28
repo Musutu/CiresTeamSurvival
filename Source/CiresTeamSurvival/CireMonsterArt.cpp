@@ -1,5 +1,9 @@
 #include "CireMonsterArt.h"
 #include "CireFabAnimation.h" // fab-coverage
+#include "CireFabVFX.h" // pack-usage: kill bursts
+#include "CireFootsteps.h" // pack-usage: body class of the dying unit
+#include "CireSoundEvents.h" // pack-usage: armour class -> death class table
+#include "CireAbilityVFX.h" // pack-usage: spell-effect scale
 
 #include "CireMonsterAnim.h"
 #include "CireWeaponPresentation.h" // blender-rig: CireWeapons::BusinessAxis
@@ -1203,6 +1207,23 @@ void UCireMonsterArt::MulticastDeath_Implementation()
     if (GetNetMode() == NM_DedicatedServer || bDeathPresented) return;
     bDeathPresented = true;
     SpawnCorpse();
+    // pack-usage: kill burst from the Fab packs by body class (FabVFX.json abilities "kill.<humanoid|creature|golem|ethereal|boss>"):
+    // blood for flesh, debris for stone and bark, a shadow puff for spirits. One system per death, never per hit.
+    if (auto* Monster = Cast<ACireMonster>(GetOwner()); Monster && CireFabVFX::Enabled())
+    {
+        const FName Class = CireFootsteps::ForCharacter(Monster).Class;
+        const FName* Death = Class.IsNone() ? nullptr : CireSoundEvents::Data().DeathClasses.Find(Class);
+        FString Key = TEXT("kill.") + (bAppliedSpectral ? FString(TEXT("ethereal")) : Death ? Death->ToString() : FString(TEXT("creature")));
+        if (Monster->GetNPCClassification() == ECireNPCClass::Boss) Key = TEXT("kill.boss");
+        const CireFabVFX::FEntry* Entry = CireFabVFX::FindKey(Key, CireFabVFX::ERole::Impact);
+        if (!Entry) Entry = CireFabVFX::FindKey(TEXT("kill"), CireFabVFX::ERole::Impact);
+        if (UFXSystemAsset* System = CireFabVFX::Resolve(Entry))
+        {
+            const FVector At = Monster->GetMesh() ? Monster->GetMesh()->GetComponentLocation() + FVector(0, 0, 70) : Monster->GetActorLocation();
+            UFXSystemComponent* FX = CireFabVFX::SpawnAt(Monster->GetWorld(), System, At, FRotator::ZeroRotator, Entry->Scale * CireAbilityVFX::SpellEffectScale(Monster->GetWorld()));
+            CireFabVFX::ApplyEntryTint(FX, *Entry);
+        }
+    }
 }
 
 void UCireMonsterArt::SpawnCorpse()

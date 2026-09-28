@@ -979,8 +979,17 @@ void ACireHUD::TickLayoutEditor()
         if (Pressed(EKeys::Enter)) { E.ChainId.Reset(); E.Armed = NAME_None; Say(TEXT("Chain finished.")); }
         if (Pressed(EKeys::Comma)) Rotate(bShift ? -45.f : -15.f);
         if (Pressed(EKeys::Period)) Rotate(bShift ? 45.f : 15.f);
-        if (Pressed(EKeys::LeftBracket)) StepRadius(-50.f);
-        if (Pressed(EKeys::RightBracket)) StepRadius(50.f);
+        if (const FCireMapMarker* Sel = SelectedMarker(); Sel && Sel->Type == ML::BossSpawn) // outdoor-bosses: [ ] step the boss's HP x
+        {
+            const FString HpId = Sel->Id; const float HpScale = Sel->HealthScale;
+            if (Pressed(EKeys::LeftBracket)) Edit([&](FCireMapLayout& X) { return ML::SetHealthScale(X, HpId, HpScale - .25f); });
+            if (Pressed(EKeys::RightBracket)) Edit([&](FCireMapLayout& X) { return ML::SetHealthScale(X, HpId, HpScale + .25f); });
+        }
+        else
+        {
+            if (Pressed(EKeys::LeftBracket)) StepRadius(-50.f);
+            if (Pressed(EKeys::RightBracket)) StepRadius(50.f);
+        }
         if (Pressed(EKeys::Hyphen)) StepTier(-1);
         if (Pressed(EKeys::Equals)) StepTier(1);
         if (Pressed(EKeys::O)) CycleOwner();
@@ -1264,9 +1273,22 @@ void ACireHUD::TickLayoutEditor()
             if (Button(TEXT(">"), IX + IW - 26, Y, 26, TEXT("Next race boss (K)."))) StepBoss(1);
             Y += 26;
             const FCireOutdoorBossRules& Rules = CireOutdoorBosses::Rules();
+            // Eric: HP x per marker (steps of 0.25, [ and ] keys with a Boss marker selected); the twin follows.
+            {
+                const FString HpMarker = M->Id; const float HpScale = M->HealthScale;
+                auto StepHp = [&](float Delta) { Edit([&](FCireMapLayout& X) { return ML::SetHealthScale(X, HpMarker, HpScale + Delta); }); };
+                Stepper(TEXT("HP x"), FString::Printf(TEXT("x%.2f"), HpScale), Y, [&]() { StepHp(-.25f); }, [&]() { StepHp(.25f); },
+                    TEXT("This marker's boss health multiplier (0.1-20). OutdoorBosses.json baseHealth x bossHealth x this. Mirrored twins follow."));
+                Y += 26;
+                const float Hp = CireOutdoorBosses::HealthFor(Boss, HpScale, Rules);
+                TextFx(FString::Printf(TEXT("HEALTH  %s"), *FText::AsNumber(FMath::RoundToInt(Hp)).ToString()), IX, Y, 9.f, CireUIColors::BrightGold, ECireFont::Bold, true);
+                Y += 18;
+            }
             Wrapped(FString::Printf(TEXT("Always there, neutral until attacked, leashed %.0f m to this marker; boss bounty and loot; %s."), CireLeash::Rules().RadiusBoss / 100.f,
-                Rules.RespawnSeconds > 0 ? *FString::Printf(TEXT("returns %.0f min after it dies"), Rules.RespawnSeconds / 60.f) : TEXT("stays dead for the match once slain")), IX, Y, IW, 8.f, CireUIColors::Muted, 2);
-            Y += 28;
+                Rules.RespawnSeconds > 0 ? *FString::Printf(TEXT("returns %.0f min after it dies"), Rules.RespawnSeconds / 60.f)
+                : Rules.SuddenDeathMinutes > 0 ? *FString::Printf(TEXT("stays dead once slain until SUDDEN DEATH (%.0f min), when it returns %s"), Rules.SuddenDeathMinutes, Rules.bSuddenDeathHostile ? TEXT("hostile") : TEXT("neutral"))
+                : TEXT("stays dead for the match once slain")), IX, Y, IW, 8.f, CireUIColors::Muted, 3);
+            Y += 40;
         }
         if (M->Type == ML::Vendor)
         {
