@@ -20,6 +20,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Misc/ScopeExit.h"
 #include "Rules/CiresRules.h"
+#include "CireWaves.h" // waves-modes: armored stun / slow rules
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireCC,Log,All);
 
@@ -101,6 +102,7 @@ float CireCrowdControl::Stun(AActor* Target,float Seconds,AActor* Source)
     if(!IsValid(Target)||!Target->HasAuthority()||IsBossUnit(Target)||Seconds<=0)return 0.f;
     if(CireKits::IgnoresStun(Target))return 0.f; // scaling-kits: level-15 stun-ignore aura
     Seconds*=CireItems::ControlDurationMultiplier(Source); // items-v2: Shackles of the Pale King
+    Seconds*=CireWaveDirector::StunMultiplier(Target); // waves-modes: armored wave units stay stunned 2x longer
     const float Applied=Diminish(Target,Source,StunnedId,Seconds);if(Applied<=0)return 0.f;
     CireBuffs::Apply(Target,StunnedId,Applied,Source);
     if(auto* H=Cast<ACireHero>(Target))
@@ -127,7 +129,7 @@ float CireCrowdControl::Slow(AActor* Target,float Seconds,AActor* Source)
     Seconds*=CireItems::ControlDurationMultiplier(Source); // items-v2
     const float Until=Now(Target->GetWorld())+Seconds;
     if(auto* H=Cast<ACireHero>(Target))H->SlowUntil=FMath::Max(H->SlowUntil,Until);
-    else if(auto* M=Cast<ACireMonster>(Target))M->SlowUntil=FMath::Max(M->SlowUntil,Until);
+    else if(auto* M=Cast<ACireMonster>(Target)){if(CireWaveDirector::IsSlowImmune(M))return 0.f;M->SlowUntil=FMath::Max(M->SlowUntil,Until);} // waves-modes: armored ignore slows
     else return 0.f;
     return Seconds;
 }
@@ -373,7 +375,7 @@ bool CireCrowdControl::RunSmoke(ACireGameMode* Mode)
     // Timed heal: cast starts, an interrupt cancels it and locks the school.
     CireBuffs::ClearAll(B);State().DR.Remove(B);
     B->Skills={TEXT("restoring_light")};B->Cooldowns={0};B->GlobalCooldown=0;B->Target=B;
-    Check(GateCast(B,0,TEXT("restoring_light"))&&IsCasting(B)&&FMath::IsNearlyEqual(B->CastEndTime-B->CastStartTime,1.5f),TEXT("heal starts a 1.5s cast"));
+    Check(GateCast(B,0,TEXT("restoring_light"))&&IsCasting(B)&&FMath::IsNearlyEqual(B->CastEndTime-B->CastStartTime,CireAbilityDB::Find(TEXT("restoring_light"))->CastTime),TEXT("heal starts its ruled cast (casting-rules)"));
     Check(Interrupt(B,A,2.f)&&!IsCasting(B)&&CireBuffs::IsActive(B,LockedId),TEXT("interrupt cancels the cast and locks holy"));
     Check(GateCast(B,0,TEXT("restoring_light"))&&!IsCasting(B),TEXT("locked school cannot start a cast"));
     State().Lockouts.Remove(B);CireBuffs::Remove(B,LockedId);

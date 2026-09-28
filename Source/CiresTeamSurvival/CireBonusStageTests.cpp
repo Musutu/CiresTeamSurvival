@@ -68,6 +68,8 @@ bool CireBonusStage::RunSmoke(ACireGameMode* Mode)
             TEXT("a stage never replaces a boss wave (or a wave with a boss row)"));
         Check(CireWaveDirector::RollBonusStage(C, Normal, 5, 1, 0) && CireWaveDirector::RollBonusStage(C, Armored, 5, 1, 0), TEXT("any other wave type can be replaced"));
         Check(!CireWaveDirector::RollBonusStage(C, Normal, 5, 1, 1), TEXT("stages are capped per cycle"));
+        Check(CireWaveDirector::RollWaveType(C, Normal, 5, 1).Type == ECireWaveType::BonusLoot && CireWaveDirector::RollWaveType(C, Boss, 5, 1) == Boss,
+            TEXT("the wave-type roll (waves-modes hook) turns a wave into a stage and keeps boss waves"));
         C.Bonus.FromWave = 6; Check(!CireWaveDirector::RollBonusStage(C, Normal, 5, 1, 0), TEXT("no stage before fromWave"));
         int32 Hits = 0;
         for (int32 Wave = 2; Wave < 402; ++Wave) Hits += CireWaveDirector::RollBonusStage(Live, Normal, Wave, 1234, 0);

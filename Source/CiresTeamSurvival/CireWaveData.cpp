@@ -38,7 +38,24 @@ bool FCireWaveUnit::operator==(const FCireWaveUnit& O) const
     return Archetype == O.Archetype && Count == O.Count && Near(HealthScale, O.HealthScale) && Near(DamageScale, O.DamageScale) &&
         Near(SizeScale, O.SizeScale) && bElite == O.bElite && bNonAttacking == O.bNonAttacking && bEscortee == O.bEscortee &&
         bBoss == O.bBoss && LeakCost == O.LeakCost && Slot == O.Slot && Rank == O.Rank && Palette == O.Palette && SkillCount == O.SkillCount && // monster-races
-        SkillTier == O.SkillTier && bRare == O.bRare; // monster-expansion
+        SkillTier == O.SkillTier && bRare == O.bRare && Pack == O.Pack; // monster-expansion, waves-modes
+}
+// waves-modes
+bool FCireMatchSchedule::operator==(const FCireMatchSchedule& O) const
+{
+    return TotalWaves == O.TotalWaves && PvpAfterWaves == O.PvpAfterWaves && Near(SuddenDeathHealth, O.SuddenDeathHealth) &&
+        Near(SuddenDeathDamage, O.SuddenDeathDamage) && SuddenDeathLoop == O.SuddenDeathLoop;
+}
+bool FCireWaveMonsterRules::operator==(const FCireWaveMonsterRules& O) const
+{
+    return Near(Speed, O.Speed) && Near(ArmoredSpeed, O.ArmoredSpeed) && bArmoredSlowImmune == O.bArmoredSlowImmune &&
+        Near(ArmoredStunMultiplier, O.ArmoredStunMultiplier) && Near(PackGapSeconds, O.PackGapSeconds);
+}
+bool FCireWaveScale::operator==(const FCireWaveScale& O) const { return Near(Health, O.Health) && Near(Damage, O.Damage) && Near(Speed, O.Speed); }
+bool FCireWavePreset::operator==(const FCireWavePreset& O) const
+{
+    return Id == O.Id && Label == O.Label && Description == O.Description && bDefaultDamage == O.bDefaultDamage && DefaultFightBack == O.DefaultFightBack &&
+        Waves == O.Waves && Scale == O.Scale && PackSizeBonus == O.PackSizeBonus && PvpAfterWaves == O.PvpAfterWaves;
 }
 bool FCireRareSpawnRules::operator==(const FCireRareSpawnRules& O) const
 {
@@ -56,7 +73,8 @@ int32 FCireWaveDef::UnitsPerLane() const { int32 N = 0; for (const auto& U : Uni
 bool FCireWaveDef::operator==(const FCireWaveDef& O) const
 {
     return Label == O.Label && Type == O.Type && Units == O.Units && Near(SpawnInterval, O.SpawnInterval) && Near(DelayBefore, O.DelayBefore) &&
-        bMustClear == O.bMustClear && Near(RewardMultiplier, O.RewardMultiplier) && Race == O.Race; // monster-races: race
+        bMustClear == O.bMustClear && Near(RewardMultiplier, O.RewardMultiplier) && Race == O.Race && // monster-races: race
+        Packs == O.Packs && PackSizeMin == O.PackSizeMin && PackSizeMax == O.PackSizeMax && bDealsDamage == O.bDealsDamage && FightBackPacks == O.FightBackPacks; // waves-modes
 }
 bool FCireWaveConfig::operator==(const FCireWaveConfig& O) const
 {
@@ -68,7 +86,8 @@ bool FCireWaveConfig::operator==(const FCireWaveConfig& O) const
         Near(RallySpeed, O.RallySpeed) && Near(RallyRadius, O.RallyRadius) && Near(BotHoldAt, O.BotHoldAt) && Near(MarcherSpeed, O.MarcherSpeed) && // world-scale
         Near(PrepSeconds, O.PrepSeconds) && Near(ArenaSeconds, O.ArenaSeconds) && Near(RecoverySeconds, O.RecoverySeconds) && bEarlyContinue == O.bEarlyContinue &&
         Skills == O.Skills && Campaign == O.Campaign && bCampaignOrder == O.bCampaignOrder &&
-        Rare == O.Rare && Bonus == O.Bonus; // monster-races, rules-conformance, monster-expansion
+        Rare == O.Rare && Bonus == O.Bonus && // monster-races, rules-conformance, monster-expansion
+        Match == O.Match && Monsters == O.Monsters && Live == O.Live && PackSizeBonus == O.PackSizeBonus && Preset == O.Preset; // waves-modes
 }
 
 const TCHAR* CireWaveDirector::TypeName(ECireWaveType Type)
@@ -194,10 +213,25 @@ FCireWaveConfig CireWaveDirector::Defaults()
     for (auto& U : MidBoss.Units) if (!U.bBoss) U.HealthScale = .85f;
     for (auto& U : LateEscort.Units) U.HealthScale = U.bEscortee ? 3.f : .7f;
     for (auto& U : LateBoss.Units) U.HealthScale = U.bBoss ? .2f : .7f;
-    C.Waves = {One, Two, Armored, Escort, Boss,
-               Melee, Caster, Armored, MidEscort, MidBoss,
-               Ranged, Hybrid, Armored, LateEscort, LateBoss};
+    // waves-modes (playtest 6): a 25-wave match of five 5-wave cycles; every cycle keeps its armored march, its escort and
+    // its boss. Cycles 4 and 5 re-run the pack waves under new names (the race rotation and the cycle growth change them).
+    auto Renamed = [](FCireWaveDef W, const TCHAR* Label) { W.Label = Label; return W; };
+    FCireWaveDef Armor = Armored;
+    for (auto& U : Armor.Units) U.LeakCost = 1; // 25-49 armored marchers per wave: one life each (was 2 with 4 per wave)
+    C.Waves = {One, Two, Armor, Escort, Boss,
+               Melee, Caster, Armor, MidEscort, MidBoss,
+               Ranged, Hybrid, Armor, LateEscort, LateBoss,
+               Renamed(Melee, TEXT("Iron Vanguard")), Renamed(Caster, TEXT("Coven Rising")), Armor, LateEscort, LateBoss,
+               Renamed(Ranged, TEXT("Storm of Arrows")), Renamed(Hybrid, TEXT("Grand Warband")), Armor, LateEscort, LateBoss};
+    // waves-modes: waves 1-5 are 5 packs of 5 (25 monsters); later waves are 7 packs of 5-7 (35-49). The authored rows are
+    // each pack's recipe; the pack-size modifier (packSizeBonus / the preset) grows or shrinks every pack.
+    for (int32 I = 0; I < C.Waves.Num(); ++I)
+    {
+        FCireWaveDef& W = C.Waves[I];
+        W.Packs = I < 5 ? 5 : 7; W.PackSizeMin = 5; W.PackSizeMax = I < 5 ? 5 : 7;
+    }
     C.WavesPerCycle = 5;
+    C.Cycles = 5; // waves-modes: 25 regular waves; Sudden Death waves follow until a team runs out of lives
     C.bCampaignOrder = true;
     // rules-conformance: the race changes every wave (campaign.rotateEvery "wave"), so a default 3-cycle match fields all
     // ten races: the hollow open the breach, Eric's favourites (Blightwood, the Drowned Deep) arrive early and return as
@@ -205,6 +239,7 @@ FCireWaveConfig CireWaveDirector::Defaults()
     C.Campaign.RaceRotation = {TEXT("hollow"), TEXT("blightwood"), TEXT("ironhide"), TEXT("drowned_deep"), TEXT("hollow"),
         TEXT("stoneborn"), TEXT("aetheri"), TEXT("feral_kin"), TEXT("drakkari"), TEXT("blightwood"),
         TEXT("voidborn"), TEXT("fallen_order"), TEXT("aetheri+ironhide"), TEXT("stoneborn+feral_kin"), TEXT("drowned_deep")};
+    // waves-modes: the 15-entry rotation wraps for waves 16-25 with palette variant 1 (reskinOnWrap).
     C.Campaign.bRotatePerWave = true;
     // rules-conformance: every rank is reachable in 3 cycles (veteran from cycle 2; elite and champion, alternating, in cycle 3).
     C.Campaign.VeteranFromCycle = 2; C.Campaign.EliteFromCycle = 3; C.Campaign.ChampionFromCycle = 3;
@@ -238,8 +273,25 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
     C.PrepSeconds = ClampF(C.PrepSeconds, 5, 600, 30);
     C.ArenaSeconds = ClampF(C.ArenaSeconds, 15, 900, 60);
     C.RecoverySeconds = ClampF(C.RecoverySeconds, 1, 180, 10);
+    // waves-modes: match schedule, monster rules, live scale, pack-size modifier.
+    {
+        auto& M = C.Match;
+        M.TotalWaves = FMath::Clamp(M.TotalWaves, 0, 200);
+        M.PvpAfterWaves.RemoveAll([](int32 W) { return W < 1 || W > 500; });
+        M.PvpAfterWaves.Sort();
+        for (int32 I = M.PvpAfterWaves.Num() - 1; I > 0; --I) if (M.PvpAfterWaves[I] == M.PvpAfterWaves[I - 1]) M.PvpAfterWaves.RemoveAt(I);
+        if (M.PvpAfterWaves.Num() > 20) M.PvpAfterWaves.SetNum(20);
+        M.SuddenDeathHealth = ClampF(M.SuddenDeathHealth, 1, 10, 2); M.SuddenDeathDamage = ClampF(M.SuddenDeathDamage, 1, 10, 2);
+        M.SuddenDeathLoop = FMath::Clamp(M.SuddenDeathLoop, 1, 20);
+        auto& R = C.Monsters;
+        R.Speed = ClampF(R.Speed, .2f, 2, .8f); R.ArmoredSpeed = ClampF(R.ArmoredSpeed, .1f, 2, .5f);
+        R.ArmoredStunMultiplier = ClampF(R.ArmoredStunMultiplier, 0, 5, 2); R.PackGapSeconds = ClampF(R.PackGapSeconds, 0, 10, 1.5f);
+        C.Live.Health = ClampF(C.Live.Health, .1f, 10, 1); C.Live.Damage = ClampF(C.Live.Damage, 0, 10, 1); C.Live.Speed = ClampF(C.Live.Speed, .2f, 3, 1);
+        C.PackSizeBonus = FMath::Clamp(C.PackSizeBonus, -3, 3);
+        if (C.Preset.IsNone()) C.Preset = TEXT("standard");
+    }
     if (C.Waves.IsEmpty()) return Fail(TEXT("At least one wave is required."));
-    if (C.Waves.Num() > 20) return Fail(TEXT("At most 20 waves are allowed."));
+    if (C.Waves.Num() > 40) return Fail(TEXT("At most 40 waves are allowed.")); // waves-modes: 25-wave match
     for (int32 WI = 0; WI < C.Waves.Num(); ++WI)
     {
         auto& W = C.Waves[WI];
@@ -273,7 +325,12 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
             if (!U.bNonAttacking) Attackers += U.Count;
             Total += U.Count;
         }
-        if (Total > 30) return Fail(FString::Printf(TEXT("Wave %d spawns %d units per lane; the limit is 30."), WI + 1, Total));
+        // waves-modes: packs (up to 8 packs of up to 8) and the damage toggle.
+        W.Packs = FMath::Clamp(W.Packs, 0, 8);
+        W.PackSizeMin = FMath::Clamp(W.PackSizeMin, 1, 8); W.PackSizeMax = FMath::Clamp(W.PackSizeMax, W.PackSizeMin, 8);
+        W.FightBackPacks.RemoveAll([](int32 P) { return P < 1 || P > 8; });
+        if (W.Packs > 0 && !W.Units.ContainsByPredicate([](const FCireWaveUnit& U) { return !U.bBoss && !U.bEscortee; })) return Fail(FString::Printf(TEXT("Wave %d has packs but no pack recipe rows."), WI + 1));
+        if (W.Packs == 0 && Total > 30) return Fail(FString::Printf(TEXT("Wave %d spawns %d units per lane; the limit is 30."), WI + 1, Total));
         if (Bosses > 3) return Fail(FString::Printf(TEXT("Wave %d has %d lane bosses; the limit is 3."), WI + 1, Bosses));
         (void)Attackers;
     }
@@ -432,6 +489,41 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
             else { Error = TEXT("campaign.rotateEvery must be \"wave\" or \"cycle\"."); return false; }
         }
     }
+    // waves-modes: match schedule, monster rules, live scale, pack-size modifier, active preset (absent = defaults).
+    const TSharedPtr<FJsonObject>* MatchObj = nullptr;
+    if (Root->TryGetObjectField(TEXT("match"), MatchObj) && MatchObj)
+    {
+        auto& M = C.Match;
+        M.TotalWaves = static_cast<int32>(Num(*MatchObj, TEXT("totalWaves"), M.TotalWaves));
+        const TArray<TSharedPtr<FJsonValue>>* Pvp = nullptr;
+        if ((*MatchObj)->TryGetArrayField(TEXT("pvpAfterWaves"), Pvp) && Pvp) { M.PvpAfterWaves.Reset(); for (const auto& V : *Pvp) M.PvpAfterWaves.Add(static_cast<int32>(V->AsNumber())); }
+        const TSharedPtr<FJsonObject>* Sudden = nullptr;
+        if ((*MatchObj)->TryGetObjectField(TEXT("suddenDeath"), Sudden) && Sudden)
+        {
+            M.SuddenDeathHealth = static_cast<float>(Num(*Sudden, TEXT("health"), M.SuddenDeathHealth));
+            M.SuddenDeathDamage = static_cast<float>(Num(*Sudden, TEXT("damage"), M.SuddenDeathDamage));
+            M.SuddenDeathLoop = static_cast<int32>(Num(*Sudden, TEXT("loopLastWaves"), M.SuddenDeathLoop));
+        }
+    }
+    const TSharedPtr<FJsonObject>* MonstersObj = nullptr;
+    if (Root->TryGetObjectField(TEXT("monsters"), MonstersObj) && MonstersObj)
+    {
+        auto& R = C.Monsters;
+        R.Speed = static_cast<float>(Num(*MonstersObj, TEXT("speed"), R.Speed));
+        R.ArmoredSpeed = static_cast<float>(Num(*MonstersObj, TEXT("armoredSpeed"), R.ArmoredSpeed));
+        R.bArmoredSlowImmune = Flag(*MonstersObj, TEXT("armoredSlowImmune"), R.bArmoredSlowImmune);
+        R.ArmoredStunMultiplier = static_cast<float>(Num(*MonstersObj, TEXT("armoredStunMultiplier"), R.ArmoredStunMultiplier));
+        R.PackGapSeconds = static_cast<float>(Num(*MonstersObj, TEXT("packGapSeconds"), R.PackGapSeconds));
+    }
+    const TSharedPtr<FJsonObject>* LiveObj = nullptr;
+    if (Root->TryGetObjectField(TEXT("liveScale"), LiveObj) && LiveObj)
+    {
+        C.Live.Health = static_cast<float>(Num(*LiveObj, TEXT("health"), C.Live.Health));
+        C.Live.Damage = static_cast<float>(Num(*LiveObj, TEXT("damage"), C.Live.Damage));
+        C.Live.Speed = static_cast<float>(Num(*LiveObj, TEXT("speed"), C.Live.Speed));
+    }
+    C.PackSizeBonus = static_cast<int32>(Num(Root, TEXT("packSizeBonus"), C.PackSizeBonus));
+    { FString Preset; if (Root->TryGetStringField(TEXT("preset"), Preset) && !Preset.IsEmpty()) C.Preset = FName(*Preset); }
     // monster-expansion: one wave object parser shared by waves[] and bonusWave.wave.
     auto ParseWave = [&](const TSharedPtr<FJsonObject>& WObj, FCireWaveDef& W) -> bool
     {
@@ -445,6 +537,22 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
         W.DelayBefore = static_cast<float>(Num(*WO, TEXT("delayBefore"), W.DelayBefore));
         W.bMustClear = Flag(*WO, TEXT("mustClear"), W.bMustClear);
         W.RewardMultiplier = static_cast<float>(Num(*WO, TEXT("rewardMultiplier"), W.RewardMultiplier));
+        // waves-modes: "packs": 7, "packSize": [5, 7], "damage": true, "fightBack": [1, 4, 7]
+        W.Packs = static_cast<int32>(Num(*WO, TEXT("packs"), 0));
+        {
+            const TArray<TSharedPtr<FJsonValue>>* Size = nullptr;
+            if ((*WO)->TryGetArrayField(TEXT("packSize"), Size) && Size && Size->Num() >= 1)
+            {
+                W.PackSizeMin = static_cast<int32>((*Size)[0]->AsNumber());
+                W.PackSizeMax = static_cast<int32>((*Size)[Size->Num() > 1 ? 1 : 0]->AsNumber());
+            }
+            else if ((*WO)->HasField(TEXT("packSize"))) W.PackSizeMin = W.PackSizeMax = static_cast<int32>(Num(*WO, TEXT("packSize"), 5));
+        }
+        W.bDealsDamage = Flag(*WO, TEXT("damage"), true);
+        {
+            const TArray<TSharedPtr<FJsonValue>>* Fight = nullptr;
+            if ((*WO)->TryGetArrayField(TEXT("fightBack"), Fight) && Fight) for (const auto& V : *Fight) W.FightBackPacks.Add(static_cast<int32>(V->AsNumber()));
+        }
         const TArray<TSharedPtr<FJsonValue>>* Units = nullptr;
         if (!(*WO)->TryGetArrayField(TEXT("units"), Units) || !Units) { Error = FString::Printf(TEXT("Wave '%s' needs a \"units\" array."), *W.Label); return false; }
         for (const auto& UV : *Units)
@@ -600,6 +708,18 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
         WO->SetNumberField(TEXT("delayBefore"), W.DelayBefore);
         WO->SetBoolField(TEXT("mustClear"), W.bMustClear);
         WO->SetNumberField(TEXT("rewardMultiplier"), W.RewardMultiplier);
+        if (W.Packs > 0) // waves-modes
+        {
+            WO->SetNumberField(TEXT("packs"), W.Packs);
+            WO->SetArrayField(TEXT("packSize"), {MakeShared<FJsonValueNumber>(W.PackSizeMin), MakeShared<FJsonValueNumber>(W.PackSizeMax)});
+        }
+        if (!W.bDealsDamage) WO->SetBoolField(TEXT("damage"), false);
+        if (!W.FightBackPacks.IsEmpty())
+        {
+            TArray<TSharedPtr<FJsonValue>> Fight;
+            for (const int32 P : W.FightBackPacks) Fight.Add(MakeShared<FJsonValueNumber>(P));
+            WO->SetArrayField(TEXT("fightBack"), Fight);
+        }
         TArray<TSharedPtr<FJsonValue>> Units;
         for (const auto& U : W.Units)
         {
@@ -656,6 +776,37 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
         Bonus->SetNumberField(TEXT("bounty"), C.Bonus.Bounty);
         Bonus->SetObjectField(TEXT("wave"), WaveJson(C.Bonus.Wave));
         Root->SetObjectField(TEXT("bonusWave"), Bonus);
+    }
+    // waves-modes
+    {
+        auto Match = MakeShared<FJsonObject>();
+        Match->SetStringField(TEXT("_comment"), TEXT("The match: totalWaves regular waves, a PvP arena round after each wave in pvpAfterWaves (feat/arena-flow reads it), then Sudden Death waves (the last loopLastWaves waves again, monster health and damage x suddenDeath) until a team runs out of lives. Docs/Waves.md."));
+        Match->SetNumberField(TEXT("totalWaves"), C.Match.TotalWaves);
+        TArray<TSharedPtr<FJsonValue>> Pvp;
+        for (const int32 W : C.Match.PvpAfterWaves) Pvp.Add(MakeShared<FJsonValueNumber>(W));
+        Match->SetArrayField(TEXT("pvpAfterWaves"), Pvp);
+        auto Sudden = MakeShared<FJsonObject>();
+        Sudden->SetNumberField(TEXT("health"), C.Match.SuddenDeathHealth);
+        Sudden->SetNumberField(TEXT("damage"), C.Match.SuddenDeathDamage);
+        Sudden->SetNumberField(TEXT("loopLastWaves"), C.Match.SuddenDeathLoop);
+        Match->SetObjectField(TEXT("suddenDeath"), Sudden);
+        Root->SetObjectField(TEXT("match"), Match);
+        auto Mon = MakeShared<FJsonObject>();
+        Mon->SetStringField(TEXT("_comment"), TEXT("Every wave monster moves at speed x (Eric: -20%). Armored marchers move at a further armoredSpeed x, cannot be slowed (armoredSlowImmune) and stay stunned armoredStunMultiplier x longer. packGapSeconds separates the packs of a pack wave."));
+        Mon->SetNumberField(TEXT("speed"), C.Monsters.Speed);
+        Mon->SetNumberField(TEXT("armoredSpeed"), C.Monsters.ArmoredSpeed);
+        Mon->SetBoolField(TEXT("armoredSlowImmune"), C.Monsters.bArmoredSlowImmune);
+        Mon->SetNumberField(TEXT("armoredStunMultiplier"), C.Monsters.ArmoredStunMultiplier);
+        Mon->SetNumberField(TEXT("packGapSeconds"), C.Monsters.PackGapSeconds);
+        Root->SetObjectField(TEXT("monsters"), Mon);
+        auto Live = MakeShared<FJsonObject>();
+        Live->SetStringField(TEXT("_comment"), TEXT("The in-game wave scale (F8 > Waves > Live scale, or cire.WaveScale <health> <damage> <speed>): multiplies every wave monster, living ones included."));
+        Live->SetNumberField(TEXT("health"), C.Live.Health);
+        Live->SetNumberField(TEXT("damage"), C.Live.Damage);
+        Live->SetNumberField(TEXT("speed"), C.Live.Speed);
+        Root->SetObjectField(TEXT("liveScale"), Live);
+        Root->SetNumberField(TEXT("packSizeBonus"), C.PackSizeBonus);
+        Root->SetStringField(TEXT("preset"), C.Preset.ToString());
     }
     TArray<TSharedPtr<FJsonValue>> Waves;
     for (const auto& W : C.Waves) Waves.Add(MakeShared<FJsonValueObject>(WaveJson(W)));
@@ -743,6 +894,226 @@ bool CireWaveDirector::SaveFile(const FCireWaveConfig& Config, FString* Error, c
     IFileManager::Get().MakeDirectory(*FPaths::GetPath(File), true);
     if (!FFileHelper::SaveStringToFile(ToJson(Copy), *File, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
     { if (Error) *Error = TEXT("Waves.json could not be written."); return false; }
+    if (Error) Error->Reset();
+    return true;
+}
+
+// ---------------------------------------------------------------- waves-modes: presets (Content/Data/WavePresets.json)
+namespace
+{
+TArray<FCireWavePreset> PresetCache;
+bool bPresetsLoaded = false;
+
+FName CleanPresetId(const FString& In)
+{
+    FString Out;
+    for (const TCHAR Ch : In.ToLower()) Out.AppendChar(FChar::IsAlnum(Ch) ? Ch : TEXT('_'));
+    Out = Out.Left(32);
+    while (Out.StartsWith(TEXT("_"))) Out.RightChopInline(1);
+    return Out.IsEmpty() ? FName(TEXT("custom")) : FName(*Out);
+}
+void ClampPreset(FCireWavePreset& P)
+{
+    P.Id = CleanPresetId(P.Id.ToString());
+    P.Label = P.Label.Left(32).TrimStartAndEnd(); if (P.Label.IsEmpty()) P.Label = P.Id.ToString();
+    P.Description = P.Description.Left(240);
+    P.Scale.Health = ClampF(P.Scale.Health, .1f, 10, 1); P.Scale.Damage = ClampF(P.Scale.Damage, 0, 10, 1); P.Scale.Speed = ClampF(P.Scale.Speed, .2f, 3, 1);
+    P.PackSizeBonus = FMath::Clamp(P.PackSizeBonus, -3, 3);
+    auto Packs = [](TArray<int32>& A) { A.RemoveAll([](int32 V) { return V < 1 || V > 8; }); A.Sort(); };
+    Packs(P.DefaultFightBack);
+    P.Waves.RemoveAll([](const FCireWavePreset::FWave& W) { return W.Wave < 1 || W.Wave > 200; });
+    for (auto& W : P.Waves) Packs(W.FightBack);
+    P.PvpAfterWaves.RemoveAll([](int32 W) { return W < 1 || W > 500; }); P.PvpAfterWaves.Sort();
+}
+TArray<int32> IntArray(const TSharedPtr<FJsonObject>& O, const TCHAR* Key)
+{
+    TArray<int32> Out; const TArray<TSharedPtr<FJsonValue>>* A = nullptr;
+    if (O && O->TryGetArrayField(Key, A) && A) for (const auto& V : *A) Out.Add(static_cast<int32>(V->AsNumber()));
+    return Out;
+}
+TArray<TSharedPtr<FJsonValue>> IntValues(const TArray<int32>& A)
+{
+    TArray<TSharedPtr<FJsonValue>> Out; for (const int32 V : A) Out.Add(MakeShared<FJsonValueNumber>(V)); return Out;
+}
+}
+
+TArray<FCireWavePreset> CireWaveDirector::BuiltInPresets()
+{
+    TArray<FCireWavePreset> Out;
+    {
+        FCireWavePreset P; P.Id = TEXT("standard"); P.Label = TEXT("Standard"); P.bBuiltIn = true;
+        P.Description = TEXT("Every wave fights the heroes, except the armored marches. 25 waves, 4 PvP rounds, then Sudden Death.");
+        Out.Add(P);
+    }
+    {
+        FCireWavePreset P; P.Id = TEXT("hero_td"); P.Label = TEXT("Hero TD / PvP"); P.bBuiltIn = true; P.bDefaultDamage = false;
+        P.Description = TEXT("Pure hero tower defence: waves never attack, they path to the castle like armored rounds. Stop them before the gate.");
+        Out.Add(P);
+    }
+    {
+        FCireWavePreset P; P.Id = TEXT("hybrid"); P.Label = TEXT("Hybrid"); P.bBuiltIn = true; P.bDefaultDamage = false;
+        P.DefaultFightBack = {1, 4, 7};
+        P.Description = TEXT("Hero TD with teeth: waves march to the castle, but the vanguard, middle and rear-guard packs (1, 4, 7) fight back, and boss waves fight in full.");
+        for (int32 W = 5; W <= 25; W += 5) { FCireWavePreset::FWave O; O.Wave = W; O.bDamage = true; P.Waves.Add(O); }
+        Out.Add(P);
+    }
+    return Out;
+}
+
+bool CireWaveDirector::ParsePresets(const FString& Json, TArray<FCireWavePreset>& Out, FString& Error)
+{
+    TSharedPtr<FJsonObject> Root;
+    if (Json.Len() > 256 * 1024 || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Root) || !Root) { Error = TEXT("WavePresets.json is not valid JSON."); return false; }
+    const TArray<TSharedPtr<FJsonValue>>* List = nullptr;
+    if (!Root->TryGetArrayField(TEXT("presets"), List) || !List) { Error = TEXT("WavePresets.json needs a \"presets\" array."); return false; }
+    TArray<FCireWavePreset> Parsed;
+    for (const auto& V : *List)
+    {
+        const TSharedPtr<FJsonObject>* PO = nullptr;
+        if (!V || !V->TryGetObject(PO) || !PO) { Error = TEXT("Every preset must be an object."); return false; }
+        FCireWavePreset P; FString Text;
+        if (!(*PO)->TryGetStringField(TEXT("id"), Text) || Text.IsEmpty()) { Error = TEXT("Every preset needs an \"id\"."); return false; }
+        P.Id = FName(*Text);
+        (*PO)->TryGetStringField(TEXT("label"), P.Label);
+        (*PO)->TryGetStringField(TEXT("description"), P.Description);
+        P.bDefaultDamage = Flag(*PO, TEXT("defaultDamage"), true);
+        P.DefaultFightBack = IntArray(*PO, TEXT("defaultFightBack"));
+        P.PackSizeBonus = static_cast<int32>(Num(*PO, TEXT("packSizeBonus"), 0));
+        P.PvpAfterWaves = IntArray(*PO, TEXT("pvpAfterWaves"));
+        P.bBuiltIn = Flag(*PO, TEXT("builtIn"), false);
+        const TSharedPtr<FJsonObject>* Scale = nullptr;
+        if ((*PO)->TryGetObjectField(TEXT("scale"), Scale) && Scale)
+        {
+            P.Scale.Health = static_cast<float>(Num(*Scale, TEXT("health"), 1)); P.Scale.Damage = static_cast<float>(Num(*Scale, TEXT("damage"), 1));
+            P.Scale.Speed = static_cast<float>(Num(*Scale, TEXT("speed"), 1));
+        }
+        const TArray<TSharedPtr<FJsonValue>>* Waves = nullptr;
+        if ((*PO)->TryGetArrayField(TEXT("waves"), Waves) && Waves)
+            for (const auto& WV : *Waves)
+            {
+                const TSharedPtr<FJsonObject>* WO = nullptr;
+                if (!WV || !WV->TryGetObject(WO) || !WO) { Error = TEXT("Preset wave overrides must be objects."); return false; }
+                FCireWavePreset::FWave W; W.Wave = static_cast<int32>(Num(*WO, TEXT("wave"), 0)); W.bDamage = Flag(*WO, TEXT("damage"), true);
+                W.FightBack = IntArray(*WO, TEXT("fightBack"));
+                P.Waves.Add(W);
+            }
+        ClampPreset(P);
+        if (Parsed.ContainsByPredicate([&](const FCireWavePreset& O) { return O.Id == P.Id; })) { Error = FString::Printf(TEXT("Preset id '%s' is listed twice."), *P.Id.ToString()); return false; }
+        Parsed.Add(P);
+    }
+    if (Parsed.Num() > 32) { Error = TEXT("WavePresets.json lists at most 32 presets."); return false; }
+    Out = MoveTemp(Parsed);
+    Error.Reset();
+    return true;
+}
+
+FString CireWaveDirector::PresetsToJson(const TArray<FCireWavePreset>& List)
+{
+    auto Root = MakeShared<FJsonObject>();
+    Root->SetNumberField(TEXT("schemaVersion"), 1);
+    Root->SetStringField(TEXT("_comment"), TEXT("Wave game-mode presets (Docs/Waves.md). Hosting lists them under GAME TYPE. defaultDamage: every wave attacks heroes (true) or only paths to the castle (false); defaultFightBack: packs (1-based) that fight back when a wave's damage is off; waves: per-wave overrides {wave, damage, fightBack}; scale: live health/damage/speed; packSizeBonus: added to every pack; pvpAfterWaves: optional PvP schedule override. Save the current F8 settings as a preset with F8 > Waves > Modes & Scale."));
+    TArray<TSharedPtr<FJsonValue>> Out;
+    for (const auto& P : List)
+    {
+        auto PO = MakeShared<FJsonObject>();
+        PO->SetStringField(TEXT("id"), P.Id.ToString());
+        PO->SetStringField(TEXT("label"), P.Label);
+        PO->SetStringField(TEXT("description"), P.Description);
+        if (P.bBuiltIn) PO->SetBoolField(TEXT("builtIn"), true);
+        PO->SetBoolField(TEXT("defaultDamage"), P.bDefaultDamage);
+        PO->SetArrayField(TEXT("defaultFightBack"), IntValues(P.DefaultFightBack));
+        TArray<TSharedPtr<FJsonValue>> Waves;
+        for (const auto& W : P.Waves)
+        {
+            auto WO = MakeShared<FJsonObject>();
+            WO->SetNumberField(TEXT("wave"), W.Wave); WO->SetBoolField(TEXT("damage"), W.bDamage);
+            if (!W.FightBack.IsEmpty()) WO->SetArrayField(TEXT("fightBack"), IntValues(W.FightBack));
+            Waves.Add(MakeShared<FJsonValueObject>(WO));
+        }
+        PO->SetArrayField(TEXT("waves"), Waves);
+        auto Scale = MakeShared<FJsonObject>();
+        Scale->SetNumberField(TEXT("health"), P.Scale.Health); Scale->SetNumberField(TEXT("damage"), P.Scale.Damage); Scale->SetNumberField(TEXT("speed"), P.Scale.Speed);
+        PO->SetObjectField(TEXT("scale"), Scale);
+        PO->SetNumberField(TEXT("packSizeBonus"), P.PackSizeBonus);
+        if (!P.PvpAfterWaves.IsEmpty()) PO->SetArrayField(TEXT("pvpAfterWaves"), IntValues(P.PvpAfterWaves));
+        Out.Add(MakeShared<FJsonValueObject>(PO));
+    }
+    Root->SetArrayField(TEXT("presets"), Out);
+    FString Text;
+    auto Writer = TJsonWriterFactory<TCHAR, TPrettyJsonPrintPolicy<TCHAR>>::Create(&Text);
+    FJsonSerializer::Serialize(Root, Writer);
+    return Text + TEXT("\n");
+}
+
+FString CireWaveDirector::PresetsPath() { return FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir() / TEXT("Data/WavePresets.json")); }
+
+const TArray<FCireWavePreset>& CireWaveDirector::Presets(bool bReload)
+{
+    if (bPresetsLoaded && !bReload) return PresetCache;
+    bPresetsLoaded = true;
+    PresetCache.Reset();
+    FString Json, Error;
+    if (FFileHelper::LoadFileToString(Json, *PresetsPath()) && !ParsePresets(Json, PresetCache, Error))
+    { UE_LOG(LogTemp, Warning, TEXT("CIRE_WAVE_PRESETS %s; using the built-in presets"), *Error); PresetCache.Reset(); }
+    // The shipped presets always exist (the file may override their settings, never remove them).
+    const TArray<FCireWavePreset> BuiltIn = BuiltInPresets();
+    for (int32 I = BuiltIn.Num() - 1; I >= 0; --I)
+        if (!PresetCache.ContainsByPredicate([&](const FCireWavePreset& P) { return P.Id == BuiltIn[I].Id; })) PresetCache.Insert(BuiltIn[I], 0);
+    for (auto& P : PresetCache) if (BuiltIn.ContainsByPredicate([&](const FCireWavePreset& B) { return B.Id == P.Id; })) P.bBuiltIn = true;
+    return PresetCache;
+}
+
+const FCireWavePreset* CireWaveDirector::FindPreset(FName Id)
+{
+    return Presets().FindByPredicate([&](const FCireWavePreset& P) { return P.Id == Id; });
+}
+
+void CireWaveDirector::ApplyPreset(FCireWaveConfig& C, const FCireWavePreset& P)
+{
+    // Wave N of the preset is waves[N-1] (the campaign order plays waves[] straight through the match).
+    for (int32 I = 0; I < C.Waves.Num(); ++I)
+    {
+        FCireWaveDef& W = C.Waves[I];
+        const FCireWavePreset::FWave* O = P.Waves.FindByPredicate([&](const FCireWavePreset::FWave& X) { return X.Wave == I + 1; });
+        W.bDealsDamage = O ? O->bDamage : P.bDefaultDamage;
+        W.FightBackPacks = O ? O->FightBack : P.DefaultFightBack;
+    }
+    C.Live = P.Scale;
+    C.PackSizeBonus = P.PackSizeBonus;
+    if (!P.PvpAfterWaves.IsEmpty()) C.Match.PvpAfterWaves = P.PvpAfterWaves;
+    C.Preset = P.Id;
+}
+
+FCireWavePreset CireWaveDirector::CapturePreset(const FCireWaveConfig& C, FName Id, const FString& Label, const FString& Description)
+{
+    FCireWavePreset P; P.Id = Id; P.Label = Label; P.Description = Description;
+    P.bDefaultDamage = true;
+    for (int32 I = 0; I < C.Waves.Num(); ++I)
+    {
+        const FCireWaveDef& W = C.Waves[I];
+        if (!W.bDealsDamage || !W.FightBackPacks.IsEmpty())
+        { FCireWavePreset::FWave O; O.Wave = I + 1; O.bDamage = W.bDealsDamage; O.FightBack = W.FightBackPacks; P.Waves.Add(O); }
+    }
+    P.Scale = C.Live; P.PackSizeBonus = C.PackSizeBonus; P.PvpAfterWaves = C.Match.PvpAfterWaves;
+    ClampPreset(P);
+    return P;
+}
+
+bool CireWaveDirector::SavePreset(const FCireWavePreset& In, FString* Error, const FString& Path)
+{
+    FCireWavePreset P = In; ClampPreset(P);
+    const FString File = Path.IsEmpty() ? PresetsPath() : Path;
+    TArray<FCireWavePreset> List;
+    FString Json, Why;
+    if (FFileHelper::LoadFileToString(Json, *File) && !ParsePresets(Json, List, Why)) { if (Error) *Error = Why; return false; }
+    if (List.IsEmpty() && Path.IsEmpty()) List = BuiltInPresets();
+    if (FCireWavePreset* Old = List.FindByPredicate([&](const FCireWavePreset& X) { return X.Id == P.Id; })) { P.bBuiltIn = Old->bBuiltIn; *Old = P; }
+    else if (List.Num() >= 32) { if (Error) *Error = TEXT("At most 32 presets can be saved."); return false; }
+    else List.Add(P);
+    IFileManager::Get().MakeDirectory(*FPaths::GetPath(File), true);
+    if (!FFileHelper::SaveStringToFile(PresetsToJson(List), *File, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+    { if (Error) *Error = TEXT("WavePresets.json could not be written."); return false; }
+    if (Path.IsEmpty()) Presets(true);
     if (Error) Error->Reset();
     return true;
 }

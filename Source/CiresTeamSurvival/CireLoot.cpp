@@ -773,12 +773,14 @@ void CireProgression::SpawnBay(ACireGameMode* Mode, int32 Team, int32 Bay, int32
     const TArray<FName> Members = CireJunglePacks::Members(Seed, Pack.PackType, Comp, &Roles);
     const FVector Center = CireLanePath::ChallengePosition(World, Team, Bay);
     const float Radius = CireLanePath::ChallengeRadius(World, Team, Bay);
-    const FCireJungleRules& Jungle = CireJunglePacks::Rules();
     int32 Spawned = 0, OffNav = 0;
+    // pack-formations: the preset formation for the pack size, turned to face the path (front = tanks).
+    const float FacingYaw = CireJunglePacks::FacingYaw(World, Team, Center);
+    const TArray<FVector2D> Formation = CireJunglePacks::FormationOffsets(Roles, Radius);
     for (int32 I = 0; I < Members.Num(); ++I)
     {
         const bool bIsLeader = I == 0; // the first tank leads the pack (pack-leader bounty and loot)
-        const FVector2D Offset = CireJunglePacks::FormationOffset(I, Roles, Radius, Seed);
+        const FVector2D Offset = Formation.IsValidIndex(I) ? Formation[I].GetRotated(FacingYaw) : FVector2D::ZeroVector;
         FVector P = Center + FVector(Offset.X, Offset.Y, 0.f);
         FVector OnNav;
         if (CireNav::Project(World, P, OnNav, FVector(220, 220, 600))) P = FVector(OnNav.X, OnNav.Y, OnNav.Z + 100.f);
@@ -786,24 +788,20 @@ void CireProgression::SpawnBay(ACireGameMode* Mode, int32 Team, int32 Bay, int32
         else ++OffNav;
         FActorSpawnParameters Params;
         Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        auto* M = World->SpawnActor<ACireMonster>(ACireMonster::StaticClass(), P, FRotator(0.f, FMath::RadiansToDegrees(FMath::Atan2(-Offset.Y, -Offset.X)), 0.f), Params);
+        auto* M = World->SpawnActor<ACireMonster>(ACireMonster::StaticClass(), P, FRotator(0.f, FacingYaw, 0.f), Params);
         if (!M) { UE_LOG(LogCireLoot, Error, TEXT("Challenge pack spawn failed")); continue; }
         M->Lane = Team; M->Tier = Tier; M->PackId = PackId; M->SpawnPosition = P;
         CireNPCCombat::ConfigureArchetype(M, Members[I], Wave, Tier, Round);
         CireRaces::ApplyPackUnit(M, Tier, bIsLeader, Wave); // monster-races: elite/champion/warlord colours
-        CireJunglePacks::ApplyTier(M, Tier, static_cast<int32>(Seed ^ static_cast<uint32>(I))); // jungle-packs: 2 / 3 / 5 / full kit
-        if (bIsLeader && M->NPCState)
-        {
-            M->NPCState->Classification = ECireNPCClass::Boss; // pack-leader bounty, loot and frame
-            M->MaxHealth = M->Health = FMath::Clamp(M->MaxHealth * Jungle.LeaderHealth, 1.f, 1.e9f);
-        }
-        const FString Role = CireJunglePacks::RoleName(Roles.IsValidIndex(I) ? Roles[I] : ECirePackRole::Dps);
+        if (bIsLeader && M->NPCState) M->NPCState->Classification = ECireNPCClass::Boss; // pack-leader bounty, loot and frame
+        CireJunglePacks::ApplyTier(M, Tier, static_cast<int32>(Seed ^ static_cast<uint32>(I)), bIsLeader, Roles.IsValidIndex(I) ? TOptional<ECirePackRole>(Roles[I]) : TOptional<ECirePackRole>()); // jungle-packs kit + pack-formations stats
+        const FString Role = CireJunglePacks::RoleName(Roles.IsValidIndex(I) ? Roles[I] : ECirePackRole::Melee);
         M->MonsterName = FString::Printf(TEXT("%s T%d %s | %s"), bIsLeader ? TEXT("Pack Leader") : TEXT("Jungle"), Tier, *Role, *M->GetNPCDisplayName());
         Mode->Monsters.Add(M);
         ++Spawned;
     }
-    UE_LOG(LogCireLoot, Display, TEXT("CIRE_PACK_SPAWN round=%d team=%d bay=%d tier=%d type=%s comp=%d/%d/%d spawned=%d offnav=%d leader=1"), Round, Team, Bay, Tier,
-        *Pack.PackType.ToString(), Comp.Tanks, Comp.Healers, Comp.Dps, Spawned, OffNav);
+    UE_LOG(LogCireLoot, Display, TEXT("CIRE_PACK_SPAWN round=%d team=%d bay=%d tier=%d type=%s comp=%d/%d/%d spawned=%d offnav=%d leader=1 facing=%.0f"), Round, Team, Bay, Tier,
+        *Pack.PackType.ToString(), Comp.Tanks, Comp.Healers, Comp.DpsTotal(), Spawned, OffNav, FacingYaw);
 }
 
 namespace
