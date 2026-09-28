@@ -1151,6 +1151,8 @@ bool UCireInventory::UseSlot(int32 Index, bool bBeltSlot, FString& Message)
     FromRules(Rules);
     FString EffectMessage;
     ApplyEffect(Use, ItemId, EffectMessage);
+    if (Use.Kind == EffectKind::Blink) // initiation: the cooldown is live-tunable (Initiation.json)
+        (bBeltSlot ? Belt : Equipment)[Index].ReadyAt = static_cast<float>(Now()) + CireInitiation::Tuning().BlinkCooldown;
     EndShopVisit(); // LoL rule: using an item ends the undo history
     AfterChange();
     Message = EffectMessage;

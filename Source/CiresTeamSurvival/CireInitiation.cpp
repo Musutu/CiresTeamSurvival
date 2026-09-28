@@ -10,6 +10,12 @@
 #include "CireSkillRuntime.h"
 #include "CireSummon.h"
 #include "Components/CapsuleComponent.h"
+#include "Dom/JsonObject.h"
+#include "HAL/IConsoleManager.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -20,7 +26,11 @@ const FName CireInitiation::BlinkLockedId(TEXT("xp_blink_locked"));
 
 namespace CireInitDetail
 {
-constexpr float SetUpSeconds = 3.5f, SetUpTeamBonus = .15f, SetUpAreaBonus = .25f;
+CireInitiation::FTuning GTuning; bool GTuningLoaded = false;
+float ReadNum(const TSharedPtr<FJsonObject>& O, const TCHAR* Key, float Default, float Min, float Max)
+{
+    double V = Default; return O && O->TryGetNumberField(Key, V) && FMath::IsFinite(V) ? FMath::Clamp(static_cast<float>(V), Min, Max) : Default;
+}
 TMap<TWeakObjectPtr<AActor>, float>& LastCallout() { static TMap<TWeakObjectPtr<AActor>, float> M; return M; }
 TMap<TWeakObjectPtr<ACireHero>, FVector>& PendingAim() { static TMap<TWeakObjectPtr<ACireHero>, FVector> M; return M; }
 const Cires::Items::Effect* BlinkUse(const ACireHero* H)
@@ -40,14 +50,48 @@ bool GroundBelow(ACireHero* H, FVector& P)
 }
 using namespace CireInitDetail;
 
+bool CireInitiation::ReloadTuning(FString* Error)
+{
+    GTuningLoaded = true;
+    FTuning T; FString Text; TSharedPtr<FJsonObject> Root;
+    if (!FFileHelper::LoadFileToString(Text, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/Initiation.json"))) ||
+        !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root.IsValid())
+    { if (Error) *Error = TEXT("Initiation.json missing or invalid; defaults kept"); GTuning = T; return false; }
+    const TSharedPtr<FJsonObject>* S = nullptr;
+    if (Root->TryGetObjectField(TEXT("setUp"), S))
+    {
+        T.SetUpSeconds = ReadNum(*S, TEXT("seconds"), T.SetUpSeconds, .5f, 15.f);
+        T.TeamDamageBonus = ReadNum(*S, TEXT("teamDamageBonus"), T.TeamDamageBonus, 0.f, 1.f);
+        T.AreaDamageBonus = ReadNum(*S, TEXT("areaDamageBonus"), T.AreaDamageBonus, 0.f, 1.5f);
+        T.CalloutInterval = ReadNum(*S, TEXT("calloutIntervalSeconds"), T.CalloutInterval, 0.f, 10.f);
+    }
+    const TSharedPtr<FJsonObject>* B = nullptr;
+    if (Root->TryGetObjectField(TEXT("blinkDagger"), B))
+    {
+        T.BlinkRange = ReadNum(*B, TEXT("range"), T.BlinkRange, 200.f, 4000.f);
+        T.BlinkCooldown = ReadNum(*B, TEXT("cooldown"), T.BlinkCooldown, 0.f, 300.f);
+        T.BlinkLockout = ReadNum(*B, TEXT("lockoutSeconds"), T.BlinkLockout, 0.f, 15.f);
+        T.BlinkMinDistance = ReadNum(*B, TEXT("minDistance"), T.BlinkMinDistance, 0.f, 1000.f);
+    }
+    GTuning = T;
+    UE_LOG(LogCireInitiation, Display, TEXT("CIRE_INITIATION_TUNING setUp=%.1fs +%.0f%%/+%.0f%% blink=%.0fcm cd=%.0fs lockout=%.1fs"),
+        T.SetUpSeconds, T.TeamDamageBonus * 100.f, T.AreaDamageBonus * 100.f, T.BlinkRange, T.BlinkCooldown, T.BlinkLockout);
+    return true;
+}
+const CireInitiation::FTuning& CireInitiation::Tuning() { if (!GTuningLoaded) ReloadTuning(); return GTuning; }
+static FAutoConsoleCommand GCireReloadInitiation(TEXT("cire.ReloadInitiation"),
+    TEXT("initiation: reload Content/Data/Initiation.json (Set-up and Blink Dagger numbers)."),
+    FConsoleCommandDelegate::CreateLambda([] { CireInitiation::ReloadTuning(); }));
+
 void CireInitiation::ApplySetUp(ACireHero* Source, AActor* Target, const FString& AbilityName)
 {
     if (!IsValid(Source) || !Source->HasAuthority() || !CireCombat::IsAlive(Target) || !CireCombat::AreHostile(Source, Target)) return;
-    const float Seconds = SetUpSeconds * CireKits::ControlScale(Source);
-    CireBuffs::Apply(Target, SetUpId, Seconds, Source, FMath::RoundToInt(SetUpTeamBonus * 100.f));
+    const FTuning& T = Tuning();
+    const float Seconds = T.SetUpSeconds * CireKits::ControlScale(Source);
+    CireBuffs::Apply(Target, SetUpId, Seconds, Source, FMath::Clamp(FMath::RoundToInt(T.TeamDamageBonus * 100.f), 1, 250));
     const float Now = Source->GetWorld()->GetTimeSeconds();
     float& Last = LastCallout().FindOrAdd(Target);
-    if (Now - Last >= 1.f || Last > Now) { Last = Now; CireCombat::BroadcastAvoidance(Source, Target, ECireHitOutcome::SetUp, AbilityName); }
+    if (Now - Last >= T.CalloutInterval || Last > Now) { Last = Now; CireCombat::BroadcastAvoidance(Source, Target, ECireHitOutcome::SetUp, AbilityName); }
 }
 
 float CireInitiation::ModifyOutgoingDamage(AActor* Source, AActor* Target, float Amount)
@@ -58,7 +102,7 @@ float CireInitiation::ModifyOutgoingDamage(AActor* Source, AActor* Target, float
     const AActor* Initiator = E ? E->Source.Get() : nullptr;
     const int32 Team = Initiator ? CireCombat::TeamOf(Initiator) : E ? E->SourceTeam : -1;
     if (Team < 0 || Team != CireCombat::TeamOf(Source)) return Amount;
-    return Amount * (1.f + (FCireAreaDamageScope::Active() ? SetUpAreaBonus : SetUpTeamBonus));
+    return Amount * (1.f + (FCireAreaDamageScope::Active() ? Tuning().AreaDamageBonus : Tuning().TeamDamageBonus));
 }
 
 void CireInitiation::OnDamageDealt(AActor* Source, AActor* Target, float Applied)
@@ -67,7 +111,7 @@ void CireInitiation::OnDamageDealt(AActor* Source, AActor* Target, float Applied
     if (Applied <= 0 || !Victim || Victim->IsA<ACireSummon>() || !Victim->HasAuthority()) return;
     const ACireHero* Attacker = Source ? CireKits::OwnerOf(Source) : nullptr;
     if (!Attacker || Attacker->IsA<ACireSummon>() || Attacker == Victim || !CireCombat::AreHostile(const_cast<ACireHero*>(Attacker), Victim)) return;
-    if (const auto* Use = BlinkUse(Victim)) CireBuffs::Apply(Victim, BlinkLockedId, FMath::Clamp(static_cast<float>(Use->Duration), .5f, 10.f), const_cast<ACireHero*>(Attacker));
+    if (BlinkUse(Victim) && Tuning().BlinkLockout > 0) CireBuffs::Apply(Victim, BlinkLockedId, Tuning().BlinkLockout, const_cast<ACireHero*>(Attacker));
 }
 
 bool CireInitiation::CarriesBlink(const ACireHero* Hero) { return BlinkUse(Hero) != nullptr; }
@@ -96,10 +140,12 @@ bool CireInitiation::Blink(ACireHero* H, float Range, FString& Message)
     const FVector Origin = H->GetActorLocation();
     FVector Dir = (Aim - Origin).GetSafeNormal2D();
     if (Dir.IsNearlyZero()) Dir = H->GetActorForwardVector().GetSafeNormal2D();
-    const float Want = FMath::Clamp(static_cast<float>(FVector::Dist2D(Origin, Aim)), 150.f, FMath::Max(150.f, Range));
+    Range = Tuning().BlinkRange > 0 ? Tuning().BlinkRange : Range; // Initiation.json wins over the Items.json use radius
+    const float MinD = Tuning().BlinkMinDistance;
+    const float Want = FMath::Clamp(static_cast<float>(FVector::Dist2D(Origin, Aim)), MinD, FMath::Max(MinD, Range));
     const float Half = H->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
     // Walk back from the wanted point until a standable, in-realm spot accepts the capsule (blinks pass walls, never into them).
-    for (float D = Want; D >= 100.f; D -= 60.f)
+    for (float D = Want; D >= FMath::Min(100.f, MinD); D -= 60.f)
     {
         FVector P = Origin + Dir * D;
         if (Mode && !CireSkillRuntime::InRealmBounds(Mode, H->TeamId, P)) continue;

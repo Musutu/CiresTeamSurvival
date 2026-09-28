@@ -102,6 +102,10 @@ bool CireInitiation::RunSmoke(ACireGameMode* Mode)
     FChecks T; FFixture F(Mode);
     UWorld* World = Mode->GetWorld();
 
+    // ---- 0. live-tunable numbers (Content/Data/Initiation.json) ----
+    FString TuningError;
+    T.Check(ReloadTuning(&TuningError) && Tuning().SetUpSeconds > 0 && Tuning().TeamDamageBonus > 0 && Tuning().AreaDamageBonus >= Tuning().TeamDamageBonus &&
+        Tuning().BlinkRange >= 600 && Tuning().BlinkCooldown > 0 && Tuning().BlinkLockout > 0, TEXT("Initiation.json loads: ") + TuningError);
     // ---- 1. data: the Initiation group ----
     TArray<FString> Ids;
     for (const FCireAbilityDef& D : CireAbilityDB::All()) if (D.Section == TEXT("initiation")) Ids.Add(D.Id);
@@ -134,7 +138,7 @@ bool CireInitiation::RunSmoke(ACireGameMode* Mode)
         T.Check(CireBuffs::IsActive(M2, SetUpId), TEXT("an initiation hit marks the victim Set-up"));
         T.Check(!M2->GetCharacterMovement()->PendingLaunchVelocity.IsNearlyZero(), TEXT("Vacuum Rift drags its victim toward the centre"));
         const float Amped = CireSignatureSkills::ModifyOutgoingDamage(Ally, M2, 100.f, TEXT("Test"));
-        T.Check(Amped > Plain * 1.12f, FString::Printf(TEXT("allies deal more to a Set-up target (%.0f -> %.0f)"), Plain, Amped));
+        T.Check(FMath::IsNearlyEqual(Amped, Plain * (1.f + Tuning().TeamDamageBonus), 1.f), FString::Printf(TEXT("allies deal more to a Set-up target (%.0f -> %.0f)"), Plain, Amped));
         float Area = 0; { FCireAreaDamageScope Scope; Area = CireSignatureSkills::ModifyOutgoingDamage(Ally, M2, 100.f, TEXT("Test")); }
         T.Check(Area > Amped, TEXT("area follow-ups gain more from Set-up"));
         T.Check(FMath::IsNearlyEqual(CireSignatureSkills::ModifyOutgoingDamage(M, M2, 100.f, TEXT("Test")), 100.f, 1.f) || !CireCombat::AreHostile(M, M2), TEXT("the other team gains nothing from your Set-up"));
@@ -186,13 +190,13 @@ bool CireInitiation::RunSmoke(ACireGameMode* Mode)
             T.Check(Blinker->Inventory->UseSlot(Slot, false, Message), TEXT("Blink Dagger used: ") + Message);
             const float Moved = FVector::Dist2D(From, Blinker->GetActorLocation());
             T.Check(Moved > 700.f && Moved <= 1250.f, FString::Printf(TEXT("blinked toward the cursor (%.0f cm)"), Moved));
-            T.Check(Blinker->Inventory->Equipment[Slot].ReadyAt > CireBuffs::ServerNow(World), TEXT("Blink Dagger goes on cooldown"));
+            T.Check(FMath::IsNearlyEqual(Blinker->Inventory->Equipment[Slot].ReadyAt - CireBuffs::ServerNow(World), Tuning().BlinkCooldown, .5f), TEXT("Blink Dagger goes on its Initiation.json cooldown"));
             // Long aims clamp to the maximum range.
             Blinker->Inventory->Equipment[Slot].ReadyAt = 0;
             const FVector From2 = Blinker->GetActorLocation();
             SetUseAim(Blinker, From2 + FVector(-5000, 0, 0));
             Blinker->Inventory->UseSlot(Slot, false, Message);
-            T.Check(FVector::Dist2D(From2, Blinker->GetActorLocation()) <= Blink->Use.Radius + 50.f, TEXT("blink range is capped"));
+            T.Check(FVector::Dist2D(From2, Blinker->GetActorLocation()) <= Tuning().BlinkRange + 50.f, TEXT("blink range is capped (Initiation.json)"));
             // Champion damage disrupts it (arena: champions are hostile).
             Mode->Clock.BeginIntermission(); Mode->Clock.Advance(61);
             auto* Rival = F.Hero(1, FVector(-300, 400, 0), TEXT("knight"));

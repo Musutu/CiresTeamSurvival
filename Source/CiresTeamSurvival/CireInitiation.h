@@ -16,6 +16,14 @@ class ACireGameMode;
 
 namespace CireInitiation
 {
+    /** Live-tunable numbers (Content/Data/Initiation.json; console cire.ReloadInitiation). */
+    struct FTuning
+    {
+        float SetUpSeconds = 3.5f, TeamDamageBonus = .15f, AreaDamageBonus = .25f, CalloutInterval = 1.f;
+        float BlinkRange = 1200.f, BlinkCooldown = 14.f, BlinkLockout = 3.f, BlinkMinDistance = 150.f;
+    };
+    CIRESTEAMSURVIVAL_API const FTuning& Tuning();
+    CIRESTEAMSURVIVAL_API bool ReloadTuning(FString* Error = nullptr);
     CIRESTEAMSURVIVAL_API extern const FName SetUpId;
     CIRESTEAMSURVIVAL_API extern const FName BlinkLockedId;
     /** Marks Target as Set-up by Source's spell (refreshes; the callout fires at most once per second per target). */

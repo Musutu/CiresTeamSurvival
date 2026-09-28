@@ -39,16 +39,26 @@ Worktree `F:\CiresTeamSurvival-agents\cts-initiation` (branched from feat/abilit
    bot engage rule, Blink Dagger catalogue/vendors/blink/range cap/cooldown/lockout) + the expansion smoke now covers
    123 abilities.
 
-## Gates (after merging main 44a308df)
+## Final pass (main e5d261a7 merged: casting-rules, ability-expansion, waves-modes, pack-formations, arena-flow, blender-rig)
+- **Placement ignores clipping:** expansion and initiation Construct, Wall, Summon and Hallowed Cage placement now go
+  through `CireSkillCasting::PlacementAim` (casting-rules), like the kit and signature skills.
+- **Live-tunable numbers:** `Content/Data/Initiation.json` (console `cire.ReloadInitiation`):
+  `setUp.seconds / teamDamageBonus / areaDamageBonus / calloutIntervalSeconds` and
+  `blinkDagger.range / cooldown / lockoutSeconds / minDistance`. The Blink Dagger's Items.json `use` block keeps the
+  catalogue text; Initiation.json wins at runtime (range, cooldown applied after a use, lockout). `CireInitiation::Tuning()`
+  exposes them for the Ability Tuner.
+- Cast times: the 12 initiation spells now get their cast times from CastRules.json (CIRE_CAST_RULES_PASS checks=850).
+
+## Gates (final, after merging main e5d261a7)
 - Build: Succeeded.
-- Native: PASS (`CIRE_INITIATION_PASS checks=84 spells=12`, `CIRE_ABILITY_EXPANSION_PASS checks=2767`,
-  `CIRE_COMBAT_EXPANSION_PASS`) - `Saved/ExpansionChecks/20260928T062224220507Z/report.json` (`--timeout 600`).
-- Network smoke: PASS - `Saved/NetworkSmoke/20260928T062634864615Z/report.json`.
-- Interface smoke: PASS - `Saved/InterfaceSmoke/20260928T062752216845Z/report.json`.
+- Native: PASS (`CIRE_INITIATION_PASS checks=85 spells=12`, `CIRE_ABILITY_EXPANSION_PASS checks=2767`,
+  `CIRE_CAST_RULES_PASS checks=850`, `CIRE_COMBAT_EXPANSION_PASS`) - `Saved/ExpansionChecks/20260928T064607517926Z/report.json`.
+- Network smoke: PASS - `Saved/NetworkSmoke/20260928T065011710309Z/report.json`.
+- Interface smoke: PASS - `Saved/InterfaceSmoke/20260928T065136364296Z/report.json`.
 
 ## Assumptions / questions for Eric
-- Set-up numbers (+15% / +25% area, 3.5 s) and the 3 s blink lockout are defaults; tune in `CireInitiation.cpp`
-  (constants at the top) - tell me if you want them in a JSON tunable.
+- Set-up numbers (+15% / +25% area, 3.5 s) and the Blink Dagger numbers (12 m, 14 s, 3 s lockout) are defaults in
+  `Content/Data/Initiation.json` (live reload: `cire.ReloadInitiation`).
 - Initiation spells are regular actives (not ultimates) with 18-32 s cooldowns, so a champion can carry one next to its ultimate.
 - Blink Dagger stats follow the items rule (primary + flat mana only); 650 g sits between a basic and a mid legendary.
 - Summon/construct damage does not disrupt the dagger (only champions), matching Dota's "hero damage".
@@ -61,4 +71,3 @@ Worktree `F:\CiresTeamSurvival-agents\cts-initiation` (branched from feat/abilit
 - `CireShopUI.cpp` (Initiation section), `CireSkillShopTests.cpp` (valid sections), `CireBuffs.cpp` (known ids),
   `CireCombatExpansionProbe.cpp` (runs the smoke).
 - Data: `Items.json` (+2 items), `Vendors.json` (`shared` += `blink`). Tools: `BuildItemIcons.py` (2 icon designs).
-- Next (after feat/casting-rules merges): expansion Construct / Wall / Summon / Cage placement to `CireSkillCasting::PlacementAim`.

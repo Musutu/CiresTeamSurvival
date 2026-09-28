@@ -13,6 +13,7 @@
 #include "CireItems.h"
 #include "CireKitSkills.h"
 #include "CireInitiation.h" // initiation: Set-up synergy, blink lockout
+#include "CireSkillCasting.h" // casting-rules: PlacementAim
 #include "CireScalingKits.h"
 #include "CireSkillRuntime.h"
 #include "CireSkillShop.h"
@@ -485,7 +486,7 @@ bool CireAbilityExpansion::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     }
     case EDel::Cage: // initiation: a ring of walls traps whoever is inside (allies walk through)
     {
-        if (!NeedGround(false)) return false;
+        if (!CireSkillCasting::PlacementAim(Hero, Aim, Range)) return false; // casting-rules: placement ignores clipping
         SetCenter(Hero, Id, Aim);
         ACireAreaEffect::Spawn(Hero, AreaFor(*Def, ECireAreaShape::Circle, Radius, Rec->Warning, Amount), Aim, FRotator::ZeroRotator);
         const int32 N = Rec->CageSegments; const float Seg = 2.f * PI * Radius / N * 1.08f;
@@ -606,7 +607,7 @@ bool CireAbilityExpansion::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
         Spec.DurationSeconds = Duration; Spec.ManaCost = 0; Spec.EnergyCost = 0; Spec.CooldownSeconds = 0; Spec.bCommandable = Rec->bCommandable;
         Spec.CastRange = Range + 250.f; Spec.MoveSpeed = Rec->MoveSpeed; Spec.AttackRange = Rec->AttackRange; Spec.ArchetypeVisual = Rec->Visual;
         FVector At = Hero->bHasCastAim ? Aim : Origin + Direction * 180.f;
-        if (!GroundAt(Hero, At)) At = Origin + Direction * 180.f;
+        if (!CireSkillCasting::PlacementAim(Hero, At, Range)) return false; // casting-rules: placement ignores clipping
         // SpawnGroup places at most 3 per call: larger packs arrive in groups of up to 3 side by side.
         TArray<ACireSummon*> Units;
         for (int32 Left = Rec->Count, Group = 0; Left > 0; ++Group)
@@ -626,14 +627,14 @@ bool CireAbilityExpansion::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     }
     case EDel::Construct:
     {
-        if (!NeedGround(true)) return false;
+        if (!CireSkillCasting::PlacementAim(Hero, Aim, Range)) return false; // casting-rules: placement ignores clipping
         FString Why;
         if (CireTechConstructs::Deploy(Hero, FName(*Id), Aim, &Why).IsEmpty()) return Fail(Why.IsEmpty() ? FString(TEXT("Cannot build there.")) : Why);
         break;
     }
     case EDel::Wall:
     {
-        if (!NeedGround(true)) return false;
+        if (!CireSkillCasting::PlacementAim(Hero, Aim, Range)) return false; // casting-rules: placement ignores clipping
         for (TCireActorIterator<ACireConstruct> It(World); It; ++It) if (It->GetSourceActor() == Hero && It->GetDisplayName() == Name) It->Destroy(); // one per owner
         FCireConstructSpec W; W.Kind = ECireConstructKind::Wall; W.MaxHealth = FMath::Min(20000.f, Amount); W.LifetimeSeconds = Duration;
         W.Width = FMath::Max(120.f, Radius * 2.f); W.Depth = 60.f; W.Height = 230.f; W.ManaCost = 0; W.EnergyCost = 0; W.CooldownSeconds = Def->Base.Cooldown; W.CastRange = Range + 60.f;
