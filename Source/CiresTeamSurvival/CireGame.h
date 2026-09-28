@@ -301,6 +301,11 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out) const override;
     /** medieval-kingdom: the server plays the Medieval Kingdom pack town (CireTownMap); clients stream the same realms. */
     UPROPERTY(Replicated) bool bCastleTown = false;
+    /** world-editor: the server's world edit set (CireWorldEdit.h): name and content hash. A client selects the same set
+        before its town streams (BeginPlay) and follows a live switch (OnRep). */
+    UPROPERTY(Replicated) FString WorldEditHash;
+    UPROPERTY(ReplicatedUsing=OnRep_WorldEdit) FString WorldEditSet;
+    UFUNCTION() void OnRep_WorldEdit();
     void RefreshRouteVisuals();
     uint32 RenderedRouteRevision = MAX_uint32;
     // nav-paths: the castle goal actors follow the (editable) goal zone on the server.

@@ -5,6 +5,7 @@
 #include "CireLanePath.h"
 #include "CireNPCCombat.h"
 #include "CireTownTrim.h" // town-trim
+#include "CireWorldEdit.h" // world-editor
 #include "CireTownWater.h" // town-trim
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
@@ -362,6 +363,7 @@ int32 CireTownMap::PrepareRealmLevels(UWorld* World)
         if (!Level || Level == World->PersistentLevel || !Level->bIsVisible || PreparedLevels.Contains(Level)) continue;
         PreparedLevels.Add(Level); ++NewLevels;
         CireTownTrim::TrimLevel(World, Level); // town-trim: outside the Play Bounds: destroyed or kept as backdrop
+        CireWorldEdit::ApplyLevel(World, Level); // world-editor: the active world edit set's removed buildings and props
         CireTownWater::PrepareLevel(World, Level); // town-trim: the pack's ocean, re-centred on this realm's water zone
         TArray<AActor*> Doomed;
         for (AActor* A : Level->Actors)
@@ -419,6 +421,7 @@ bool CireTownMap::LoadRealms(UWorld* World)
     const auto& D = Def();
     SaveRendererCvars(); // town-perf
     CireTownTrim::BeginLoad(World); // town-trim: freeze the Play Bounds this town is trimmed to
+    CireWorldEdit::BeginLoad(World); // world-editor: freeze the active world edit set
     int32 Count = 0;
     for (int32 Team = 0; Team < 2; ++Team)
         for (const FString& Level : D.Levels)
@@ -449,6 +452,7 @@ bool CireTownMap::LoadRealms(UWorld* World)
     {
         const int32 Before = World->GetStreamingLevels().Num();
         CireTownTrim::FilterLevelInstances(World); // town-trim: drop queued Level Instances entirely outside the Play Bounds
+        CireWorldEdit::FilterLevelInstances(World); // world-editor: drop queued Level Instances the active set removes
         if (auto* LevelInstances = World->GetSubsystem<ULevelInstanceSubsystem>()) LevelInstances->OnUpdateStreamingState();
         // town-perf: SL_Landscape is a World Partition level; its cells (the terrain, water) otherwise stream in on the first
         // frame, after the navmesh was built without the ground, and dirty both realms for a second full rebuild.
@@ -467,6 +471,7 @@ bool CireTownMap::LoadRealms(UWorld* World)
         Added = FWorldDelegates::LevelAddedToWorld.AddLambda([](ULevel* Level, UWorld* In) { if (Level && In && bActive && Loaded.Contains(In)) CireTownMap::PrepareRealmLevels(In); });
     CireTownMap::PrepareRealmLevels(World);
     CireTownTrim::LogSummary(World); // town-trim
+    CireWorldEdit::LogSummary(World); // world-editor
     int32 Visible = 0;
     for (const auto& S : Entry.Levels) if (S.IsValid() && S->GetLoadedLevel() && S->GetLoadedLevel()->bIsVisible) ++Visible;
     LoadMs = (FPlatformTime::Seconds() - Started) * 1000.0; // town-perf

@@ -3,6 +3,7 @@
 #include "CireLanePath.h" // outdoor-bosses: realm bounds in the key
 #include "CireTownMap.h"
 #include "CireTownTrim.h" // town-trim
+#include "CireWorldEdit.h" // world-editor
 #include "CireTownWater.h" // town-trim
 #include "HAL/FileManager.h"
 #include "Misc/CommandLine.h"
@@ -59,6 +60,7 @@ FString CacheKey()
         const FCireBattlefieldRoutes& R = CireLanePath::Get(nullptr);
         Text += FString::Printf(TEXT("realm=%.0f,%.0f,%.0f;"), R.MinX, R.MaxX, R.HalfWidth);
     }
+    Text += CireWorldEdit::Signature(); // world-editor: the active set's removed pieces ("" without a set: the old key)
     Text += CireTownTrim::Signature() + CireTownWater::NavSignature(); // town-trim: the Play Bounds, margin and backdrop ("" without a trim: the old key)
     for (const FString& Level : CireTownMap::Def().Levels)
     {
