@@ -55,7 +55,8 @@ bool FCireWaveScale::operator==(const FCireWaveScale& O) const { return Near(Hea
 bool FCireWavePreset::operator==(const FCireWavePreset& O) const
 {
     return Id == O.Id && Label == O.Label && Description == O.Description && bDefaultDamage == O.bDefaultDamage && DefaultFightBack == O.DefaultFightBack &&
-        Waves == O.Waves && Scale == O.Scale && PackSizeBonus == O.PackSizeBonus && PvpAfterWaves == O.PvpAfterWaves && KitProfile == O.KitProfile;
+        Waves == O.Waves && Scale == O.Scale && PackSizeBonus == O.PackSizeBonus && PvpAfterWaves == O.PvpAfterWaves && KitProfile == O.KitProfile &&
+        Bundle.OrderIndependentCompareEqual(O.Bundle) && AllowTuning == O.AllowTuning; // game-profiles
 }
 bool FCireRareSpawnRules::operator==(const FCireRareSpawnRules& O) const
 {
@@ -903,6 +904,7 @@ bool CireWaveDirector::SaveFile(const FCireWaveConfig& Config, FString* Error, c
 namespace
 {
 TArray<FCireWavePreset> PresetCache;
+TArray<FCireWavePreset> RuntimePresets; // game-profiles: probe fixtures (never written to the file)
 bool bPresetsLoaded = false;
 
 FName CleanPresetId(const FString& In)
@@ -984,6 +986,9 @@ bool CireWaveDirector::ParsePresets(const FString& Json, TArray<FCireWavePreset>
         P.bBuiltIn = Flag(*PO, TEXT("builtIn"), false);
         (*PO)->TryGetStringField(TEXT("kitProfile"), P.KitProfile); // kit-editor: Hero Creator kit profile
         P.KitProfile = P.KitProfile.TrimStartAndEnd().Left(40);
+        for (const TCHAR* Key : {TEXT("layout"), TEXT("tuningProfile"), TEXT("economyProfile"), TEXT("packProfile"), TEXT("movementProfile"), TEXT("matchProfile"), TEXT("spacingProfile"), TEXT("worldEdit")}) // game-profiles
+        { FString Name; if ((*PO)->TryGetStringField(Key, Name) && !Name.TrimStartAndEnd().IsEmpty()) P.Bundle.Add(Key, Name.TrimStartAndEnd().Left(48)); }
+        { bool bAllow = false; if ((*PO)->TryGetBoolField(TEXT("allowTuning"), bAllow)) P.AllowTuning = bAllow ? 1 : 0; }
         const TSharedPtr<FJsonObject>* Scale = nullptr;
         if ((*PO)->TryGetObjectField(TEXT("scale"), Scale) && Scale)
         {
@@ -1040,6 +1045,9 @@ FString CireWaveDirector::PresetsToJson(const TArray<FCireWavePreset>& List)
         PO->SetNumberField(TEXT("packSizeBonus"), P.PackSizeBonus);
         if (!P.PvpAfterWaves.IsEmpty()) PO->SetArrayField(TEXT("pvpAfterWaves"), IntValues(P.PvpAfterWaves));
         if (!P.KitProfile.IsEmpty()) PO->SetStringField(TEXT("kitProfile"), P.KitProfile); // kit-editor
+        TArray<FString> BundleKeys; P.Bundle.GetKeys(BundleKeys); BundleKeys.Sort(); // game-profiles
+        for (const FString& Key : BundleKeys) if (!P.Bundle[Key].IsEmpty()) PO->SetStringField(Key, P.Bundle[Key]);
+        if (P.AllowTuning >= 0) PO->SetBoolField(TEXT("allowTuning"), P.AllowTuning == 1);
         Out.Add(MakeShared<FJsonValueObject>(PO));
     }
     Root->SetArrayField(TEXT("presets"), Out);
@@ -1064,6 +1072,7 @@ const TArray<FCireWavePreset>& CireWaveDirector::Presets(bool bReload)
     for (int32 I = BuiltIn.Num() - 1; I >= 0; --I)
         if (!PresetCache.ContainsByPredicate([&](const FCireWavePreset& P) { return P.Id == BuiltIn[I].Id; })) PresetCache.Insert(BuiltIn[I], 0);
     for (auto& P : PresetCache) if (BuiltIn.ContainsByPredicate([&](const FCireWavePreset& B) { return B.Id == P.Id; })) P.bBuiltIn = true;
+    for (const auto& R : RuntimePresets) if (!PresetCache.ContainsByPredicate([&](const FCireWavePreset& P) { return P.Id == R.Id; })) PresetCache.Add(R); // game-profiles
     return PresetCache;
 }
 
@@ -1099,8 +1108,18 @@ FCireWavePreset CireWaveDirector::CapturePreset(const FCireWaveConfig& C, FName 
         { FCireWavePreset::FWave O; O.Wave = I + 1; O.bDamage = W.bDealsDamage; O.FightBack = W.FightBackPacks; P.Waves.Add(O); }
     }
     P.Scale = C.Live; P.PackSizeBonus = C.PackSizeBonus; P.PvpAfterWaves = C.Match.PvpAfterWaves;
+    // game-profiles: saving over a preset keeps its bundle (kit / tuning / economy ... profiles) and allowTuning.
+    if (const FCireWavePreset* Old = FindPreset(CleanPresetId(Id.ToString()))) { P.KitProfile = Old->KitProfile; P.Bundle = Old->Bundle; P.AllowTuning = Old->AllowTuning; }
     ClampPreset(P);
     return P;
+}
+
+void CireWaveDirector::RegisterRuntimePreset(const FCireWavePreset& In)
+{
+    FCireWavePreset P = In; ClampPreset(P);
+    RuntimePresets.RemoveAll([&](const FCireWavePreset& X) { return X.Id == P.Id; });
+    RuntimePresets.Add(P);
+    Presets(true);
 }
 
 bool CireWaveDirector::SavePreset(const FCireWavePreset& In, FString* Error, const FString& Path)

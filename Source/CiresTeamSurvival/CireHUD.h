@@ -134,6 +134,9 @@ public:
     void DrawEconomyPage(float X,float Y);
     // pack-formations: F8 > Packs (CirePackStatsPage.cpp): challenge-mob stats, live.
     void DrawPackStatsPage(float X,float Y);
+    // game-profiles: the PROFILE bar under every F8 editor page and the game type bundle on Waves > MODES & SCALE (CireProfileBar.cpp).
+    void DrawProfileFooter(float X,float Y);
+    void DrawGameTypeBundle(float X,float Y,float W);
     // Skill Shop READY button shares the match plate's breather Ready state (wave-director).
     bool IsBreatherReadyLocal(int32 Wave) const { return BreatherReadyWave==Wave&&bBreatherReadyLocal; }
     void SetBreatherReadyLocal(int32 Wave,bool bReady) { BreatherReadyWave=Wave; bBreatherReadyLocal=bReady; }

@@ -1,6 +1,7 @@
 // wave-director: authoritative wave runtime, neutral challenge packs and bot lane defence.
 #include "CireWaves.h"
 #include "CireAbilityTuner.h" // ability-tuner
+#include "CireProfiles.h" // game-profiles
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireGame.h"
 #include "CireItems.h" // progression-shop: ready flags on the inventory
@@ -227,7 +228,12 @@ void CireWaveDirector::Initialize(ACireGameMode* Mode)
         // waves-modes: the host's game type (kept across a layout restart), or -CireWavePreset=<id>; else Waves.json as saved.
         FString Arg; FName Pick = S->WavePreset;
         if (FParse::Value(FCommandLine::Get(), TEXT("CireWavePreset="), Arg) && !Arg.IsEmpty()) Pick = FName(*Arg);
-        if (const FCireWavePreset* P = Pick.IsNone() ? nullptr : FindPreset(Pick)) { ApplyPreset(R.Config, *P); Validate(R.Config, nullptr, true); S->WavePreset = P->Id; CireAbilityTuner::ApplyWavePreset(Mode->GetWorld(), P->Id); } // ability-tuner: preset tuningProfile / allowTuning
+#if !UE_BUILD_SHIPPING
+        CireGameProfiles::InitializeProbePick(Mode, Pick); // game-profiles: -CireNetServerProbe plays a game type with non-default profiles
+#endif
+        const FCireWavePreset* P = Pick.IsNone() ? nullptr : FindPreset(Pick);
+        if (P) { ApplyPreset(R.Config, *P); Validate(R.Config, nullptr, true); S->WavePreset = P->Id; }
+        CireGameProfiles::ApplyGameType(Mode, P, true); // game-profiles: tuning, layout, data profiles, world edit (null = every editor on Default)
     }
     ApplyPacing(Mode, R.Config);
     Publish(Mode);
@@ -1359,7 +1365,7 @@ bool CireWaveDirector::SelectPreset(ACireGameMode* Mode, FName Id, FString* Erro
     ApplyPreset(C, *P);
     if (!ApplyLive(Mode, C, Error)) return false;
     if (S->WavePreset != P->Id) { S->WavePreset = P->Id; S->ForceNetUpdate(); }
-    CireAbilityTuner::ApplyWavePreset(Mode->GetWorld(), P->Id); // ability-tuner: preset tuningProfile / allowTuning
+    CireGameProfiles::ApplyGameType(Mode, P, false); // game-profiles (ability-tuner tuningProfile / allowTuning included)
     UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_PRESET %s \"%s\" damage=%d fightBack=%d scale=%.2f/%.2f/%.2f packBonus=%d"), *P->Id.ToString(), *P->Label,
         P->bDefaultDamage ? 1 : 0, P->DefaultFightBack.Num(), P->Scale.Health, P->Scale.Damage, P->Scale.Speed, P->PackSizeBonus);
     return true;

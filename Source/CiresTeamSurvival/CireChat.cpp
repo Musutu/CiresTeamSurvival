@@ -3,6 +3,7 @@
 #include "Engine/World.h"
 #include "CireInterfaceProbe.h"
 #include "CireAbilityTunerUI.h" // ability-tuner
+#include "CireProfileBar.h" // game-profiles
 
 bool UCireViewportClient::InputChar(FViewport* InViewport, int32 ControllerId, TCHAR InputCharacter) {
     auto* Controller = GetWorld() ? Cast<ACireController>(GetWorld()->GetFirstPlayerController()) : nullptr;
@@ -11,6 +12,7 @@ bool UCireViewportClient::InputChar(FViewport* InViewport, int32 ControllerId, T
         return true;
     }
     if (CireAbilityTunerUI::HandleChar(InputCharacter)) return true; // ability-tuner text boxes
+    if (CireProfileUI::HandleChar(InputCharacter)) return true; // game-profiles: F8 PROFILE name box
     if (Controller && Controller->bDraftSearch) { // champion-select search box
         Controller->AppendDraftSearchCharacter(InputCharacter);
         return true;

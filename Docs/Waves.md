@@ -72,6 +72,13 @@ replicated on `ACireGameState::WavePreset`. Also `-CireWavePreset=<id>` on the c
 F8 > Waves > MODES & SCALE loads a preset into the draft, SAVE OVER <preset>, SAVE AS NEW (Custom N, listed under
 GAME TYPE) and PLAY THIS TYPE.
 
+**Game type bundle (game-profiles).** A preset also names the profile each editor plays with; every key is optional
+and missing / empty / "Default" = the editor's own data file: `layout` (Content/Data/MapLayouts/<name>.json),
+`tuningProfile`, `kitProfile`, `economyProfile`, `packProfile`, `movementProfile`, `matchProfile` (standalone only),
+`spacingProfile`, `worldEdit`. Named profiles live in `Content/Data/Profiles/<Domain>/<name>.json` (F8 PROFILE bar
+under Match / Spawn / Effects / Economy / Packs + Spacing / Movement). F8 > Waves > MODES & SCALE > PROFILES BUNDLE
+edits them per game type and SAVE CURRENT AS GAME TYPE snapshots what is live. Details: Docs/RESUME-game-profiles.md.
+
 **Bonus-loot hook.** `CireWaveDirector::RollWaveType(Config, Planned, GlobalWave, Seed)` runs for every live wave
 before it is queued; it returns the planned wave by default (feat/bonus-loot swaps in its stages; never on boss waves).
 
