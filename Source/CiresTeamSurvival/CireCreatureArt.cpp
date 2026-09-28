@@ -353,12 +353,16 @@ bool UCireCreatureArt::RunGaitSmoke(UWorld* World)
 }
 #endif
 
+bool GCireCreatureArtPreviewLite=false; // champ-select-perf (CireCreatureArt.h)
 // ================================================================================== new-champions
 namespace
 {
 UAnimSequence* Clip(const TSharedPtr<FJsonObject>& Object,const TCHAR* Role)
 {
     FString Path;
+    // champ-select-perf: the champion-select preview only idles and flourishes its attack; its reaction / death / cast
+    // clips (and the FX their notifies pull in) are not loaded.
+    if(GCireCreatureArtPreviewLite&&(FCString::Stricmp(Role,TEXT("idle"))&&FCString::Stricmp(Role,TEXT("walk"))&&FCString::Stricmp(Role,TEXT("run"))&&FCString::Stricmp(Role,TEXT("attack"))))return nullptr;
     if(!Object||!Object->TryGetStringField(Role,Path)||!Path.StartsWith(TEXT("/Game/")))return nullptr;
     return LoadObject<UAnimSequence>(nullptr,*Path);
 }

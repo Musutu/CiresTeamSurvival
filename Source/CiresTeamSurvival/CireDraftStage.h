@@ -29,6 +29,14 @@ public:
     const FString& GetProfileId() const { return ProfileId; }
     /** kit-editor: the local preview champion (effect placement preview); null while none is shown. */
     ACireHero* GetPreviewHero() const { return Preview; }
+    // champ-select-perf: recently shown bodies stay spawned (hidden, not ticking) so a revisit is instant.
+    // Capacity counts the visible preview too (1 = no pool: every switch destroys and respawns).
+    void SetPoolCapacity(int32 Capacity);
+    /** Champion select: bind only idle / gait / attack clips (no cast, hit or death clips and their FX). */
+    void SetLitePreview(bool bLite) { bLitePreview = bLite; }
+    bool IsPooled(const FString& Id) const { return Pool.Contains(Id); }
+    int32 PooledCount() const { return Pool.Num(); }
+    static int32& PoolReuses() { static int32 Count = 0; return Count; }
     // paragon-champions: show the preview in a skin ("" = default); the body re-binds on the next update.
     void SetPreviewSkin(const FString& Skin);
 
@@ -81,7 +89,23 @@ public:
     virtual void Tick(float DeltaSeconds) override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     FBox BodyBounds() const;
+    // champ-select-perf: game-thread cost of the last ShowProfile (hover probe): spawn, bind (DraftProfile: body mesh,
+    // anims, weapons) and first visuals (anim init, prestream).
+    struct FShowTimings { double SpawnMs = 0, BindMs = 0, VisualsMs = 0, TotalMs = 0; };
+    const FShowTimings& GetLastShowTimings() const { return LastShow; }
+    /** Session totals of every ShowProfile that spawned a body (hover probe deltas). */
+    static FShowTimings& ShowTotals() { static FShowTimings Totals; return Totals; }
+    static int32& ShowCount() { static int32 Count = 0; return Count; }
 private:
+    FShowTimings LastShow;
+    void ParkPreview();
+    void TrimPool();
+    UPROPERTY(Transient) TMap<FString, TObjectPtr<ACireHero>> Pool;
+    TArray<FString> PoolOrder; // oldest first
+    int32 PoolCapacity = 4;
+    bool bReusedFromPool = false;
+    bool bHoldsLoadingBudget = false;
+    bool bLitePreview = false;
     void BuildStage();
     void FitStage(float BodyHeight);
     void FrameCamera(float DeltaSeconds, bool bSnap);

@@ -1,4 +1,5 @@
 #include "CireCombatExpansionProbe.h"
+#include "CireDraftBrowser.h" // champ-select
 #include "CireAbilityTuner.h" // ability-tuner
 #include "CireLeash.h" // layout-wiring
 #include "CireOutdoorBosses.h" // outdoor-bosses
@@ -152,6 +153,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireInitiation::RunSmoke(Mode)&&Good; // initiation: engage spells, Set-up synergy, Blink Dagger
     Good=CirePets::RunSmoke(Mode)&&Good; // pets: companions (summon, follow, stances, commands, threat share, death/revive, scaling, on-foot Huntress)
     Good=CireParagonChampions::RunSmoke(Mode)&&Good; // paragon-champions: registration, DB/pool merge, Paragon bodies + clips, every own ability casts, buffs
+    Good=CireDraftBrowser::RunTests(Mode)&&Good; // champ-select: roster filters / search / sort / paging / skins / favourites, async draft asset cache
 
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }

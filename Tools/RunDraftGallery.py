@@ -1,14 +1,14 @@
 """Render the champion-select screen at several resolutions (offscreen) and verify it.
 
 For every resolution the game launches with -CireDraftGallery -CireTripoChampions.
-The native fixture walks nine states (browse, hover, selected, hybrid, abilities tab,
-teammate-locked + lore tab, search, low timer, locked in), waits for the live 3D preview to settle
+The native fixture walks ten states (browse, tank hover, selected details, Paragon hero with the skin strip,
+page two, INT + Paragon filters, search, teammate-locked, low timer, locked in), waits for the live 3D preview to settle
 and saves one PNG per state under Saved/DraftGallery/<stamp>_<WxH>. For each capture
 it also writes <shot>.layout.json: every text run and card with the box it must stay
 inside. The fixture fails a shot (CIRE_DRAFT_LAYOUT_FAIL) when a card leaves the roster
-panel, text overflows its box or the safe area, the title is clipped, or text is
-smaller than the readability floor (9.4 logical units; card names 10, i.e. 15 px at
-1080p). This runner only stops the processes it starts. Structural checks are not
+panel, text overflows its box or the safe area, the title is clipped, two text runs (or two
+cards) overlap, or text is smaller than the readability floor (12 logical units everywhere:
+18 px at 1080p, 15 px at 1600x900). This runner only stops the processes it starts. Structural checks are not
 visual approval: review the PNGs.
 """
 from __future__ import annotations
@@ -25,9 +25,9 @@ import time
 
 ROOT = Path(__file__).resolve().parent.parent
 FAILURE = re.compile(r"CIRE_DRAFT\S*FAIL|Fatal error:|Assertion failed:")
-EXPECTED = ["01_browse_all", "02_tank_hover_knight", "03_tank_selected_knight", "04_dps_selected_hybrid_wizard",
-            "05_support_abilities_hover_keeper", "06_teammate_locked_dryad_lore", "07_search_golem", "08_timer_low_behemoth",
-            "09_locked_in_knight"]
+EXPECTED = ["01_browse_all", "02_tank_hover_knight", "03_selected_knight_details", "04_paragon_selected_skin_strip",
+            "05_page_two", "06_filter_int_paragon", "07_search_golem", "08_teammate_locked_dryad", "09_timer_low_behemoth",
+            "10_locked_in_knight"]
 # 16:9 (1080p, launcher default, small window), Eric's 1755x1336 window, 21:9 ultrawide, 4:3.
 RESOLUTIONS = [(1920, 1080), (1600, 900), (1280, 720), (1755, 1336), (2560, 1080), (1440, 1080)]
 
