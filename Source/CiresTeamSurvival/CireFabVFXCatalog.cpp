@@ -20,6 +20,10 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Serialization/JsonWriter.h"
 #include "NiagaraSystem.h"
 #include "NiagaraTypes.h"
 #include "Particles/ParticleSystem.h"
@@ -133,8 +137,108 @@ void Capture(const TCHAR* Frame)
 }
 }
 
+// vfx-loop-fix: loop / placement audit of every system FabVFX.json references (-CireFabLoopAudit[=<out.json>]).
+// Each system is spawned (scalability off, never pooled) on a far stage in batches; the audit records when it completes on
+// its own, whether it still runs after LoopProbeAt seconds (a looping system), whether it still runs DeactivateGrace seconds
+// after Deactivate (ignores deactivation), and its vertical extent relative to the spawn point (an effect whose lowest
+// particle sits at the origin and rises tall is authored to be spawned on the ground). Ends with CIRE_FAB_LOOP_AUDIT_DONE.
+namespace CireFabLoopAudit
+{
+struct FRow { FString Path; TWeakObjectPtr<UFXSystemComponent> C; FVector At=FVector::ZeroVector; float DoneAt=-1,MinZ=1e9f,MaxZ=-1e9f,Reach=0; bool bLoop=false,bIgnores=false,bMissing=false,bSeen=false; };
+struct FState { TWeakObjectPtr<ACireGameMode> Mode; FString Out; TArray<FRow> Rows; int32 Next=0,BatchStart=0,BatchEnd=0; double BatchAt=-1,Start=0; int32 Phase=0; bool bDone=false; };
+FState A;
+constexpr float LoopProbeAt=6.f,DeactivateGrace=6.f;constexpr int32 Batch=48;
+void CollectPaths(const TSharedPtr<FJsonValue>& V,TSet<FString>& Out)
+{
+    if(!V.IsValid())return;
+    if(V->Type==EJson::String){const FString S=V->AsString();if(S.StartsWith(TEXT("/Game/"))&&S.Contains(TEXT(".")))Out.Add(S);return;}
+    if(V->Type==EJson::Array){for(const auto& E:V->AsArray())CollectPaths(E,Out);return;}
+    if(V->Type==EJson::Object)for(const auto& KV:V->AsObject()->Values)if(KV.Key!=TEXT("groundRadius")&&KV.Key!=TEXT("groundExcluded"))CollectPaths(KV.Value,Out);
+}
+bool IsRunning(const UFXSystemComponent* C){return C&&C->IsActive();}
+void SpawnBatch(UWorld* World)
+{
+    A.BatchStart=A.Next;A.BatchEnd=FMath::Min(A.Rows.Num(),A.Next+Batch);A.Next=A.BatchEnd;A.BatchAt=World->GetTimeSeconds();A.Phase=0;
+    for(int32 I=A.BatchStart;I<A.BatchEnd;++I)
+    {
+        FRow& R=A.Rows[I];const int32 K=I-A.BatchStart;R.At=FVector(40000+(K%8)*2500.f,40000+(K/8)*2500.f,30000);
+        CireFabVFX::FEntry E;E.Candidates.Add(R.Path);UFXSystemAsset* System=CireFabVFX::Resolve(&E);
+        UFXSystemComponent* C=nullptr;
+        if(UNiagaraSystem* N=Cast<UNiagaraSystem>(System))
+        {
+            UNiagaraComponent* NC=UNiagaraFunctionLibrary::SpawnSystemAtLocation(World,N,R.At,FRotator::ZeroRotator,FVector(1.f),false,false,ENCPoolMethod::None,false);
+            if(NC){NC->SetAllowScalability(false);NC->Activate(true);}C=NC;
+        }
+        else if(UParticleSystem* P=Cast<UParticleSystem>(System))C=UGameplayStatics::SpawnEmitterAtLocation(World,P,FTransform(R.At),false,EPSCPoolMethod::None,true);
+        R.C=C;R.bMissing=C==nullptr;
+    }
+}
+void Measure(float Age)
+{
+    for(int32 I=A.BatchStart;I<A.BatchEnd;++I)
+    {
+        FRow& R=A.Rows[I];UFXSystemComponent* C=R.C.Get();if(!C)continue;
+        if(IsRunning(C))R.bSeen=true;
+        else if(A.Phase==0&&R.DoneAt<0&&R.bSeen)R.DoneAt=Age;
+        if(!IsRunning(C))continue;
+        const FBoxSphereBounds B=C->CalcBounds(C->GetComponentTransform());const FBox Box=B.GetBox();
+        if(Box.IsValid&&B.SphereRadius>1.f&&B.SphereRadius<1e5f)
+        {R.MinZ=FMath::Min(R.MinZ,float(Box.Min.Z-R.At.Z));R.MaxZ=FMath::Max(R.MaxZ,float(Box.Max.Z-R.At.Z));R.Reach=FMath::Max(R.Reach,CireFabVFX::MeasureReach(C));}
+    }
+}
+void Finish()
+{
+    A.bDone=true;TArray<TSharedPtr<FJsonValue>> Items;int32 Loops=0,Ignores=0;
+    for(const FRow& R:A.Rows)
+    {
+        auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("path"),R.Path);O->SetBoolField(TEXT("missing"),R.bMissing);
+        O->SetNumberField(TEXT("doneAt"),R.DoneAt);O->SetBoolField(TEXT("looping"),R.bLoop);O->SetBoolField(TEXT("ignoresDeactivate"),R.bIgnores);
+        O->SetNumberField(TEXT("minZ"),R.MinZ>1e8f?0:FMath::RoundToInt(R.MinZ));O->SetNumberField(TEXT("maxZ"),R.MaxZ<-1e8f?0:FMath::RoundToInt(R.MaxZ));O->SetNumberField(TEXT("reach"),FMath::RoundToInt(R.Reach));
+        Items.Add(MakeShared<FJsonValueObject>(O));Loops+=R.bLoop;Ignores+=R.bIgnores;
+        UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_LOOP path=%s missing=%d done=%.2f loop=%d ignores=%d minz=%.0f maxz=%.0f reach=%.0f"),*R.Path,R.bMissing,R.DoneAt,R.bLoop,R.bIgnores,
+            R.MinZ>1e8f?0.f:R.MinZ,R.MaxZ<-1e8f?0.f:R.MaxZ,R.Reach);
+    }
+    auto Root=MakeShared<FJsonObject>();Root->SetArrayField(TEXT("systems"),Items);FString Text;
+    FJsonSerializer::Serialize(Root,TJsonWriterFactory<>::Create(&Text));FFileHelper::SaveStringToFile(Text,*A.Out);
+    UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_LOOP_AUDIT_DONE systems=%d looping=%d ignoresDeactivate=%d out=%s"),A.Rows.Num(),Loops,Ignores,*A.Out);
+    FPlatformMisc::RequestExitWithStatus(false,0);
+}
+bool Initialize(ACireGameMode* Mode)
+{
+    A={};if(!FString(FCommandLine::Get()).Contains(TEXT("-CireFabLoopAudit"))||!Mode||Mode->GetNetMode()!=NM_Standalone)return false;
+    FParse::Value(FCommandLine::Get(),TEXT("CireFabLoopAudit="),A.Out);
+    if(A.Out.IsEmpty())A.Out=FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("FabLoopAudit.json")));
+    FString Text;TSharedPtr<FJsonValue> Root;TSet<FString> Paths;
+    if(FFileHelper::LoadFileToString(Text,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/FabVFX.json")))&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Root))CollectPaths(Root,Paths);
+    TArray<FString> Sorted=Paths.Array();Sorted.Sort();for(const FString& P:Sorted){FRow R;R.Path=P;A.Rows.Add(R);}
+    A.Mode=Mode;A.Start=FPlatformTime::Seconds();Mode->bBotsFilled=true;Mode->BotFillTimer=MAX_flt;Mode->WaveTimer=MAX_flt;
+    UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_LOOP_AUDIT_START systems=%d"),A.Rows.Num());return true;
+}
+bool Tick(ACireGameMode* Mode)
+{
+    if(A.Mode.Get()!=Mode||!Mode)return false;
+    if(A.bDone)return true;
+    UWorld* World=Mode->GetWorld();
+    if(FPlatformTime::Seconds()-A.Start>1800){Finish();return true;}
+    if(A.BatchAt<0){if(FPlatformTime::Seconds()-A.Start>4)SpawnBatch(World);return true;}
+    const float Age=World->GetTimeSeconds()-A.BatchAt;Measure(Age);
+    if(A.Phase==0&&Age>=LoopProbeAt)
+    {
+        for(int32 I=A.BatchStart;I<A.BatchEnd;++I)if(UFXSystemComponent* C=A.Rows[I].C.Get()){A.Rows[I].bLoop=IsRunning(C);C->Deactivate();}
+        A.Phase=1;
+    }
+    else if(A.Phase==1&&Age>=LoopProbeAt+DeactivateGrace)
+    {
+        for(int32 I=A.BatchStart;I<A.BatchEnd;++I)if(UFXSystemComponent* C=A.Rows[I].C.Get()){A.Rows[I].bIgnores=IsRunning(C);C->DestroyComponent();}
+        if(A.Next<A.Rows.Num())SpawnBatch(World);else Finish();
+    }
+    return true;
+}
+}
+
 bool CireFabVFXCatalog::Initialize(ACireGameMode* Mode)
 {
+    if(CireFabLoopAudit::Initialize(Mode)){G={};return true;} // vfx-loop-fix
     G={};FString List;
     if(!FParse::Value(FCommandLine::Get(),TEXT("CireFabVFXCatalog="),List))return false;
     G.Mode=Mode;G.Start=FPlatformTime::Seconds();
@@ -146,6 +250,7 @@ bool CireFabVFXCatalog::Initialize(ACireGameMode* Mode)
 
 bool CireFabVFXCatalog::Tick(ACireGameMode* Mode)
 {
+    if(CireFabLoopAudit::Tick(Mode))return true; // vfx-loop-fix
     if(G.Mode.Get()!=Mode)return false;
     if(G.bDone)return true;
     const double Now=FPlatformTime::Seconds();

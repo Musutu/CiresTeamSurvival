@@ -1,5 +1,6 @@
 // paragon-champions: Epic's Paragon heroes as playable champions (see CireParagonChampions.h, Docs/ParagonChampions.md).
 #include "CireParagonChampions.h"
+#include "CireFabVFX.h" // vfx-loop-fix
 #include "CireActorIterator.h"
 #include "CireAbilityDB.h"
 #include "CireAbilityShapes.h"
@@ -644,11 +645,8 @@ int32 CireParagonChampions::PlayFX(UWorld* World, FName SkillId, FVector From, F
         ++Spawned;
         // Paragon loops (auras, channels) would run forever outside their ability: stop them after the ability's beat.
         TWeakObjectPtr<USceneComponent> Weak(C);
-        PgLater(World, R->FxLife, [Weak]()
-        {
-            if (auto* P = Cast<UParticleSystemComponent>(Weak.Get())) { P->DeactivateSystem(); P->bAutoDestroy = true; }
-            else if (auto* N = Cast<UNiagaraComponent>(Weak.Get())) { N->Deactivate(); N->SetAutoDestroy(true); }
-        });
+        // vfx-loop-fix: CireFabVFX::Release also hard-stops a system that ignores the deactivation.
+        PgLater(World, R->FxLife, [Weak]() { CireFabVFX::Release(Cast<UFXSystemComponent>(Weak.Get())); });
     };
     if (Cue == ECireSpellCue::Cast)
     {

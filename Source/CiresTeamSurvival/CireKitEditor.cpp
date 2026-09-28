@@ -691,7 +691,10 @@ UFXSystemComponent* CireKitEditor::SpawnPlacedCast(UWorld* World, FName Skill, F
         const double D = FVector::DistSquared2D(Hero->GetActorLocation(), CasterAt);
         if (D < BestDistance) { BestDistance = D; Best = Hero; BestPlacement = P; }
     }
-    return Best ? SpawnPlaced(Best, System, *BestPlacement, Scale, true, Entry) : nullptr;
+    // vfx-loop-fix: a placed cast rides the champion's mesh, so a looping vendor system would follow it forever: bounded.
+    UFXSystemComponent* C = Best ? SpawnPlaced(Best, System, *BestPlacement, Scale, true, Entry) : nullptr;
+    if (C) CireFabVFX::Bound(C, CireFabVFX::OneShotSeconds(CireFabVFX::ERole::Cast, Entry));
+    return C;
 }
 
 UFXSystemAsset* CireKitEditor::CastSystem(const FString& AbilityId, float* OutScale, const CireFabVFX::FEntry** OutEntry)
