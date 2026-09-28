@@ -18,6 +18,7 @@ namespace
 {
 TArray<FCireAbilityDef> GAbilities;
 TMap<FString,int32> GIndex,GNameIndex;
+TMap<FString,TArray<int32>> GNameAll; // paragon-names: every row per display name, registration order
 TMap<FString,FCireChampionKit> GKits;
 TMap<FName,TArray<FCireModifier>> GModifiers;
 bool GLoaded=false;
@@ -192,8 +193,10 @@ bool CireAbilityDB::Reload()
         }
     }
     CireParagonChampions::MergeAbilities(A,K); // paragon-champions: Paragon kits + Skill Shop pool (installed packs only)
-    GAbilities=MoveTemp(A);GKits=MoveTemp(K);GModifiers=MoveTemp(M);GIndex.Reset();GNameIndex.Reset();
-    for(int32 I=0;I<GAbilities.Num();++I){GIndex.Add(GAbilities[I].Id,I);GNameIndex.Add(GAbilities[I].Name,I);}
+    GAbilities=MoveTemp(A);GKits=MoveTemp(K);GModifiers=MoveTemp(M);GIndex.Reset();GNameIndex.Reset();GNameAll.Reset();
+    // paragon-names: the first row keeps a shared display name (roster, expansion, then Paragon): installing the Paragon packs
+    // must not re-route "Soul Hook" / "Shield Bash" / "Starfall" hits of the roster abilities to a Paragon row.
+    for(int32 I=0;I<GAbilities.Num();++I){GIndex.Add(GAbilities[I].Id,I);if(!GNameIndex.Contains(GAbilities[I].Name))GNameIndex.Add(GAbilities[I].Name,I);GNameAll.FindOrAdd(GAbilities[I].Name).Add(I);}
     CireKitEditor::MergeIntoKits(GKits); // kit-editor: saved base kits are purchasable (Content/Data/ChampionKitTemplates.json)
     UE_LOG(LogCireAbilityDB,Display,TEXT("CIRE_ABILITY_DB_LOADED abilities=%d champions=%d"),GAbilities.Num(),GKits.Num());
     CireAbilityTuner::OnDatabaseReloaded(); // ability-tuner: startup profile + live overrides on top of the fresh rows
@@ -202,13 +205,28 @@ bool CireAbilityDB::Reload()
 bool CireAbilityDB::ReplaceRow(const FCireAbilityDef& Row)
 {
     LoadOnce();const int32* I=GIndex.Find(Row.Id);if(!I)return false;
-    GAbilities[*I]=Row;GNameIndex.Add(Row.Name,*I); // earlier names stay mapped (combat events, hard-coded lookups)
+    GAbilities[*I]=Row; // earlier names stay mapped (combat events, hard-coded lookups)
+    if(const int32* Owner=GNameIndex.Find(Row.Name);!Owner||*Owner==*I)GNameIndex.Add(Row.Name,*I); // paragon-names: never steal a name
+    GNameAll.FindOrAdd(Row.Name).AddUnique(*I);
     return true;
 }
 
 const TArray<FCireAbilityDef>& CireAbilityDB::All(){LoadOnce();return GAbilities;}
 const FCireAbilityDef* CireAbilityDB::Find(const FString& Id){LoadOnce();const int32* I=GIndex.Find(Id);return I?&GAbilities[*I]:nullptr;}
 const FCireAbilityDef* CireAbilityDB::FindByName(const FString& Name){LoadOnce();const int32* I=GNameIndex.Find(Name);return I?&GAbilities[*I]:nullptr;}
+const FCireAbilityDef* CireAbilityDB::FindByNameFor(const FString& Name,const TArray<FString>* Known)
+{
+    LoadOnce();
+    if(Known)if(const TArray<int32>* Rows=GNameAll.Find(Name);Rows&&Rows->Num()>1)
+        for(const int32 I:*Rows)if(GAbilities.IsValidIndex(I)&&GAbilities[I].Name==Name&&Known->Contains(GAbilities[I].Id))return &GAbilities[I];
+    return FindByName(Name);
+}
+TArray<const FCireAbilityDef*> CireAbilityDB::AllByName(const FString& Name)
+{
+    LoadOnce();TArray<const FCireAbilityDef*> Out;
+    if(const TArray<int32>* Rows=GNameAll.Find(Name))for(const int32 I:*Rows)if(GAbilities.IsValidIndex(I)&&GAbilities[I].Name==Name)Out.Add(&GAbilities[I]);
+    return Out;
+}
 const FCireChampionKit* CireAbilityDB::Kit(const FString& ProfileId){LoadOnce();return GKits.Find(ProfileId);}
 
 FCireAbilityStats CireAbilityDB::EffectiveStats(const FString& Id,int32 Level)
@@ -303,6 +321,25 @@ bool CireAbilityDB::RunSmoke()
     Check(Describe(TEXT("restoring_light"),3).Contains(TEXT("next")),TEXT("describe shows next level"));
     Check(ModifierSummary(TEXT("armor_broken"))==TEXT("Armor -50%"),TEXT("modifier summaries"));
     Check(FindByName(TEXT("Blight Sigil"))==Find(TEXT("blight_sigil")),TEXT("lookup by display name"));
+    // paragon-names: a display name shared by several rows (Paragon installed) stays with the first (roster / expansion) row,
+    // and a champion that knows another same-name row resolves its own hits to it.
+    {
+        int32 Shared=0;bool bFirstWins=true,bCasterWins=true;
+        TSet<FString> Seen;
+        for(const FCireAbilityDef& D:All())
+        {
+            if(Seen.Contains(D.Name))continue;Seen.Add(D.Name);
+            const TArray<const FCireAbilityDef*> Rows=AllByName(D.Name);if(Rows.Num()<2)continue;++Shared;
+            const bool bAnyRoster=Rows.ContainsByPredicate([](const FCireAbilityDef* R){return !R->Id.StartsWith(TEXT("pg_"));});
+            bFirstWins&=FindByName(D.Name)==Rows[0]&&(!bAnyRoster||!Rows[0]->Id.StartsWith(TEXT("pg_"))); // two Paragon skins may share one too
+            for(const FCireAbilityDef* R:Rows){const TArray<FString> Known={R->Id};bCasterWins&=FindByNameFor(D.Name,&Known)==R;}
+        }
+        Check(bFirstWins,TEXT("a shared display name resolves to the roster / expansion row, never a later Paragon row"));
+        Check(bCasterWins,TEXT("a shared display name resolves to the row the caster knows"));
+        const TArray<FString> Hooker={TEXT("soul_hook")};
+        Check(!Find(TEXT("soul_hook"))||(FindByName(TEXT("Soul Hook"))==Find(TEXT("soul_hook"))&&FindByNameFor(TEXT("Soul Hook"),&Hooker)==Find(TEXT("soul_hook"))),TEXT("Soul Hook hits resolve to soul_hook (Paragon Sevarog shares the name)"));
+        UE_LOG(LogCireAbilityDB,Display,TEXT("CIRE_ABILITY_DB_SHARED_NAMES %d"),Shared);
+    }
     UE_LOG(LogCireAbilityDB,Display,TEXT("CIRE_ABILITY_DB_%s checks=%d abilities=%d"),bPass?TEXT("PASS"):TEXT("FAIL"),Checks,All().Num());
     return bPass;
 }

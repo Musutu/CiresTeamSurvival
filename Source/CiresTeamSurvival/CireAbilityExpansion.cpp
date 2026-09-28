@@ -784,7 +784,7 @@ void CireAbilityExpansion::OnAbilityHit(AActor* Source, AActor* Target, const FS
     if (!IsValid(Source) || !Source->HasAuthority() || !IsValid(Target) || Applied <= 0 || Loaded().Ids.IsEmpty()) return;
     auto* H = Cast<ACireHero>(Source);
     if (!H || H->IsA<ACireSummon>()) return;
-    const FCireAbilityDef* D = CireAbilityDB::FindByName(AbilityName);
+    const FCireAbilityDef* D = CireAbilityDB::FindByNameFor(AbilityName, &H->Skills); // paragon-names: the caster's own row
     // ---- expansion skill riders
     if (const FRecipe* Rec = D ? Find(D->Id) : nullptr)
     {
