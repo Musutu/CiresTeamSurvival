@@ -11,6 +11,7 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "CireArenaPortal.h" // arena-flow
 
 namespace
 {
@@ -118,7 +119,7 @@ bool CireEffects::Parse(const FString& Json, TMap<FName, FCireEffectInfo>& Out, 
 bool CireEffects::Reload(FString& Error)
 {
     TMap<FName, FCireEffectInfo> Rows; GKindSet.Reset();
-    for (const TCHAR* File : {TEXT("Data/BuffModifiers.json"), TEXT("Data/Abilities.json")})
+    for (const TCHAR* File : {TEXT("Data/BuffModifiers.json"), TEXT("Data/Abilities.json"), TEXT("Data/AbilitiesExpansion.json")}) // ability-expansion
     {
         FString Text; const FString Path = FPaths::Combine(FPaths::ProjectContentDir(), File);
         if (!FFileHelper::LoadFileToString(Text, *Path)) { if (FCString::Strstr(File, TEXT("BuffModifiers"))) { Error = TEXT("Missing BuffModifiers.json"); } continue; }
@@ -272,6 +273,9 @@ void CireEffects::Gather(const AActor* Unit, float Now, TArray<FCireActiveEffect
     {
         if (Hero->HasSkill(TEXT("battle_rhythm"))) Want(TEXT("battle_rhythm"), 0, 0, 1, nullptr);
         if (Hero->HasSkill(TEXT("soul_conduit"))) Want(TEXT("soul_conduit"), 0, 0, 1, nullptr);
+        // arena-flow: the team's stacking arena reward / penalty on monsters (replicated on the game state).
+        if (const int32 W = CireArenaFlow::BuffStacks(Hero->GetWorld(), Hero->TeamId)) Want(CireArenaFlow::VictorId, 0, 0, W, nullptr);
+        if (const int32 L = CireArenaFlow::DebuffStacks(Hero->GetWorld(), Hero->TeamId)) Want(CireArenaFlow::VanquishedId, 0, 0, L, nullptr);
         if (const auto* Bag = Hero->Inventory.Get())
             for (const auto& Timed : Bag->Buffs)
                 if (Timed.EndsAt > Now) if (const FName* Visual = CireAuraData::ItemBuffs().Find(Timed.Id)) Want(*Visual, Timed.EndsAt - Timed.Duration, Timed.EndsAt, 1, nullptr);

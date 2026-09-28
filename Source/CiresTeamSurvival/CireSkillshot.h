@@ -46,6 +46,8 @@ private:
     float DistanceTravelled = 0;
     int32 HitCount = 0;
     int32 ReflectionCount = 0;
+    // casting-rules: a champion skillshot converted to piercing loses this fraction per extra target (floor PierceMinDamage).
+    float PierceFalloff = 0.f, PierceMinDamage = 1.f;
     UFUNCTION() void OnRep_Appearance();
     void Travel(float Distance);
 };

@@ -1,0 +1,580 @@
+{
+ "schemaVersion": 1,
+ "generator": "Tools/BuildAbilityExpansion.py",
+ "abilities": {
+  "glacial_eruption": {
+   "name": "Glacial Eruption",
+   "element": "frost",
+   "kind": "spell"
+  },
+  "rime_spike": {
+   "name": "Rime Spike",
+   "element": "frost",
+   "kind": "spell"
+  },
+  "frostcleave": {
+   "name": "Frostcleave",
+   "element": "frost",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "frost_pirouette": {
+   "name": "Frost Pirouette",
+   "element": "frost",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "blizzard": {
+   "name": "Blizzard",
+   "element": "frost",
+   "kind": "spell"
+  },
+  "glacier_wall": {
+   "name": "Glacier Wall",
+   "element": "frost",
+   "kind": "guard"
+  },
+  "crimson_crystals": {
+   "name": "Crimson Crystals",
+   "element": "physical",
+   "kind": "spell"
+  },
+  "sanguine_lash": {
+   "name": "Sanguine Lash",
+   "element": "physical",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "blood_bolt": {
+   "name": "Blood Bolt",
+   "element": "physical",
+   "kind": "shot",
+   "weapon": "bow"
+  },
+  "haemic_orb": {
+   "name": "Haemic Orb",
+   "element": "physical",
+   "kind": "shot",
+   "weapon": "bow"
+  },
+  "hemorrhage": {
+   "name": "Hemorrhage",
+   "element": "physical",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "arterial_slash": {
+   "name": "Arterial Slash",
+   "element": "physical",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "crimson_volley": {
+   "name": "Crimson Volley",
+   "element": "physical",
+   "kind": "shot",
+   "weapon": "bow"
+  },
+  "blood_pool": {
+   "name": "Blood Pool",
+   "element": "physical",
+   "kind": "spell"
+  },
+  "bloodletting": {
+   "name": "Bloodletting",
+   "element": "physical",
+   "kind": "buff"
+  },
+  "lacerate": {
+   "name": "Lacerate",
+   "element": "physical",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "rending_leap": {
+   "name": "Rending Leap",
+   "element": "physical",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "savage_cleave": {
+   "name": "Savage Cleave",
+   "element": "physical",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "gore_charge": {
+   "name": "Gore Charge",
+   "element": "physical",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "flay": {
+   "name": "Flay",
+   "element": "physical",
+   "kind": "spell"
+  },
+  "toxic_bubble": {
+   "name": "Toxic Bubble",
+   "element": "nature",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "venom_dart": {
+   "name": "Venom Dart",
+   "element": "nature",
+   "kind": "spell"
+  },
+  "plague_orb": {
+   "name": "Plague Orb",
+   "element": "nature",
+   "kind": "spell"
+  },
+  "riptide_bolt": {
+   "name": "Riptide Bolt",
+   "element": "water",
+   "kind": "spell"
+  },
+  "tidal_lance": {
+   "name": "Tidal Lance",
+   "element": "water",
+   "kind": "spell"
+  },
+  "maelstrom": {
+   "name": "Maelstrom",
+   "element": "water",
+   "kind": "spell"
+  },
+  "umbral_ward": {
+   "name": "Umbral Ward",
+   "element": "shadow",
+   "kind": "guard"
+  },
+  "void_pyre": {
+   "name": "Void Pyre",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "abyssal_pillar": {
+   "name": "Abyssal Pillar",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "ring_of_ruin": {
+   "name": "Ring of Ruin",
+   "element": "shadow",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "void_bolt": {
+   "name": "Void Bolt",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "rift_line": {
+   "name": "Rift Line",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "sunlance": {
+   "name": "Sunlance",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "radiant_orb": {
+   "name": "Radiant Orb",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "blade_of_judgment": {
+   "name": "Blade of Judgment",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "thunderclap": {
+   "name": "Thunderclap",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "storm_call": {
+   "name": "Storm Call",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "ground_surge": {
+   "name": "Ground Surge",
+   "element": "lightning",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "tempest_line": {
+   "name": "Tempest Line",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "thunder_line": {
+   "name": "Thunder Line",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "static_arc": {
+   "name": "Static Arc",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "storm_slash": {
+   "name": "Storm Slash",
+   "element": "lightning",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "shade_wave": {
+   "name": "Shade Wave",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "night_spear": {
+   "name": "Night Spear",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "dusk_orb": {
+   "name": "Dusk Orb",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "crystal_prison": {
+   "name": "Crystal Prison",
+   "element": "shadow",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "shadow_palisade": {
+   "name": "Shadow Palisade",
+   "element": "shadow",
+   "kind": "guard"
+  },
+  "shadow_rend": {
+   "name": "Shadow Rend",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "umbral_scythe": {
+   "name": "Umbral Scythe",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "gloom_lance": {
+   "name": "Gloom Lance",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "shadow_dart": {
+   "name": "Shadow Dart",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "stone_spire": {
+   "name": "Stone Spire",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "magma_rift": {
+   "name": "Magma Rift",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "stone_henge": {
+   "name": "Stone Henge",
+   "element": "earth",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "boulder_toss": {
+   "name": "Boulder Toss",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "spikebreaker": {
+   "name": "Spikebreaker",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "gale_arrow": {
+   "name": "Gale Arrow",
+   "element": "arcane",
+   "kind": "spell"
+  },
+  "zephyr_arrow": {
+   "name": "Zephyr Arrow",
+   "element": "arcane",
+   "kind": "spell"
+  },
+  "cinder_shot": {
+   "name": "Cinder Shot",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "mending_rain": {
+   "name": "Mending Rain",
+   "element": "water",
+   "kind": "heal"
+  },
+  "radiant_mend": {
+   "name": "Radiant Mend",
+   "element": "holy",
+   "kind": "heal"
+  },
+  "transfusion": {
+   "name": "Transfusion",
+   "element": "physical",
+   "kind": "heal"
+  },
+  "verdant_renewal": {
+   "name": "Verdant Renewal",
+   "element": "nature",
+   "kind": "heal"
+  },
+  "stoneguard": {
+   "name": "Stoneguard",
+   "element": "earth",
+   "kind": "guard"
+  },
+  "adrenaline": {
+   "name": "Adrenaline Surge",
+   "element": "physical",
+   "kind": "buff"
+  },
+  "iron_resolve": {
+   "name": "Iron Resolve",
+   "element": "earth",
+   "kind": "buff"
+  },
+  "rallying_banner": {
+   "name": "Rallying Cry",
+   "element": "physical",
+   "kind": "shout"
+  },
+  "wind_ward": {
+   "name": "Tailwind",
+   "element": "arcane",
+   "kind": "shout"
+  },
+  "skeletal_warband": {
+   "name": "Skeletal Warband",
+   "element": "shadow",
+   "kind": "summon"
+  },
+  "stone_sentinel": {
+   "name": "Stone Sentinel",
+   "element": "earth",
+   "kind": "summon"
+  },
+  "spirit_wolves": {
+   "name": "Spirit Wolves",
+   "element": "nature",
+   "kind": "summon"
+  },
+  "blood_thralls": {
+   "name": "Blood Thralls",
+   "element": "physical",
+   "kind": "summon"
+  },
+  "frost_wraith": {
+   "name": "Frost Wraith",
+   "element": "frost",
+   "kind": "summon"
+  },
+  "radiant_guardian": {
+   "name": "Radiant Guardian",
+   "element": "holy",
+   "kind": "summon"
+  },
+  "storm_elemental": {
+   "name": "Storm Elemental",
+   "element": "lightning",
+   "kind": "summon"
+  },
+  "clockwork_knight": {
+   "name": "Clockwork Knight",
+   "element": "arcane",
+   "kind": "summon"
+  },
+  "frost_sentry": {
+   "name": "Frost Sentry",
+   "element": "frost",
+   "kind": "summon"
+  },
+  "siege_ballista": {
+   "name": "Siege Ballista",
+   "element": "physical",
+   "kind": "summon"
+  },
+  "venom_totem": {
+   "name": "Venom Totem",
+   "element": "nature",
+   "kind": "summon"
+  },
+  "warding_obelisk": {
+   "name": "Warding Obelisk",
+   "element": "holy",
+   "kind": "summon"
+  },
+  "war_drum": {
+   "name": "War Drum",
+   "element": "physical",
+   "kind": "summon"
+  },
+  "thunder_coil": {
+   "name": "Thunder Coil",
+   "element": "lightning",
+   "kind": "summon"
+  },
+  "frost_snare": {
+   "name": "Frost Snare",
+   "element": "frost",
+   "kind": "summon"
+  },
+  "clockwork_scarabs": {
+   "name": "Clockwork Scarabs",
+   "element": "arcane",
+   "kind": "summon"
+  },
+  "hex_lantern": {
+   "name": "Hex Lantern",
+   "element": "shadow",
+   "kind": "summon"
+  },
+  "reapers_instinct": {
+   "name": "Reaper's Instinct",
+   "element": "shadow",
+   "kind": "passive"
+  },
+  "opportunist": {
+   "name": "Opportunist",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "first_blood": {
+   "name": "First Blood",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "iron_hide": {
+   "name": "Iron Hide",
+   "element": "earth",
+   "kind": "passive"
+  },
+  "last_bastion": {
+   "name": "Last Bastion",
+   "element": "holy",
+   "kind": "passive"
+  },
+  "legions_bond": {
+   "name": "Legion's Bond",
+   "element": "arcane",
+   "kind": "passive"
+  },
+  "arcane_echo": {
+   "name": "Arcane Echo",
+   "element": "arcane",
+   "kind": "passive"
+  },
+  "serrated_edge": {
+   "name": "Serrated Edge",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "sanguine_pact": {
+   "name": "Sanguine Pact",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "fleetfoot": {
+   "name": "Fleetfoot",
+   "element": "nature",
+   "kind": "passive"
+  },
+  "battle_trance": {
+   "name": "Battle Trance",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "mana_font": {
+   "name": "Mana Font",
+   "element": "arcane",
+   "kind": "passive"
+  },
+  "soul_harvest": {
+   "name": "Soul Harvest",
+   "element": "shadow",
+   "kind": "passive"
+  },
+  "frostbite": {
+   "name": "Frostbite",
+   "element": "frost",
+   "kind": "passive"
+  },
+  "eye_of_the_void": {
+   "name": "Eye of the Void",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "heavens_wrath": {
+   "name": "Heaven's Wrath",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "meteor_rain": {
+   "name": "Meteor Rain",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "frozen_eternity": {
+   "name": "Frozen Eternity",
+   "element": "frost",
+   "kind": "melee",
+   "weapon": "caster"
+  },
+  "sanguine_ascension": {
+   "name": "Sanguine Ascension",
+   "element": "physical",
+   "kind": "shout"
+  },
+  "call_of_the_legion": {
+   "name": "Call of the Legion",
+   "element": "shadow",
+   "kind": "summon"
+  },
+  "awaken_the_colossus": {
+   "name": "Awaken the Colossus",
+   "element": "earth",
+   "kind": "summon"
+  },
+  "sanctified_ground": {
+   "name": "Sanctified Ground",
+   "element": "holy",
+   "kind": "heal"
+  },
+  "aegis_of_ages": {
+   "name": "Aegis of Ages",
+   "element": "earth",
+   "kind": "shout"
+  },
+  "warlords_anthem": {
+   "name": "Warlord's Anthem",
+   "element": "physical",
+   "kind": "shout"
+  },
+  "earthshatter": {
+   "name": "Earthshatter",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "tidal_cataclysm": {
+   "name": "Tidal Cataclysm",
+   "element": "water",
+   "kind": "spell"
+  }
+ }
+}

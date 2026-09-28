@@ -2,6 +2,7 @@
 #include "CireKitSkills.h" // kits-complete
 #include "CireScalingKits.h"
 #include "CireAbilityDB.h"
+#include "CireSkillTuning.h" // casting-rules
 #include "CireBuffs.h"
 #include "CireCombatEvents.h"
 #include "CireCrowdControl.h"
@@ -311,7 +312,7 @@ bool CireRollSkills::RunSmoke(ACireGameMode* Mode)
     const auto Learn=[&](std::initializer_list<const TCHAR*> Ids){H->Skills.Reset();H->Cooldowns.Reset();for(const TCHAR* Id:Ids){H->Skills.Add(Id);H->Cooldowns.Add(0);}CireBuffs::ClearAll(H);};
     // Heal on roll, fires per roll (charges roll again).
     Learn({TEXT("fleet_recovery")});H->Health=500;
-    if(bSurvival){const float Heal=50.f+.5f*H->PrimaryAttribute();
+    if(bSurvival){const float Heal=(50.f+.5f*H->PrimaryAttribute())*CireSkillTuning::HealScaleFor(TEXT("fleet_recovery")); // casting-rules: healing nerf
         OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Health,500.f+Heal,1.f),TEXT("fleet recovery heals 5% + 0.5x primary per roll"));
         OnRoll(H,FVector::ForwardVector);Check(FMath::IsNearlyEqual(H->Health,FMath::Min(1000.f,500.f+2*Heal),1.f),TEXT("second roll (charge) heals again"));}
     // Cooldown % cut per roll.

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "profile": "CireCastRules",
+  "comment": "Playtest 6 casting rules (Docs/RESUME-casting-rules.md). Applied to every Abilities.json row at load, so new abilities inherit them. An ability row may pin itself with \"castRule\": \"exempt\" | \"aoeDamage\" | \"directHeal\" | \"aoeHeal\". Reload live with the console command cire.ReloadCastRules.",
+  "enabled": true,
+  "reference": {
+    "primary": 40,
+    "maxHealth": 1500
+  },
+  "classification": {
+    "aoeMinRadius": 150,
+    "aoeHealMinRadius": 100,
+    "selfAuraSeconds": 6,
+    "exempt": ["shadow_step", "troll_blood_leap", "behemoth_stampede", "sabercat_pounce", "bear_charge"]
+  },
+  "aoeDamage": {
+    "minCast": 0.5,
+    "maxCast": 3.5,
+    "impactLow": 60,
+    "impactHigh": 420,
+    "areaReference": 300,
+    "controlBonus": 0.25
+  },
+  "directHeal": {
+    "minCast": 1.5,
+    "maxCast": 3.5,
+    "powerLow": 80,
+    "powerHigh": 400
+  },
+  "aoeHeal": {
+    "maxCast": 1.5,
+    "powerLow": 150,
+    "powerHigh": 700,
+    "instantEffect": 0.65,
+    "fullCastEffect": 0.85
+  },
+  "healing": {
+    "abilityHealingScale": 0.85
+  },
+  "castStep": 0.1,
+  "piercing": {
+    "championSkillshots": true,
+    "hitLimit": 5,
+    "falloffPerTarget": 0.15,
+    "minDamageFraction": 0.4,
+    "never": []
+  }
+}

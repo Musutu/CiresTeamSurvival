@@ -1,5 +1,6 @@
 // kits-complete: the 63 signature skills of the thirteen roster champions whose kits were "planned".
 #include "CireKitSkills.h"
+#include "CireSkillCasting.h" // casting-rules
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireAbilityDB.h"
 #include "CireAbilityShapes.h"
@@ -605,14 +606,14 @@ bool CireKitSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     }
     case EKit::Construct:
     {
-        if (!NeedGround(true)) return false;
+        if (!CireSkillCasting::PlacementAim(Hero, Aim, Range)) return false; // casting-rules: placement ignores clipping
         FString Why;
         if (CireTechConstructs::Deploy(Hero, FName(*Id), Aim, &Why).IsEmpty()) return Fail(Why);
         break;
     }
     case EKit::Wall:
     {
-        if (!NeedGround(true)) return false;
+        if (!CireSkillCasting::PlacementAim(Hero, Aim, Range)) return false; // casting-rules: placement ignores clipping
         for (TCireActorIterator<ACireConstruct> It(World); It; ++It) if (It->GetSourceActor() == Hero && It->GetDisplayName() == Name) It->Destroy(); // one per owner
         FCireConstructSpec W; W.Kind = ECireConstructKind::Wall; W.MaxHealth = FMath::Min(20000.f, Amount); W.LifetimeSeconds = Seconds(World, Def->Duration > 0 ? Def->Duration : 8.f);
         W.Width = FMath::Max(120.f, Def->Radius * 2.f); W.Depth = 60.f; W.Height = 230.f; W.ManaCost = 0; W.EnergyCost = Energy; W.CooldownSeconds = Def->Base.Cooldown; W.CastRange = Range + 60.f;

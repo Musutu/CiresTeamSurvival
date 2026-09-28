@@ -1,5 +1,6 @@
 // new-champions: signature kits of the Gunblade, Witch Slayer, Huntress, Aetheri Artificer and Aetheri Warden.
 #include "CireSignatureSkills.h"
+#include "CireSkillCasting.h" // casting-rules
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireAbilityDB.h"
@@ -20,6 +21,7 @@
 #include "CireThreat.h"
 #include "CirePets.h" // pets
 #include "CireKitSkills.h" // kits-complete: the 63 roster signature skills
+#include "CireAbilityExpansion.h" // ability-expansion: the data-driven expansion pool
 #include "CireParagonChampions.h" // paragon-champions
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
@@ -225,9 +227,9 @@ bool DashTo(ACireHero* Hero, FVector Ground, float MaxRange)
 
 // ============================================================================================ identity
 const TArray<FString>& CireSignatureSkills::AllIds() { static TArray<FString> Ids = [] { TArray<FString> Out; for (const FSig& S : Sigs) Out.Add(S.Id); return Out; }(); return Ids; }
-bool CireSignatureSkills::Knows(const FString& Id) { return FindSig(Id) != nullptr || CireKitSkills::Knows(Id) || CireParagonChampions::Knows(Id); } // paragon-champions
-bool CireSignatureSkills::Handles(const FString& Id) { const FSig* S = FindSig(Id); return (S && S->D != EDelivery::Passive) || CireKitSkills::Handles(Id) || CireParagonChampions::Handles(Id); } // paragon-champions
-bool CireSignatureSkills::IsPassive(const FString& Id) { const FSig* S = FindSig(Id); return (S && S->D == EDelivery::Passive) || CireKitSkills::IsPassive(Id) || CireParagonChampions::IsPassive(Id); } // paragon-champions
+bool CireSignatureSkills::Knows(const FString& Id) { return FindSig(Id) != nullptr || CireKitSkills::Knows(Id) || CireAbilityExpansion::Knows(Id) || CireParagonChampions::Knows(Id); } // ability-expansion, paragon-champions
+bool CireSignatureSkills::Handles(const FString& Id) { const FSig* S = FindSig(Id); return (S && S->D != EDelivery::Passive) || CireKitSkills::Handles(Id) || CireAbilityExpansion::Handles(Id) || CireParagonChampions::Handles(Id); } // ability-expansion, paragon-champions
+bool CireSignatureSkills::IsPassive(const FString& Id) { const FSig* S = FindSig(Id); return (S && S->D == EDelivery::Passive) || CireKitSkills::IsPassive(Id) || CireAbilityExpansion::IsPassive(Id) || CireParagonChampions::IsPassive(Id); } // ability-expansion, paragon-champions
 bool CireSignatureSkills::IsUltimate(const FString& Id) { const auto* D = Knows(Id) ? CireAbilityDB::Find(Id) : nullptr; return D && D->IsUltimate(); }
 FString CireSignatureSkills::Name(const FString& Id) { const auto* D = CireAbilityDB::Find(Id); return D ? D->Name : Id; }
 FString CireSignatureSkills::Description(const FString& Id)
@@ -246,6 +248,7 @@ const TArray<FName>& CireSignatureSkills::BuffIds()
 bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
 {
     if (CireKitSkills::Knows(Id)) return CireKitSkills::Cast(Hero, Slot, Id); // kits-complete
+    if (CireAbilityExpansion::Knows(Id)) return CireAbilityExpansion::Cast(Hero, Slot, Id); // ability-expansion
     if (CireParagonChampions::Knows(Id)) return CireParagonChampions::Cast(Hero, Slot, Id); // paragon-champions
     const FSig* Sig = FindSig(Id);
     const FCireAbilityDef* Def = CireAbilityDB::Find(Id);
@@ -411,7 +414,7 @@ bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     }
     case EDelivery::Construct:
     {
-        if (!NeedGround(true)) return false;
+        if (!CireSkillCasting::PlacementAim(Hero, Aim, Range)) return false; // casting-rules: placement ignores clipping
         FString Why;
         if (CireTechConstructs::Deploy(Hero, FName(*Id), Aim, &Why).IsEmpty()) return Fail(Why);
         break;
@@ -480,6 +483,7 @@ bool CireSignatureSkills::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
 bool CireSignatureSkills::DescribeShape(const FString& Id, FCireHitShape& R)
 {
     if (CireKitSkills::Knows(Id)) return CireKitSkills::DescribeShape(Id, R); // kits-complete
+    if (CireAbilityExpansion::Knows(Id)) return CireAbilityExpansion::DescribeShape(Id, R); // ability-expansion
     if (CireParagonChampions::Knows(Id)) return CireParagonChampions::DescribeShape(Id, R); // paragon-champions
     const FSig* Sig = FindSig(Id);
     const FCireAbilityDef* Def = CireAbilityDB::Find(Id);
@@ -527,6 +531,7 @@ float CireSignatureSkills::ModifyOutgoingDamage(AActor* Source, AActor* Target, 
     if (!IsValid(Target) || Amount <= 0) return Amount;
     if (Active(Target, BanishedId) && AbilityName != TEXT("Banishment")) return 0.f; // exiled: out of reach until it returns
     Amount = CireKitSkills::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // kits-complete: kit guards, marks, redirects, passives
+    Amount = CireAbilityExpansion::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // ability-expansion: buffs, marks, passives
     Amount = CireParagonChampions::ModifyOutgoingDamage(Source, Target, Amount, AbilityName); // paragon-champions: guard / mark / empower, passives
     float M = 1.f;
     if (const auto* E = Active(Target, BountyId)) M *= 1.f + E->Stacks / 100.f;
@@ -559,6 +564,7 @@ float CireSignatureSkills::ModifyOutgoingDamage(AActor* Source, AActor* Target, 
 void CireSignatureSkills::OnAbilityHit(AActor* Source, AActor* Target, const FString& AbilityName, float Applied)
 {
     if (!IsValid(Source) || !Source->HasAuthority() || !IsValid(Target) || Applied <= 0) return;
+    CireAbilityExpansion::OnAbilityHit(Source, Target, AbilityName, Applied); // ability-expansion: riders and on-hit passives (any skill)
     CireParagonChampions::OnAbilityHit(Source, Target, AbilityName, Applied); // paragon-champions: lifesteal passives
     const FCireAbilityDef* D = CireAbilityDB::FindByName(AbilityName);
     if (!D || !Knows(D->Id)) return;
@@ -574,6 +580,7 @@ void CireSignatureSkills::OnAbilityHit(AActor* Source, AActor* Target, const FSt
 void CireSignatureSkills::OnMonsterKilled(ACireMonster* M, ACireHero* Killer)
 {
     if (!IsValid(M) || !M->HasAuthority()) return;
+    CireAbilityExpansion::OnMonsterKilled(M, Killer); // ability-expansion: kill passives
     if (const auto* E = Active(M, BountyId))
         if (auto* Hunter = Cast<ACireHero>(E->Source.Get()); Hunter && !Hunter->bDead && Hunter->bDrafted)
         {
@@ -593,9 +600,9 @@ void CireSignatureSkills::OnMonsterKilled(ACireMonster* M, ACireHero* Killer)
 float CireSignatureSkills::MoveSpeedMultiplier(const ACireHero* Hero)
 {
     if (!Hero) return 1.f;
-    return (1.f + Fraction(Hero, SprintId)) * (1.f + Fraction(Hero, HasteId)) * CireKitSkills::MoveSpeedMultiplier(Hero) * CireParagonChampions::MoveSpeedMultiplier(Hero); // kits-complete, paragon-champions
+    return (1.f + Fraction(Hero, SprintId)) * (1.f + Fraction(Hero, HasteId)) * CireKitSkills::MoveSpeedMultiplier(Hero) * CireAbilityExpansion::MoveSpeedMultiplier(Hero) * CireParagonChampions::MoveSpeedMultiplier(Hero); // kits-complete, ability-expansion, paragon-champions
 }
-float CireSignatureSkills::AttackSpeedBonus(const ACireHero* Hero) { return Hero ? Fraction(Hero, HasteId) + CireKitSkills::AttackSpeedBonus(Hero) + CireParagonChampions::AttackSpeedBonus(Hero) : 0.f; } // paragon-champions
+float CireSignatureSkills::AttackSpeedBonus(const ACireHero* Hero) { return Hero ? Fraction(Hero, HasteId) + CireKitSkills::AttackSpeedBonus(Hero) + CireAbilityExpansion::AttackSpeedBonus(Hero) + CireParagonChampions::AttackSpeedBonus(Hero) : 0.f; } // ability-expansion, paragon-champions
 
 bool CireSignatureSkills::IsCloseQuarters(const ACireHero* Hero, const AActor* Target)
 {

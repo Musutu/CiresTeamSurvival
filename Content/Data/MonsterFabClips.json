@@ -761,8 +761,8 @@
    "runSpeedCm": 436.4
   },
   "FallenHighInquisitor": {
-   "war_cry": "/Game/FabDerived/Anim/FallenHighInquisitor/A_FallenHighInquisitor_monster_war_cry.A_FallenHighInquisitor_monster_war_cry",
-   "ground_slam": "/Game/FabDerived/Anim/FallenHighInquisitor/A_FallenHighInquisitor_monster_ground_slam.A_FallenHighInquisitor_monster_ground_slam",
+   "war_cry": "role:shout",
+   "ground_slam": "role:heavy2",
    "set": "spell",
    "roles": {
     "idle": "/Game/FabDerived/Anim/FallenHighInquisitorSet/A_FallenHighInquisitorSet_loco_idle.A_FallenHighInquisitorSet_loco_idle",

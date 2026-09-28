@@ -755,8 +755,15 @@ def validate(arena):
 # arena, Tools/RunArenaGallery.py --portal-views, imported by Tools/BuildArenaPortalContent.py), tint and motes tell the
 # players where they are going before they step through. The Shadow_Magic Niagara layers are an optional local Fab overlay.
 SHADOW = "/Game/Shadow_Magic/VFX_Niagara/"
+# arena-flow (Docs/Arenas.md "Arena flow"): after each scheduled PvP wave a portal opens beside every champion; prepSeconds
+# to prepare (enter early), then stragglers are drawn through and a countdownSeconds countdown starts the fight. Rewards:
+# killGold per killing blow; winGold split across the winners; a stacking team buff (+pveBuffPercent damage to monsters)
+# for the winners and a stacking debuff (-pveDebuffPercent) for the losers. The PvP schedule is Waves.json "match"
+# (feat/waves-modes). legacyPowerLoot re-enables the old +3% power / +8% loot per win (it also affects PvP).
+FLOW = {"prepSeconds": 30, "countdownSeconds": 7, "killGold": 50, "winGold": 250, "pveBuffPercent": 15, "pveDebuffPercent": 15,
+        "legacyPowerLoot": False}
 PORTAL = {
-    "leadSeconds": 12, "radius": 150, "height": 175, "offset": 330, "arrivalSeconds": 4, "returnSeconds": 6, "countdownSeconds": 5,
+    "leadSeconds": 12, "radius": 150, "height": 175, "offset": 330, "arrivalSeconds": 4, "returnSeconds": 6, "countdownSeconds": 7,
     "discMaterial": "/Game/Arenas/Portal/M_ArenaPortal.M_ArenaPortal",
     "moteMaterial": "/Game/Arenas/Portal/M_ArenaPortalMote.M_ArenaPortalMote",
     "vfx": {
@@ -801,7 +808,7 @@ def main() -> int:
                     "All arenas share the footprint at 'origin'; arena-local X runs from Ember (west) to Dusk (east). Piece rows: "
                     "[slot, x, y, z, yaw, scaleX, scaleY, scaleZ, blocker]. Blockers get an invisible collision proxy matching the slot footprint "
                     "and must be mirror-symmetric; slots list candidates in priority order (Fab packs, then CC0/original, then an engine shape).",
-           "origin": [0, 60000, 0], "portal": PORTAL, "slots": SLOTS, "arenas": [x.d for x in ARENAS]}
+           "origin": [0, 60000, 0], "portal": PORTAL, "flow": FLOW, "slots": SLOTS, "arenas": [x.d for x in ARENAS]}
     OUT.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     total = sum(len(x.d["pieces"]) for x in ARENAS)
     print(f"CIRE_ARENA_AUTHOR_PASS arenas={len(ARENAS)} slots={len(SLOTS)} pieces={total} bytes={OUT.stat().st_size}")

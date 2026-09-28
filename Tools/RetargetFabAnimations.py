@@ -414,9 +414,16 @@ def main_monsters(cmd, started):
             try:
                 done = retarget_body(variant, mesh, sources, {}, report["bodies"], True)
                 row = {clip.replace("monster_", ""): "%s.%s" % (path, path.rsplit("/", 1)[1]) for clip, path in done.items()}
-                if row:
-                    variants[variant] = row
-                else:
+                # blender-rig: merge into the variant (its monster-set "set"/"roles"/speeds stay) and keep hand-set
+                # "role:<name>" aliases (a coverage clip that retargets badly onto this body reuses its set's clip).
+                entry = variants.setdefault(variant, {})
+                names = {c.replace("monster_", "") for c in sources}
+                for key in [k for k in entry if k in names and not str(entry[k]).startswith("role:")]:
+                    entry.pop(key)
+                for key, value in row.items():
+                    if not str(entry.get(key, "")).startswith("role:"):
+                        entry[key] = value
+                if not entry:
                     variants.pop(variant, None)
             except Exception:
                 report["bodies"].setdefault(variant, {})["error"] = traceback.format_exc()
@@ -424,7 +431,7 @@ def main_monsters(cmd, started):
                             "onto Tripo monster bodies (derived from licensed packs: /Game/FabDerived, local only). "
                             "variants.<Variant>.<clip name> is added to that body's named clips when it has none of that "
                             "name; windows are keyed by the clip-name suffix like MonsterArt.json clips.",
-                "variants": dict(sorted(variants.items())), "windows": windows}
+                "variants": dict(sorted(variants.items())), "windows": dict(data.get("windows", {}), **windows)}
         data_path.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
         errors = sum(len(b.get("errors", {})) + ("error" in b) for b in report["bodies"].values())
         report["status"] = "pass" if not errors else "partial"

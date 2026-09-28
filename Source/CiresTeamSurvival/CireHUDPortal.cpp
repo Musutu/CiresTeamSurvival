@@ -6,6 +6,7 @@
 #include "CireArenas.h"
 #include "CireGame.h"
 #include "CireUIStyle.h"
+#include "CireBanners.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 
@@ -39,11 +40,37 @@ void ACireHUD::DrawPortalPlates(ACireHero* Hero)
         TextFx(Title, X - TextWidthFont(Title, 10.5f, ECireFont::Heading) * .5f, Y - 1, 10.5f, FLinearColor(.86f, .82f, .92f, Fade), ECireFont::Heading, true, false);
         if (bEntry && State && State->Phase == 1 && Portal->TeamId == Hero->TeamId && Dist < 1600.f && !Portal->bCollapsing)
         {
-            const FString Prompt = FString::Printf(TEXT("Walk in to enter  ·  drawn through in 0:%02d"), FMath::Clamp(FMath::CeilToInt(State->SecondsLeft), 0, 59));
+            const FString Prompt = State->ArenaStage == 2 ? FString(TEXT("Everyone is through  ·  walk in now"))
+                : FString::Printf(TEXT("Walk in to enter  ·  drawn through in 0:%02d"), FMath::Clamp(FMath::CeilToInt(CireArenaFlow::PrepSecondsLeft(State)), 0, 59));
             const float PW = TextWidthFont(Prompt, 11.5f, ECireFont::Heading) + 24, PX = X - PW * .5f, PY = Y + 17;
             CireUIStyle::Capsule(P, PX - 1.5f, PY - 1.5f, PW + 3, 23, 1.f, FLinearColor(L.Tint.R, L.Tint.G, L.Tint.B, .55f + .4f * Pulse));
             CireUIStyle::Capsule(P, PX, PY, PW, 20, 1.f, FLinearColor(.02f, .02f, .03f, .9f));
             TextFx(Prompt, PX + 12, PY + 1.5f, 11.5f, FLinearColor(1.f, .93f, .82f, 1), ECireFont::Heading, true, false);
         }
     }
+}
+
+// arena-flow: once every champion is in the arena, a big centre countdown (the banner names the arena; this carries
+// the seconds) in the Arena banner's colours, with a pulse on each new second.
+void ACireHUD::DrawArenaCountdown()
+{
+    const auto* State = GetWorld() ? GetWorld()->GetGameState<ACireGameState>() : nullptr;
+    if (!State || State->Phase != 1 || State->ArenaStage != 2 || !FMath::IsFinite(State->SecondsLeft)) return;
+    const float Left = FMath::Max(0.f, State->SecondsLeft);
+    const int32 Whole = FMath::Max(1, FMath::CeilToInt(Left));
+    const float Frac = 1.f - (static_cast<float>(Whole) - Left); // 1 at the start of a second, 0 at its end
+    const FCireBannerSpec Spec = CireBanners::DefaultSpec(ECireBanner::Arena);
+    FCireUIPainter P = Painter();
+    const float CX = ViewW * .5f, CY = ViewH * .36f;
+    const float Size = 64.f + 22.f * FMath::Clamp(Frac, 0.f, 1.f);
+    const float Ring = 58.f + 8.f * Frac;
+    P.Alpha = .92f;
+    P.Disc(CX, CY, Ring + 3.f, FLinearColor(Spec.Color.R, Spec.Color.G, Spec.Color.B, .85f), 48);
+    P.Disc(CX, CY, Ring, FLinearColor(.02f, .015f, .03f, .88f), 48);
+    const FString Num = FString::FromInt(Whole);
+    TextFx(Num, CX - TextWidthFont(Num, Size, ECireFont::Numbers) * .5f, CY - Size * .62f, Size, FMath::Lerp(FLinearColor(1.f, .93f, .8f, 1), FLinearColor::White, Frac), ECireFont::Numbers, true, false);
+    const FString Kicker = TEXT("THE FIGHT BEGINS");
+    TextFx(Kicker, CX - TextWidthFont(Kicker, 13.f, ECireFont::Heading) * .5f, CY + Ring + 10.f, 13.f, FLinearColor(Spec.Color.R, Spec.Color.G, Spec.Color.B, 1), ECireFont::Heading, true, false);
+    const FString Arena = CireArenas::DisplayName(State->ArenaIndex);
+    TextFx(Arena, CX - TextWidthFont(Arena, 11.f, ECireFont::Body) * .5f, CY + Ring + 30.f, 11.f, FLinearColor(.86f, .82f, .92f, 1), ECireFont::Body, true, false);
 }

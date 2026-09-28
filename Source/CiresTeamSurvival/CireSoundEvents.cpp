@@ -149,6 +149,19 @@ const CireSoundEvents::FData& CireSoundEvents::Data(bool bReload)
                 FString Name; if(O->TryGetStringField(TEXT("name"), Name)) GData.Abilities.FindOrAdd(Normalize(Name), Row);
             }
     }
+    // ability-expansion: AudioEvents.expansion.json "abilities" rows (same shape) for the expansion pool; the main table wins.
+    {
+        FString XText; TSharedPtr<FJsonObject> XRoot; const TSharedPtr<FJsonObject>* XAbilities = nullptr;
+        if(FFileHelper::LoadFileToString(XText, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/AudioEvents.expansion.json"))) &&
+           FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(XText), XRoot) && XRoot && XRoot->TryGetObjectField(TEXT("abilities"), XAbilities))
+            for(const auto& Pair : (*XAbilities)->Values)
+                if(const TSharedPtr<FJsonObject> O = Pair.Value->AsObject())
+                {
+                    FAbilitySound Row; ReadAbility(O, Row);
+                    if(!GData.Abilities.Contains(Normalize(FString(Pair.Key)))) GData.Abilities.Add(Normalize(FString(Pair.Key)), Row);
+                    FString Name; if(O->TryGetStringField(TEXT("name"), Name)) GData.Abilities.FindOrAdd(Normalize(Name), Row);
+                }
+    }
     const TSharedPtr<FJsonObject>* Layers = nullptr;
     if(Root->TryGetObjectField(TEXT("layers"), Layers))
     {

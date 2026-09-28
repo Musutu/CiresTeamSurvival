@@ -1,5 +1,6 @@
 #include "CireBuffs.h"
 #include "CireKitSkills.h" // kits-complete
+#include "CireAbilityExpansion.h" // ability-expansion
 #include "CireScalingKits.h" // scaling-kits
 #include "CireGame.h"
 #include "CireSkillRuntime.h"
@@ -133,10 +134,13 @@ const TArray<FName>& CireBuffs::KnownIds()
         TEXT("aether_aegis"),TEXT("aether_haste"),TEXT("aether_weakened"),TEXT("aether_nexus"),TEXT("npc_aether_empowered"),
         // items-v2: party shield, armor banner, ultimate-upgrade aura.
         TEXT("party_barrier"),TEXT("vigil_banner"),TEXT("apotheosis"),
+        // arena-flow: stacking team PvE reward / penalty from the arena (derived from the game state).
+        TEXT("arena_victor"),TEXT("arena_vanquished"),
         // champion-draft: dodge-roll skill states (CireRollSkills::BuffIds).
         TEXT("tumblers_edge"),TEXT("killer_instinct"),TEXT("windrunner"),TEXT("quickened_mind"),TEXT("momentum"),TEXT("blur_step"),
         TEXT("mine_layer"),TEXT("taunting_tumble"),TEXT("shield_tumble"),TEXT("venom_tumble"),TEXT("shadow_dance"),TEXT("evasive_stance")};
     static const TArray<FName> Ids=[]{TArray<FName> Out=BaseIds;for(const FName Id:CireKits::BuffIds())Out.AddUnique(Id); // scaling-kits
-        for(const FName Id:CireKitSkills::BuffIds())Out.AddUnique(Id);return Out;}(); // kits-complete
+        for(const FName Id:CireKitSkills::BuffIds())Out.AddUnique(Id); // kits-complete
+        for(const FName Id:CireAbilityExpansion::BuffIds())Out.AddUnique(Id);return Out;}(); // ability-expansion
     return Ids;
 }
