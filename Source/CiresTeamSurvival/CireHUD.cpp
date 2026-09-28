@@ -124,6 +124,7 @@ void ACireHUD::UsePanel(FName Id,float W,float H)
         {TEXT("CombatLog"),TEXT("Chronological confirmed combat events. Damage, healing and avoided attacks are separate from player chat.")},
         {TEXT("Threat"),TEXT("Threat meter: who your target (or the enemy attacking you) wants to hit. The aggro holder is on top at 100%; others show their share of that. Reaching 100% pulls the enemy.")},
         {TEXT("Boss"),TEXT("Boss and pack-leader frames: health, casts and your threat for the biggest enemies in your lane. Click a frame to target it.")},
+        {TEXT("RaidBoss"),TEXT("Raid-boss bar: the boss you fight across the top of the screen, with its phase marks, cast and phase number. More bosses stack below. Click a bar to target that boss.")}, // bosses-spacing
         {TEXT("CombatText"),TEXT("Your incoming and outgoing combat feedback. F10 moves this panel. Outgoing damage is coloured by school (gold physical, orange fire, blue frost, green poison, purple shadow), incoming damage red, healing green, misses grey. Critical hits pop larger.")}};
     // Panel descriptions only while arranging the interface (F10); never during gameplay.
     if(bEditLayout)if(const FString* Description=Help.Find(Id))if(Hit(0,0,W,H)){EditHelpTitle=Id.ToString();EditHelpBody=*Description;}
@@ -716,6 +717,7 @@ void ACireHUD::DrawHUD()
     if(IsValid(Hero->Target)||bEditLayout)DrawUnit(Hero->Target,TEXT("TARGET"),false);
     if(Controller&&((IsValid(Controller->FocusTarget)&&!IsInBossFrames(Controller->FocusTarget))||bEditLayout))DrawUnit(Controller->FocusTarget,TEXT("FOCUS / CLICK TO TARGET"),true);
     DrawBossFrames(Hero,Controller);DrawThreatMeter(Hero,Controller);
+    DrawRaidBossBars(Hero,Controller); // bosses-spacing: top-of-screen raid-boss bars
     DrawActionBars(Hero,Controller);DrawChat(Controller);DrawMeters(Hero,Controller);DrawPet(Hero,Controller);
     ResetTransform();CireShopUI::DrawHUDElements(*this,Hero,Controller,State); // progression-shop: bag bar, teleport, stats window
     if(!bModal&&!bSettings)DrawCombatText(Hero,Controller);
@@ -751,7 +753,7 @@ void ACireHUD::DrawHUD()
     if(bModal)DrawModal(Hero,Controller,State);
     ResetTransform();CireShopUI::DrawOverlay(*this,Hero,Controller); // progression-shop: purchase/loot toasts, teleport channel
     DrawSkillOfferExtras(Hero,Controller); // champion-draft: deferred-offer reminder + pick animation
-    if(bEditLayout){VisiblePanels.AddUnique(TEXT("Tooltip"));VisiblePanels.AddUnique(TEXT("Threat"));VisiblePanels.AddUnique(TEXT("Boss"));}
+    if(bEditLayout){VisiblePanels.AddUnique(TEXT("Tooltip"));VisiblePanels.AddUnique(TEXT("Threat"));VisiblePanels.AddUnique(TEXT("Boss"));VisiblePanels.AddUnique(TEXT("RaidBoss"));}
     if(!bModal&&!bSettings&&!bEditLayout)UpdateHoverUnit(Hero);else HoverUnit.Reset();
     UpdateQuickKeybind();DrawQuickKeybind();
     DrawLayoutEditor();DrawDeveloperLauncher();DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();

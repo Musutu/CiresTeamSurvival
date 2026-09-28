@@ -1,0 +1,15 @@
+{
+  "_comment": "bosses-spacing (Docs/RESUME-bosses-spacing.md). Live: console `cire.Spacing reload`, or `cire.Spacing <bossSize|bossRadius|bossHalfHeight|radius|meleeBonus|pad|strength|separation> <value>`. Boss collision stays the Large nav agent (radius 72, height 300) so giants path the town streets; the body is drawn sizeMultiplier x.",
+  "boss": {
+    "sizeMultiplier": 5.0,
+    "capsuleRadiusMax": 72,
+    "capsuleHalfHeightMax": 150
+  },
+  "units": {
+    "capsuleRadius": 46,
+    "meleeReachBonus": 20,
+    "separation": true,
+    "separationPadding": 30,
+    "separationStrength": 0.7
+  }
+}

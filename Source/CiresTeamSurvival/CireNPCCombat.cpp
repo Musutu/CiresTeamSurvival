@@ -30,6 +30,7 @@
 #include "CireWaves.h" // wave-director
 #include "CireNav.h" // nav-paths: navmesh steering
 #include "CireRaces.h" // monster-races
+#include "CireUnitSpacing.h" // bosses-spacing
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireNPCCombat,Log,All);
 
@@ -143,6 +144,9 @@ bool SpawnArea(ACireMonster* M,const FCireNPCAbility& A,ECireAreaShape Shape,FVe
 {
     FCireAreaSpec S;
     S.Shape=Shape;S.Radius=A.Radius;S.ConeAngleDegrees=FMath::Clamp(A.Angle,1.f,179.f);S.Length=Length>0?Length:A.Length;S.Width=A.Width;
+    // bosses-spacing: a giant's own cone / stomp starts at its body's edge, not inside its legs.
+    if(const float Body=CireUnitSpacing::BodyReachBonus(M);Body>0&&FVector::DistSquared2D(Ground,M->GetActorLocation())<FMath::Square(50.f))
+    {S.Radius+=Body;if(S.Length>0)S.Length+=Body;}
     S.WarningSeconds=A.CastTime;S.TickInterval=.5f;
     const bool bPool=A.DamagePerSecond>0&&A.Duration>0;
     S.bPersistent=bPool;S.bPoison=bPool;S.DurationSeconds=bPool?A.Duration:.3f;
@@ -359,7 +363,10 @@ void ReleaseCast(ACireMonster* M,ACireGameMode* Mode)
     if(S)S->RefreshStatusFlags(Now);
     ClearCast(M);
 }
-float DesiredScale(const ACireMonster* M)
+float BaseScale(const ACireMonster* M);
+// bosses-spacing: bosses are drawn UnitSpacing.json boss.sizeMultiplier x their normal size (capsule capped, CireUnitSpacing).
+float DesiredScale(const ACireMonster* M){return BaseScale(M)*(CireUnitSpacing::IsBossBody(M)?CireUnitSpacing::Get().BossSizeMultiplier:1.f);}
+float BaseScale(const ACireMonster* M)
 {
     const auto* A=Arch(M);const auto* S=St(M);
     // wave-director: director-spawned units use their archetype scale times the wave row's size.
@@ -442,7 +449,7 @@ bool CireNPCCombat::ConfigureArchetype(ACireMonster* M,FName Id,int32 Wave,int32
         for(const auto& Ability:A->Abilities)if(Ability.InitialCooldown>0)S->ReadyAt.Add(Ability.Id,Now+Ability.InitialCooldown);
         S->ApplyVisuals();
     }
-    M->SetActorScale3D(FVector(DesiredScale(M)));
+    CireUnitSpacing::ApplyBody(M,DesiredScale(M)); // bosses-spacing: scale + capsule
     CireLanePath::InitializeProgress(M);
     CireDeveloperTools::AdjustMonster(M);M->ForceNetUpdate();
     return true;
@@ -502,8 +509,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
 {
     if(!IsValid(M))return;
     CireRealm::UpdateVisibility(M);
-    const float Scale=DesiredScale(M);
-    if(!M->GetActorScale3D().Equals(FVector(Scale)))M->SetActorScale3D(FVector(Scale));
+    CireUnitSpacing::ApplyBody(M,DesiredScale(M)); // bosses-spacing: scale + capsule (every machine)
     auto* Mode=M->GetWorld()->GetAuthGameMode<ACireGameMode>();
     if(!M->HasAuthority()||!Mode||M->Health<=0)return;
     auto* Movement=M->GetCharacterMovement();
@@ -612,9 +618,10 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
         const bool bSight=ClearSight(M,Victim);
         // creature-anim: finish the committed swing before choosing the next action.
         if(M->MonsterArt&&M->MonsterArt->HasPendingSwing()){Movement->StopMovementImmediately();M->SetActorRotation(Direction.Rotation());return;}
-        if(TryAbilities(M,Mode,Victim,Distance,bSight))return;
+        if(TryAbilities(M,Mode,Victim,FMath::Max(0.f,Distance-CireUnitSpacing::BodyReachBonus(M)),bSight))return; // bosses-spacing: giant bodies measure ability range from their edge
         const bool bRanged=A?UsesProjectiles(A):M->CombatArchetype>=2;
-        const float Reach=A?A->AttackRange:bRanged?650.f:170.f;
+        const float Authored=A?A->AttackRange:bRanged?650.f:170.f;
+        const float Reach=bRanged?Authored:CireUnitSpacing::MeleeReach(M,Authored); // bosses-spacing: melee reach bonus + big bodies reach from their edge
         if(bRanged&&S&&A)
         {
             // Casters and hunters hold their distance: back off from melee, then shoot.
@@ -630,7 +637,17 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
             M->AddMovementInput(CireNav::Steer(M,Victim->GetActorLocation()));
             return;
         }
-        Movement->StopMovementImmediately();M->SetActorRotation(Direction.Rotation());
+        // bosses-spacing: a melee unit in reach sidesteps lane-mates crowding it (keeps swinging), so packs ring
+        // their victim instead of stacking into one clump.
+        if(const FVector Apart=bRanged?FVector::ZeroVector:CireUnitSpacing::Separation(M,Mode);!Apart.IsNearlyZero())
+        {
+            // Keep the victim in reach: drop the part of the sidestep that walks away from it near the reach edge.
+            FVector Step=Apart;const float Out=static_cast<float>(FVector::DotProduct(Step,-Direction));
+            if(Out>0&&Distance>Reach*.8f)Step+=Direction*Out;
+            M->AddMovementInput(Step,1.f);
+        }
+        else Movement->StopMovementImmediately();
+        M->SetActorRotation(Direction.Rotation());
         if(M->AttackTimer<=0)
         {
             const FCireNPCAbility* Basic=A?A->BasicAttack():nullptr;
@@ -779,6 +796,7 @@ bool CireNPCCombat::RunSmoke(ACireGameMode* Mode)
     bPassed=CireMonsterArt::RunSmoke(Mode)&&bPassed; // creature-anim
     bPassed=CireRaces::RunSmoke(Mode)&&bPassed; // monster-races
     bPassed=CireMonsterExpansion::RunSmoke(Mode)&&bPassed; // monster-expansion
+    bPassed=CireUnitSpacing::RunSmoke(Mode)&&bPassed; // bosses-spacing
     return bPassed;
 }
 #endif

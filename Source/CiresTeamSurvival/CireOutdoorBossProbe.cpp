@@ -19,6 +19,7 @@
 #include "CireNPCState.h"
 #include "CireRouteEditor.h"
 #include "CireTownMap.h"
+#include "CireUnitSpacing.h" // bosses-spacing: -CireBossSpacingProbe rides this hook
 #include "Engine/World.h"
 #include "HAL/FileManager.h"
 #include "Misc/CommandLine.h"
@@ -160,6 +161,7 @@ void CheckWorld(ACireGameMode* Mode)
 void CireOutdoorBosses::InitializeProbe(ACireGameMode* Mode)
 {
     P = FBossProbe();
+    CireUnitSpacing::InitializeProbe(Mode); // bosses-spacing
     P.bEnabled = Mode && FParse::Param(FCommandLine::Get(), TEXT("CireOutdoorBossProbe"));
     if (!P.bEnabled) return;
     Mode->BotFillTimer = 0;
@@ -168,6 +170,7 @@ void CireOutdoorBosses::InitializeProbe(ACireGameMode* Mode)
 
 void CireOutdoorBosses::TickProbe(ACireGameMode* Mode, float Delta)
 {
+    if (CireUnitSpacing::TickProbe(Mode, Delta)) return; // bosses-spacing
     if (!P.bEnabled || P.bDone || !Mode) return;
     UWorld* World = Mode->GetWorld();
     auto* State = Mode->GetGameState<ACireGameState>();

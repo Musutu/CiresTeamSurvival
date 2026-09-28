@@ -56,6 +56,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "CirePets.h" // pets
+#include "CireUnitSpacing.h" // bosses-spacing
 #include "UObject/ConstructorHelpers.h"
 
 namespace
@@ -372,7 +373,8 @@ bool ACireHero::IsHostile(AActor* Other) const
 
 bool ACireHero::InRange(AActor* Other, float Distance) const
 {
-    return IsValid(Other) && FVector::DistSquared2D(GetActorLocation(), Other->GetActorLocation()) <= FMath::Square(Distance);
+    // bosses-spacing: a giant body is reached at its drawn edge, not its (nav-sized) capsule centre.
+    return IsValid(Other) && FVector::DistSquared2D(GetActorLocation(), Other->GetActorLocation()) <= FMath::Square(Distance + CireUnitSpacing::BodyReachBonus(Other));
 }
 
 float ACireHero::AttackDamage() const

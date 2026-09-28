@@ -92,6 +92,8 @@ void FCireUISettings::Reset()
     // Right column under the minimap: boss frames, then threat, then the damage meter.
     Add(TEXT("Boss"), 1040.f, 208.f, 220.f, 150.f);
     Add(TEXT("Threat"), 1040.f, 372.f, 220.f, 124.f);
+    // bosses-spacing: raid-boss bars across the top, under the match plate, between the target frame and the minimap.
+    Add(TEXT("RaidBoss"), 546.f, 88.f, 480.f, 118.f);
     // Extra action bars stack above the main bar (panel "Skills").
     Add(TEXT("Bar2"), 368.f, 492.f, 536.f, 48.f);
     Add(TEXT("Bar3"), 368.f, 440.f, 536.f, 48.f);
