@@ -240,7 +240,9 @@ bool PgMoveTo(ACireHero* Hero, FVector Ground, float MaxRange)
     const FVector Flat = (To - From).GetSafeNormal2D();
     if (FVector::Dist2D(From, To) > MaxRange) To = FVector(From.X, From.Y, To.Z) + Flat * MaxRange;
     if (ACireConstruct::FindBlockingConstruct(Hero, To)) return false;
-    const bool bMoved = Hero->SetActorLocation(To, true, nullptr, ETeleportType::TeleportPhysics);
+    // A dash / leap passes through units (a sweep would stop on the first monster); TeleportTo settles on free ground.
+    const bool bMoved = Hero->TeleportTo(To, Flat.IsNearlyZero() ? Hero->GetActorRotation() : Flat.Rotation(), false, false);
+
     if (bMoved) { if (!Flat.IsNearlyZero()) Hero->SetActorRotation(Flat.Rotation()); ACireAreaEffect::ClearForActor(Hero); }
     return bMoved && FVector::DistSquared2D(From, Hero->GetActorLocation()) > FMath::Square(40.f);
 }
@@ -298,12 +300,45 @@ void CireParagonChampions::MergeAbilities(TArray<FCireAbilityDef>& Abilities, TM
 {
     PgLoad();
     if (!GPg.bEnabled || !GPg.Root.IsValid()) return;
-    FString Json; FFileHelper::LoadFileToString(Json, *DataPath());
+    // The overlay's kits also list base-DB skills (the role template's pool): parse with the kits reduced to overlay
+    // ids, then restore the full lists against the merged DB.
+    const TSharedPtr<FJsonObject>* KitsJson = nullptr;
+    TMap<FString, TArray<FString>> FullPurchasable;
+    TSharedPtr<FJsonObject> Reduced = MakeShared<FJsonObject>(*GPg.Root);
+    TSet<FString> OverlayIds;
+    if (const TSharedPtr<FJsonObject>* AbilitiesJson = nullptr; GPg.Root->TryGetObjectField(TEXT("abilities"), AbilitiesJson))
+        for (const auto& Pair : (*AbilitiesJson)->Values) OverlayIds.Add(FString(Pair.Key));
+    if (GPg.Root->TryGetObjectField(TEXT("champions"), KitsJson))
+    {
+        TSharedPtr<FJsonObject> ReducedKits = MakeShared<FJsonObject>();
+        for (const auto& Pair : (*KitsJson)->Values)
+        {
+            const TSharedPtr<FJsonObject>* KitObject = nullptr; if (!Pair.Value->TryGetObject(KitObject)) continue;
+            TSharedPtr<FJsonObject> Copy = MakeShared<FJsonObject>(**KitObject);
+            const TArray<FString> Full = PgStrings(*KitObject, TEXT("purchasable"));
+            FullPurchasable.Add(FString(Pair.Key), Full);
+            TArray<TSharedPtr<FJsonValue>> Own;
+            for (const FString& S : Full) if (OverlayIds.Contains(S)) Own.Add(MakeShared<FJsonValueString>(S));
+            Copy->SetArrayField(TEXT("purchasable"), Own); Copy->SetArrayField(TEXT("purchasableImplemented"), Own);
+            ReducedKits->SetObjectField(FString(Pair.Key), Copy);
+        }
+        Reduced->SetObjectField(TEXT("champions"), ReducedKits);
+    }
+    FString Json; FJsonSerializer::Serialize(Reduced.ToSharedRef(), TJsonWriterFactory<>::Create(&Json));
     TArray<FCireAbilityDef> A; TMap<FString, FCireChampionKit> K; TMap<FName, TArray<FCireModifier>> M; FString Error;
     if (!CireAbilityDB::ParseJson(Json, A, K, M, Error)) { UE_LOG(LogCireParagon, Error, TEXT("Paragon ability overlay rejected: %s"), *Error); return; }
     TSet<FString> Seen; for (const FCireAbilityDef& D : Abilities) Seen.Add(D.Id);
     int32 Added = 0;
     for (FCireAbilityDef& D : A) if (!Seen.Contains(D.Id)) { Seen.Add(D.Id); Abilities.Add(MoveTemp(D)); ++Added; }
+    TSet<FString> Implemented; for (const FCireAbilityDef& D : Abilities) if (D.IsImplemented()) Implemented.Add(D.Id);
+    for (auto& Pair : K)
+        if (const TArray<FString>* Full = FullPurchasable.Find(Pair.Key))
+        {
+            Pair.Value.Purchasable.Reset(); Pair.Value.PurchasableImplemented.Reset();
+            for (const FString& S : *Full) if (Seen.Contains(S)) { Pair.Value.Purchasable.AddUnique(S); if (Implemented.Contains(S)) Pair.Value.PurchasableImplemented.AddUnique(S); }
+        }
+
+
     for (auto& Pair : K) if (GPg.Installed.Contains(Pair.Key) && !Kits.Contains(Pair.Key)) Kits.Add(Pair.Key, Pair.Value);
     // Pool: the Paragon abilities flagged "pool" join every champion whose kit roles share a type (DPS/TANK/HEAL).
     int32 Pooled = 0;

@@ -83,6 +83,11 @@
     "hero": "pg_greystone",
     "clip": "/Game/ParagonGreystone/Characters/Heroes/Greystone/Animations/Attack_RMB.Attack_RMB",
     "fxGroup": "LeapAOE"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_greystone_q": {
@@ -141,6 +146,11 @@
     "hero": "pg_greystone",
     "clip": "/Game/ParagonGreystone/Characters/Heroes/Greystone/Animations/Ability_Q.Ability_Q",
     "fxGroup": "ClearAPath"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_greystone_e": {
@@ -201,6 +211,11 @@
     "hero": "pg_greystone",
     "clip": "/Game/ParagonGreystone/Characters/Heroes/Greystone/Animations/Ability_E.Ability_E",
     "fxGroup": "Deflect"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_greystone_r": {
@@ -269,6 +284,27 @@
     "hero": "pg_greystone",
     "clip": "/Game/ParagonGreystone/Characters/Heroes/Greystone/Animations/Ability_Ultimate.Ability_Ultimate",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_greystone_passive": {
@@ -328,6 +364,10 @@
    "paragon": {
     "hero": "pg_greystone",
     "kind": "guard"
+   },
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
    }
   },
   "pg_aurora_rmb": {
@@ -388,6 +428,11 @@
     "hero": "pg_aurora",
     "clip": "/Game/ParagonAurora/Characters/Heroes/Aurora/Animations/Ability_RMB_Fwd.Ability_RMB_Fwd",
     "fxGroup": "Dash"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_aurora_q": {
@@ -456,6 +501,11 @@
     "hero": "pg_aurora",
     "clip": "/Game/ParagonAurora/Characters/Heroes/Aurora/Animations/Ability_Q.Ability_Q",
     "fxGroup": "Freeze"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
    }
   },
   "pg_aurora_e": {
@@ -516,6 +566,11 @@
     "hero": "pg_aurora",
     "clip": "/Game/ParagonAurora/Characters/Heroes/Aurora/Animations/Ability_E.Ability_E",
     "fxGroup": "Leap"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_aurora_r": {
@@ -584,6 +639,29 @@
     "hero": "pg_aurora",
     "clip": "/Game/ParagonAurora/Characters/Heroes/Aurora/Animations/Ability_R.Ability_R",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_aurora_passive": {
@@ -643,6 +721,10 @@
    "paragon": {
     "hero": "pg_aurora",
     "kind": "frenzy"
+   },
+   "aura15": {
+    "aura": "attackSpeed",
+    "label": "Lv 15 aura: party +30% attack speed"
    }
   },
   "pg_crunch_rmb": {
@@ -701,6 +783,11 @@
     "hero": "pg_crunch",
     "clip": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/Ability_DashingCross.Ability_DashingCross",
     "fxGroup": "Cross"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_crunch_q": {
@@ -769,6 +856,11 @@
     "hero": "pg_crunch",
     "clip": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/Ability_Uppercut.Ability_Uppercut",
     "fxGroup": "Uppercut"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_crunch_e": {
@@ -837,6 +929,11 @@
     "hero": "pg_crunch",
     "clip": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/Ability_GutPunch.Ability_GutPunch",
     "fxGroup": "Hook"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_crunch_r": {
@@ -895,6 +992,29 @@
     "hero": "pg_crunch",
     "clip": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/Ability_Hook_Empowered.Ability_Hook_Empowered",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_crunch_passive": {
@@ -954,6 +1074,10 @@
    "paragon": {
     "hero": "pg_crunch",
     "kind": "lifesteal"
+   },
+   "aura15": {
+    "aura": "physicalLifesteal",
+    "label": "Lv 15 aura: party 5% physical lifesteal"
    }
   },
   "pg_fengmao_rmb": {
@@ -1012,6 +1136,11 @@
     "hero": "pg_fengmao",
     "clip": "/Game/ParagonFengMao/Characters/Heroes/FengMao/Animations/Dash_Ability.Dash_Ability",
     "fxGroup": "Dash"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_fengmao_q": {
@@ -1073,6 +1202,11 @@
     "hero": "pg_fengmao",
     "clip": "/Game/ParagonFengMao/Characters/Heroes/FengMao/Animations/Shield.Shield",
     "fxGroup": "Block"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_fengmao_e": {
@@ -1141,6 +1275,11 @@
     "hero": "pg_fengmao",
     "clip": "/Game/ParagonFengMao/Characters/Heroes/FengMao/Animations/SlowAbility.SlowAbility",
     "fxGroup": "SlowShield"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_fengmao_r": {
@@ -1199,6 +1338,29 @@
     "hero": "pg_fengmao",
     "clip": "/Game/ParagonFengMao/Characters/Heroes/FengMao/Animations/Ultimate.Ultimate",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_fengmao_passive": {
@@ -1258,6 +1420,10 @@
    "paragon": {
     "hero": "pg_fengmao",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
    }
   },
   "pg_grux_rmb": {
@@ -1316,6 +1482,11 @@
     "hero": "pg_grux",
     "clip": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/DoublePain.DoublePain",
     "fxGroup": "HardKnocks"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_grux_q": {
@@ -1384,6 +1555,11 @@
     "hero": "pg_grux",
     "clip": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Stampede.Stampede",
     "fxGroup": "Stampede"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_grux_e": {
@@ -1442,6 +1618,11 @@
     "hero": "pg_grux",
     "clip": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/PrimaryAttack_FourStrikes.PrimaryAttack_FourStrikes",
     "fxGroup": "RipplingSmash"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
    }
   },
   "pg_grux_r": {
@@ -1510,6 +1691,27 @@
     "hero": "pg_grux",
     "clip": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Ultimate_Roar.Ultimate_Roar",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_grux_passive": {
@@ -1569,6 +1771,10 @@
    "paragon": {
     "hero": "pg_grux",
     "kind": "guard"
+   },
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
    }
   },
   "pg_steel_rmb": {
@@ -1637,6 +1843,11 @@
     "hero": "pg_steel",
     "clip": "/Game/ParagonSteel/Characters/Heroes/Steel/Animations/Steel_Ability_Bash.Steel_Ability_Bash",
     "fxGroup": "Bash"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_steel_q": {
@@ -1697,6 +1908,11 @@
     "hero": "pg_steel",
     "clip": "/Game/ParagonSteel/Characters/Heroes/Steel/Animations/Steel_Ability_CowCatcher_Charge.Steel_Ability_CowCatcher_Charge",
     "fxGroup": "Primary"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_steel_e": {
@@ -1757,6 +1973,11 @@
     "hero": "pg_steel",
     "clip": "/Game/ParagonSteel/Characters/Heroes/Steel/Animations/Steel_Ability_ShieldBlock_Deploy.Steel_Ability_ShieldBlock_Deploy",
     "fxGroup": "ShieldBlock"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_steel_r": {
@@ -1825,6 +2046,27 @@
     "hero": "pg_steel",
     "clip": "/Game/ParagonSteel/Characters/Heroes/Steel/Animations/Steel_Ability_GroundSmash_End.Steel_Ability_GroundSmash_End",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_steel_passive": {
@@ -1884,6 +2126,10 @@
    "paragon": {
     "hero": "pg_steel",
     "kind": "guard"
+   },
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
    }
   },
   "pg_terra_rmb": {
@@ -1944,6 +2190,11 @@
     "hero": "pg_terra",
     "clip": "/Game/ParagonTerra/Characters/Heroes/Terra/Animations/RMB_melee.RMB_melee",
     "fxGroup": "Shield"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_terra_q": {
@@ -2002,6 +2253,11 @@
     "hero": "pg_terra",
     "clip": "/Game/ParagonTerra/Characters/Heroes/Terra/Animations/Q_swing_B.Q_swing_B",
     "fxGroup": "DoubleSweep"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_terra_e": {
@@ -2070,6 +2326,11 @@
     "hero": "pg_terra",
     "clip": "/Game/ParagonTerra/Characters/Heroes/Terra/Animations/E_ability.E_ability",
     "fxGroup": "Balance"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "pulse"
    }
   },
   "pg_terra_r": {
@@ -2138,6 +2399,27 @@
     "hero": "pg_terra",
     "clip": "/Game/ParagonTerra/Characters/Heroes/Terra/Animations/R_Intro.R_Intro",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_terra_passive": {
@@ -2197,6 +2479,10 @@
    "paragon": {
     "hero": "pg_terra",
     "kind": "guard"
+   },
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
    }
   },
   "pg_sevarog_rmb": {
@@ -2265,6 +2551,11 @@
     "hero": "pg_sevarog",
     "clip": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Soul_Siphon.Soul_Siphon",
     "fxGroup": "SoulSiphon"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_sevarog_q": {
@@ -2325,6 +2616,11 @@
     "hero": "pg_sevarog",
     "clip": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Speedburst.Speedburst",
     "fxGroup": "Relentless"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_sevarog_e": {
@@ -2383,6 +2679,11 @@
     "hero": "pg_sevarog",
     "clip": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Swing3_Slow.Swing3_Slow",
     "fxGroup": "SoulStackPassive"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_sevarog_r": {
@@ -2451,6 +2752,29 @@
     "hero": "pg_sevarog",
     "clip": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Subjugation.Subjugation",
     "fxGroup": "Subjugate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_sevarog_passive": {
@@ -2510,6 +2834,10 @@
    "paragon": {
     "hero": "pg_sevarog",
     "kind": "lifesteal"
+   },
+   "aura15": {
+    "aura": "physicalLifesteal",
+    "label": "Lv 15 aura: party 5% physical lifesteal"
    }
   },
   "pg_rampage_rmb": {
@@ -2578,6 +2906,11 @@
     "hero": "pg_rampage",
     "clip": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/Ability_RMB_Smash.Ability_RMB_Smash",
     "fxGroup": "Lunge"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_rampage_q": {
@@ -2646,6 +2979,11 @@
     "hero": "pg_rampage",
     "clip": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/Ability_RipNToss_Toss.Ability_RipNToss_Toss",
     "fxGroup": "RipNToss"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_rampage_e": {
@@ -2706,6 +3044,11 @@
     "hero": "pg_rampage",
     "clip": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/Ability_Energize.Ability_Energize",
     "fxGroup": "Roar"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_rampage_r": {
@@ -2764,6 +3107,27 @@
     "hero": "pg_rampage",
     "clip": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/Ability_Enrage_End.Ability_Enrage_End",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_rampage_passive": {
@@ -2823,6 +3187,10 @@
    "paragon": {
     "hero": "pg_rampage",
     "kind": "lifesteal"
+   },
+   "aura15": {
+    "aura": "physicalLifesteal",
+    "label": "Lv 15 aura: party 5% physical lifesteal"
    }
   },
   "pg_kwang_rmb": {
@@ -2881,6 +3249,11 @@
     "hero": "pg_kwang",
     "clip": "/Game/ParagonKwang/Characters/Heroes/Kwang/Animations/Ability_RMB.Ability_RMB",
     "fxGroup": "LightStrike"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_kwang_q": {
@@ -2939,6 +3312,11 @@
     "hero": "pg_kwang",
     "clip": "/Game/ParagonKwang/Characters/Heroes/Kwang/Animations/Ability_Q_Throw.Ability_Q_Throw",
     "fxGroup": "Sword"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_kwang_e": {
@@ -2999,6 +3377,11 @@
     "hero": "pg_kwang",
     "clip": "/Game/ParagonKwang/Characters/Heroes/Kwang/Animations/Ability_Q_Catch.Ability_Q_Catch",
     "fxGroup": "Primary"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_kwang_r": {
@@ -3067,6 +3450,27 @@
     "hero": "pg_kwang",
     "clip": "/Game/ParagonKwang/Characters/Heroes/Kwang/Animations/Ability_R.Ability_R",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_kwang_passive": {
@@ -3126,6 +3530,10 @@
    "paragon": {
     "hero": "pg_kwang",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
    }
   },
   "pg_kallari_rmb": {
@@ -3184,6 +3592,11 @@
     "hero": "pg_kallari",
     "clip": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/Shadowstrike_Mid.Shadowstrike_Mid",
     "fxGroup": "ShadowPlane"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_kallari_q": {
@@ -3252,6 +3665,11 @@
     "hero": "pg_kallari",
     "clip": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/Attack01.Attack01",
     "fxGroup": "DaggerThrow"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_kallari_e": {
@@ -3312,6 +3730,11 @@
     "hero": "pg_kallari",
     "clip": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/Ability_MarkedForDeath_Cast.Ability_MarkedForDeath_Cast",
     "fxGroup": "Passive"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_kallari_r": {
@@ -3370,6 +3793,27 @@
     "hero": "pg_kallari",
     "clip": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/Ability_Ultimate.Ability_Ultimate",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_kallari_passive": {
@@ -3429,6 +3873,10 @@
    "paragon": {
     "hero": "pg_kallari",
     "kind": "haste"
+   },
+   "aura15": {
+    "aura": "aoeResist",
+    "label": "Lv 15 aura: party 15% chance to resist area damage"
    }
   },
   "pg_countess_rmb": {
@@ -3487,6 +3935,11 @@
     "hero": "pg_countess",
     "clip": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Ability_RMB.Ability_RMB",
     "fxGroup": "BlinkStrike"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_countess_q": {
@@ -3545,6 +3998,11 @@
     "hero": "pg_countess",
     "clip": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Ability_Q.Ability_Q",
     "fxGroup": "BladeSiphon"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_countess_e": {
@@ -3613,6 +4071,11 @@
     "hero": "pg_countess",
     "clip": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Ability_E.Ability_E",
     "fxGroup": "RollingDark"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_countess_r": {
@@ -3681,6 +4144,27 @@
     "hero": "pg_countess",
     "clip": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Ability_Ultimate.Ability_Ultimate",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_countess_passive": {
@@ -3740,6 +4224,10 @@
    "paragon": {
     "hero": "pg_countess",
     "kind": "lifesteal"
+   },
+   "aura15": {
+    "aura": "magicLifesteal",
+    "label": "Lv 15 aura: party 5% magic lifesteal"
    }
   },
   "pg_shinbi_rmb": {
@@ -3798,6 +4286,11 @@
     "hero": "pg_shinbi",
     "clip": "/Game/ParagonShinbi/Characters/Heroes/Shinbi/Animations/Ability_AttackWolves_Cast_L.Ability_AttackWolves_Cast_L",
     "fxGroup": "AttackWolves"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_shinbi_q": {
@@ -3856,6 +4349,11 @@
     "hero": "pg_shinbi",
     "clip": "/Game/ParagonShinbi/Characters/Heroes/Shinbi/Animations/Ability_CirclingWolves.Ability_CirclingWolves",
     "fxGroup": "CirclingWolves"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
    }
   },
   "pg_shinbi_e": {
@@ -3916,6 +4414,11 @@
     "hero": "pg_shinbi",
     "clip": "/Game/ParagonShinbi/Characters/Heroes/Shinbi/Animations/Ability_Dash.Ability_Dash",
     "fxGroup": "Dash"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_shinbi_r": {
@@ -3974,6 +4477,27 @@
     "hero": "pg_shinbi",
     "clip": "/Game/ParagonShinbi/Characters/Heroes/Shinbi/Animations/Ability_R_PeaceOut.Ability_R_PeaceOut",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_shinbi_passive": {
@@ -4033,6 +4557,10 @@
    "paragon": {
     "hero": "pg_shinbi",
     "kind": "frenzy"
+   },
+   "aura15": {
+    "aura": "attackSpeed",
+    "label": "Lv 15 aura: party +30% attack speed"
    }
   },
   "pg_khaimera_rmb": {
@@ -4091,6 +4619,11 @@
     "hero": "pg_khaimera",
     "clip": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/RMB_60fps.RMB_60fps",
     "fxGroup": ""
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_khaimera_q": {
@@ -4159,6 +4692,11 @@
     "hero": "pg_khaimera",
     "clip": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/E_Ability_Throw.E_Ability_Throw",
     "fxGroup": ""
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_khaimera_e": {
@@ -4219,6 +4757,11 @@
     "hero": "pg_khaimera",
     "clip": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Melee_C.Melee_C",
     "fxGroup": ""
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_khaimera_r": {
@@ -4277,6 +4820,29 @@
     "hero": "pg_khaimera",
     "clip": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/R_Ability.R_Ability",
     "fxGroup": ""
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_khaimera_passive": {
@@ -4336,6 +4902,10 @@
    "paragon": {
     "hero": "pg_khaimera",
     "kind": "lifesteal"
+   },
+   "aura15": {
+    "aura": "physicalLifesteal",
+    "label": "Lv 15 aura: party 5% physical lifesteal"
    }
   },
   "pg_serath_rmb": {
@@ -4394,6 +4964,11 @@
     "hero": "pg_serath",
     "clip": "/Game/ParagonSerath/Characters/Heroes/Serath/Animations/RMB_Dive.RMB_Dive",
     "fxGroup": "Ascend"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_serath_q": {
@@ -4452,6 +5027,11 @@
     "hero": "pg_serath",
     "clip": "/Game/ParagonSerath/Characters/Heroes/Serath/Animations/Q_Ability_Attack_A.Q_Ability_Attack_A",
     "fxGroup": "Fury"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_serath_e": {
@@ -4520,6 +5100,11 @@
     "hero": "pg_serath",
     "clip": "/Game/ParagonSerath/Characters/Heroes/Serath/Animations/E_Ability_Wing_Flap.E_Ability_Wing_Flap",
     "fxGroup": "Chastise"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "pulse"
    }
   },
   "pg_serath_r": {
@@ -4578,6 +5163,29 @@
     "hero": "pg_serath",
     "clip": "/Game/ParagonSerath/Characters/Heroes/Serath/Animations/R_Ability_Loop.R_Ability_Loop",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_serath_passive": {
@@ -4637,6 +5245,10 @@
    "paragon": {
     "hero": "pg_serath",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
    }
   },
   "pg_wukong_rmb": {
@@ -4695,6 +5307,11 @@
     "hero": "pg_wukong",
     "clip": "/Game/ParagonSunWukong/Characters/Heroes/Wukong/Animations/RMB_Push.RMB_Push",
     "fxGroup": "Poke"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_wukong_q": {
@@ -4763,6 +5380,11 @@
     "hero": "pg_wukong",
     "clip": "/Game/ParagonSunWukong/Characters/Heroes/Wukong/Animations/Q_Slam.Q_Slam",
     "fxGroup": "DoubleJump"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_wukong_e": {
@@ -4823,6 +5445,11 @@
     "hero": "pg_wukong",
     "clip": "/Game/ParagonSunWukong/Characters/Heroes/Wukong/Animations/RMB_Hit.RMB_Hit",
     "fxGroup": "Toggle"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_wukong_r": {
@@ -4891,6 +5518,27 @@
     "hero": "pg_wukong",
     "clip": "/Game/ParagonSunWukong/Characters/Heroes/Wukong/Animations/RMB_Hit_Down.RMB_Hit_Down",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_wukong_passive": {
@@ -4950,6 +5598,10 @@
    "paragon": {
     "hero": "pg_wukong",
     "kind": "haste"
+   },
+   "aura15": {
+    "aura": "aoeResist",
+    "label": "Lv 15 aura: party 15% chance to resist area damage"
    }
   },
   "pg_yin_rmb": {
@@ -5008,6 +5660,11 @@
     "hero": "pg_yin",
     "clip": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/RMB.RMB",
     "fxGroup": "WhipCrack"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_yin_q": {
@@ -5076,6 +5733,11 @@
     "hero": "pg_yin",
     "clip": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/Q_Pull_Kick.Q_Pull_Kick",
     "fxGroup": "ReachingPain"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_yin_e": {
@@ -5134,6 +5796,11 @@
     "hero": "pg_yin",
     "clip": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/E_Ability_Attack_A.E_Ability_Attack_A",
     "fxGroup": "LashKick"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_yin_r": {
@@ -5202,6 +5869,27 @@
     "hero": "pg_yin",
     "clip": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/R_Ability.R_Ability",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_yin_passive": {
@@ -5261,6 +5949,10 @@
    "paragon": {
     "hero": "pg_yin",
     "kind": "frenzy"
+   },
+   "aura15": {
+    "aura": "attackSpeed",
+    "label": "Lv 15 aura: party +30% attack speed"
    }
   },
   "pg_boris_rmb": {
@@ -5319,6 +6011,11 @@
     "hero": "pg_boris",
     "clip": "/Game/ParagonBoris/Characters/Heroes/Boris/Animations/RMB.RMB",
     "fxGroup": "Swipe"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_boris_q": {
@@ -5387,6 +6084,11 @@
     "hero": "pg_boris",
     "clip": "/Game/ParagonBoris/Characters/Heroes/Boris/Animations/Q_Tracker_Ability_Success.Q_Tracker_Ability_Success",
     "fxGroup": "Pull"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_boris_e": {
@@ -5447,6 +6149,11 @@
     "hero": "pg_boris",
     "clip": "/Game/ParagonBoris/Characters/Heroes/Boris/Animations/E_Inject_Ability.E_Inject_Ability",
     "fxGroup": "Forage"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_boris_r": {
@@ -5505,6 +6212,27 @@
     "hero": "pg_boris",
     "clip": "/Game/ParagonBoris/Characters/Heroes/Boris/Animations/Ultimate.Ultimate",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_boris_passive": {
@@ -5564,6 +6292,10 @@
    "paragon": {
     "hero": "pg_boris",
     "kind": "lifesteal"
+   },
+   "aura15": {
+    "aura": "physicalLifesteal",
+    "label": "Lv 15 aura: party 5% physical lifesteal"
    }
   },
   "pg_riktor_rmb": {
@@ -5632,6 +6364,11 @@
     "hero": "pg_riktor",
     "clip": "/Game/ParagonRiktor/Characters/Heroes/Riktor/Animations/Ability_Hook_Cast.Ability_Hook_Cast",
     "fxGroup": "Hook"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_riktor_q": {
@@ -5700,6 +6437,11 @@
     "hero": "pg_riktor",
     "clip": "/Game/ParagonRiktor/Characters/Heroes/Riktor/Animations/Ability_ShockingPunch.Ability_ShockingPunch",
     "fxGroup": "ShockingPunch"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_riktor_e": {
@@ -5768,6 +6510,11 @@
     "hero": "pg_riktor",
     "clip": "/Game/ParagonRiktor/Characters/Heroes/Riktor/Animations/Ability_Lockdown.Ability_Lockdown",
     "fxGroup": "ShockingGround"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "pulse"
    }
   },
   "pg_riktor_r": {
@@ -5836,6 +6583,27 @@
     "hero": "pg_riktor",
     "clip": "/Game/ParagonRiktor/Characters/Heroes/Riktor/Animations/Ability_Ultimate.Ability_Ultimate",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_riktor_passive": {
@@ -5895,6 +6663,10 @@
    "paragon": {
     "hero": "pg_riktor",
     "kind": "guard"
+   },
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
    }
   },
   "pg_sparrow_rmb": {
@@ -5953,6 +6725,11 @@
     "hero": "pg_sparrow",
     "clip": "/Game/ParagonSparrow/Characters/Heroes/Sparrow/Animations/RMB_Fire.RMB_Fire",
     "fxGroup": "DrawABead"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_sparrow_q": {
@@ -6021,6 +6798,11 @@
     "hero": "pg_sparrow",
     "clip": "/Game/ParagonSparrow/Characters/Heroes/Sparrow/Animations/Q_Ability.Q_Ability",
     "fxGroup": "RainOfArrows"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_sparrow_e": {
@@ -6081,6 +6863,11 @@
     "hero": "pg_sparrow",
     "clip": "/Game/ParagonSparrow/Characters/Heroes/Sparrow/Animations/R_Ability_Med_Fire.R_Ability_Med_Fire",
     "fxGroup": "Primary"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_sparrow_r": {
@@ -6139,6 +6926,29 @@
     "hero": "pg_sparrow",
     "clip": "/Game/ParagonSparrow/Characters/Heroes/Sparrow/Animations/R_Ability_Fast_Fire.R_Ability_Fast_Fire",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_sparrow_passive": {
@@ -6198,6 +7008,10 @@
    "paragon": {
     "hero": "pg_sparrow",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
    }
   },
   "pg_twinblast_rmb": {
@@ -6258,6 +7072,11 @@
     "hero": "pg_twinblast",
     "clip": "/Game/ParagonTwinblast/Characters/Heroes/TwinBlast/Animations/Ability_NitroV2.Ability_NitroV2",
     "fxGroup": "Nitro"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_twinblast_q": {
@@ -6326,6 +7145,11 @@
     "hero": "pg_twinblast",
     "clip": "/Game/ParagonTwinblast/Characters/Heroes/TwinBlast/Animations/Ability_VortexGrenade_Fire.Ability_VortexGrenade_Fire",
     "fxGroup": "VortexGrenade"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_twinblast_e": {
@@ -6384,6 +7208,11 @@
     "hero": "pg_twinblast",
     "clip": "/Game/ParagonTwinblast/Characters/Heroes/TwinBlast/Animations/Ability_ChargeBlast_Fire.Ability_ChargeBlast_Fire",
     "fxGroup": "Primary"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_twinblast_r": {
@@ -6442,6 +7271,29 @@
     "hero": "pg_twinblast",
     "clip": "/Game/ParagonTwinblast/Characters/Heroes/TwinBlast/Animations/Ability_Ultimate_Fire.Ability_Ultimate_Fire",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_twinblast_passive": {
@@ -6501,6 +7353,10 @@
    "paragon": {
     "hero": "pg_twinblast",
     "kind": "frenzy"
+   },
+   "aura15": {
+    "aura": "attackSpeed",
+    "label": "Lv 15 aura: party +30% attack speed"
    }
   },
   "pg_murdock_rmb": {
@@ -6559,6 +7415,11 @@
     "hero": "pg_murdock",
     "clip": "/Game/ParagonMurdock/Characters/Heroes/Murdock/Animations/SpreadShot.SpreadShot",
     "fxGroup": "SpreadShot"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_murdock_q": {
@@ -6627,6 +7488,11 @@
     "hero": "pg_murdock",
     "clip": "/Game/ParagonMurdock/Characters/Heroes/Murdock/Animations/TazerTrap.TazerTrap",
     "fxGroup": "TazerTrap"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_murdock_e": {
@@ -6687,6 +7553,11 @@
     "hero": "pg_murdock",
     "clip": "/Game/ParagonMurdock/Characters/Heroes/Murdock/Animations/Shield.Shield",
     "fxGroup": "GunShield"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_murdock_r": {
@@ -6706,7 +7577,7 @@
     "energyCost": 40,
     "cooldown": 80,
     "castTime": 0,
-    "range": 2200,
+    "range": 1900,
     "radius": 90,
     "duration": 0
    },
@@ -6745,6 +7616,29 @@
     "hero": "pg_murdock",
     "clip": "/Game/ParagonMurdock/Characters/Heroes/Murdock/Animations/TheEleven.TheEleven",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_murdock_passive": {
@@ -6804,6 +7698,10 @@
    "paragon": {
     "hero": "pg_murdock",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
    }
   },
   "pg_revenant_rmb": {
@@ -6862,6 +7760,11 @@
     "hero": "pg_revenant",
     "clip": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/RMB.RMB",
     "fxGroup": "Primary"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_revenant_q": {
@@ -6922,6 +7825,11 @@
     "hero": "pg_revenant",
     "clip": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/Q_Ability.Q_Ability",
     "fxGroup": "Mark"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_revenant_e": {
@@ -6990,6 +7898,11 @@
     "hero": "pg_revenant",
     "clip": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/E_Ability.E_Ability",
     "fxGroup": "Obliterate"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_revenant_r": {
@@ -7048,6 +7961,29 @@
     "hero": "pg_revenant",
     "clip": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/R_Ability.R_Ability",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_revenant_passive": {
@@ -7107,6 +8043,10 @@
    "paragon": {
     "hero": "pg_revenant",
     "kind": "lifesteal"
+   },
+   "aura15": {
+    "aura": "physicalLifesteal",
+    "label": "Lv 15 aura: party 5% physical lifesteal"
    }
   },
   "pg_wraith_rmb": {
@@ -7165,6 +8105,11 @@
     "hero": "pg_wraith",
     "clip": "/Game/ParagonWraith/Characters/Heroes/Wraith/Animations/Ability_RMB_Loop.Ability_RMB_Loop",
     "fxGroup": "ScopedShot"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_wraith_q": {
@@ -7233,6 +8178,11 @@
     "hero": "pg_wraith",
     "clip": "/Game/ParagonWraith/Characters/Heroes/Wraith/Animations/Ability_Q_Fire.Ability_Q_Fire",
     "fxGroup": "Drone"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_wraith_e": {
@@ -7293,6 +8243,11 @@
     "hero": "pg_wraith",
     "clip": "/Game/ParagonWraith/Characters/Heroes/Wraith/Animations/Ability_E.Ability_E",
     "fxGroup": "TeleportTarget"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_wraith_r": {
@@ -7312,7 +8267,7 @@
     "energyCost": 40,
     "cooldown": 80,
     "castTime": 0,
-    "range": 2400,
+    "range": 2000,
     "radius": 60,
     "duration": 0
    },
@@ -7351,6 +8306,29 @@
     "hero": "pg_wraith",
     "clip": "/Game/ParagonWraith/Characters/Heroes/Wraith/Animations/Ability_R.Ability_R",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_wraith_passive": {
@@ -7410,6 +8388,10 @@
    "paragon": {
     "hero": "pg_wraith",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
    }
   },
   "pg_grim_rmb": {
@@ -7468,6 +8450,11 @@
     "hero": "pg_grim",
     "clip": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Ability_Deathbolt_Fire.Ability_Deathbolt_Fire",
     "fxGroup": "BFG"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_grim_q": {
@@ -7536,6 +8523,11 @@
     "hero": "pg_grim",
     "clip": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Ability_SapZap_Fire.Ability_SapZap_Fire",
     "fxGroup": "SlowOnHit"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_grim_e": {
@@ -7596,6 +8588,11 @@
     "hero": "pg_grim",
     "clip": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Ability_Q_Deploy_Fire.Ability_Q_Deploy_Fire",
     "fxGroup": "EnergyShield"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_grim_r": {
@@ -7654,6 +8651,29 @@
     "hero": "pg_grim",
     "clip": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Ability_R_Fire.Ability_R_Fire",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_grim_passive": {
@@ -7713,6 +8733,10 @@
    "paragon": {
     "hero": "pg_grim",
     "kind": "guard"
+   },
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
    }
   },
   "pg_drongo_rmb": {
@@ -7771,6 +8795,11 @@
     "hero": "pg_drongo",
     "clip": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Animations/Ability_Boomerang_Throw.Ability_Boomerang_Throw",
     "fxGroup": "Boomerang"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_drongo_q": {
@@ -7829,6 +8858,11 @@
     "hero": "pg_drongo",
     "clip": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Animations/Ability_Grenade_Throw.Ability_Grenade_Throw",
     "fxGroup": "Grenade"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_drongo_e": {
@@ -7889,6 +8923,11 @@
     "hero": "pg_drongo",
     "clip": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Animations/Ability_DrongoRounds.Ability_DrongoRounds",
     "fxGroup": "Shards"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_drongo_r": {
@@ -7947,6 +8986,29 @@
     "hero": "pg_drongo",
     "clip": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Animations/Ability_BazookaFire.Ability_BazookaFire",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_drongo_passive": {
@@ -8006,6 +9068,10 @@
    "paragon": {
     "hero": "pg_drongo",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "crit",
+    "label": "Lv 15 aura: party +5% critical chance"
    }
   },
   "pg_gideon_rmb": {
@@ -8064,6 +9130,11 @@
     "hero": "pg_gideon",
     "clip": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/CosmicRift_Execute.CosmicRift_Execute",
     "fxGroup": "Meteor"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_gideon_q": {
@@ -8132,6 +9203,11 @@
     "hero": "pg_gideon",
     "clip": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/Burden.Burden",
     "fxGroup": "Burden"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_gideon_e": {
@@ -8192,6 +9268,11 @@
     "hero": "pg_gideon",
     "clip": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/Torn_Space.Torn_Space",
     "fxGroup": "Portal"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_gideon_r": {
@@ -8260,6 +9341,29 @@
     "hero": "pg_gideon",
     "clip": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/BlackHole_Loop.BlackHole_Loop",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_gideon_passive": {
@@ -8319,6 +9423,10 @@
    "paragon": {
     "hero": "pg_gideon",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
    }
   },
   "pg_howitzer_rmb": {
@@ -8377,6 +9485,11 @@
     "hero": "pg_howitzer",
     "clip": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/Missile_Swarm_Fire.Missile_Swarm_Fire",
     "fxGroup": "MissileSwarm"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_howitzer_q": {
@@ -8445,6 +9558,11 @@
     "hero": "pg_howitzer",
     "clip": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/Det_Charge_Fire.Det_Charge_Fire",
     "fxGroup": "DetCharge"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_howitzer_e": {
@@ -8513,6 +9631,11 @@
     "hero": "pg_howitzer",
     "clip": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/Secondary_Fire.Secondary_Fire",
     "fxGroup": "SlowGrenade"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_howitzer_r": {
@@ -8571,6 +9694,29 @@
     "hero": "pg_howitzer",
     "clip": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/LRM_Fire_V2.LRM_Fire_V2",
     "fxGroup": "LRM"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_howitzer_passive": {
@@ -8630,6 +9776,10 @@
    "paragon": {
     "hero": "pg_howitzer",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
    }
   },
   "pg_iggy_rmb": {
@@ -8688,6 +9838,11 @@
     "hero": "pg_iggy",
     "clip": "/Game/ParagonIggyScorch/Characters/Heroes/IggyScorch/Animations/RMB_Ability.RMB_Ability",
     "fxGroup": "Primary"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_iggy_q": {
@@ -8746,6 +9901,11 @@
     "hero": "pg_iggy",
     "clip": "/Game/ParagonIggyScorch/Characters/Heroes/IggyScorch/Animations/Q_Ability_Throw.Q_Ability_Throw",
     "fxGroup": "Turret"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "pulse"
    }
   },
   "pg_iggy_e": {
@@ -8814,6 +9974,11 @@
     "hero": "pg_iggy",
     "clip": "/Game/ParagonIggyScorch/Characters/Heroes/IggyScorch/Animations/E_Ability.E_Ability",
     "fxGroup": "OilTrail"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_iggy_r": {
@@ -8872,6 +10037,27 @@
     "hero": "pg_iggy",
     "clip": "/Game/ParagonIggyScorch/Characters/Heroes/IggyScorch/Animations/IggyScorch_Ultimate.IggyScorch_Ultimate",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_iggy_passive": {
@@ -8931,6 +10117,10 @@
    "paragon": {
     "hero": "pg_iggy",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
    }
   },
   "pg_belica_rmb": {
@@ -8999,6 +10189,11 @@
     "hero": "pg_belica",
     "clip": "/Game/ParagonLtBelica/Characters/Heroes/Belica/Animations/RMB.RMB",
     "fxGroup": "TeslaConduit"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_belica_q": {
@@ -9057,6 +10252,11 @@
     "hero": "pg_belica",
     "clip": "/Game/ParagonLtBelica/Characters/Heroes/Belica/Animations/Q_Ability.Q_Ability",
     "fxGroup": "ManaBomb"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_belica_e": {
@@ -9125,6 +10325,11 @@
     "hero": "pg_belica",
     "clip": "/Game/ParagonLtBelica/Characters/Heroes/Belica/Animations/E_Ability.E_Ability",
     "fxGroup": "EruptionBeam"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_belica_r": {
@@ -9193,6 +10398,29 @@
     "hero": "pg_belica",
     "clip": "/Game/ParagonLtBelica/Characters/Heroes/Belica/Animations/R_Ability.R_Ability",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_belica_passive": {
@@ -9252,6 +10480,10 @@
    "paragon": {
     "hero": "pg_belica",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
    }
   },
   "pg_morigesh_rmb": {
@@ -9320,6 +10552,11 @@
     "hero": "pg_morigesh",
     "clip": "/Game/ParagonMorigesh/Characters/Heroes/Morigesh/Animations/Ability_RMB.Ability_RMB",
     "fxGroup": "SkillshotAOE"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_morigesh_q": {
@@ -9380,6 +10617,11 @@
     "hero": "pg_morigesh",
     "clip": "/Game/ParagonMorigesh/Characters/Heroes/Morigesh/Animations/Ability_Q.Ability_Q",
     "fxGroup": "StabDoll"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_morigesh_e": {
@@ -9438,6 +10680,11 @@
     "hero": "pg_morigesh",
     "clip": "/Game/ParagonMorigesh/Characters/Heroes/Morigesh/Animations/Ability_E.Ability_E",
     "fxGroup": "LifeDrain"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "hit"
    }
   },
   "pg_morigesh_r": {
@@ -9496,6 +10743,29 @@
     "hero": "pg_morigesh",
     "clip": "/Game/ParagonMorigesh/Characters/Heroes/Morigesh/Animations/Ability_R.Ability_R",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "dot",
+    "label": "Lv 15: +burn for 40% of the hit over 4s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_morigesh_passive": {
@@ -9555,6 +10825,10 @@
    "paragon": {
     "hero": "pg_morigesh",
     "kind": "lifesteal"
+   },
+   "aura15": {
+    "aura": "magicLifesteal",
+    "label": "Lv 15 aura: party 5% magic lifesteal"
    }
   },
   "pg_gadget_rmb": {
@@ -9623,6 +10897,11 @@
     "hero": "pg_gadget",
     "clip": "/Game/ParagonGadget/Characters/Heroes/Gadget/Animations/Throw_Ready.Throw_Ready",
     "fxGroup": ""
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_gadget_q": {
@@ -9681,6 +10960,11 @@
     "hero": "pg_gadget",
     "clip": "/Game/ParagonGadget/Characters/Heroes/Gadget/Animations/Ability_Q.Ability_Q",
     "fxGroup": ""
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_gadget_e": {
@@ -9741,6 +11025,11 @@
     "hero": "pg_gadget",
     "clip": "/Game/ParagonGadget/Characters/Heroes/Gadget/Animations/Cast.Cast",
     "fxGroup": ""
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_gadget_r": {
@@ -9799,6 +11088,29 @@
     "hero": "pg_gadget",
     "clip": "/Game/ParagonGadget/Characters/Heroes/Gadget/Animations/Cast.Cast",
     "fxGroup": ""
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_gadget_passive": {
@@ -9858,6 +11170,10 @@
    "paragon": {
     "hero": "pg_gadget",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
    }
   },
   "pg_zinx_rmb": {
@@ -9916,6 +11232,11 @@
     "hero": "pg_zinx",
     "clip": "/Game/ParagonZinx/Characters/Heroes/Zinx/Animations/Ability_RMB.Ability_RMB",
     "fxGroup": "HealShot"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_zinx_q": {
@@ -9984,6 +11305,11 @@
     "hero": "pg_zinx",
     "clip": "/Game/ParagonZinx/Characters/Heroes/Zinx/Animations/Ability_DoT.Ability_DoT",
     "fxGroup": "DotShot"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_zinx_e": {
@@ -10052,6 +11378,11 @@
     "hero": "pg_zinx",
     "clip": "/Game/ParagonZinx/Characters/Heroes/Zinx/Animations/Ability_LMB.Ability_LMB",
     "fxGroup": "StunShot"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_zinx_r": {
@@ -10110,6 +11441,27 @@
     "hero": "pg_zinx",
     "clip": "/Game/ParagonZinx/Characters/Heroes/Zinx/Animations/Ability_Ultimate.Ability_Ultimate",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Apotheosis",
+    "text": "Allies within 9 m also gain +30 armor for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "armor": 30
+      }
+     }
+    ]
    }
   },
   "pg_zinx_passive": {
@@ -10169,6 +11521,10 @@
    "paragon": {
     "hero": "pg_zinx",
     "kind": "haste"
+   },
+   "aura15": {
+    "aura": "aoeResist",
+    "label": "Lv 15 aura: party 15% chance to resist area damage"
    }
   },
   "pg_fey_rmb": {
@@ -10237,6 +11593,11 @@
     "hero": "pg_fey",
     "clip": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Ability_RMB.Ability_RMB",
     "fxGroup": "Nettles"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_fey_q": {
@@ -10305,6 +11666,11 @@
     "hero": "pg_fey",
     "clip": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Ability_Q.Ability_Q",
     "fxGroup": "Brambles"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_fey_e": {
@@ -10363,6 +11729,11 @@
     "hero": "pg_fey",
     "clip": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Ability_E.Ability_E",
     "fxGroup": "Growth"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_fey_r": {
@@ -10431,6 +11802,29 @@
     "hero": "pg_fey",
     "clip": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Ability_R.Ability_R",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_fey_passive": {
@@ -10490,6 +11884,10 @@
    "paragon": {
     "hero": "pg_fey",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
    }
   },
   "pg_muriel_rmb": {
@@ -10549,6 +11947,11 @@
     "hero": "pg_muriel",
     "clip": "/Game/ParagonMuriel/Characters/Heroes/Muriel/Animations/LifeLock_Fire.LifeLock_Fire",
     "fxGroup": "LifeLock"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_muriel_q": {
@@ -10617,6 +12020,11 @@
     "hero": "pg_muriel",
     "clip": "/Game/ParagonMuriel/Characters/Heroes/Muriel/Animations/ConsecratedGround_Cast.ConsecratedGround_Cast",
     "fxGroup": "ConsGround"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
    }
   },
   "pg_muriel_e": {
@@ -10677,6 +12085,11 @@
     "hero": "pg_muriel",
     "clip": "/Game/ParagonMuriel/Characters/Heroes/Muriel/Animations/Boots.Boots",
     "fxGroup": "Boots"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_muriel_r": {
@@ -10736,6 +12149,27 @@
     "hero": "pg_muriel",
     "clip": "/Game/ParagonMuriel/Characters/Heroes/Muriel/Animations/Ultimate_Flare.Ultimate_Flare",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Apotheosis",
+    "text": "Allies within 9 m also gain +30 armor for 8 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 900,
+      "duration": 8,
+      "stats": {
+       "armor": 30
+      }
+     }
+    ]
    }
   },
   "pg_muriel_passive": {
@@ -10795,6 +12229,10 @@
    "paragon": {
     "hero": "pg_muriel",
     "kind": "guard"
+   },
+   "aura15": {
+    "aura": "armor",
+    "label": "Lv 15 aura: party +15 armour"
    }
   },
   "pg_narbash_rmb": {
@@ -10863,6 +12301,11 @@
     "hero": "pg_narbash",
     "clip": "/Game/ParagonNarbash/Characters/Heroes/Narbash/Animations/RMB_Ability_Throw.RMB_Ability_Throw",
     "fxGroup": "Throw"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_narbash_q": {
@@ -10921,6 +12364,11 @@
     "hero": "pg_narbash",
     "clip": "/Game/ParagonNarbash/Characters/Heroes/Narbash/Animations/Q_Ability_InPlace.Q_Ability_InPlace",
     "fxGroup": "Shield"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_narbash_e": {
@@ -10981,6 +12429,11 @@
     "hero": "pg_narbash",
     "clip": "/Game/ParagonNarbash/Characters/Heroes/Narbash/Animations/E_ability_repeat.E_ability_repeat",
     "fxGroup": "Dash"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_narbash_r": {
@@ -11050,6 +12503,27 @@
     "hero": "pg_narbash",
     "clip": "/Game/ParagonNarbash/Characters/Heroes/Narbash/Animations/R_Ability.R_Ability",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Overwhelm",
+    "text": "You and allies within 7 m gain +25% attack speed for 6 s.",
+    "center": "self",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "partyBuff",
+      "radius": 700,
+      "duration": 6,
+      "stats": {
+       "attackSpeed": 25
+      }
+     }
+    ]
    }
   },
   "pg_narbash_passive": {
@@ -11109,6 +12583,10 @@
    "paragon": {
     "hero": "pg_narbash",
     "kind": "frenzy"
+   },
+   "aura15": {
+    "aura": "attackSpeed",
+    "label": "Lv 15 aura: party +30% attack speed"
    }
   },
   "pg_phase_rmb": {
@@ -11168,6 +12646,11 @@
     "hero": "pg_phase",
     "clip": "/Game/ParagonPhase/Characters/Heroes/Phase/Animations/RMB_Throw.RMB_Throw",
     "fxGroup": "Link"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_phase_q": {
@@ -11226,6 +12709,11 @@
     "hero": "pg_phase",
     "clip": "/Game/ParagonPhase/Characters/Heroes/Phase/Animations/Ability_Q.Ability_Q",
     "fxGroup": "Beam"
+   },
+   "level15": {
+    "bonus": "damageAmp",
+    "label": "Lv 15: +target takes 12% more damage for 5s",
+    "trigger": "hit"
    }
   },
   "pg_phase_e": {
@@ -11294,6 +12782,11 @@
     "hero": "pg_phase",
     "clip": "/Game/ParagonPhase/Characters/Heroes/Phase/Animations/Ability_E.Ability_E",
     "fxGroup": "Flash"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "pulse"
    }
   },
   "pg_phase_r": {
@@ -11362,6 +12855,29 @@
     "hero": "pg_phase",
     "clip": "/Game/ParagonPhase/Characters/Heroes/Phase/Animations/R_Ability_Loop.R_Ability_Loop",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "pulse"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_phase_passive": {
@@ -11421,6 +12937,10 @@
    "paragon": {
     "hero": "pg_phase",
     "kind": "haste"
+   },
+   "aura15": {
+    "aura": "aoeResist",
+    "label": "Lv 15 aura: party 15% chance to resist area damage"
    }
   },
   "pg_dekker_rmb": {
@@ -11489,6 +13009,11 @@
     "hero": "pg_dekker",
     "clip": "/Game/ParagonDekker/Characters/Heroes/Dekker/Animations/Ability_RMB_V2.Ability_RMB_V2",
     "fxGroup": "StasisBomb"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_dekker_q": {
@@ -11557,6 +13082,11 @@
     "hero": "pg_dekker",
     "clip": "/Game/ParagonDekker/Characters/Heroes/Dekker/Animations/Q_Ability.Q_Ability",
     "fxGroup": "SlowField"
+   },
+   "level15": {
+    "bonus": "stun",
+    "label": "Lv 15: +0.75s stun",
+    "trigger": "hit"
    }
   },
   "pg_dekker_e": {
@@ -11617,6 +13147,11 @@
     "hero": "pg_dekker",
     "clip": "/Game/ParagonDekker/Characters/Heroes/Dekker/Animations/E_Ability.E_Ability",
     "fxGroup": "RocketBoots"
+   },
+   "level15": {
+    "bonus": "purge",
+    "label": "Lv 15: +purge the target's buffs",
+    "trigger": "pulse"
    }
   },
   "pg_dekker_r": {
@@ -11685,6 +13220,29 @@
     "hero": "pg_dekker",
     "clip": "/Game/ParagonDekker/Characters/Heroes/Dekker/Animations/R_Ability.R_Ability",
     "fxGroup": "Ultimate"
+   },
+   "level15": {
+    "bonus": "vulnerability",
+    "label": "Lv 15: +Vulnerability: ignore 20% of the target's defences for 5s",
+    "trigger": "hit"
+   },
+   "ultimateUpgrade": {
+    "name": "Shatterpoint",
+    "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+    "center": "target",
+    "delay": 0.0,
+    "effects": [
+     {
+      "type": "slow",
+      "radius": 450,
+      "duration": 3
+     },
+     {
+      "type": "armorBreak",
+      "radius": 450,
+      "duration": 5
+     }
+    ]
    }
   },
   "pg_dekker_passive": {
@@ -11744,6 +13302,10 @@
    "paragon": {
     "hero": "pg_dekker",
     "kind": "power"
+   },
+   "aura15": {
+    "aura": "magicResist",
+    "label": "Lv 15 aura: party +15 magic resist"
    }
   }
  },
@@ -18437,6 +19999,963 @@
    "passive": "power"
   }
  },
+ "audio": {
+  "pg_greystone_rmb": {
+   "name": "Leap Smash",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "pg_greystone_q": {
+   "name": "Clear a Path",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_greystone_e": {
+   "name": "Deflect",
+   "element": "earth",
+   "kind": "guard"
+  },
+  "pg_greystone_r": {
+   "name": "Hard to Kill",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "pg_greystone_passive": {
+   "name": "Stone Oath",
+   "element": "earth",
+   "kind": "passive"
+  },
+  "pg_aurora_rmb": {
+   "name": "Glacial Charge",
+   "element": "frost",
+   "kind": "buff"
+  },
+  "pg_aurora_q": {
+   "name": "Hoarfrost",
+   "element": "frost",
+   "kind": "spell"
+  },
+  "pg_aurora_e": {
+   "name": "Frozen Simulacrum",
+   "element": "frost",
+   "kind": "buff"
+  },
+  "pg_aurora_r": {
+   "name": "Cryoseism",
+   "element": "frost",
+   "kind": "spell"
+  },
+  "pg_aurora_passive": {
+   "name": "Winter's Edge",
+   "element": "frost",
+   "kind": "passive"
+  },
+  "pg_crunch_rmb": {
+   "name": "Dashing Cross",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_crunch_q": {
+   "name": "Uppercut",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_crunch_e": {
+   "name": "Gut Punch",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_crunch_r": {
+   "name": "Hook Empowered",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_crunch_passive": {
+   "name": "Pit Fighter",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_fengmao_rmb": {
+   "name": "Dash Strike",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_fengmao_q": {
+   "name": "Tranquility",
+   "element": "arcane",
+   "kind": "guard"
+  },
+  "pg_fengmao_e": {
+   "name": "Slowing Strike",
+   "element": "frost",
+   "kind": "spell"
+  },
+  "pg_fengmao_r": {
+   "name": "Blade Rush",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_fengmao_passive": {
+   "name": "Ronin's Resolve",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_grux_rmb": {
+   "name": "Double Pain",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_grux_q": {
+   "name": "Stampede",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "pg_grux_e": {
+   "name": "Rippling Smash",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "pg_grux_r": {
+   "name": "Warlord's Challenge",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_grux_passive": {
+   "name": "Thick Hide",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_steel_rmb": {
+   "name": "Shield Bash",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_steel_q": {
+   "name": "Cow Catcher",
+   "element": "physical",
+   "kind": "buff"
+  },
+  "pg_steel_e": {
+   "name": "Shield Wall",
+   "element": "holy",
+   "kind": "guard"
+  },
+  "pg_steel_r": {
+   "name": "Ground Smash",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "pg_steel_passive": {
+   "name": "Ability Armor",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_terra_rmb": {
+   "name": "Shield Charge",
+   "element": "earth",
+   "kind": "buff"
+  },
+  "pg_terra_q": {
+   "name": "Double Sweep",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_terra_e": {
+   "name": "Balance",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "pg_terra_r": {
+   "name": "Wrath of the Mountain",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "pg_terra_passive": {
+   "name": "Stone Skin",
+   "element": "earth",
+   "kind": "passive"
+  },
+  "pg_sevarog_rmb": {
+   "name": "Soul Siphon",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_sevarog_q": {
+   "name": "Relentless",
+   "element": "shadow",
+   "kind": "buff"
+  },
+  "pg_sevarog_e": {
+   "name": "Stage of Harvest",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_sevarog_r": {
+   "name": "Subjugate",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_sevarog_passive": {
+   "name": "Soul Eater",
+   "element": "shadow",
+   "kind": "passive"
+  },
+  "pg_rampage_rmb": {
+   "name": "Ground Smash",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "pg_rampage_q": {
+   "name": "Rip and Toss",
+   "element": "earth",
+   "kind": "spell"
+  },
+  "pg_rampage_e": {
+   "name": "Energize",
+   "element": "nature",
+   "kind": "buff"
+  },
+  "pg_rampage_r": {
+   "name": "Enrage",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_rampage_passive": {
+   "name": "King of the Jungle",
+   "element": "earth",
+   "kind": "passive"
+  },
+  "pg_kwang_rmb": {
+   "name": "Heaven's Bolt",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "pg_kwang_q": {
+   "name": "Sword of Light",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "pg_kwang_e": {
+   "name": "Hallowed Guard",
+   "element": "holy",
+   "kind": "guard"
+  },
+  "pg_kwang_r": {
+   "name": "Judgement of Heaven",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "pg_kwang_passive": {
+   "name": "Chosen of the Blade",
+   "element": "holy",
+   "kind": "passive"
+  },
+  "pg_kallari_rmb": {
+   "name": "Shadow Strike",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_kallari_q": {
+   "name": "Dagger Throw",
+   "element": "shadow",
+   "kind": "shot",
+   "weapon": "bow"
+  },
+  "pg_kallari_e": {
+   "name": "Marked for Death",
+   "element": "shadow",
+   "kind": "buff"
+  },
+  "pg_kallari_r": {
+   "name": "Death Blossom",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_kallari_passive": {
+   "name": "Shadow Plane",
+   "element": "shadow",
+   "kind": "passive"
+  },
+  "pg_countess_rmb": {
+   "name": "Blink Strike",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_countess_q": {
+   "name": "Blade Siphon",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_countess_e": {
+   "name": "Rolling Dark",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_countess_r": {
+   "name": "Feast",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_countess_passive": {
+   "name": "Bloodthirst",
+   "element": "shadow",
+   "kind": "passive"
+  },
+  "pg_shinbi_rmb": {
+   "name": "Rending Wolves",
+   "element": "physical",
+   "kind": "shot",
+   "weapon": "bow"
+  },
+  "pg_shinbi_q": {
+   "name": "Circling Wolves",
+   "element": "physical",
+   "kind": "spell"
+  },
+  "pg_shinbi_e": {
+   "name": "Wolf Dash",
+   "element": "physical",
+   "kind": "buff"
+  },
+  "pg_shinbi_r": {
+   "name": "Dance of Death",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_shinbi_passive": {
+   "name": "Wolf Pack",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_khaimera_rmb": {
+   "name": "Leap",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_khaimera_q": {
+   "name": "Glaive Throw",
+   "element": "physical",
+   "kind": "shot",
+   "weapon": "bow"
+  },
+  "pg_khaimera_e": {
+   "name": "Bloodlust",
+   "element": "physical",
+   "kind": "buff"
+  },
+  "pg_khaimera_r": {
+   "name": "Dash of Blood",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_khaimera_passive": {
+   "name": "Hunter's Appetite",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_serath_rmb": {
+   "name": "Ascend",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "pg_serath_q": {
+   "name": "Heaven's Fury",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "pg_serath_e": {
+   "name": "Chastise",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "pg_serath_r": {
+   "name": "Retribution",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "pg_serath_passive": {
+   "name": "Wings of Wrath",
+   "element": "holy",
+   "kind": "passive"
+  },
+  "pg_wukong_rmb": {
+   "name": "Staff Poke",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_wukong_q": {
+   "name": "Cloud Flip",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_wukong_e": {
+   "name": "Mischief",
+   "element": "arcane",
+   "kind": "buff"
+  },
+  "pg_wukong_r": {
+   "name": "Staff of Heaven",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_wukong_passive": {
+   "name": "Nimble Trickster",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_yin_rmb": {
+   "name": "Whip Crack",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_yin_q": {
+   "name": "Reaching Pain",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_yin_e": {
+   "name": "Lash Kick",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_yin_r": {
+   "name": "Thousand Cuts",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_yin_passive": {
+   "name": "Blade Rhythm",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_boris_rmb": {
+   "name": "Swipe",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_boris_q": {
+   "name": "Tracker",
+   "element": "nature",
+   "kind": "spell"
+  },
+  "pg_boris_e": {
+   "name": "Inject",
+   "element": "nature",
+   "kind": "buff"
+  },
+  "pg_boris_r": {
+   "name": "Unleashed",
+   "element": "nature",
+   "kind": "spell"
+  },
+  "pg_boris_passive": {
+   "name": "Serum Rush",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_riktor_rmb": {
+   "name": "Hook",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_riktor_q": {
+   "name": "Shocking Punch",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_riktor_e": {
+   "name": "Lockdown",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_riktor_r": {
+   "name": "Electro Chain",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_riktor_passive": {
+   "name": "Warden's Plate",
+   "element": "lightning",
+   "kind": "passive"
+  },
+  "pg_sparrow_rmb": {
+   "name": "Draw a Bead",
+   "element": "physical",
+   "kind": "shot",
+   "weapon": "bow"
+  },
+  "pg_sparrow_q": {
+   "name": "Rain of Arrows",
+   "element": "physical",
+   "kind": "spell"
+  },
+  "pg_sparrow_e": {
+   "name": "Inner Fire",
+   "element": "fire",
+   "kind": "buff"
+  },
+  "pg_sparrow_r": {
+   "name": "Arrow Storm",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_sparrow_passive": {
+   "name": "Keen Eye",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_twinblast_rmb": {
+   "name": "Nitro Dash",
+   "element": "fire",
+   "kind": "buff"
+  },
+  "pg_twinblast_q": {
+   "name": "Vortex Grenade",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_twinblast_e": {
+   "name": "Charge Blast",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_twinblast_r": {
+   "name": "Double Trouble",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_twinblast_passive": {
+   "name": "Showboat",
+   "element": "fire",
+   "kind": "passive"
+  },
+  "pg_murdock_rmb": {
+   "name": "Spread Shot",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_murdock_q": {
+   "name": "Tazer Trap",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_murdock_e": {
+   "name": "Gun Shield",
+   "element": "lightning",
+   "kind": "guard"
+  },
+  "pg_murdock_r": {
+   "name": "The Eleven",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_murdock_passive": {
+   "name": "Marshal's Grit",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_revenant_rmb": {
+   "name": "Haunting Shot",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_revenant_q": {
+   "name": "Mark of the Revenant",
+   "element": "shadow",
+   "kind": "buff"
+  },
+  "pg_revenant_e": {
+   "name": "Obliterate",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_revenant_r": {
+   "name": "Death Sentence",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_revenant_passive": {
+   "name": "Undying Hunt",
+   "element": "shadow",
+   "kind": "passive"
+  },
+  "pg_wraith_rmb": {
+   "name": "Scoped Shot",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_wraith_q": {
+   "name": "Shadow Canon",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_wraith_e": {
+   "name": "Shadow Step",
+   "element": "shadow",
+   "kind": "buff"
+  },
+  "pg_wraith_r": {
+   "name": "Deadeye",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_wraith_passive": {
+   "name": "Patient Hunter",
+   "element": "shadow",
+   "kind": "passive"
+  },
+  "pg_grim_rmb": {
+   "name": "Deathbolt",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_grim_q": {
+   "name": "Sap Zap",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_grim_e": {
+   "name": "Energy Shield",
+   "element": "lightning",
+   "kind": "guard"
+  },
+  "pg_grim_r": {
+   "name": "Overclock",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_grim_passive": {
+   "name": "Scrap Plating",
+   "element": "lightning",
+   "kind": "passive"
+  },
+  "pg_drongo_rmb": {
+   "name": "Boomerang",
+   "element": "physical",
+   "kind": "shot",
+   "weapon": "bow"
+  },
+  "pg_drongo_q": {
+   "name": "Pyro Grenade",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_drongo_e": {
+   "name": "Drongo Rounds",
+   "element": "fire",
+   "kind": "buff"
+  },
+  "pg_drongo_r": {
+   "name": "Bazooka",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_drongo_passive": {
+   "name": "Scavenger",
+   "element": "physical",
+   "kind": "passive"
+  },
+  "pg_gideon_rmb": {
+   "name": "Cosmic Rift",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_gideon_q": {
+   "name": "Burden",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_gideon_e": {
+   "name": "Torn Space",
+   "element": "shadow",
+   "kind": "buff"
+  },
+  "pg_gideon_r": {
+   "name": "Black Hole",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_gideon_passive": {
+   "name": "Cosmic Insight",
+   "element": "shadow",
+   "kind": "passive"
+  },
+  "pg_howitzer_rmb": {
+   "name": "Missile Swarm",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_howitzer_q": {
+   "name": "Det Charge",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_howitzer_e": {
+   "name": "Slow Grenade",
+   "element": "frost",
+   "kind": "spell"
+  },
+  "pg_howitzer_r": {
+   "name": "LRM Barrage",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_howitzer_passive": {
+   "name": "Payload",
+   "element": "fire",
+   "kind": "passive"
+  },
+  "pg_iggy_rmb": {
+   "name": "Scorch Breath",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_iggy_q": {
+   "name": "Flame Turret",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_iggy_e": {
+   "name": "Oil Slick",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_iggy_r": {
+   "name": "Fire Storm",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_iggy_passive": {
+   "name": "Pyromania",
+   "element": "fire",
+   "kind": "passive"
+  },
+  "pg_belica_rmb": {
+   "name": "Neural Disruptor",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_belica_q": {
+   "name": "Mana Bomb",
+   "element": "arcane",
+   "kind": "spell"
+  },
+  "pg_belica_e": {
+   "name": "Eruption Beam",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_belica_r": {
+   "name": "Neural Detonator",
+   "element": "arcane",
+   "kind": "spell"
+  },
+  "pg_belica_passive": {
+   "name": "Mana Siphon",
+   "element": "lightning",
+   "kind": "passive"
+  },
+  "pg_morigesh_rmb": {
+   "name": "Swarm of Insects",
+   "element": "nature",
+   "kind": "spell"
+  },
+  "pg_morigesh_q": {
+   "name": "Stab the Doll",
+   "element": "shadow",
+   "kind": "buff"
+  },
+  "pg_morigesh_e": {
+   "name": "Life Drain",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_morigesh_r": {
+   "name": "Blood Price",
+   "element": "shadow",
+   "kind": "spell"
+  },
+  "pg_morigesh_passive": {
+   "name": "Hexweaver",
+   "element": "nature",
+   "kind": "passive"
+  },
+  "pg_gadget_rmb": {
+   "name": "Power Mine",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_gadget_q": {
+   "name": "Charge Shot",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_gadget_e": {
+   "name": "Overdrive",
+   "element": "arcane",
+   "kind": "buff"
+  },
+  "pg_gadget_r": {
+   "name": "Speed Gate",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_gadget_passive": {
+   "name": "Tinkerer",
+   "element": "lightning",
+   "kind": "passive"
+  },
+  "pg_zinx_rmb": {
+   "name": "Heal Shot",
+   "element": "nature",
+   "kind": "heal"
+  },
+  "pg_zinx_q": {
+   "name": "Toxin Shot",
+   "element": "nature",
+   "kind": "spell"
+  },
+  "pg_zinx_e": {
+   "name": "Stun Shot",
+   "element": "lightning",
+   "kind": "spell"
+  },
+  "pg_zinx_r": {
+   "name": "Mass Revival",
+   "element": "nature",
+   "kind": "heal"
+  },
+  "pg_zinx_passive": {
+   "name": "Field Medicine",
+   "element": "nature",
+   "kind": "passive"
+  },
+  "pg_fey_rmb": {
+   "name": "Nettles",
+   "element": "nature",
+   "kind": "spell"
+  },
+  "pg_fey_q": {
+   "name": "Brambles",
+   "element": "nature",
+   "kind": "spell"
+  },
+  "pg_fey_e": {
+   "name": "Life Bloom",
+   "element": "nature",
+   "kind": "heal"
+  },
+  "pg_fey_r": {
+   "name": "Mother of the Grove",
+   "element": "nature",
+   "kind": "spell"
+  },
+  "pg_fey_passive": {
+   "name": "Verdant Heart",
+   "element": "nature",
+   "kind": "passive"
+  },
+  "pg_muriel_rmb": {
+   "name": "Reversal of Fortune",
+   "element": "holy",
+   "kind": "heal"
+  },
+  "pg_muriel_q": {
+   "name": "Consecrated Ground",
+   "element": "holy",
+   "kind": "spell"
+  },
+  "pg_muriel_e": {
+   "name": "Winged Boots",
+   "element": "holy",
+   "kind": "buff"
+  },
+  "pg_muriel_r": {
+   "name": "Guardian Angel",
+   "element": "holy",
+   "kind": "heal"
+  },
+  "pg_muriel_passive": {
+   "name": "Grace",
+   "element": "holy",
+   "kind": "passive"
+  },
+  "pg_narbash_rmb": {
+   "name": "Lantern Toss",
+   "element": "fire",
+   "kind": "spell"
+  },
+  "pg_narbash_q": {
+   "name": "Healing Drum",
+   "element": "nature",
+   "kind": "heal"
+  },
+  "pg_narbash_e": {
+   "name": "Drum Rush",
+   "element": "nature",
+   "kind": "buff"
+  },
+  "pg_narbash_r": {
+   "name": "Grand Finale",
+   "element": "physical",
+   "kind": "melee"
+  },
+  "pg_narbash_passive": {
+   "name": "Rhythm of War",
+   "element": "fire",
+   "kind": "passive"
+  },
+  "pg_phase_rmb": {
+   "name": "Psionic Link",
+   "element": "arcane",
+   "kind": "heal"
+  },
+  "pg_phase_q": {
+   "name": "Clarity Beam",
+   "element": "arcane",
+   "kind": "spell"
+  },
+  "pg_phase_e": {
+   "name": "Psionic Flash",
+   "element": "arcane",
+   "kind": "spell"
+  },
+  "pg_phase_r": {
+   "name": "Mind Storm",
+   "element": "arcane",
+   "kind": "spell"
+  },
+  "pg_phase_passive": {
+   "name": "Shared Mind",
+   "element": "arcane",
+   "kind": "passive"
+  },
+  "pg_dekker_rmb": {
+   "name": "Stasis Bomb",
+   "element": "arcane",
+   "kind": "spell"
+  },
+  "pg_dekker_q": {
+   "name": "Slow Field",
+   "element": "frost",
+   "kind": "spell"
+  },
+  "pg_dekker_e": {
+   "name": "Rocket Boots",
+   "element": "fire",
+   "kind": "buff"
+  },
+  "pg_dekker_r": {
+   "name": "Containment Fence",
+   "element": "arcane",
+   "kind": "spell"
+  },
+  "pg_dekker_passive": {
+   "name": "Stasis Engineer",
+   "element": "arcane",
+   "kind": "passive"
+  }
+ },
  "roster": {
   "schemaVersion": 1,
   "profile": "CireChampionRoster",
@@ -18446,7 +20965,7 @@
   "source": {
    "path": "Tools/AuthorParagonChampions.py (HEROES)",
    "encoding": "windows-1252",
-   "sha256": "c34b50d757c300fd20d3d586f43ec13b8539d98dc2d267ec588aed41272fe31f"
+   "sha256": "be0aa356f7dd7dc77e943218e98276e37b61083e5fa3050e99248719b8e55435"
   },
   "champions": [
    {

@@ -14,6 +14,8 @@
 #include "CireGame.h"
 #include "CireSignatureSkills.h"
 #include "Animation/AnimSequence.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -41,7 +43,7 @@ struct FPgFixture
     TArray<ACireHero*> SavedHeroes;
     TArray<ACireMonster*> SavedMonsters;
     TArray<AActor*> Actors;
-    FVector Ground = FVector(0, -6100, 3000);
+    FVector Ground = FVector(0, -2100, 3000);
     explicit FPgFixture(ACireGameMode* InMode) : Mode(InMode), SavedClock(Mode->Clock), SavedHeroes(Mode->Heroes), SavedMonsters(Mode->Monsters)
     {
         Mode->Clock = Cires::MatchClock(); Mode->Heroes.Reset(); Mode->Monsters.Reset();
@@ -118,12 +120,23 @@ bool CireParagonChampions::RunSmoke(ACireGameMode* Mode)
         int32 Pooled = 0; for (const FString& S : Knight->Purchasable) Pooled += S.StartsWith(TEXT("pg_")) ? 1 : 0;
         T.Check(Pooled > 0, FString::Printf(TEXT("Paragon tank actives joined the Knight's Skill Shop pool (%d)"), Pooled));
     }
-    // ---- art: every installed hero is on its own Paragon body with its locomotion and ability clips ----
+    // ---- art + casts: a sample per run (loading 38 Paragon bodies would blow the native probe budget); the
+    // gallery (Tools/RunParagonGallery.py) and -CireParagonFullSmoke cover every hero. The sample is fixed (every delivery family).
+    TArray<FString> Sample;
+    if (FParse::Param(FCommandLine::Get(), TEXT("CireParagonFullSmoke"))) Sample = HeroIds();
+    else for (const TCHAR* Id : {TEXT("pg_greystone"), TEXT("pg_sparrow"), TEXT("pg_zinx"), TEXT("pg_gideon"), TEXT("pg_yin")}) if (IsParagon(Id)) Sample.Add(Id);
+    // Data-level art checks for every hero: the binding resolves to the pack mesh.
+    for (const FString& Id : HeroIds())
+    {
+        FString Mesh, Motion; bool bFab = false;
+        T.Check(UCireChampionArt::EffectiveCreatureBinding(Id, Mesh, Motion, bFab) && Motion == TEXT("monster_native") && Mesh.StartsWith(TEXT("/Game/Paragon")), Id + TEXT(": Paragon monster_native binding"));
+    }
     FPgFixture F(Mode);
+
     UWorld* World = Mode->GetWorld();
     const bool bForce = GCireForceTripoChampionArt; GCireForceTripoChampionArt = true;
     int32 Bodies = 0, CastClips = 0;
-    for (const FString& Id : HeroIds())
+    for (const FString& Id : Sample)
     {
         ACireHero* H = F.Hero(0, FVector(-400, 0, 0), Id);
         if (!H) { T.Check(false, Id + TEXT(": spawn")); continue; }
@@ -154,7 +167,7 @@ bool CireParagonChampions::RunSmoke(ACireGameMode* Mode)
     ACireMonster* Dummy = F.Monster(FVector(250, 0, 0));
     ACireMonster* Far = F.Monster(FVector(700, 60, 0));
     int32 Casts = 0;
-    for (const FString& Id : HeroIds())
+    for (const FString& Id : Sample)
     {
         ACireHero* H = F.Hero(0, FVector(-150, 0, 0), Id);
         ACireHero* Ally = F.Hero(0, FVector(-150, 250, 0), Id);
@@ -163,7 +176,10 @@ bool CireParagonChampions::RunSmoke(ACireGameMode* Mode)
         {
             const FCireAbilityDef* D = CireAbilityDB::Find(S);
             if (!D) continue;
-            H->SetActorLocation(F.Ground + FVector(-150, 0, 92)); H->SetActorRotation(FRotator::ZeroRotator);
+            // Targeted skills stand inside their reach of the dummy (at +250); the rest cast from -150.
+            const float Reach = D->Targeting == TEXT("enemy") ? FMath::Clamp(D->Range - 80.f, 120.f, 400.f) : 400.f;
+            H->SetActorLocation(F.Ground + FVector(250.f - Reach, 0, 92)); H->SetActorRotation(FRotator::ZeroRotator);
+
             H->Skills = {S}; H->Cooldowns = {0.f}; H->GlobalCooldown = 0; H->Mana = H->MaxMana; H->Energy = 100; H->Notice.Reset();
             Dummy->Health = Dummy->MaxHealth; Ally->Health = Ally->MaxHealth * .4f; H->Health = H->MaxHealth * .5f;
             const bool bAlly = D->Targeting == TEXT("ally");

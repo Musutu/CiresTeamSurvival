@@ -261,7 +261,7 @@ HEROES = [
               A("q", "Tazer Trap", "circle", "storm", "TazerTrap", "TazerTrap", effect=80, coef=1.0, cd=12, range=900, radius=240, warning=.4, cc=[("stun", 1.2, 0)]),
               A("e", "Gun Shield", "self_buff", "storm", "Shield", "GunShield", effect=35, cd=15, dur=3, buff="pg_guard", section="defensive",
                 text="Deploy the gun shield: take {effect}% less damage for 3s."),
-              A("r", "The Eleven", "pierce", "storm", "TheEleven", "Ultimate", effect=380, coef=3.5, cd=80, range=2200, radius=90, hits=8, style="arcane", speed=5000)],
+              A("r", "The Eleven", "pierce", "storm", "TheEleven", "Ultimate", effect=380, coef=3.5, cd=80, range=1900, radius=90, hits=8, style="arcane", speed=5000)],
          passive=P("Marshal's Grit", "power", 8, "+{effect}% ability damage.")),
     dict(id="pg_revenant", pack="ParagonRevenant", folder="Revenant", name="Revenant", cls="Revenant Gunslinger", roles=["damage"],
          threat="damage", primary="agility", style="blunderbuss", range=1300, race="undead", diff=2,
@@ -281,7 +281,7 @@ HEROES = [
               A("q", "Shadow Canon", "circle", "shadow", "Ability_Q_Fire", "Drone", effect=110, coef=1.4, cd=11, range=1200, radius=280, warning=.4, cc=[("silence", 1, 0)]),
               A("e", "Shadow Step", "dash", "shadow", "Ability_E", "TeleportTarget", cd=10, range=900, buff="pg_empower", buffPct=15, dur=3, section="defensive",
                 text="Blink to the aimed spot; +15% damage for 3s."),
-              A("r", "Deadeye", "pierce", "shadow", "Ability_R", "Ultimate", effect=400, coef=3.6, cd=80, range=2400, radius=60, hits=4, style="arcane", speed=6000)],
+              A("r", "Deadeye", "pierce", "shadow", "Ability_R", "Ultimate", effect=400, coef=3.6, cd=80, range=2000, radius=60, hits=4, style="arcane", speed=6000)],
          passive=P("Patient Hunter", "power", 10, "+{effect}% ability damage.")),
     dict(id="pg_grim", pack="ParagonGRIMexe", folder="GRIM", name="GRIM.exe", cls="Salvage Gunner", roles=["damage"],
          threat="damage", primary="agility", style="blunderbuss", range=1200, race="ether-construct", diff=2,
@@ -533,7 +533,8 @@ def main() -> int:
     base_abilities = json.loads(ABILITIES.read_text(encoding="utf-8"))
     roster_by_id = {c["id"]: c for c in base_roster["champions"]}
     kits = base_abilities["champions"]
-    problems, abilities, champions_kits, recipes, bindings, heroes, roster = [], {}, {}, {}, [], [], []
+    problems, abilities, champions_kits, recipes, bindings, heroes, roster, audio = [], {}, {}, {}, [], [], [], {}
+    base_audio = json.loads((ROOT / "Content/Data/AudioEvents.json").read_text(encoding="utf-8"))
     pool = {"DPS": [], "TANK": [], "HEAL": []}
     for h in HEROES:
         pack = inspect.get(h["pack"], {})
@@ -627,6 +628,31 @@ def main() -> int:
                 "castWhileMoving": o.get("cast", 0) <= 0, "section": section, "effectTags": tags or ["Utility"],
                 "paragon": {"hero": h["id"], "clip": casts.get(aid), "fxGroup": a["fx"]},
             }
+            # Level-15 bonus (scaling-kits), ultimate upgrade (items-v2) and the sound-event row (audio).
+            level_labels = base_abilities["level15Labels"]
+            bonus = ("stun" if any(c[0] == "slow" for c in cc) else "vulnerability" if any(c[0] == "stun" for c in cc) else
+                     "purge" if heal or d in ("self_buff", "dash") else "dot" if a["school"] in ("fire", "poison", "shadow") else "damageAmp")
+            row["level15"] = {"bonus": bonus, "label": "Lv 15: +" + level_labels[bonus],
+                              "trigger": "pulse" if heal or d in ("self_buff", "dash", "self_burst", "storm", "party_heal") else "hit"}
+            if kind == "ultimate":
+                if heal:
+                    row["ultimateUpgrade"] = {"name": "Apotheosis", "text": "Allies within 9 m also gain +30 armor for 8 s.", "center": "self", "delay": 0.0,
+                                              "effects": [{"type": "partyBuff", "radius": 900, "duration": 8, "stats": {"armor": 30}}]}
+                elif d in ("self_burst", "storm") and not o.get("atAim"):
+                    row["ultimateUpgrade"] = {"name": "Overwhelm", "text": "You and allies within 7 m gain +25% attack speed for 6 s.", "center": "self", "delay": 0.0,
+                                              "effects": [{"type": "partyBuff", "radius": 700, "duration": 6, "stats": {"attackSpeed": 25}}]}
+                else:
+                    row["ultimateUpgrade"] = {"name": "Shatterpoint", "text": "Enemies within 4.5 m of the target are also slowed for 3 s and armor-broken for 5 s.",
+                                              "center": "target", "delay": 0.0,
+                                              "effects": [{"type": "slow", "radius": 450, "duration": 3}, {"type": "armorBreak", "radius": 450, "duration": 5}]}
+            elements = base_audio["schools"]
+            audio_kind = ("heal" if heal else "guard" if o.get("buff") == "pg_guard" and d == "self_buff" else "buff" if d in ("self_buff", "dash", "mark") else
+                          "shot" if d in ("projectile", "pierce") and o.get("style") == "arrow" else
+                          "melee" if a["school"] == "physical" and d in ("strike", "lunge", "cone", "self_burst", "leap", "line", "pull") else "spell")
+            audio[aid] = {"name": a["name"], "element": elements.get(a["school"], "arcane"), "kind": audio_kind}
+            if audio_kind == "shot":
+                audio[aid]["weapon"] = "bow"
+
             abilities[aid] = row
             cast_fx, impact_fx = fx_for(pack, a["fx"])
             recipe = {"hero": h["id"], "delivery": d, "fx": {"cast": cast_fx, "impact": impact_fx}}
@@ -655,6 +681,10 @@ def main() -> int:
             "description": p["text"], "effects": [], "champions": [h["id"]], "signatureOf": [h["id"]],
             "scaling": {"component": "potency", "base": 0, "primary": 0, "potency": 0.3, "potencyCap": 30},
             "castWhileMoving": True, "section": "passive", "effectTags": ["Passive"], "paragon": {"hero": h["id"], "kind": p["kind"]}}
+        aura = {"guard": "armor", "lifesteal": "magicLifesteal" if stat == "intelligence" else "physicalLifesteal", "haste": "aoeResist",
+                "frenzy": "attackSpeed", "power": "magicResist" if stat == "intelligence" else "crit"}[p["kind"]]
+        abilities[pid]["aura15"] = {"aura": aura, "label": "Lv 15 aura: " + base_abilities["auraLabels"][aura]}
+        audio[pid] = {"name": p["name"], "element": base_audio["schools"].get(h["kit"][0]["school"], "arcane"), "kind": "passive"}
         recipes[pid] = {"hero": h["id"], "delivery": "passive", "passive": p["kind"]}
         # role template
         template = template_for(h["threat"], stat, is_ranged)
@@ -740,6 +770,8 @@ def main() -> int:
         "champions": champions_kits,
         "poolAdditions": pool,
         "recipes": recipes,
+        "audio": audio,
+
         "roster": {"schemaVersion": 1, "profile": "CireChampionRoster", "engine": "Unreal", "engineVersion": "5.8.3",
                    "statPolicy": "existing_stat_per_point",
                    "source": {"path": "Tools/AuthorParagonChampions.py (HEROES)", "encoding": "windows-1252", "sha256": source_hash},
