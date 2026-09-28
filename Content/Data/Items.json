@@ -1512,6 +1512,54 @@
       ],
       "effect": "Attack path: basic attacks hit harder and cleave 40%.",
       "lore": "It screams on the backswing. The pack answers."
+    },
+    {
+      "id": "phase_shard",
+      "name": "Phase Shard",
+      "tier": "basic",
+      "cost": 260,
+      "stats": {
+        "mana": 150
+      },
+      "tags": [
+        "mana",
+        "blink"
+      ],
+      "effect": "+150 mana. Builds into the Blink Dagger.",
+      "lore": "A splinter of folded space. It hums when you look away."
+    },
+    {
+      "id": "blink_dagger",
+      "name": "Blink Dagger",
+      "tier": "legendary",
+      "cost": 250,
+      "unique": true,
+      "components": [
+        "phase_shard",
+        "bone_dagger"
+      ],
+      "stats": {
+        "primaryStat": 6,
+        "mana": 150
+      },
+      "tags": [
+        "mobility",
+        "active",
+        "blink",
+        "initiation"
+      ],
+      "use": {
+        "kind": "blink",
+        "name": "Blink",
+        "amount": 0,
+        "scaling": 0,
+        "radius": 1200,
+        "duration": 3,
+        "cooldown": 14,
+        "text": "Instantly blink up to 12 m toward the cursor. 14 s cooldown. Damage from an enemy champion disrupts it for 3 s."
+      },
+      "effect": "Active: blink up to 12 m toward the cursor (disrupted for 3 s by champion damage).",
+      "lore": "Stolen from a duelist who was never where you struck."
     }
   ]
 }

@@ -305,8 +305,8 @@ void ACireController::PlayerTick(float Dt) {
     if(Keys.WasPressed(this,TEXT("ToggleLootLog"))&&Interface){Interface->UISettings.bShowLootLog=!Interface->UISettings.bShowLootLog;Interface->UISettings.Save();}
     if(Keys.WasPressed(this,TEXT("ToggleSkillShop")))CireShopUI::ToggleSkillShop(this);
     if(H->bDrafted&&H->Inventory&&H->Offers.IsEmpty()) {
-        for(int32 Index=0;Index<3;++Index)if(Keys.WasPressed(this,CireItems::BeltAction(Index)))H->Inventory->ServerUse(Index,true);
-        for(int32 Index=0;Index<6;++Index)if(Keys.WasPressed(this,CireItems::ItemAction(Index)))H->Inventory->ServerUse(Index,false);
+        for(int32 Index=0;Index<3;++Index)if(Keys.WasPressed(this,CireItems::BeltAction(Index)))H->Inventory->ServerUseAt(Index,true,CursorAim()); // initiation: cursor aim (Blink Dagger)
+        for(int32 Index=0;Index<6;++Index)if(Keys.WasPressed(this,CireItems::ItemAction(Index)))H->Inventory->ServerUseAt(Index,false,CursorAim());
     }
     if(!H->bDrafted&&Interface) {
         if(Keys.WasPressed(this,TEXT("RosterPreviousPage")))Interface->ChangeDraftRosterPage(-1);
@@ -322,7 +322,7 @@ void ACireController::PlayerTick(float Dt) {
         else if(!bShop) {
             // progression-shop: an action-bar slot may hold an active item ("item:<id>").
             const int32 Item=CireItems::ResolveItemSlot(Keys,*H,Slot);
-            if(Item!=INDEX_NONE){if(H->Inventory)H->Inventory->ServerUse(Item,false);continue;}
+            if(Item!=INDEX_NONE){if(H->Inventory)H->Inventory->ServerUseAt(Item,false,CursorAim());continue;} // initiation: cursor aim
             const int32 Skill=CireKeybindings::ResolveSlot(Keys,*H,Slot);if(Skill!=INDEX_NONE)RequestCast(Skill);
         }
     }

@@ -47,6 +47,7 @@
 #include "CireSignatureSkills.h" // new-champions
 #include "CirePets.h" // pets
 #include "CireAbilityExpansion.h" // ability-expansion
+#include "CireInitiation.h" // initiation
 #include "CireVendors.h" // vendors
 #include "CireArenaPortal.h" // arena-portal
 
@@ -137,6 +138,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireKits::RunSmoke(Mode)&&Good; // scaling-kits: primary scaling, inheritance, construct threat, shield block, Mech Tank, level 15, Headshot, Artillery
     Good=CireKitSkills::RunSmoke(Mode)&&Good; // kits-complete: the 63 roster signature skills, potency, heal casts, shield gating, big Bear
     Good=CireAbilityExpansion::RunSmoke(Mode)&&Good; // ability-expansion: the expansion pool (data, shapes, every cast, riders, passives, summons, constructs)
+    Good=CireInitiation::RunSmoke(Mode)&&Good; // initiation: engage spells, Set-up synergy, Blink Dagger
     Good=CirePets::RunSmoke(Mode)&&Good; // pets: companions (summon, follow, stances, commands, threat share, death/revive, scaling, on-foot Huntress)
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }

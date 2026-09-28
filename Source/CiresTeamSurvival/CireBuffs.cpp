@@ -1,6 +1,7 @@
 #include "CireBuffs.h"
 #include "CireKitSkills.h" // kits-complete
 #include "CireAbilityExpansion.h" // ability-expansion
+#include "CireInitiation.h" // initiation
 #include "CireScalingKits.h" // scaling-kits
 #include "CireGame.h"
 #include "CireSkillRuntime.h"
@@ -139,6 +140,7 @@ const TArray<FName>& CireBuffs::KnownIds()
         TEXT("mine_layer"),TEXT("taunting_tumble"),TEXT("shield_tumble"),TEXT("venom_tumble"),TEXT("shadow_dance"),TEXT("evasive_stance")};
     static const TArray<FName> Ids=[]{TArray<FName> Out=BaseIds;for(const FName Id:CireKits::BuffIds())Out.AddUnique(Id); // scaling-kits
         for(const FName Id:CireKitSkills::BuffIds())Out.AddUnique(Id); // kits-complete
-        for(const FName Id:CireAbilityExpansion::BuffIds())Out.AddUnique(Id);return Out;}(); // ability-expansion
+        for(const FName Id:CireAbilityExpansion::BuffIds())Out.AddUnique(Id); // ability-expansion
+        for(const FName Id:CireInitiation::BuffIds())Out.AddUnique(Id);return Out;}(); // initiation
     return Ids;
 }

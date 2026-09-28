@@ -52,14 +52,19 @@ T = {
     "construct": (220, .35, 55, 0, 16, 800, 0, 20, "construct", "construct health"),
     "wall":      (400, 8.0, 45, 0, 18, 700, 220, 8, "shield", "wall health"),
     "barrage":   (70, 1.2, 130, 0, 90, 1000, 600, 0, "damage", "damage per strike"),
+    # initiation (Playtest 6 L): engage spells, longer cooldowns, modest damage (the value is the group CC + Set-up)
+    "vacuum":    (60, 1.0, 70, 0, 22, 900, 420, 0, "damage", "damage"),
+    "charge":    (70, 1.2, 70, 0, 24, 1400, 300, 0, "damage", "damage"),
+    "hook":      (80, 1.3, 60, 0, 18, 1100, 50, 0, "damage", "damage"),
+    "cage":      (40, .8, 80, 0, 26, 900, 400, 0, "damage", "damage"),
 }
-PHYSICAL_ENERGY = {"strike", "leap", "dash", "cone", "nova"}  # physical versions of these spend energy, not mana
-HIT = {"bolt", "pierce", "line", "cone", "circle", "zone", "nova", "chain", "strike", "leap", "dash", "barrage"}
+PHYSICAL_ENERGY = {"strike", "leap", "dash", "cone", "nova", "charge"}  # physical versions of these spend energy, not mana
+HIT = {"bolt", "pierce", "line", "cone", "circle", "zone", "nova", "chain", "strike", "leap", "dash", "barrage", "vacuum", "charge", "hook", "cage"}
 SECTION_OF = {"heal": "defensive", "healZone": "defensive", "barrier": "defensive", "selfBuff": "defensive", "partyBuff": "defensive",
               "wall": "defensive", "summon": "summon", "construct": "construct", "passive": "passive"}
-CATEGORY_OF = {"spell": "Offensive", "attack": "Offensive", "defensive": "Defensive", "control": "Crowd Control", "summon": "Summons",
+CATEGORY_OF = {"initiation": "Initiation", "spell": "Offensive", "attack": "Offensive", "defensive": "Defensive", "control": "Crowd Control", "summon": "Summons",
                "construct": "Constructs", "passive": "Passives", "ultimate": "Ultimates"}
-TARGETING = {"bolt": "aim", "pierce": "aim", "line": "aim", "cone": "aim", "circle": "aim", "zone": "aim", "nova": "self", "chain": "enemy",
+TARGETING = {"vacuum": "aim", "charge": "enemy", "hook": "aim", "cage": "aim", "bolt": "aim", "pierce": "aim", "line": "aim", "cone": "aim", "circle": "aim", "zone": "aim", "nova": "self", "chain": "enemy",
              "strike": "enemy", "leap": "aim", "dash": "aim", "heal": "ally", "healZone": "aim", "barrier": "ally", "selfBuff": "self",
              "partyBuff": "self", "summon": "aim", "construct": "aim", "wall": "aim", "barrage": "aim", "passive": "passive"}
 CC_TYPES = {"stun", "slow", "root", "silence", "taunt", "interrupt"}
@@ -352,7 +357,41 @@ ULTIMATES = [
       vfx={"area": ["P_ky_aquaStorm", 1.3]}, eff=[SLOW(1, .5)], over=dict(effect=50, coef=1.0, radius=520, duration=6), l15="slow", glyph="spiral", tags=["Damage", "Slow"]),
 ]
 
-POOL = SIGNATURES + SUPPORT + SUMMONS + CONSTRUCTS + PASSIVES + ULTIMATES
+# ---- G. Initiation (Playtest 6 L): PvP engage spells. Every one marks its victims Set-up (CireInitiation: the initiator's
+# team deals +15% damage to them, +25% with area follow-ups) and shows a SET UP! callout. Cast times come from
+# feat/casting-rules (CastRules.json); nothing here authors one. Signatures are A-rated, non-swirl systems (recoloured).
+def I(id_, name, delivery, school, types, desc, **kw):
+    rec = kw.pop("rec", {}); rec["setup"] = True
+    over = dict(kw.pop("over", {}))
+    return A(id_, name, delivery, school, types, desc, rec=rec, section="initiation", over=over, **kw)
+INITIATION = [
+    I("tidal_ravage", "Tidal Ravage", "nova", "tide", [TK, D], "Tentacles of the deep burst around you: {effect} damage, enemies within 7m are knocked up and stunned for 1.5s.",
+      vfx={"area": ["Water_Magic_Wall2", 1.2]}, eff=[STUN(1.5)], rec={"knockup": 650, "warning": .3}, over=dict(radius=700, cooldown=30, mana=90, effect=70), l15="vulnerability", glyph="spiral", tags=["Initiation", "Stun", "Set-up"]),
+    I("reverse_polarity", "Reverse Polarity", "nova", "storm", [TK, D], "Enemies within 5.5m are yanked to you and stunned for 1.25s: {effect} damage.",
+      vfx={"area": "Lightning_Magic_Tunder_Circle1"}, eff=[STUN(1.25)], rec={"pull": 1.0, "warning": .25}, over=dict(radius=550, cooldown=28, mana=85), l15="damageAmp", glyph="rune_circle", tags=["Initiation", "Pull", "Stun"]),
+    I("vacuum_rift", "Vacuum Rift", "vacuum", "void", [D, TK], "After 0.5s every enemy in the rift is dragged to its centre: {effect} damage and a 0.6s stun.",
+      vfx={"area": "Dark_Magic_AOE"}, eff=[STUN(.6)], rec={"pullCenter": 1.0, "warning": .5}, l15="vulnerability", glyph="spiral", tags=["Initiation", "Pull", "Stun"]),
+    I("black_hole", "Black Hole", "zone", "void", [D], "A black hole for 3s: {effect} damage per second, enemies are sucked toward its centre and slowed 50%.",
+      vfx={"area": "Dark_Magic_Circle"}, eff=[SLOW(1, .5)], rec={"pullCenter": .3}, over=dict(radius=450, duration=3, cooldown=30, mana=90, effect=40, coef=.8), l15="slow", glyph="orb", tags=["Initiation", "Pull", "Slow"]),
+    I("chronofield", "Chronofield", "circle", "arcane", [D, HL], "Freeze time in a 3.8m circle after 0.5s: enemies inside are stunned for 2s ({effect} damage).",
+      vfx={"area": ["Earth_Spells_Circle", 1.1]}, eff=[STUN(2)], rec={"warning": .5}, over=dict(radius=380, cooldown=32, mana=95, effect=30, coef=.6), l15="vulnerability", glyph="hourglass", tags=["Initiation", "Stun"]),
+    I("warpath_charge", "Warpath Charge", "charge", "physical", [TK, D], "Charge the selected enemy (up to 14m) and slam on arrival: {effect} damage and a 1s stun around you.",
+      vfx={"impact": "Blood_Magic_Explo2"}, eff=[STUN(1)], l15="vulnerability", glyph="horn", tags=["Initiation", "Gap Closer", "Stun"]),
+    I("titanfall_leap", "Titanfall Leap", "leap", "earth", [TK, D], "Leap up to 9m and crash down: {effect} damage, enemies are knocked up and stunned for 1s.",
+      vfx={"impact": "Earth_Spells_Spike3"}, eff=[STUN(1)], rec={"knockup": 500}, over=dict(range=900, radius=380, cooldown=24, mana=0, energy=40), l15="slow", glyph="mountain", tags=["Initiation", "Gap Closer", "Stun"]),
+    I("challengers_roar", "Challenger's Roar", "nova", "earth", [TK], "Roar: enemies within 4m must attack you for 2.5s ({effect} damage).",
+      vfx={"area": "Earth_Magic_Shockwave"}, eff=[TAUNT(2.5)], rec={"warning": .1}, over=dict(radius=400, cooldown=22, mana=0, energy=35, effect=40, coef=.8), l15="stun", glyph="war_cry", tags=["Initiation", "Taunt"]),
+    I("hallowed_cage", "Hallowed Cage", "cage", "holy", [TK, HL], "A ring of holy blades walls in a 4m circle for 3.5s (allies pass): {effect} damage and a 40% slow inside.",
+      vfx={"area": "Light_Magic_Sword_Circle"}, eff=[SLOW(2, .4)], rec={"warning": .2, "cageSeconds": 3.5, "cageSegments": 12}, l15="stun", glyph="square_ward", tags=["Initiation", "Wall", "Slow"]),
+    I("upheaval", "Upheaval", "line", "earth", [TK, D], "Tear the ground up along a 10m line after 0.35s: {effect} damage, enemies are knocked up and stunned for 0.8s.",
+      vfx={"cast": "Earth_Spells_Area_Spike_Line1"}, eff=[STUN(.8)], rec={"warning": .35, "knockup": 700}, over=dict(range=1000, radius=110, cooldown=20, mana=70), l15="vulnerability", glyph="seismic", tags=["Initiation", "Stun"]),
+    I("soul_hook", "Soul Hook", "hook", "shadow", [TK, D], "Throw a spectral hook: the first enemy on the 11m line is dragged to you, stunned 0.5s ({effect} damage).",
+      vfx={"impact": "Shadow_Magic_Hit3"}, eff=[STUN(.5)], l15="healCut", glyph="hook", tags=["Initiation", "Pull", "Stun"]),
+    I("echo_slam", "Echo Slam", "nova", "earth", [TK, D], "Slam the ground: {effect} damage (+20% per extra enemy caught) within 5.5m and a 0.5s stun.",
+      vfx={"area": ["Posion_Magic_AreaWave", 1.1]}, eff=[STUN(.5)], rec={"echo": .2, "warning": .15}, over=dict(radius=550, cooldown=30, mana=90, effect=80, coef=1.3), l15="damageAmp", glyph="seismic", tags=["Initiation", "Stun", "Damage"]),
+]
+
+POOL = SIGNATURES + SUPPORT + SUMMONS + CONSTRUCTS + PASSIVES + ULTIMATES + INITIATION
 
 # ------------------------------------------------------------------------------------------------ Fab VFX picks
 SCHOOL_TO_INV = {"cold": ["frost"], "physical": ["blood", "physical"], "poison": ["poison"], "tide": ["tide"], "void": ["void"], "holy": ["holy"],
@@ -360,7 +399,7 @@ SCHOOL_TO_INV = {"cold": ["frost"], "physical": ["blood", "physical"], "poison":
 SCHOOL_TINT = {"cold": [.45, .8, 1.0], "physical": [.8, .08, .08], "poison": [.5, 1.0, .2], "tide": [.2, .6, 1.0], "void": [.6, .2, 1.0],
                "holy": [1.0, .85, .4], "storm": [.55, .75, 1.0], "shadow": [.45, .3, .8], "earth": [1.0, .6, .25], "arcane": [.5, .6, 1.0],
                "fire": [1.0, .45, .1], "nature": [.4, 1.0, .35]}
-ROLE_FOR = {"bolt": ["projectile", "impact"], "pierce": ["projectile", "impact"], "line": ["cast", "impact"], "cone": ["cast", "impact"],
+ROLE_FOR = {"vacuum": ["area", "impact"], "charge": ["impact", "cast"], "hook": ["impact", "cast"], "cage": ["area", "cast"], "bolt": ["projectile", "impact"], "pierce": ["projectile", "impact"], "line": ["cast", "impact"], "cone": ["cast", "impact"],
             "circle": ["area", "impact"], "zone": ["area"], "nova": ["area", "cast"], "chain": ["impact"], "strike": ["impact"], "leap": ["impact", "area"],
             "dash": ["cast", "impact"], "heal": ["cast"], "healZone": ["area"], "barrier": ["cast"], "selfBuff": ["cast"], "partyBuff": ["cast"],
             "summon": ["cast"], "construct": ["cast"], "wall": ["cast"], "barrage": ["area", "impact"]}
@@ -376,7 +415,8 @@ ALT_GLYPHS = {
     "heal": ["restoring", "heart", "renewal", "seed"], "healZone": ["wellspring", "sanctuary", "renewal"], "barrier": ["dome", "aegis", "shield", "bastion"],
     "selfBuff": ["rhythm", "crown", "helm", "fist"], "partyBuff": ["banner", "horn", "crown", "war_cry"], "summon": ["pack", "guardian", "hunt", "wolf_head"],
     "construct": ["turret", "pylon", "tower", "caltrop", "lantern"], "wall": ["wall", "square_ward", "tower"], "barrage": ["starfall", "meteor", "cataclysm"],
-    "passive": ["constellation", "eye", "crown", "rune_circle", "helm"]}
+    "passive": ["constellation", "eye", "crown", "rune_circle", "helm"],
+    "vacuum": ["spiral", "rune_circle", "hook"], "charge": ["horn", "dash", "hooves"], "hook": ["hook", "chains"], "cage": ["square_ward", "wall", "rune_circle"]}
 ALT_ANY = ["sigil", "rune_circle", "orb", "spiral", "constellation", "eye", "sun", "moon", "crown", "star" ]
 
 
@@ -530,6 +570,11 @@ def assign_champions(rows, base_db):
         # Keep each champion's shop readable: an ability goes to its best-matching champions first, lightly loaded ones win ties.
         cap = 10 if broad else 7
         chosen = sorted(chosen, key=lambda cid: (-affinity[cid].get(row["school"], 0), len(per_champ[cid]), cid))
+        if row.get("section") == "initiation":  # initiation: its own group, sold to every role-matched champion, outside the pool cap
+            row["champions"] = sorted(eligible)
+            for cid in eligible:
+                per_champ[cid].append(row["id"])
+            continue
         roomy = [cid for cid in chosen if len(per_champ[cid]) < MAX_PER_CHAMPION]
         if len(roomy) < 3:  # every row stays purchasable by at least 3 champions
             roomy += [cid for cid in sorted(eligible, key=lambda c: (len(per_champ[c]), c)) if cid not in roomy][: 3 - len(roomy)]
@@ -553,12 +598,25 @@ BUFF_MODIFIERS = {
     "xp_hastened": {"type": "magic", "kind": "buff", "name": "Hastened", "mods": [{"stat": "Move", "value": 20, "unit": "%"}, {"stat": "Attack speed", "value": 20, "unit": "%"}], "line": "Moves and attacks faster."},
     "xp_exposed": {"type": "curse", "name": "Exposed", "mods": [{"stat": "Damage taken", "value": 12, "unit": "%"}], "line": "Takes more damage."},
     "xp_bleeding": {"type": "physical", "name": "Bleeding", "mods": [{"stat": "HP", "value": 0, "unit": ""}], "line": "Bleeding: takes damage over time."},
+    # initiation
+    "xp_setup": {"type": "curse", "name": "Set Up", "mods": [{"stat": "Damage taken (enemy team)", "value": 15, "unit": "%"}, {"stat": "Area damage taken", "value": 25, "unit": "%"}],
+                 "line": "Caught by an initiation: the initiator's team deals +15% damage to it (+25% with area follow-ups)."},
+    "xp_blink_locked": {"type": "physical", "name": "Blink Disrupted", "mods": [{"stat": "Blink Dagger", "value": 0, "unit": ""}],
+                        "line": "Hit by an enemy champion: the Blink Dagger cannot be used for a moment."},
 }
 
 
 def _pal(p, s, c):
     return dict(primary=p, secondary=s, core=c)
 BUFF_VISUALS = {
+    "xp_setup": dict(name="Set Up", kind="debuff", school="fire", source="initiation: caught by an Initiation spell (+15% team damage, +25% area follow-ups)",
+                     palette=_pal([1.0, .6, .12], [.45, .2, .03], [1.0, .9, .6]), priority=66,
+                     layers=[dict(shape="glyph", attach="overhead", style="crown", speed=.9), dict(shape="ring", attach="ground", style="chevron_down", count=6, speed=1.2), dict(shape="motes", attach="body", style="ember", count=8, speed=1.0)],
+                     lifecycle=dict(burstSeconds=.4, fadeSeconds=.35), sound={"start": "npc.rune.start", "end": "buff.expire"}),
+    "xp_blink_locked": dict(name="Blink Disrupted", kind="debuff", school="arcane", source="initiation: Blink Dagger disrupted by champion damage",
+                            palette=_pal([.7, .5, 1.0], [.2, .12, .4], [.95, .9, 1.0]), priority=40,
+                            layers=[dict(shape="chains", attach="body", style="broken", count=3, speed=.8)],
+                            lifecycle=dict(burstSeconds=.2, fadeSeconds=.3), sound={"start": "npc.silence.start", "end": "buff.expire"}),
     "xp_empowered": dict(name="Empowered", kind="buff", school="blood", source="ability-expansion: Bloodletting / Rallying Cry / Sanguine Ascension (+damage dealt)",
                          palette=_pal([1.0, .3, .2], [.4, .08, .05], [1.0, .8, .6]), priority=61,
                          layers=[dict(shape="flames", attach="hands", count=4, speed=1.4), dict(shape="glyph", attach="overhead", style="skull", speed=.8)],
@@ -642,6 +700,9 @@ def main() -> int:
         taken.add(silhouette(v))
     write(ROOT / "Content/Data/BuffVisuals.expansion.json", dict(schemaVersion=1, notes="ability-expansion: buff visuals of the expansion pool (BuffVisuals.json schema; BuffVisuals.json wins on a clash). Written by Tools/BuildAbilityExpansion.py.",
           limits=visuals.get("limits", {}), buffs=BUFF_VISUALS))
+    # initiation: Blink Dagger in (cast) and out (impact) flashes.
+    blink = inv["Lightning_Magic_Blink2"]
+    vfx["blink_dagger"] = {"impact": dict(paths=[blink["path"]], scale=1.0), "cast": dict(paths=[blink["path"]], scale=.9, tint=[.65, .45, 1.0], tintStrength=.7)}
     write(ROOT / "Content/Data/FabVFX.expansion.json", dict(schemaVersion=1, generator="Tools/BuildAbilityExpansion.py",
           notes="ability-expansion: per-ability Fab Niagara signatures of the expansion pool (FabVFX.json 'abilities' format; FabVFX.json wins on a clash).", abilities=vfx))
     audio = {}
@@ -656,6 +717,7 @@ def main() -> int:
         if d in ("bolt", "pierce") and a["school"] == "physical":
             row.update(kind="shot", weapon="bow")
         audio[a["id"]] = row
+    audio["blink_dagger"] = dict(name="Blink Dagger", element="arcane", kind="spell")  # initiation
     write(ROOT / "Content/Data/AudioEvents.expansion.json", dict(schemaVersion=1, generator="Tools/BuildAbilityExpansion.py", abilities=audio))
     icons = {}
     seen = set()

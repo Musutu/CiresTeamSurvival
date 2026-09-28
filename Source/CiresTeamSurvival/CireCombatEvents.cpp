@@ -219,7 +219,7 @@ void CireCombat::BroadcastDamage(AActor* Source, AActor* Target, float AppliedAm
 
 FString CireCombat::OutcomeText(ECireHitOutcome O)
 {
-    return O==ECireHitOutcome::Miss?TEXT("Miss"):O==ECireHitOutcome::Block?TEXT("Block"):O==ECireHitOutcome::Resist?TEXT("Resist"):TEXT("Dodge");
+    return O==ECireHitOutcome::Miss?TEXT("Miss"):O==ECireHitOutcome::Block?TEXT("Block"):O==ECireHitOutcome::Resist?TEXT("Resist"):O==ECireHitOutcome::SetUp?TEXT("Set up!"):TEXT("Dodge"); // initiation
 }
 
 void CireCombat::BroadcastAvoidance(AActor* Source, AActor* Target, ECireHitOutcome Outcome, const FString& AbilityName, float PreventedAmount)
