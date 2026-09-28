@@ -140,7 +140,7 @@ FVector CireUnitSpacing::Separation(const ACireMonster* M, const ACireGameMode* 
         if (FMath::Abs(Delta.Z) > 250. || Delta.SizeSquared2D() >= FMath::Square(Want)) continue;
         const float D = static_cast<float>(Delta.Size2D());
         // Coincident units split by a stable per-actor side instead of a zero vector.
-        const FVector Away = D > 1.f ? Delta.GetSafeNormal2D() : FVector(M->GetUniqueID() > O->GetUniqueID() ? 1 : -1, 0, 0);
+        const FVector Away = D > 1.f ? Delta.GetSafeNormal2D() : FVector(M->GetUniqueID() > O->GetUniqueID() ? 1.f : -1.f, 0.f, 0.f);
         Push += Away * (1.f - D / Want);
     }
     if (Push.SizeSquared2D() < .0025) return FVector::ZeroVector;
