@@ -169,6 +169,7 @@ bool CireAbilityTuner::RunSmoke(ACireGameMode* Mode)
         T.Check(ApplyModePresetJson(World, Preset) && !S->bAllowTuning && S->bAllowLocked && Active().IsEmpty(), TEXT("ranked-style preset: tuning off, locked, startup set"));
         T.Check(!ApplyModePreset(World, TEXT("NoSuchProfile"), 1), TEXT("missing preset profile reported"));
         S->bAllowTuning = AllowedByDefault(UE_BUILD_SHIPPING != 0, TEXT("")); S->bAllowLocked = false;
+        T.Check(ApplyWavePreset(World, TEXT("standard")) && !S->bAllowLocked && S->ProfileName.IsEmpty(), TEXT("WavePresets adapter: a preset without tuning keys leaves tuning as is"));
     }
     // 13) The UI model opens on an ability (drawn by the interface gallery / play).
     CireAbilityTunerUI::Select(Lance);

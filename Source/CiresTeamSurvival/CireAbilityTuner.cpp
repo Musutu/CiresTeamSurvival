@@ -7,6 +7,7 @@
 #include "CireAbilityShapes.h"
 #include "CireSignatureSkills.h"
 #include "CireGame.h"
+#include "CireWaves.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
 #include "Engine/World.h"
@@ -690,6 +691,25 @@ bool CireAbilityTuner::ApplyModePresetJson(UWorld* World, const TSharedPtr<FJson
     FString Profile; Preset->TryGetStringField(TEXT("tuningProfile"), Profile);
     bool bAllow = false; const int32 Allow = Preset->TryGetBoolField(TEXT("allowTuning"), bAllow) ? (bAllow ? 1 : 0) : -1;
     if (Profile.IsEmpty() && Allow < 0) return true;
+    return ApplyModePreset(World, Profile, Allow, Why);
+}
+
+bool CireAbilityTuner::ApplyWavePreset(UWorld* World, FName PresetId, FString* Why)
+{
+    auto* S = ACireAbilityTunerState::Get(World);
+    if (!S || !S->HasAuthority() || PresetId.IsNone()) return false;
+    TSharedPtr<FJsonObject> Row;
+    if (const TSharedPtr<FJsonObject> Root = ReadJsonFile(CireWaveDirector::PresetsPath()))
+    {
+        const TArray<TSharedPtr<FJsonValue>>* List = nullptr;
+        if (Root->TryGetArrayField(TEXT("presets"), List))
+            for (const auto& V : *List) { FString Id; if (V->Type == EJson::Object && V->AsObject()->TryGetStringField(TEXT("id"), Id) && FName(*Id) == PresetId) Row = V->AsObject(); }
+    }
+    FString Profile; bool bAllow = false; int32 Allow = -1;
+    if (Row) { Row->TryGetStringField(TEXT("tuningProfile"), Profile); if (Row->TryGetBoolField(TEXT("allowTuning"), bAllow)) Allow = bAllow ? 1 : 0; }
+    if (Allow < 0 && S->bAllowLocked) { S->bAllowLocked = false; S->bAllowTuning = AllowedByDefault(UE_BUILD_SHIPPING != 0, FCommandLine::Get()); S->ForceNetUpdate(); } // an earlier preset's lock
+    if (Profile.IsEmpty() && Allow < 0 && S->ProfileName.IsEmpty()) return true; // nothing to do (hand edits stay)
+    UE_LOG(LogCireTuner, Display, TEXT("CIRE_TUNER_WAVE_PRESET %s profile=%s allow=%d"), *PresetId.ToString(), *Profile, Allow);
     return ApplyModePreset(World, Profile, Allow, Why);
 }
 

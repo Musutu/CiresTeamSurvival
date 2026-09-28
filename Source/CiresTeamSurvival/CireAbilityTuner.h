@@ -130,6 +130,9 @@ namespace CireAbilityTuner
      *  "allowTuning" (-1 keep, 0 off + locked, 1 on). Server only. */
     CIRESTEAMSURVIVAL_API bool ApplyModePreset(UWorld* World, const FString& TuningProfile, int32 AllowTuning, FString* Why = nullptr);
     CIRESTEAMSURVIVAL_API bool ApplyModePresetJson(UWorld* World, const TSharedPtr<FJsonObject>& Preset, FString* Why = nullptr);
+    /** Adapter for CireWaveDirector::SelectPreset / match init: reads the preset's raw row in WavePresets.json
+     *  ("tuningProfile", "allowTuning"). A preset without them returns a preset-applied profile to the startup set. */
+    CIRESTEAMSURVIVAL_API bool ApplyWavePreset(UWorld* World, FName PresetId, FString* Why = nullptr);
     /** Number of connected remote players that receive the set (UI status line). */
     CIRESTEAMSURVIVAL_API int32 RemoteViewers(const UWorld* World);
 
