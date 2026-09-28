@@ -3,6 +3,7 @@
 #include "CireLeash.h" // layout-wiring
 #include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireLayoutWiring.h" // layout-wiring
+#include "CireWorldEdit.h" // world-editor
 #include "CireTownTrim.h" // town-trim
 #include "CireKitSkills.h" // kits-complete
 #include "CireKitEditor.h" // kit-editor
@@ -135,6 +136,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireLeash::RunTests(Mode)&&Good; // layout-wiring: the leash state machine (kited -> return -> resume; stuck != kited), immunity, regen, threat kept
     Good=CireOutdoorBosses::RunTests(Mode)&&Good; // outdoor-bosses: data, marker resolution, spawn per Boss spot in both realms, neutral, bounty, lair leash, respawn
     Good=CireLayoutWiring::RunTests(Mode)&&Good; // layout-wiring: path split, multi-path compile, marker-driven spawns, realm transforms, replication
+    Good=CireWorldEdit::RunTests(Mode)&&Good; // world-editor: set save/load round trip, stable ids, undo/redo, protection, mirror twins, runtime apply
     Good=CireTownTrim::RunTests(Mode)&&Good; // town-trim: point-in-polygon with margin, inside/straddling/outside, realm mirroring, nav cache key, no bounds = no trim
     Good=CireFabAnimation::RunTests()&&Good; // fab-integration: optional Fab champion clips + fallback
     Good=CireFabVFX::RunTests(Mode->GetWorld())&&Good; // fab-integration: optional Fab Niagara data + clean-clone fallback

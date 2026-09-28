@@ -5,6 +5,7 @@
 #include "CireTownMap.h"
 #include "CireTownPerf.h" // town-perf
 #include "CireTownShots.h" // town-trim
+#include "CireWorldEdit.h" // world-editor
 #include "CireArenas.h" // medieval-kingdom
 #include "Net/UnrealNetwork.h"
 #include "CireEnvironmentProps.h"
@@ -53,13 +54,14 @@ ACireWorld::ACireWorld() {
 void ACireWorld::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
     DOREPLIFETIME(ACireWorld,bCastleTown);
+    DOREPLIFETIME(ACireWorld,WorldEditHash); DOREPLIFETIME(ACireWorld,WorldEditSet); // world-editor
 }
 void ACireWorld::BeginPlay() {
     Super::BeginPlay();
     // medieval-kingdom: the server chose the map (CireTownMap::InitializeServer); a client follows the replicated
     // choice, switches its realm frame and streams the same two town copies before anything is placed.
-    if(HasAuthority())bCastleTown=CireTownMap::IsActive();
-    else {CireTownMap::SetActive(bCastleTown);if(bCastleTown)CireTownMap::LoadRealms(GetWorld());}
+    if(HasAuthority()){bCastleTown=CireTownMap::IsActive();WorldEditSet=CireWorldEdit::ActiveSet();WorldEditHash=CireWorldEdit::Hash(CireWorldEdit::Current());} // world-editor: + the set
+    else {CireWorldEdit::SetFromServer(GetWorld(),WorldEditSet,WorldEditHash); /* world-editor: the server's set, before the realms stream */ CireTownMap::SetActive(bCastleTown);if(bCastleTown)CireTownMap::LoadRealms(GetWorld());}
     const bool bTown=bCastleTown;
     // Built identically on each peer; gameplay actors are replicated independently.
     CireEnvironmentProps::Reload();
@@ -258,7 +260,10 @@ void ACireWorld::Tick(float DeltaSeconds) {
     if(bCastleTown)CireTownMap::UpdateLocalView(GetWorld()); // town-perf: render only the realm the local camera is in
     if(RenderedRouteRevision!=CireLanePath::Revision(GetWorld())){RefreshRouteVisuals();CireEnvironmentProps::Refresh(this);CireNav::InvalidatePaths(GetWorld());}
     SyncGoalZones(); // nav-paths: cheap (two actors); also covers a goal authored in the JSON at startup
+    CireWorldEdit::TickProbe(GetWorld()); // world-editor: -CireWorldEditProbe / -CireWorldEditDump only
 }
+// world-editor: the server switched the world edit set live (cire.WorldEdit / CireWorldEdit::ApplySet).
+void ACireWorld::OnRep_WorldEdit() { if(!HasAuthority()&&HasActorBegunPlay())CireWorldEdit::SetFromServer(GetWorld(),WorldEditSet,WorldEditHash); }
 void ACireWorld::RefreshRouteVisuals() {
     if(!RouteRoad||!RouteEdge||!RouteArrows)return;
     RouteRoad->ClearInstances();RouteEdge->ClearInstances();RouteArrows->ClearInstances();

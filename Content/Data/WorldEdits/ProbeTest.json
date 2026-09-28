@@ -1,0 +1,151 @@
+{
+  "name": "ProbeTest",
+  "map": "CastleTown",
+  "notes": "world-editor probe set (Tools/RunWorldEditProbe.py): two houses in both realms, one house in DAYLIGHT only (its DARKNIGHT twin stays), a barrel and a crate. Not a gameplay set.",
+  "removed": [
+    {
+      "id": "SL_Houses/LevelInstance_65",
+      "realm": 0,
+      "kind": "Building",
+      "label": "LI_Building_04_Fix",
+      "local": [
+        -4370,
+        2706,
+        820
+      ],
+      "size": [
+        2233,
+        2308,
+        1603
+      ],
+      "actors": 680,
+      "drawCalls": 1173
+    },
+    {
+      "id": "SL_Houses/LevelInstance_65",
+      "realm": 1,
+      "kind": "Building",
+      "label": "LI_Building_04_Fix",
+      "local": [
+        -4370,
+        2706,
+        820
+      ],
+      "size": [
+        2233,
+        2308,
+        1603
+      ],
+      "actors": 680,
+      "drawCalls": 0
+    },
+    {
+      "id": "SL_Houses/LevelInstance_206",
+      "realm": 0,
+      "kind": "Building",
+      "label": "LI_Building_02_Fix",
+      "local": [
+        16232,
+        10392,
+        951
+      ],
+      "size": [
+        1751,
+        1817,
+        2005
+      ],
+      "actors": 583,
+      "drawCalls": 965
+    },
+    {
+      "id": "SL_Houses/LevelInstance_206",
+      "realm": 1,
+      "kind": "Building",
+      "label": "LI_Building_02_Fix",
+      "local": [
+        16232,
+        10392,
+        951
+      ],
+      "size": [
+        1751,
+        1817,
+        2005
+      ],
+      "actors": 583,
+      "drawCalls": 0
+    },
+    {
+      "id": "SL_Houses/LevelInstance_33",
+      "realm": 0,
+      "kind": "Building",
+      "label": "LI_Building_02_Fix",
+      "local": [
+        -513,
+        -6734,
+        981
+      ],
+      "size": [
+        2063,
+        2080,
+        2005
+      ],
+      "actors": 583,
+      "drawCalls": 965
+    },
+    {
+      "id": "SL_Castle/StaticMeshActor_219",
+      "realm": 0,
+      "kind": "Prop",
+      "label": "SM_Barrel_01",
+      "local": [
+        17820,
+        -3910,
+        737
+      ],
+      "size": [
+        54,
+        54,
+        73
+      ],
+      "actors": 1,
+      "drawCalls": 2
+    },
+    {
+      "id": "SL_Castle/StaticMeshActor_220",
+      "realm": 0,
+      "kind": "Prop",
+      "label": "SM_Barrel_01",
+      "local": [
+        17980,
+        -3900,
+        737
+      ],
+      "size": [
+        54,
+        54,
+        73
+      ],
+      "actors": 1,
+      "drawCalls": 2
+    },
+    {
+      "id": "SL_Castle/StaticMeshActor_219",
+      "realm": 1,
+      "kind": "Prop",
+      "label": "SM_Barrel_01",
+      "local": [
+        17820,
+        -3910,
+        737
+      ],
+      "size": [
+        54,
+        54,
+        73
+      ],
+      "actors": 1,
+      "drawCalls": 0
+    }
+  ]
+}

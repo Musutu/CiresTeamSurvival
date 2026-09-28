@@ -266,6 +266,8 @@ private:
     bool bRouteEditor=false,bMinimapNav=false;
     // dev-route-tools: map layout editor state and the screen rects its panels cover (pointer-over-interface).
     void TickLayoutEditor();
+    void TickWorldEditor(); // world-editor: the WORLD tab (CireWorldEditorHUD.cpp)
+    void DrawEditorTabs(); // world-editor: MAP LAYOUT | WORLD tabs
     bool LayoutEditorEscape();
     bool bLayoutEditor=false;
     TSharedPtr<struct FCireLayoutEditorState> LayoutEditor;
