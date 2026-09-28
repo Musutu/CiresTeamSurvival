@@ -113,3 +113,16 @@ All three gates were run on 2026-09-28, after merging main (with feat/waves-mode
 Environmental notes:
 - Earlier "native probe timed out after 240 s", network and interface timeouts came from the cold asset-registry scan
   (Paragon, then Polyphoria). A single native run with `--timeout 900` warmed the cache, and later runs finished in time.
+
+## Main integration fix (2026-09-28, main aed99919 merged in)
+- Symptom on main: native `CIRE_MONSTER_EXPANSION_FAIL` (rare wave / breather bonus wave spawned 0 units in lane 0).
+- Root cause: the monster-expansion rare-spawn test built its live config from `CireWaveDirector::Defaults()`, which now carries
+  bonus-loot's `bonusWave.replaceChance = .08`. The Bonus Loot Stage roll is deterministic per *match seed* and wave, so with
+  main's seed the forced-rare wave 5 was replaced by a Goblin Hoard stage (`type=bonus_loot`, no rare, no hollow line units),
+  and that stage used up the cycle's bonus cap (`maxPerCycle = 1`) so the following Bonus Loot Wave block's `OnWaveCleared`
+  returned 0 (no breather bonus wave, no announcement, no creatures). Seed-dependent flake, not a bosses-spacing/kit-editor bug.
+- Fix: the rare-spawn and breather-bonus-wave test blocks set `C.Bonus.ReplaceChance = 0` (test isolation; the stage has its own
+  tests in CireBonusStageTests / the forced-stage block). Also fixed a real bug in `CireWaveDirector::Validate`: a `// bonus-loot`
+  comment had swallowed the `bonusWave.fromWave` / `maxPerCycle` clamps on the same line.
+- Gates after the merge + fix: native PASS `Saved/ExpansionChecks/20260928T082517499590Z/`, network PASS
+  `Saved/NetworkSmoke/20260928T082903053361Z/`, interface PASS `Saved/InterfaceSmoke/20260928T082953607579Z/`.

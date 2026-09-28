@@ -343,7 +343,8 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
         if (Rr.Pool.Num() > 16) Rr.Pool.SetNum(16);
         Rr.Pool.RemoveAll([](FName Id) { return !CireNPCArchetypes::Find(Id); }); // a missing Bestiary.json never takes the waves down
         auto& B = C.Bonus;
-        B.Chance = ClampF(B.Chance, 0, 1, 0); B.ReplaceChance = ClampF(B.ReplaceChance, 0, 1, .08f); // bonus-loot B.FromWave = FMath::Clamp(B.FromWave, 1, 200); B.MaxPerCycle = FMath::Clamp(B.MaxPerCycle, 0, 5);
+        B.Chance = ClampF(B.Chance, 0, 1, 0); B.ReplaceChance = ClampF(B.ReplaceChance, 0, 1, .08f); // bonus-loot
+        B.FromWave = FMath::Clamp(B.FromWave, 1, 200); B.MaxPerCycle = FMath::Clamp(B.MaxPerCycle, 0, 5);
         B.ExtraBreatherSeconds = ClampF(B.ExtraBreatherSeconds, 0, 60, 6); B.EscapeSeconds = ClampF(B.EscapeSeconds, 5, 240, 52);
         B.FleeRadius = ClampF(B.FleeRadius, 0, 3000, 950); B.Bounty = ClampF(B.Bounty, 0, 100, 1);
         B.Wave.Type = ECireWaveType::BonusLoot; B.Wave.bMustClear = false; B.Wave.Race = NAME_None;
