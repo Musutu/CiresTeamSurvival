@@ -22,6 +22,7 @@
 #include "Sound/SoundConcurrency.h"
 #include "CireSoundEvents.h" // audio-overhaul
 #include "CireFootsteps.h" // pack-usage: target armour class picks the hit signature (blood / sparks / stone / wood)
+#include "CireParagonChampions.h" // paragon-champions: the heroes' own Paragon FX
 #include <limits>
 
 namespace
@@ -716,7 +717,9 @@ ACireSpellVisual* CireSpellPresentation::Play(UWorld* World,FName SkillId,FVecto
     auto* Visual=World->SpawnActor<ACireSpellVisual>(To,FRotator::ZeroRotator,P);
     if(Visual) Visual->Configure(SkillId,From,To,Cue,Scale,bSound);
     if(Visual) Visual->SetStartDelay(ReleaseDelay(World,SkillId,Cue,From)); // ability-vfx: appear on the clip's release frame
+    CireParagonChampions::PlayFX(World,SkillId,From,To,Cue,Scale); // paragon-champions: Paragon cast / impact systems on top of the school visual
     return Visual;
+
 }
 ACireSpellVisual* CireSpellPresentation::FollowArea(ACireAreaEffect* Area)
 {

@@ -63,6 +63,7 @@
 #include "CireArenaPortal.h" // arena-portal
 #include "CireWaves.h" // wave-director
 #include "CireVendorGallery.h" // vendors
+#include "CireParagonGallery.h" // paragon-champions
 
 DEFINE_LOG_CATEGORY_STATIC(LogCire, Log, All);
 
@@ -273,6 +274,7 @@ void ACireGameMode::BeginPlay() {
     if(!bFeedbackPreview)bFeedbackPreview = CireChampionHQGallery::Initialize(this); // champion-hq
     if(!bFeedbackPreview)bFeedbackPreview = CireKitsGallery::Initialize(this); // scaling-kits
     if(!bFeedbackPreview)bFeedbackPreview = CireGripGallery::Initialize(this); // weapon-grips
+    if(!bFeedbackPreview)bFeedbackPreview = CireParagonGallery::Initialize(this); // paragon-champions
     if(!bFeedbackPreview)bFeedbackPreview = CireRigAudit::Initialize(this); // blender-rig: -CireRigAudit sweeps the clips of every body, then exits
     if(!bFeedbackPreview)bFeedbackPreview = CireShopFixtures::Initialize(this); // progression-shop
     if(!bFeedbackPreview)bFeedbackPreview = CireVendorGallery::Initialize(this); // vendors
@@ -549,6 +551,8 @@ void ACireGameMode::Tick(float Dt) {
     if(CireChampionHQGallery::Tick(this)) return; // champion-hq
     if(CireKitsGallery::Tick(this)) return; // scaling-kits
     if(CireGripGallery::Tick(this)) return; // weapon-grips
+    if(CireParagonGallery::Tick(this)) return; // paragon-champions
+
     if(CireShopFixtures::Tick(this)) return; // progression-shop
     if(CireVendorGallery::Tick(this)) return; // vendors
     if(CireNPCNetProbe::TickServer(this)) return;

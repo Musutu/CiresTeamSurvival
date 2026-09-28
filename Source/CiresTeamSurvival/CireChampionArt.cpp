@@ -295,9 +295,12 @@ const FChampionArtDefinition* FabProfileArt(const FString& Id)
         FString Json;TSharedPtr<FJsonObject> Root;const TArray<TSharedPtr<FJsonValue>>* Rows=nullptr;double Version=0;
         auto Present=[](const FString& Path){const FString Package=FPackageName::ObjectPathToPackageName(Path);
             return Path.StartsWith(TEXT("/Game/"))&&FPackageName::IsValidLongPackageName(Package)&&FPackageName::DoesPackageExist(Package);};
-        if(FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/ChampionArtBindings.fab.json")))&&
+        // paragon-champions: Content/Data/ParagonChampions.json "bindings" use the same monster_native row shape (local packs only).
+        for(const TCHAR* BindingFile:{TEXT("Data/ChampionArtBindings.fab.json"),TEXT("Data/ParagonChampions.json")})
+        if(Json.Reset(),Root.Reset(),Rows=nullptr,Version=0;FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),BindingFile))&&
            FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),Root)&&Root&&Root->TryGetNumberField(TEXT("schemaVersion"),Version)&&Version==1&&
            Root->TryGetArrayField(TEXT("bindings"),Rows))
+
             for(const auto& Row:*Rows)
             {
                 const TSharedPtr<FJsonObject>* O=nullptr;const TSharedPtr<FJsonObject>* Animations=nullptr;FString Profile,Status,Idle,Walk,Run;FChampionArtDefinition D;double Height=0;
@@ -347,9 +350,12 @@ const FChampionArtDefinition* ArtFor(const ACireHero& Hero)
 {
     const FString Key=SummonArtKey(Hero);
     if(!Key.IsEmpty())if(const FChampionArtDefinition* Summon=BaseProfileArt(Key))return Summon;
+    // paragon-champions: a picked skin is its own binding row "<profile>@<skin>" (falls back to the default body).
+    if(!Hero.ChampionSkin.IsEmpty())if(const FChampionArtDefinition* Skin=FabProfileArt(Hero.ChampionProfileId+TEXT("@")+Hero.ChampionSkin))return Skin;
     return ProfileArt(Hero.ChampionProfileId);
 }
-FString ArtAttemptKey(const ACireHero& Hero){return Hero.ChampionProfileId+TEXT("|")+SummonArtKey(Hero);}
+FString ArtAttemptKey(const ACireHero& Hero){return Hero.ChampionProfileId+TEXT("|")+SummonArtKey(Hero)+TEXT("|")+Hero.ChampionSkin;} // paragon-champions: skin
+
 
 const FChampionArtDefinition* ProfileArt(const FString& Id)
 {

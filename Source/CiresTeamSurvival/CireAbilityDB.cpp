@@ -4,6 +4,7 @@
 #include "CireSkillTuning.h" // casting-rules
 #include "CireChampionRoster.h"
 #include "CireAbilityTuner.h" // ability-tuner: override layer
+#include "CireParagonChampions.h" // paragon-champions
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -189,6 +190,7 @@ bool CireAbilityDB::Reload()
             for(auto& Pair:XM)if(!M.Contains(Pair.Key))M.Add(Pair.Key,MoveTemp(Pair.Value));
         }
     }
+    CireParagonChampions::MergeAbilities(A,K); // paragon-champions: Paragon kits + Skill Shop pool (installed packs only)
     GAbilities=MoveTemp(A);GKits=MoveTemp(K);GModifiers=MoveTemp(M);GIndex.Reset();GNameIndex.Reset();
     for(int32 I=0;I<GAbilities.Num();++I){GIndex.Add(GAbilities[I].Id,I);GNameIndex.Add(GAbilities[I].Name,I);}
     UE_LOG(LogCireAbilityDB,Display,TEXT("CIRE_ABILITY_DB_LOADED abilities=%d champions=%d"),GAbilities.Num(),GKits.Num());

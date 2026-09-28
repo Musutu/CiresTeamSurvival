@@ -108,6 +108,8 @@ public:
     UPROPERTY(Replicated) int32 Archetype = 0;
     // Server-authored gameplay snapshot; Archetype remains the fallback body.
     UPROPERTY(Replicated) FString ChampionProfileId;
+    // paragon-champions: cosmetic skin of the profile ("" = default); art binding "<profile>@<skin>" (ParagonChampions.json).
+    UPROPERTY(Replicated) FString ChampionSkin;
     UPROPERTY(Replicated) int32 StatPrimaryOverride = INDEX_NONE;
     UPROPERTY(Replicated) float ProfileBasicAttackRange = 0;
     UPROPERTY(Replicated) float ProfileAttackSeconds = 0;
@@ -377,6 +379,8 @@ public:
     UFUNCTION(Server,Reliable) void ServerAction(int32 Action, int32 Value, AActor* Selected);
     UFUNCTION(Server,Reliable) void ServerDraftProfile(const FString& ProfileId);
     UFUNCTION(Server,Reliable) void ServerDraftHover(const FString& ProfileId); // champion-select: selected, not locked
+    UFUNCTION(Server,Reliable) void ServerSetChampionSkin(const FString& ProfileId,const FString& Skin); // paragon-champions: skin picked in champion select
+
     UFUNCTION(Server,Reliable) void ServerCastAt(int32 Slot,FVector_NetQuantize Aim);
     UFUNCTION(Server,Reliable) void ServerSummonCommand(int32 Command,AActor* Target,FVector_NetQuantize Destination);
     UFUNCTION(Server,Reliable) void ServerPetCommand(uint8 Command); // pets: ECirePetCommand on the caller's companion

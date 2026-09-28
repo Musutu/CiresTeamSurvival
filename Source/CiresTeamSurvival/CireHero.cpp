@@ -169,6 +169,8 @@ void ACireHero::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
     DOREPLIFETIME(ACireHero, Archetype);
     DOREPLIFETIME(ACireHero, CastSkill); DOREPLIFETIME(ACireHero, CastStartTime); DOREPLIFETIME(ACireHero, CastEndTime); // champion-draft
     DOREPLIFETIME(ACireHero, ChampionProfileId);
+    DOREPLIFETIME(ACireHero, ChampionSkin); // paragon-champions
+
     DOREPLIFETIME(ACireHero, StatPrimaryOverride);
     DOREPLIFETIME(ACireHero, ProfileBasicAttackRange);
     DOREPLIFETIME(ACireHero, ProfileAttackSeconds);

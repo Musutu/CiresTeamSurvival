@@ -1,4 +1,5 @@
 #include "CireChampionRoster.h"
+#include "CireParagonChampions.h" // paragon-champions
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 #include "Misc/FileHelper.h"
@@ -123,7 +124,9 @@ bool CireChampionRoster::Reload()
     const FString Path=FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/ChampionRoster.json"));
     if(!FFileHelper::LoadFileToString(Json,*Path)||!ParseJson(Json,Candidate,Error))
     {UE_LOG(LogCireChampionRoster,Error,TEXT("Roster rejected; retaining last valid profiles: %s (%s)"),*Error,*Path);return false;}
+    CireParagonChampions::AppendProfiles(Candidate); // paragon-champions: installed Paragon heroes join after the authored roster
     Current=MoveTemp(Candidate);UE_LOG(LogCireChampionRoster,Display,TEXT("CIRE_CHAMPION_ROSTER_LOADED count=%d"),Current.Num());return true;
+
 }
 const TArray<FCireChampionProfile>& CireChampionRoster::All(){LoadOnce();return Current;}
 const FCireChampionProfile* CireChampionRoster::Find(const FString& Id){for(const auto& C:All())if(C.Id==Id)return &C;return nullptr;}

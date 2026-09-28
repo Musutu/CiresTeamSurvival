@@ -1,0 +1,683 @@
+{
+ "schemaVersion": 1,
+ "generator": "Tools/AuthorParagonChampions.py",
+ "description": "Paragon skins and ParagonMinions as extra variants of race units (Docs/ParagonChampions.md). Merged into each unit's bodies by CireMonsterArt; a body is used only when its mesh and idle clip exist locally (Epic-licensed packs, never committed).",
+ "units": {
+  "aetheri_warframe": {
+   "race": "aetheri",
+   "alternates": [
+    {
+     "variant": "ParagonCrunchBlackSite",
+     "mesh": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Skins/Tier_3/BlackSite/Meshes/Crunch_Black_Site.Crunch_Black_Site",
+     "meshScale": 0.8121,
+     "yaw": -90.0,
+     "heightCm": 213.9,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/Idle_Combat.Idle_Combat",
+      "walk": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/Ability_Combo_01.Ability_Combo_01",
+      "attackAlt": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/Ability_Combo_02.Ability_Combo_02",
+      "hit": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonCrunch/Characters/Heroes/Crunch/Animations/Death_A.Death_A"
+     },
+     "source": "Epic Paragon skin (local only): ParagonCrunch"
+    },
+    {
+     "variant": "ParagonMinionLaneSiegeDawn",
+     "mesh": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Meshes/Minion_Lane_Siege_Dawn.Minion_Lane_Siege_Dawn",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 176.6,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Idle.Idle",
+      "run": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Jog_Fwd_Combat.Jog_Fwd_Combat",
+      "attack": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Fire_A.Fire_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Fire_B.Fire_B",
+      "death": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Death_A.Death_A",
+      "walk": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Jog_Fwd_Combat.Jog_Fwd_Combat"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    },
+    {
+     "variant": "ParagonMinionLaneSiegeDusk",
+     "mesh": "/Game/ParagonMinions/Characters/Minions/Dusk_Minions/Meshes/Minion_Lane_Siege_Dusk.Minion_Lane_Siege_Dusk",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 193.1,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Idle.Idle",
+      "run": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Jog_Fwd_Combat.Jog_Fwd_Combat",
+      "attack": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Fire_A.Fire_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Fire_B.Fire_B",
+      "death": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Death_A.Death_A",
+      "walk": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Siege/Jog_Fwd_Combat.Jog_Fwd_Combat"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    }
+   ]
+  },
+  "ironbound_bruiser": {
+   "race": "hollow",
+   "alternates": [
+    {
+     "variant": "ParagonGruxHalloween",
+     "mesh": "/Game/ParagonGrux/Characters/Heroes/Grux/Skins/Tier_1/Halloween/Meshes/GruxHalloween.GruxHalloween",
+     "meshScale": 0.8757,
+     "yaw": -90.0,
+     "heightCm": 194.4,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Idle.Idle",
+      "walk": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/PrimaryAttack_LA.PrimaryAttack_LA",
+      "attackAlt": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/PrimaryAttack_RA.PrimaryAttack_RA",
+      "hit": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Death_A.Death_A"
+     },
+     "source": "Epic Paragon skin (local only): ParagonGrux"
+    }
+   ]
+  },
+  "drakkari_scalebreaker": {
+   "race": "drakkari",
+   "alternates": [
+    {
+     "variant": "ParagonGruxBeetleRed",
+     "mesh": "/Game/ParagonGrux/Characters/Heroes/Grux/Skins/Tier_2/Grux_Beetle_Red/Meshes/GruxBeetleRed.GruxBeetleRed",
+     "meshScale": 0.8757,
+     "yaw": -90.0,
+     "heightCm": 199.5,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Idle.Idle",
+      "walk": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/PrimaryAttack_LA.PrimaryAttack_LA",
+      "attackAlt": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/PrimaryAttack_RA.PrimaryAttack_RA",
+      "hit": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Death_A.Death_A"
+     },
+     "source": "Epic Paragon skin (local only): ParagonGrux"
+    },
+    {
+     "variant": "ParagonBuffRed",
+     "mesh": "/Game/ParagonMinions/Characters/Buff/Buff_Red/Meshes/Buff_Red.Buff_Red",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 214.7,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Buff/Buff_Red/Animations/Idle.Idle",
+      "run": "/Game/ParagonMinions/Characters/Buff/Buff_Red/Animations/Run_Fwd.Run_Fwd",
+      "attack": "/Game/ParagonMinions/Characters/Buff/Buff_Red/Animations/Attack_Punch_01.Attack_Punch_01",
+      "attackAlt": "/Game/ParagonMinions/Characters/Buff/Buff_Red/Animations/Attack_Punch_02.Attack_Punch_02",
+      "hit": "/Game/ParagonMinions/Characters/Buff/Buff_Red/Animations/Hit_Front.Hit_Front",
+      "death": "/Game/ParagonMinions/Characters/Buff/Buff_Red/Animations/Death_Fwd.Death_Fwd",
+      "walk": "/Game/ParagonMinions/Characters/Buff/Buff_Red/Animations/Run_Fwd.Run_Fwd"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    }
+   ]
+  },
+  "stoneborn_forgelord": {
+   "race": "stoneborn",
+   "alternates": [
+    {
+     "variant": "ParagonSevarogChronos",
+     "mesh": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Skins/Tier_1/Sevarog_Chronos/Meshes/SevarogChronos.SevarogChronos",
+     "meshScale": 0.7538,
+     "yaw": -90.0,
+     "heightCm": 234.5,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Idle.Idle",
+      "walk": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Walk_Fwd.Walk_Fwd",
+      "run": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Swing1_Medium.Swing1_Medium",
+      "attackAlt": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Swing2_Medium.Swing2_Medium",
+      "hit": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Hitreact_Front.Hitreact_Front",
+      "death": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Death_front.Death_front"
+     },
+     "source": "Epic Paragon skin (local only): ParagonSevarog"
+    }
+   ]
+  },
+  "dread_knight": {
+   "race": "fallen_order",
+   "alternates": [
+    {
+     "variant": "ParagonSevarogBloodred",
+     "mesh": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Skins/Tier_1/Sevarog_Red/Meshes/SevarogBloodred.SevarogBloodred",
+     "meshScale": 0.7538,
+     "yaw": -90.0,
+     "heightCm": 234.5,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Idle.Idle",
+      "walk": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Walk_Fwd.Walk_Fwd",
+      "run": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Swing1_Medium.Swing1_Medium",
+      "attackAlt": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Swing2_Medium.Swing2_Medium",
+      "hit": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Hitreact_Front.Hitreact_Front",
+      "death": "/Game/ParagonSevarog/Characters/Heroes/Sevarog/Animations/Death_front.Death_front"
+     },
+     "source": "Epic Paragon skin (local only): ParagonSevarog"
+    }
+   ]
+  },
+  "werebear_mauler": {
+   "race": "feral_kin",
+   "alternates": [
+    {
+     "variant": "ParagonRampageRedneck",
+     "mesh": "/Game/ParagonRampage/Characters/Heroes/Rampage/Skins/Tier_1/Rampage_RedNeck/Mesh/Rampage_Redneck.Rampage_Redneck",
+     "meshScale": 0.8772,
+     "yaw": -90.0,
+     "heightCm": 194.0,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/Idle.Idle",
+      "walk": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/Run_Fwd.Run_Fwd",
+      "run": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/Run_Fwd.Run_Fwd",
+      "attack": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/Attack_Biped_Melee_A.Attack_Biped_Melee_A",
+      "attackAlt": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/Attack_Biped_Melee_B.Attack_Biped_Melee_B",
+      "hit": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonRampage/Characters/Heroes/Rampage/Animations/Death_A.Death_A"
+     },
+     "source": "Epic Paragon skin (local only): ParagonRampage"
+    }
+   ]
+  },
+  "void_ravager": {
+   "race": "voidborn",
+   "alternates": [
+    {
+     "variant": "ParagonKallariDeathLotus",
+     "mesh": "/Game/ParagonKallari/Characters/Heroes/Kallari/Skins/DeathLotus/Meshes/Kallari_DeathLotus.Kallari_DeathLotus",
+     "meshScale": 0.9704,
+     "yaw": -90.0,
+     "heightCm": 176.2,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/Idle.Idle",
+      "walk": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/Attack_Melee_A.Attack_Melee_A",
+      "attackAlt": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/Attack_Melee_B.Attack_Melee_B",
+      "hit": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonKallari/Characters/Heroes/Kallari/Animations/Death_A.Death_A"
+     },
+     "source": "Epic Paragon skin (local only): ParagonKallari"
+    },
+    {
+     "variant": "ParagonBuffBlack",
+     "mesh": "/Game/ParagonMinions/Characters/Buff/Buff_Black/Meshes/Buff_Black.Buff_Black",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 214.9,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Buff/Buff_Black/Animations/Idle.Idle",
+      "run": "/Game/ParagonMinions/Characters/Buff/Buff_Black/Animations/Run_FWD.Run_FWD",
+      "attack": "/Game/ParagonMinions/Characters/Buff/Buff_Black/Animations/BiteAttack_A.BiteAttack_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Buff/Buff_Black/Animations/BiteAttack_B.BiteAttack_B",
+      "hit": "/Game/ParagonMinions/Characters/Buff/Buff_Black/Animations/HitReaction_FWD.HitReaction_FWD",
+      "death": "/Game/ParagonMinions/Characters/Buff/Buff_Black/Animations/Death_front.Death_front",
+      "walk": "/Game/ParagonMinions/Characters/Buff/Buff_Black/Animations/Run_FWD.Run_FWD"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    }
+   ]
+  },
+  "flagellant": {
+   "race": "fallen_order",
+   "alternates": [
+    {
+     "variant": "ParagonCountessCarnivale",
+     "mesh": "/Game/ParagonCountess/Characters/Heroes/Countess/Skins/Tier1/Count_Carnivale/Meshes/SM_Countess_Carnivale.SM_Countess_Carnivale",
+     "meshScale": 0.9727,
+     "yaw": -90.0,
+     "heightCm": 175.9,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Idle_Relaxed.Idle_Relaxed",
+      "walk": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Primary_Attack_A_Normal.Primary_Attack_A_Normal",
+      "attackAlt": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Primary_Attack_B_Normal.Primary_Attack_B_Normal",
+      "hit": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Knock_Fwd.Knock_Fwd",
+      "death": "/Game/ParagonCountess/Characters/Heroes/Countess/Animations/Death.Death"
+     },
+     "source": "Epic Paragon skin (local only): ParagonCountess"
+    }
+   ]
+  },
+  "rift_stalker": {
+   "race": "voidborn",
+   "alternates": [
+    {
+     "variant": "ParagonKhaimeraHalloween",
+     "mesh": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Skins/Tier1/CS_Halloween/Mesh/Khaimera_Halloween.Khaimera_Halloween",
+     "meshScale": 0.9002,
+     "yaw": -90.0,
+     "heightCm": 189.0,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Idle.Idle",
+      "walk": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Melee_A.Melee_A",
+      "attackAlt": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Melee_B.Melee_B",
+      "hit": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Death_A.Death_A"
+     },
+     "source": "Epic Paragon skin (local only): ParagonKhaimera"
+    }
+   ]
+  },
+  "wild_outrider": {
+   "race": "feral_kin",
+   "alternates": [
+    {
+     "variant": "ParagonKhaimeraGruxPelt",
+     "mesh": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Skins/Tier2/GruxPelt/Meshes/Khaimera_GruxPelt.Khaimera_GruxPelt",
+     "meshScale": 0.9002,
+     "yaw": -90.0,
+     "heightCm": 194.8,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Idle.Idle",
+      "walk": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Melee_A.Melee_A",
+      "attackAlt": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Melee_B.Melee_B",
+      "hit": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Animations/Death_A.Death_A"
+     },
+     "source": "Epic Paragon skin (local only): ParagonKhaimera"
+    }
+   ]
+  },
+  "barbed_hunter": {
+   "race": "hollow",
+   "alternates": [
+    {
+     "variant": "ParagonYinCryptGoddess",
+     "mesh": "/Game/ParagonYin/Characters/Heroes/Yin/Skins/CryptGoddess/Meshes/Yin_CryptGoddess.Yin_CryptGoddess",
+     "meshScale": 0.9718,
+     "yaw": -90.0,
+     "heightCm": 175.5,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/Idle_Combat.Idle_Combat",
+      "walk": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/Primary_Attack_A_Slow.Primary_Attack_A_Slow",
+      "attackAlt": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/Primary_Attack_B_Slow.Primary_Attack_B_Slow",
+      "hit": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonYin/Characters/Heroes/Yin/Animations/Death.Death"
+     },
+     "source": "Epic Paragon skin (local only): ParagonYin"
+    }
+   ]
+  },
+  "fallen_inquisitor_crossbow": {
+   "race": "fallen_order",
+   "alternates": [
+    {
+     "variant": "ParagonRevenantRavenQuill",
+     "mesh": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Skins/RavenQuill/Meshes/Revenant_RavenQuill.Revenant_RavenQuill",
+     "meshScale": 0.7663,
+     "yaw": -90.0,
+     "heightCm": 244.4,
+     "lockRoot": true,
+     "reachCm": 900.0,
+     "animations": {
+      "idle": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/Idle.Idle",
+      "walk": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/Primary_Fire_Med.Primary_Fire_Med",
+      "attackAlt": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/Primary_Fire_Slow.Primary_Fire_Slow",
+      "hit": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonRevenant/Characters/Heroes/Revenant/Animations/Death_Forward.Death_Forward"
+     },
+     "source": "Epic Paragon skin (local only): ParagonRevenant"
+    }
+   ]
+  },
+  "redmoon_axethrower": {
+   "race": "ironhide",
+   "alternates": [
+    {
+     "variant": "ParagonGRIMWasteland",
+     "mesh": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Skins/Tier1_5/Wasteland/Meshes/GRIMWasteland.GRIMWasteland",
+     "meshScale": 0.7551,
+     "yaw": -90.0,
+     "heightCm": 233.9,
+     "lockRoot": true,
+     "reachCm": 900.0,
+     "animations": {
+      "idle": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Idle.Idle",
+      "walk": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Primary_Fire_Med_A.Primary_Fire_Med_A",
+      "attackAlt": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Primary_Fire_Slow_A.Primary_Fire_Slow_A",
+      "hit": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Knock_Fwd.Knock_Fwd",
+      "death": "/Game/ParagonGRIMexe/Characters/Heroes/GRIM/Animations/Death_Fwd.Death_Fwd"
+     },
+     "source": "Epic Paragon skin (local only): ParagonGRIMexe"
+    }
+   ]
+  },
+  "rift_gazer": {
+   "race": "voidborn",
+   "alternates": [
+    {
+     "variant": "ParagonDrongoAlienInvader",
+     "mesh": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Skins/AlienInvader/Meshes/Drongo_AlienInvader.Drongo_AlienInvader",
+     "meshScale": 0.9422,
+     "yaw": -90.0,
+     "heightCm": 179.8,
+     "lockRoot": true,
+     "reachCm": 900.0,
+     "animations": {
+      "idle": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Animations/Idle_Combat.Idle_Combat",
+      "walk": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Animations/Primary_Fire.Primary_Fire",
+      "hit": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonDrongo/Characters/Heroes/Drongo/Animations/Death.Death"
+     },
+     "source": "Epic Paragon skin (local only): ParagonDrongo"
+    }
+   ]
+  },
+  "tidecaller": {
+   "race": "drowned_deep",
+   "alternates": [
+    {
+     "variant": "ParagonGideonUndertow",
+     "mesh": "/Game/ParagonGideon/Characters/Heroes/Gideon/Skins/Undertow/Meshes/Gideon_Undertow.Gideon_Undertow",
+     "meshScale": 0.9564,
+     "yaw": -90.0,
+     "heightCm": 183.9,
+     "lockRoot": true,
+     "reachCm": 900.0,
+     "animations": {
+      "idle": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/Idle.Idle",
+      "walk": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/Primary_Attack_A_Medium.Primary_Attack_A_Medium",
+      "attackAlt": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/Primary_Attack_B_Medium.Primary_Attack_B_Medium",
+      "hit": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/HitReact_Front.HitReact_Front",
+      "death": "/Game/ParagonGideon/Characters/Heroes/Gideon/Animations/Death_Fwd.Death_Fwd"
+     },
+     "source": "Epic Paragon skin (local only): ParagonGideon"
+    }
+   ]
+  },
+  "crystal_ballista": {
+   "race": "stoneborn",
+   "alternates": [
+    {
+     "variant": "ParagonHowitzerDomed",
+     "mesh": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Skins/Tier_2/Domed/Meshes/Howitzer_Domed.Howitzer_Domed",
+     "meshScale": 0.8029,
+     "yaw": -90.0,
+     "heightCm": 210.1,
+     "lockRoot": true,
+     "reachCm": 900.0,
+     "animations": {
+      "idle": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/Idle.Idle",
+      "walk": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/Run_Fwd.Run_Fwd",
+      "run": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/Run_Fwd.Run_Fwd",
+      "attack": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/Primary_Fire.Primary_Fire",
+      "attackAlt": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/Primary_Fire_V1.Primary_Fire_V1",
+      "hit": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/Hit_React_Fwd.Hit_React_Fwd",
+      "death": "/Game/ParagonHowitzer/Characters/Heroes/Howitzer/Animations/Death.Death"
+     },
+     "source": "Epic Paragon skin (local only): ParagonHowitzer"
+    }
+   ]
+  },
+  "rotbloom_shaman": {
+   "race": "blightwood",
+   "alternates": [
+    {
+     "variant": "ParagonFeyNightshade",
+     "mesh": "/Game/ParagonFey/Characters/Heroes/Fey/Skins/Nightshade/Meshes/Fey_Nightshade.Fey_Nightshade",
+     "meshScale": 0.9516,
+     "yaw": -90.0,
+     "heightCm": 179.3,
+     "lockRoot": true,
+     "reachCm": 900.0,
+     "animations": {
+      "idle": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Idle.Idle",
+      "walk": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Jog_Fwd.Jog_Fwd",
+      "run": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Jog_Fwd.Jog_Fwd",
+      "attack": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Ability_LMB_A_Medium.Ability_LMB_A_Medium",
+      "attackAlt": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Ability_LMB_B_Medium.Ability_LMB_B_Medium",
+      "hit": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Knockback_Fwd.Knockback_Fwd",
+      "death": "/Game/ParagonFey/Characters/Heroes/Fey/Animations/Death_Fwd.Death_Fwd"
+     },
+     "source": "Epic Paragon skin (local only): ParagonFey"
+    }
+   ]
+  },
+  "aetheri_phaseblade": {
+   "race": "aetheri",
+   "alternates": [
+    {
+     "variant": "ParagonMinionLaneMeleeDawn",
+     "mesh": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Meshes/Minion_Lane_Melee_Dawn.Minion_Lane_Melee_Dawn",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 158.3,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Ranged/Idle_A.Idle_A",
+      "run": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Combat_JogFwd.Combat_JogFwd",
+      "attack": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Attack_A.Attack_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Attack_B.Attack_B",
+      "death": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Death_A.Death_A",
+      "walk": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Combat_JogFwd.Combat_JogFwd"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    },
+    {
+     "variant": "ParagonMinionLaneMeleeDusk",
+     "mesh": "/Game/ParagonMinions/Characters/Minions/Dusk_Minions/Meshes/Minion_Lane_Melee_Dusk.Minion_Lane_Melee_Dusk",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 154.3,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Ranged/Idle_A.Idle_A",
+      "run": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Combat_JogFwd.Combat_JogFwd",
+      "attack": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Attack_A.Attack_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Attack_B.Attack_B",
+      "death": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Death_A.Death_A",
+      "walk": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Combat_JogFwd.Combat_JogFwd"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    }
+   ]
+  },
+  "aetheri_lancer": {
+   "race": "aetheri",
+   "alternates": [
+    {
+     "variant": "ParagonMinionLaneRangedDawn",
+     "mesh": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Meshes/Minion_Lane_Ranged_Dawn.Minion_Lane_Ranged_Dawn",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 148.6,
+     "lockRoot": true,
+     "reachCm": 900.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Ranged/Idle_A.Idle_A",
+      "run": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Combat_JogFwd.Combat_JogFwd",
+      "attack": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Attack_A.Attack_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Attack_B.Attack_B",
+      "death": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Death_A.Death_A",
+      "walk": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Combat_JogFwd.Combat_JogFwd"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    },
+    {
+     "variant": "ParagonMinionLaneRangedDusk",
+     "mesh": "/Game/ParagonMinions/Characters/Minions/Dusk_Minions/Meshes/Minion_Lane_Ranged_Dusk.Minion_Lane_Ranged_Dusk",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 152.5,
+     "lockRoot": true,
+     "reachCm": 900.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Ranged/Idle_A.Idle_A",
+      "run": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Combat_JogFwd.Combat_JogFwd",
+      "attack": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Attack_A.Attack_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Attack_B.Attack_B",
+      "death": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Death_A.Death_A",
+      "walk": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Melee/Combat_JogFwd.Combat_JogFwd"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    }
+   ]
+  },
+  "aetheri_bulwark": {
+   "race": "aetheri",
+   "alternates": [
+    {
+     "variant": "ParagonMinionLaneSuperDawn",
+     "mesh": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Meshes/Minion_Lane_Super_Dawn.Minion_Lane_Super_Dawn",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 204.0,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Idle.Idle",
+      "run": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Combat_Jog_Fwd_Alt.Combat_Jog_Fwd_Alt",
+      "attack": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Attack_A.Attack_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Attack_B.Attack_B",
+      "death": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Death_Front.Death_Front",
+      "walk": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Combat_Jog_Fwd_Alt.Combat_Jog_Fwd_Alt"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    },
+    {
+     "variant": "ParagonMinionLaneSuperDusk",
+     "mesh": "/Game/ParagonMinions/Characters/Minions/Dusk_Minions/Meshes/Minion_Lane_Super_Dusk.Minion_Lane_Super_Dusk",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 227.0,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Idle.Idle",
+      "run": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Combat_Jog_Fwd_Alt.Combat_Jog_Fwd_Alt",
+      "attack": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Attack_A.Attack_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Attack_B.Attack_B",
+      "death": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Death_Front.Death_Front",
+      "walk": "/Game/ParagonMinions/Characters/Minions/Down_Minions/Animations/Super/Combat_Jog_Fwd_Alt.Combat_Jog_Fwd_Alt"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    }
+   ]
+  },
+  "granite_crusher": {
+   "race": "stoneborn",
+   "alternates": [
+    {
+     "variant": "ParagonBuffWhite",
+     "mesh": "/Game/ParagonMinions/Characters/Buff/Buff_White/Meshes/Buff_White.Buff_White",
+     "meshScale": 0.9,
+     "yaw": -90.0,
+     "heightCm": 118.7,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Buff/Buff_White/Animations/Melee_Idle_A.Melee_Idle_A",
+      "run": "/Game/ParagonMinions/Characters/Buff/Buff_White/Animations/Melee_Run_Forward.Melee_Run_Forward",
+      "attack": "/Game/ParagonMinions/Characters/Buff/Buff_White/Animations/Melee_Attack_01_A.Melee_Attack_01_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Buff/Buff_White/Animations/Melee_Attack_02_A.Melee_Attack_02_A",
+      "hit": "/Game/ParagonMinions/Characters/Buff/Buff_White/Animations/Melee_Hit_Front_05_A.Melee_Hit_Front_05_A",
+      "death": "/Game/ParagonMinions/Characters/Buff/Buff_White/Animations/Melee_Death_Fwd_01_A.Melee_Death_Fwd_01_A",
+      "walk": "/Game/ParagonMinions/Characters/Buff/Buff_White/Animations/Melee_Run_Forward.Melee_Run_Forward"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    }
+   ]
+  },
+  "barbspitter": {
+   "race": "drowned_deep",
+   "alternates": [
+    {
+     "variant": "ParagonBuffBlue",
+     "mesh": "/Game/ParagonMinions/Characters/Buff/Buff_Blue/Meshes/Buff_Blue.Buff_Blue",
+     "meshScale": 1.7544,
+     "yaw": -90.0,
+     "heightCm": 110.0,
+     "lockRoot": true,
+     "reachCm": 900.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Buff/Buff_Blue/Animations/Idle_A.Idle_A",
+      "run": "/Game/ParagonMinions/Characters/Buff/Buff_Blue/Animations/Fly_Fwd_FullSpeed.Fly_Fwd_FullSpeed",
+      "attack": "/Game/ParagonMinions/Characters/Buff/Buff_Blue/Animations/Fire_A.Fire_A",
+      "attackAlt": "/Game/ParagonMinions/Characters/Buff/Buff_Blue/Animations/Fire_B.Fire_B",
+      "hit": "/Game/ParagonMinions/Characters/Buff/Buff_Blue/Animations/Hitreat_Fwd.Hitreat_Fwd",
+      "death": "/Game/ParagonMinions/Characters/Buff/Buff_Blue/Animations/Death_Fwd.Death_Fwd",
+      "walk": "/Game/ParagonMinions/Characters/Buff/Buff_Blue/Animations/Fly_Fwd_MidSpeed.Fly_Fwd_MidSpeed"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    }
+   ]
+  },
+  "aetheri_colossus": {
+   "race": "aetheri",
+   "alternates": [
+    {
+     "variant": "ParagonPrimeHelix",
+     "mesh": "/Game/ParagonMinions/Characters/Minions/Prime_Helix/Meshes/Prime_Helix.Prime_Helix",
+     "meshScale": 0.8748,
+     "yaw": -90.0,
+     "heightCm": 420.0,
+     "lockRoot": true,
+     "reachCm": 260.0,
+     "animations": {
+      "idle": "/Game/ParagonMinions/Characters/Minions/Prime_Helix/Animations/Idle.Idle",
+      "run": "/Game/ParagonMinions/Characters/Minions/Prime_Helix/Animations/Idle.Idle",
+      "attack": "/Game/ParagonMinions/Characters/Minions/Prime_Helix/Animations/Attack_Special_1.Attack_Special_1",
+      "attackAlt": "/Game/ParagonMinions/Characters/Minions/Prime_Helix/Animations/Attack_Special_2.Attack_Special_2",
+      "hit": "/Game/ParagonMinions/Characters/Minions/Prime_Helix/Animations/Hitreact_Fwd.Hitreact_Fwd",
+      "death": "/Game/ParagonMinions/Characters/Minions/Prime_Helix/Animations/Death.Death",
+      "walk": "/Game/ParagonMinions/Characters/Minions/Prime_Helix/Animations/Idle.Idle"
+     },
+     "source": "Epic ParagonMinions (local only)"
+    }
+   ]
+  }
+ }
+}
