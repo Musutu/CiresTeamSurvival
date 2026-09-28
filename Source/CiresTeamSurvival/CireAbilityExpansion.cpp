@@ -73,11 +73,39 @@ struct FRecipe
     TSharedPtr<FJsonObject> Construct;
 };
 
-struct FTable { TMap<FString, FRecipe> Rows; TArray<FString> Ids; bool bLoaded = false; };
+struct FTable { TMap<FString, FRecipe> Rows, Authored; TArray<FString> Ids; bool bLoaded = false; }; // ability-tuner: Authored = file rows (tuner reset)
 FTable& Table() { static FTable T; return T; }
 
 float Num(const TSharedPtr<FJsonObject>& J, const TCHAR* Key, float Default = 0) { double V = Default; return J && J->TryGetNumberField(Key, V) && FMath::IsFinite(V) ? static_cast<float>(V) : Default; }
 FString Str(const TSharedPtr<FJsonObject>& J, const TCHAR* Key) { FString V; if (J) J->TryGetStringField(Key, V); return V; }
+
+/** One recipe object -> FRecipe (clamped); false for an unknown delivery. ability-tuner: shared by Load and SetRecipeOverride. */
+bool ParseRecipe(const FString& Id, const TSharedPtr<FJsonObject>& J, FRecipe& R)
+{
+    R = FRecipe(); R.Id = Id; R.DeliveryName = Str(J, TEXT("delivery"));
+    bool bKnown = false;
+    for (const FDelName& N : DelNames) if (R.DeliveryName == N.Name) { R.D = N.D; bKnown = true; }
+    if (!bKnown) { UE_LOG(LogCireExpansion, Warning, TEXT("Unknown delivery %s for %s"), *R.DeliveryName, *R.Id); return false; }
+    R.Angle = FMath::Clamp(Num(J, TEXT("angle"), 60), 10.f, 170.f); R.Warning = FMath::Clamp(Num(J, TEXT("warning")), 0.f, 3.f);
+    R.Speed = FMath::Clamp(Num(J, TEXT("speed")), 0.f, 6000.f); R.Hits = FMath::Clamp(static_cast<int32>(Num(J, TEXT("hits"), 1)), 1, 12);
+    R.Knockback = FMath::Clamp(Num(J, TEXT("knockback")), 0.f, 800.f); R.Pull = FMath::Clamp(Num(J, TEXT("pull")), 0.f, 1.f);
+    R.Bleed = FMath::Clamp(Num(J, TEXT("bleed")), 0.f, 2.f); R.Lifesteal = FMath::Clamp(Num(J, TEXT("lifesteal")), 0.f, 1.f);
+    R.ExecuteBelow = FMath::Clamp(Num(J, TEXT("executeBelow")), 0.f, .5f); R.ExecuteBonus = FMath::Clamp(Num(J, TEXT("executeBonus")), 0.f, 3.f);
+    const FString Buff = Str(J, TEXT("buff")); R.Buff = Buff.IsEmpty() ? NAME_None : FName(*Buff);
+    R.BuffValue = FMath::Clamp(Num(J, TEXT("buffValue")), 0.f, 200.f); R.BuffSeconds = FMath::Clamp(Num(J, TEXT("buffSeconds")), 0.f, 60.f);
+    R.BarrierFraction = FMath::Clamp(Num(J, TEXT("barrier")), 0.f, 3.f);
+    J->TryGetBoolField(TEXT("cleanse"), R.bCleanse);
+    R.Count = FMath::Clamp(static_cast<int32>(Num(J, TEXT("count"), 1)), 1, 6); R.Visual = FMath::Clamp(static_cast<int32>(Num(J, TEXT("visual"))), 0, 3);
+    R.SummonHealth = FMath::Clamp(Num(J, TEXT("health"), 300), 10.f, 20000.f); R.SummonHealthPrimary = FMath::Clamp(Num(J, TEXT("healthPrimary"), 6), 0.f, 100.f);
+    R.MoveSpeed = FMath::Clamp(Num(J, TEXT("moveSpeed"), 430), 100.f, 1200.f); R.AttackRange = FMath::Clamp(Num(J, TEXT("attackRange"), 180), 80.f, 1400.f);
+    J->TryGetBoolField(TEXT("commandable"), R.bCommandable); R.SummonName = Str(J, TEXT("summonName"));
+    R.Waves = FMath::Clamp(static_cast<int32>(Num(J, TEXT("waves"), 5)), 1, 20); R.Interval = FMath::Clamp(Num(J, TEXT("interval"), .45f), .1f, 3.f);
+    R.SubRadius = FMath::Clamp(Num(J, TEXT("subRadius"), 220), 60.f, 800.f);
+    const FString Hook = Str(J, TEXT("hook")); R.Hook = Hook.IsEmpty() ? NAME_None : FName(*Hook);
+    R.Chance = FMath::Clamp(Num(J, TEXT("chance")), 0.f, 1.f); R.Threshold = FMath::Clamp(Num(J, TEXT("threshold")), 0.f, 1.f);
+    const TSharedPtr<FJsonObject>* C = nullptr; if (J->TryGetObjectField(TEXT("construct"), C)) R.Construct = *C;
+    return true;
+}
 
 void Load()
 {
@@ -91,32 +119,10 @@ void Load()
     {
         const TSharedPtr<FJsonObject>* Row = nullptr; const TSharedPtr<FJsonObject>* Rec = nullptr;
         if (!Pair.Value->TryGetObject(Row) || !(*Row)->TryGetObjectField(TEXT("recipe"), Rec)) continue;
-        const TSharedPtr<FJsonObject>& J = *Rec;
-        FRecipe R; R.Id = FString(Pair.Key); R.DeliveryName = Str(J, TEXT("delivery"));
-        bool bKnown = false;
-        for (const FDelName& N : DelNames) if (R.DeliveryName == N.Name) { R.D = N.D; bKnown = true; }
-        if (!bKnown) { UE_LOG(LogCireExpansion, Warning, TEXT("Unknown delivery %s for %s"), *R.DeliveryName, *R.Id); continue; }
-        R.Angle = FMath::Clamp(Num(J, TEXT("angle"), 60), 10.f, 170.f); R.Warning = FMath::Clamp(Num(J, TEXT("warning")), 0.f, 3.f);
-        R.Speed = FMath::Clamp(Num(J, TEXT("speed")), 0.f, 6000.f); R.Hits = FMath::Clamp(static_cast<int32>(Num(J, TEXT("hits"), 1)), 1, 12);
-        R.Knockback = FMath::Clamp(Num(J, TEXT("knockback")), 0.f, 800.f); R.Pull = FMath::Clamp(Num(J, TEXT("pull")), 0.f, 1.f);
-        R.Bleed = FMath::Clamp(Num(J, TEXT("bleed")), 0.f, 2.f); R.Lifesteal = FMath::Clamp(Num(J, TEXT("lifesteal")), 0.f, 1.f);
-        R.ExecuteBelow = FMath::Clamp(Num(J, TEXT("executeBelow")), 0.f, .5f); R.ExecuteBonus = FMath::Clamp(Num(J, TEXT("executeBonus")), 0.f, 3.f);
-        const FString Buff = Str(J, TEXT("buff")); R.Buff = Buff.IsEmpty() ? NAME_None : FName(*Buff);
-        R.BuffValue = FMath::Clamp(Num(J, TEXT("buffValue")), 0.f, 200.f); R.BuffSeconds = FMath::Clamp(Num(J, TEXT("buffSeconds")), 0.f, 60.f);
-        R.BarrierFraction = FMath::Clamp(Num(J, TEXT("barrier")), 0.f, 3.f);
-        J->TryGetBoolField(TEXT("cleanse"), R.bCleanse);
-        R.Count = FMath::Clamp(static_cast<int32>(Num(J, TEXT("count"), 1)), 1, 6); R.Visual = FMath::Clamp(static_cast<int32>(Num(J, TEXT("visual"))), 0, 3);
-        R.SummonHealth = FMath::Clamp(Num(J, TEXT("health"), 300), 10.f, 20000.f); R.SummonHealthPrimary = FMath::Clamp(Num(J, TEXT("healthPrimary"), 6), 0.f, 100.f);
-        R.MoveSpeed = FMath::Clamp(Num(J, TEXT("moveSpeed"), 430), 100.f, 1200.f); R.AttackRange = FMath::Clamp(Num(J, TEXT("attackRange"), 180), 80.f, 1400.f);
-        J->TryGetBoolField(TEXT("commandable"), R.bCommandable); R.SummonName = Str(J, TEXT("summonName"));
-        R.Waves = FMath::Clamp(static_cast<int32>(Num(J, TEXT("waves"), 5)), 1, 20); R.Interval = FMath::Clamp(Num(J, TEXT("interval"), .45f), .1f, 3.f);
-        R.SubRadius = FMath::Clamp(Num(J, TEXT("subRadius"), 220), 60.f, 800.f);
-        const FString Hook = Str(J, TEXT("hook")); R.Hook = Hook.IsEmpty() ? NAME_None : FName(*Hook);
-        R.Chance = FMath::Clamp(Num(J, TEXT("chance")), 0.f, 1.f); R.Threshold = FMath::Clamp(Num(J, TEXT("threshold")), 0.f, 1.f);
-        const TSharedPtr<FJsonObject>* C = nullptr; if (J->TryGetObjectField(TEXT("construct"), C)) R.Construct = *C;
+        FRecipe R; if (!ParseRecipe(FString(Pair.Key), *Rec, R)) continue;
         T.Ids.Add(R.Id); T.Rows.Add(R.Id, MoveTemp(R));
     }
-    T.Ids.Sort();
+    T.Ids.Sort(); T.Authored = T.Rows;
     UE_LOG(LogCireExpansion, Display, TEXT("CIRE_ABILITY_EXPANSION_LOADED recipes=%d"), T.Ids.Num());
 }
 const FTable& Loaded() { FTable& T = Table(); if (!T.bLoaded) Load(); return T; }
@@ -305,6 +311,14 @@ using namespace CireXpDetail;
 
 // ============================================================================================ identity
 void CireAbilityExpansion::Reload() { Table().bLoaded = false; Load(); }
+bool CireAbilityExpansion::SetRecipeOverride(const FString& Id, const TSharedPtr<FJsonObject>& Recipe)
+{
+    Loaded(); FTable& T = Table();
+    const FRecipe* Authored = T.Authored.Find(Id); if (!Authored) return false;
+    if (!Recipe.IsValid()) { T.Rows.Add(Id, *Authored); return true; } // ability-tuner: reset to the file row
+    FRecipe R; if (!ParseRecipe(Id, Recipe, R) || R.D != Authored->D) return false; // the delivery kind itself is not tunable
+    T.Rows.Add(Id, MoveTemp(R)); return true;
+}
 const TArray<FString>& CireAbilityExpansion::AllIds() { return Loaded().Ids; }
 bool CireAbilityExpansion::Knows(const FString& Id) { return Find(Id) != nullptr; }
 bool CireAbilityExpansion::Handles(const FString& Id) { const FRecipe* R = Find(Id); return R && R->D != EDel::Passive; }

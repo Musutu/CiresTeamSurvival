@@ -1,4 +1,5 @@
 #include "CireFabVFX.h"
+#include "CireAbilityTuner.h" // ability-tuner: per-ability VFX scale / tint
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -142,13 +143,26 @@ const CireFabVFX::FEntry* CireFabVFX::Find(ECireSchool School, ERole Role)
     return T.Schools.Find(FString(TEXT("default."))+RoleName(Role));
 }
 
+// ability-tuner: an entry with the Ability Tuner's per-ability VFX scale / tint (stable addresses, rebuilt per tuner version).
+static const CireFabVFX::FEntry* TunedEntry(const CireFabVFX::FEntry* E, FName Skill)
+{
+    float TScale=1.f;FLinearColor TTint(0,0,0,0);
+    if(!E||Skill.IsNone()||!CireAbilityTuner::VfxFor(Skill.ToString(),TScale,TTint))return E;
+    static TMap<FString,TUniquePtr<CireFabVFX::FEntry>> Cache;static uint32 CacheVersion=0;
+    if(CacheVersion!=CireAbilityTuner::Version()){Cache.Reset();CacheVersion=CireAbilityTuner::Version();}
+    const FString Key=FString::Printf(TEXT("%p|%s"),E,*Skill.ToString());
+    if(const TUniquePtr<CireFabVFX::FEntry>* Hit=Cache.Find(Key))return Hit->Get();
+    auto Copy=MakeUnique<CireFabVFX::FEntry>(*E);Copy->Scale*=TScale;if(TTint.A>0){Copy->Tint=TTint;Copy->TintStrength=1.f;}
+    return Cache.Add(Key,MoveTemp(Copy)).Get();
+}
+
 const CireFabVFX::FEntry* CireFabVFX::FindAbility(FName Skill, ERole Role)
 {
     FTable& T=Loaded();
     if(T.Abilities.IsEmpty()||Skill.IsNone())return nullptr;
-    if(const FEntry* E=T.Abilities.Find(Skill.ToString().ToLower()+TEXT(".")+RoleName(Role)))return E;
+    if(const FEntry* E=T.Abilities.Find(Skill.ToString().ToLower()+TEXT(".")+RoleName(Role)))return TunedEntry(E,Skill);
     // kits-complete: combat events carry display names ("Gravewood Maul"); map them to the ability id.
-    if(const FCireAbilityDef* D=CireAbilityDB::FindByName(Skill.ToString()))return T.Abilities.Find(D->Id.ToLower()+TEXT(".")+RoleName(Role));
+    if(const FCireAbilityDef* D=CireAbilityDB::FindByName(Skill.ToString()))return TunedEntry(T.Abilities.Find(D->Id.ToLower()+TEXT(".")+RoleName(Role)),Skill);
     return nullptr;
 }
 
@@ -162,7 +176,7 @@ const CireFabVFX::FEntry* CireFabVFX::FindFor(FName Skill, ECireSchool School, E
 {
     // The ability's signature system when its pack is installed, else the school's shared set.
     if(const FEntry* Own=FindAbility(Skill,Role);Own&&Resolve(Own))return Own;
-    return Find(School,Role);
+    return TunedEntry(Find(School,Role),Skill); // ability-tuner: the school set also takes the ability's tuned scale / tint
 }
 
 UFXSystemAsset* CireFabVFX::Resolve(const FEntry* Entry)

@@ -1,4 +1,5 @@
 #include "CireOutdoorBosses.h" // outdoor-bosses
+#include "CireAbilityTuner.h" // ability-tuner
 #include "CireLayoutWiring.h" // layout-wiring
 #include "CireJunglePacks.h" // jungle-packs
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
@@ -222,6 +223,7 @@ void ACireGameMode::BeginPlay() {
     CireTownMap::InitializeServer(this); // medieval-kingdom: pick the map, switch the realm frame, stream the town realms
     CireDeveloperTools::Initialize(this);
     CireSkillShop::InitializeMode(this); // progression-shop: -CireMode=SkillShop|Classic
+    CireAbilityTuner::InitializeServer(this); // ability-tuner: replicated override state, -CireTuningProfile=
     CireLanePath::PublishState(GetGameState<ACireGameState>());
     GetWorld()->SpawnActor<ACireWorld>();
     CireTownMap::PlaceHeroes(this); // medieval-kingdom: champions that joined before the town streamed in
