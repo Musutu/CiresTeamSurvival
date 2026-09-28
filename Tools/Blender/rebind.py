@@ -33,9 +33,18 @@ import common  # noqa: E402
 
 CHAINS = {
     "spine": [("pelvis", "spine_01"), ("spine_01", "spine_02"), ("spine_02", "spine_03"), ("spine_03", "neck_01"), ("neck_01", "head")],
-    "arms": [(f"{b}_{s}", f"{c}_{s}") for s in ("l", "r") for b, c in (("upperarm", "lowerarm"), ("lowerarm", "hand"), ("hand", "middle_01"))],
+    "arms": [(f"{b}_{s}", f"{c}_{s}") for s in ("l", "r") for b, c in (("upperarm", "lowerarm"), ("lowerarm", "hand"))],  # hands follow the forearm (a gripping hand's curl is not an axis)
     "legs": [(f"{b}_{s}", f"{c}_{s}") for s in ("l", "r") for b, c in (("thigh", "calf"), ("calf", "foot"), ("foot", "ball"))],
 }
+
+
+def feet_frame(points: dict[str, Vector], unreal_space: bool = False):
+    """Frame from the feet (foot -> ball = forward): for a body standing square whose clavicle line is skewed."""
+    up = Vector((0.0, 0.0, 1.0))
+    fwd = sum(((points[f"ball_{s}"] - points[f"foot_{s}"]) for s in ("l", "r")), Vector())
+    fwd = (fwd - up * fwd.dot(up)).normalized()
+    left = (fwd.cross(up) if unreal_space else up.cross(fwd)).normalized()
+    return left, up, fwd
 
 
 def frame(points: dict[str, Vector], unreal_space: bool = False):
@@ -77,6 +86,7 @@ def main():
     p.add_argument("--ref", default="")
     p.add_argument("--chains", default="spine,arms,legs")
     p.add_argument("--identity", action="store_true")
+    p.add_argument("--frame", default="clavicles", choices=("clavicles", "feet"), help="body frame source (feet: square stance)")
     p.add_argument("--report", default="")
     a = p.parse_args(common.script_args())
     t0 = time.time()
@@ -101,7 +111,7 @@ def main():
             return {b.name: mw @ b.head for b in pb}
 
         heads = world_heads()
-        body = frame(heads)
+        body = feet_frame(heads) if a.frame == "feet" else frame(heads)
         balls = [heads[b] - heads[f] for f, b in (("foot_l", "ball_l"), ("foot_r", "ball_r")) if f in heads and b in heads]
         report["forwardCheck"] = round(sum(balls, Vector()).normalized().dot(body[2]), 3) if balls else None  # > 0: frame is right
         pairs = [pair for c in a.chains.split(",") if c for pair in CHAINS[c]]
@@ -117,7 +127,7 @@ def main():
                 continue
             u = (heads[mid] - heads[root]).normalized(); f = (heads[end] - heads[mid]).normalized()
             perp = f - u * f.dot(u)
-            if perp.length > math.sin(math.radians(15)):
+            if perp.length > math.sin(math.radians(35)):  # only a clearly bent hinge defines the front (17 deg read 90 deg wrong)
                 # carried in the root bone's own (pose) frame, so it follows the bone as it is re-aimed
                 fronts[root] = (pb[root].matrix.to_3x3().inverted() @ (arm.matrix_world.to_3x3().inverted() @ (perp.normalized() * sign)))
         report["hingeFronts"] = sorted(fronts)

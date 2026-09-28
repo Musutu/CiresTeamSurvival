@@ -90,6 +90,8 @@ def main():
     p.add_argument("--out", required=True)
     p.add_argument("--res", type=int, default=768)
     p.add_argument("--no-flex", action="store_true")
+    p.add_argument("--bend", default="", help="PREFIX:DEG - bend every bone named PREFIX* by DEG about its local X "
+                   "(added-chain check: tentacle:25) and render bend_face / bend_side close-ups")
     a = p.parse_args(common.script_args())
     t0 = time.time()
     common.reset_scene()
@@ -137,6 +139,25 @@ def main():
             for name in ("front", "left", "right"):
                 look(cam, centre, views[name], height * 3, ortho=height * 1.15)
                 render(out / f"flex_{name}.png")
+    if arm and a.bend:
+        prefix, deg = a.bend.split(":")
+        bpy.context.view_layer.objects.active = arm
+        bpy.ops.object.mode_set(mode="POSE")
+        bent = 0
+        for pb in arm.pose.bones:
+            pb.rotation_mode = "XYZ"
+            if pb.name.startswith(prefix):
+                pb.rotation_euler = (math.radians(float(deg)), 0.0, 0.0); bent += 1
+            elif pb.name in ("lowerarm_l", "lowerarm_r", "upperarm_l", "upperarm_r"):
+                pass
+        bpy.ops.object.mode_set(mode="OBJECT"); bpy.context.view_layer.update()
+        report["bent"] = bent
+        head = bone_head(arm, "head")
+        if head:
+            look(cam, head + Vector((0, 0, -height * .03)), forward, height * .6, ortho=height * .25)
+            render(out / "bend_face.png")
+            look(cam, head + Vector((0, 0, -height * .03)), right, height * .6, ortho=height * .25)
+            render(out / "bend_side.png")
     report["seconds"] = round(time.time() - t0, 2)
     (out / "stats.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
     common.result(kind="qa_turnaround", out=str(out), **{k: report[k] for k in ("stats", "seconds")}, arms=report.get("arms"))

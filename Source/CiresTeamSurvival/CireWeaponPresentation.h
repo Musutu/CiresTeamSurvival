@@ -27,6 +27,10 @@ namespace CireWeapons
     CIRESTEAMSURVIVAL_API int32 PrincipalAxis(const FVector& Axis);
     /** blender-rig: prop-space stretch by Factor along the handle axis, anchored at the handle point (identity if not principal). */
     CIRESTEAMSURVIVAL_API FTransform HandleStretch(const CireGrip::FWeapon& Grip, float Factor);
+    /** blender-rig: WeaponLoadouts.json sizeClasses for a monster/creature held prop. A one-handed weapon (grip data with
+     *  no second grip, not a shield, ammo, carried staff or two-hander) is "mace" (mace/hammer/flail/club by mesh name)
+     *  or "one_hand"; false when the prop keeps its size. Girth is 1 when the handle axis is not principal. */
+    CIRESTEAMSURVIVAL_API bool HeldSizeClass(const class UStaticMesh& Mesh, const CireGrip::FWeapon& Grip, FString& OutClass, float& OutScale, float& OutGirth, float& OutMaxBodyFraction);
     /**
      * blender-rig: the handle axis pointed at the prop's business end (blade, head, spike). WeaponGrips.fab.json lists the
      * Fab meshes' axes by their modelling direction, so on the bind grip SM_Sword_1, SM_Axe_1, SM_Dagger_1 and SM_WarHammer

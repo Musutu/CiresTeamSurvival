@@ -114,6 +114,13 @@ namespace CireGrip
     CIRESTEAMSURVIVAL_API void TwistSpine(FCompactPose& Pose, float Degrees);
     /** movement-feel: two-bone IK of a mesh-bone chain (upper, middle, end) toward a component-space target. */
     CIRESTEAMSURVIVAL_API void SolveTwoBone(FCompactPose& Pose, const int32 Chain[3], const FTransform& Target, float Weight);
+    /**
+     * blender-rig: elbow hyperextension guard. For each arm chain (mesh indices upperarm, lowerarm, hand) whose signed elbow
+     * flexion (CireRigAudit convention: Anterior is the upper arm's anatomical front in its bone space) is below LimitDeg,
+     * the arm is re-solved by the two-bone IK (anatomical pole) keeping the hand where the clip put it, blended in from
+     * LimitDeg (0) to FullDeg (1) so it never pops. Returns the number of arms corrected.
+     */
+    CIRESTEAMSURVIVAL_API int32 GuardElbows(FCompactPose& Pose, const int32 Arms[2][3], const FVector Anterior[2], float LimitDeg, float FullDeg);
     /** Component-space transform of a bone in an evaluated pose (mesh bone index). */
     CIRESTEAMSURVIVAL_API FTransform ComponentBone(const FCompactPose& Pose, int32 MeshBone);
 #if !UE_BUILD_SHIPPING
