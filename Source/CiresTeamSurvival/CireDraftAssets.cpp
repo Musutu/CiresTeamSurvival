@@ -5,6 +5,9 @@
 #include "Dom/JsonValue.h"
 #include "Engine/StreamableManager.h"
 #include "Engine/Texture2D.h"
+#include "HAL/IConsoleManager.h"
+#include "Engine/SkinnedAsset.h"
+#include "Engine/StaticMesh.h"
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
 #include "Misc/Paths.h"
@@ -205,11 +208,14 @@ void CireDraftAssets::Reload()
         {
             double V=0;
             if((*P)->TryGetNumberField(TEXT("hoverDebounceSeconds"),V))T.HoverDebounceSeconds=FMath::Clamp(V,0.0,1.0);
+            if((*P)->TryGetNumberField(TEXT("paragonHoverDebounceSeconds"),V))T.ParagonHoverDebounceSeconds=FMath::Clamp(V,0.0,2.0);
+            bool B=false;if((*P)->TryGetBoolField(TEXT("preloadParagonNeighbours"),B))T.bPreloadParagonNeighbours=B;
             if((*P)->TryGetNumberField(TEXT("bodyCacheSize"),V))T.BodyCacheSize=FMath::Clamp(int32(V),1,24);
             if((*P)->TryGetNumberField(TEXT("backgroundCacheSize"),V))T.BackgroundCacheSize=FMath::Clamp(int32(V),1,64);
             if((*P)->TryGetNumberField(TEXT("previewPoolSize"),V))T.PreviewPoolSize=FMath::Clamp(int32(V),1,12);
             if((*P)->TryGetNumberField(TEXT("neighbourPreload"),V))T.NeighbourPreload=FMath::Clamp(int32(V),0,4);
             if((*P)->TryGetNumberField(TEXT("crossFadeSeconds"),V))T.CrossFadeSeconds=FMath::Clamp(V,0.05,2.0);
+            if((*P)->TryGetNumberField(TEXT("asyncLoadingTimeLimitMs"),V))T.AsyncLoadingTimeLimitMs=FMath::Clamp(float(V),1.f,30.f);
         }
     }
     DraftTunables()=T;
@@ -218,6 +224,14 @@ void CireDraftAssets::Reload()
     Evicted.Reset();DraftBackgrounds().Lru.SetCapacity(T.BackgroundCacheSize,&Evicted);for(const FString& K:Evicted)DraftBackgrounds().Release(K);
 }
 CireDraftAssets::FStats& CireDraftAssets::Stats(){static FStats S;return S;}
+void CireDraftAssets::RetainLoadingBudget(bool bRetain)
+{
+    static int32 Holders=0;static float Before=-1.f;
+    IConsoleVariable* CVar=IConsoleManager::Get().FindConsoleVariable(TEXT("s.AsyncLoadingTimeLimit"));
+    if(!CVar)return;
+    if(bRetain){if(Holders++==0){Before=CVar->GetFloat();CVar->Set(FMath::Max(Before,Tunables().AsyncLoadingTimeLimitMs),ECVF_SetByCode);UE_LOG(LogCireDraftAssets,Log,TEXT("CIRE_DRAFT_ASSETS_BUDGET on %.1f ms (was %.1f)"),CVar->GetFloat(),Before);}}
+    else if(Holders>0&&--Holders==0&&Before>=0.f)CVar->Set(Before,ECVF_SetByCode);
+}
 
 UTexture2D* CireDraftAssets::Portrait(const FString& Id)
 {
@@ -301,7 +315,22 @@ bool CireDraftAssets::IsBodyReady(const FString& Id,const FString& Skin)
 {
     const FDraftBody* B=DraftBodies().Find(BodyKey(Id,Skin));
     if(!B)return false;
-    return B->bEmpty||!B->Handle||B->Handle->HasLoadCompleted()||B->Handle->WasCanceled();
+    if(B->bEmpty||!B->Handle||B->Handle->WasCanceled())return true;
+    if(!B->Handle->HasLoadCompleted())return false;
+#if WITH_EDITOR
+    TArray<UObject*> Loaded;B->Handle->GetLoadedAssets(Loaded);
+    for(const UObject* O:Loaded)
+    {
+        if(const USkinnedAsset* Skinned=Cast<USkinnedAsset>(O);Skinned&&Skinned->IsCompiling())return false;
+        if(const UStaticMesh* Static=Cast<UStaticMesh>(O);Static&&Static->IsCompiling())return false;
+    }
+#endif
+    return true;
+}
+bool CireDraftAssets::IsBodyStreaming(const FString& Id,const FString& Skin)
+{
+    const FDraftBody* B=DraftBodies().Find(BodyKey(Id,Skin));
+    return B&&B->Handle&&B->Handle->IsLoadingInProgress();
 }
 int32 CireDraftAssets::CancelBodiesExcept(const TSet<FString>& Keep)
 {

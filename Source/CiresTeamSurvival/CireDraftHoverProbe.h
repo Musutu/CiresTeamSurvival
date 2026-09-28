@@ -7,7 +7,7 @@
 //   - game-thread milliseconds spent loading the background, portraits and the 3D body (spawn / bind / visuals),
 //   - time until the details (splash) show the hovered hero and until the live 3D figure is ready.
 // Phases: "browse" (dwell 700 ms per hero), "scrub" (60 ms per hero: a fast mouse sweep across the grid) and
-// "revisit" (the first browse heroes again: cache hits). Results: CIRE_DRAFT_HOVER_* log lines and
+// "revisit" (the first browse heroes again: cache hits) and "linger" (4 s on unseen heroes: time to the live figure). Results: CIRE_DRAFT_HOVER_* log lines and
 // Saved/DraftHoverProbe/<stamp>[_tag]/hover.json.
 #include "CoreMinimal.h"
 
@@ -40,7 +40,7 @@ struct CIRESTEAMSURVIVAL_API FCireDraftHoverProbe
     TArray<FSwitch> Plan;
     int32 Current = -1;
     int32 Lag[2] = {-1, -1};
-    TArray<double> AllFrames[3];
+    TArray<double> AllFrames[4];
 
     /** Builds the fixed plan from the roster order (every 3rd hero browsed, the ones after them scrubbed). */
     void Begin(const TArray<FString>& RosterIds, double Now, const FString& Tag, int32 Count = 30);

@@ -102,6 +102,7 @@ private:
     TArray<FString> PoolOrder; // oldest first
     int32 PoolCapacity = 4;
     bool bReusedFromPool = false;
+    bool bHoldsLoadingBudget = false;
     void BuildStage();
     void FitStage(float BodyHeight);
     void FrameCamera(float DeltaSeconds, bool bSnap);

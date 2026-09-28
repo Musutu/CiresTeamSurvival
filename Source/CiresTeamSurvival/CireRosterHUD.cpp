@@ -858,7 +858,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     // ---------- The 3D body: heavy, so it waits for the hover to settle and streams asynchronously ----------
     // The stage only spawns a body whose packages are resident (or pooled from a recent view); a hover that moves on
     // cancels its stale request. Neighbours of the settled hero preload at low priority once it is on screen.
-    S.BodyDebounce.Update(S.Hovered,Now,!S.ForcedHover.IsEmpty()?0.0:Tune.HoverDebounceSeconds);
+    S.BodyDebounce.Update(S.Hovered,Now,!S.ForcedHover.IsEmpty()?0.0:CireParagonChampions::IsParagon(S.Hovered)?Tune.ParagonHoverDebounceSeconds:Tune.HoverDebounceSeconds);
     FString StageWant;
     if(bLockedView&&Selected)StageWant=Selected->Id;
     else if(!S.Hovered.IsEmpty())StageWant=S.BodyDebounce.Settled==S.Hovered?S.Hovered:FString();
@@ -870,9 +870,10 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         if(!StageSkin.IsEmpty())CireDraftAssets::RequestBody(StageWant,StageSkin,true);
         if(StageWant!=S.BodyWant){S.BodyWant=StageWant;S.BodyWantSince=Now;}
         const bool bResident=CireDraftAssets::IsBodyReady(StageWant)||Stage->IsPooled(StageWant)||Stage->GetProfileId()==StageWant;
-        if(bResident||Now-S.BodyWantSince>8.0)
+        // Safety net: a request still streaming after 15 s binds anyway (a mesh that is merely compiling is waited for).
+        if(bResident||(Now-S.BodyWantSince>15.0&&CireDraftAssets::IsBodyStreaming(StageWant)))
         {
-            if(!bResident&&Stage->GetProfileId()!=StageWant)++CireDraftAssets::Stats().SyncFallbacks; // streaming stalled: bind anyway
+            if(!bResident&&Stage->GetProfileId()!=StageWant)++CireDraftAssets::Stats().SyncFallbacks;
             Stage->ShowProfile(StageWant);
         }
         if(Stage->GetProfileId()==StageWant&&CireDraftAssets::IsBodyReady(StageWant,StageSkin))Stage->SetPreviewSkin(StageSkin);
@@ -884,6 +885,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         for(int32 D=1;D<=Tune.NeighbourPreload&&At!=INDEX_NONE;++D)for(const int32 N:{At-D,At+D})if(Visible.IsValidIndex(N))
         {
             const FString& Nb=Entries[Visible[N]].Id;
+            if(!Tune.bPreloadParagonNeighbours&&Entries[Visible[N]].bParagon)continue;
             if(bSettledLive&&(CireDraftAssets::IsBodyRequested(Nb)||CireDraftAssets::BodiesInFlight()==0))
             {
                 CireDraftAssets::RequestBody(Nb,FString(),false);Keep.Add(Nb);

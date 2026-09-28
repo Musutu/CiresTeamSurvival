@@ -3,6 +3,7 @@
 #include "CireGame.h"
 #include "CireChampionArt.h"
 #include "CireChampionRoster.h"
+#include "CireDraftAssets.h" // champ-select-perf: async loading budget
 #include "Components/CapsuleComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
@@ -125,7 +126,7 @@ ACireDraftStage* ACireDraftStage::SpawnStage(UWorld* World)
     if(!World||World->GetNetMode()==NM_DedicatedServer)return nullptr;
     FActorSpawnParameters P;P.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;P.ObjectFlags|=RF_Transient;
     auto* Stage=World->SpawnActor<ACireDraftStage>(ACireDraftStage::StaticClass(),FTransform(StageOrigin),P);
-    if(Stage)Stage->BuildStage();
+    if(Stage){Stage->BuildStage();CireDraftAssets::RetainLoadingBudget(true);Stage->bHoldsLoadingBudget=true;}
     return Stage;
 }
 
@@ -744,6 +745,7 @@ void ACireDraftStage::EndPlay(const EEndPlayReason::Type Reason)
     if(bCutout){bCutout=false;RetainPropagateAlpha(false);}
     DestroyPreview();
     for(auto& Pair:Pool)if(IsValid(Pair.Value))Pair.Value->Destroy();
+    if(bHoldsLoadingBudget){bHoldsLoadingBudget=false;CireDraftAssets::RetainLoadingBudget(false);}
     Pool.Reset();PoolOrder.Reset();
     Super::EndPlay(Reason);
 }

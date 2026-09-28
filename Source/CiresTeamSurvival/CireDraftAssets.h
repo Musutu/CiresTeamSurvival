@@ -35,8 +35,11 @@ namespace CireDraftAssets
     CIRESTEAMSURVIVAL_API const TArray<FString>& BodyPaths(const FString& ProfileId, const FString& Skin = FString());
     /** Starts (or touches) the async load of a body. High priority for the hovered/selected hero. */
     CIRESTEAMSURVIVAL_API void RequestBody(const FString& ProfileId, const FString& Skin, bool bHighPriority);
-    /** True once every package of the body is resident (or the binding names none). */
+    /** True once every package of the body is resident and its meshes finished compiling (the editor builds mesh render
+     *  data after load; touching a compiling mesh would block the game thread), or the binding names none. */
     CIRESTEAMSURVIVAL_API bool IsBodyReady(const FString& ProfileId, const FString& Skin = FString());
+    /** Still streaming packages (not merely compiling). */
+    CIRESTEAMSURVIVAL_API bool IsBodyStreaming(const FString& ProfileId, const FString& Skin = FString());
     CIRESTEAMSURVIVAL_API bool IsBodyRequested(const FString& ProfileId, const FString& Skin = FString());
     /** Cancels in-flight body requests whose key (id or id@skin) is not in Keep. Completed bodies stay cached. */
     CIRESTEAMSURVIVAL_API int32 CancelBodiesExcept(const TSet<FString>& Keep);
@@ -48,13 +51,18 @@ namespace CireDraftAssets
     struct FTunables
     {
         double HoverDebounceSeconds = .15;   // hover must settle this long before the heavy body load starts
+        double ParagonHoverDebounceSeconds = .35; // Paragon bodies are much heavier (editor: mesh rebuild on first load)
+        bool bPreloadParagonNeighbours = false;  // neighbour preload skips Paragon bodies (never load one nobody asked for)
         int32 BodyCacheSize = 6;              // completed bodies kept resident
         int32 BackgroundCacheSize = 10;       // backgrounds kept resident (pinned full resolution)
         int32 PreviewPoolSize = 4;            // spawned preview bodies the stage keeps hidden for instant revisits
         int32 NeighbourPreload = 1;           // bodies preloaded either side of the hovered tile (low priority)
         double CrossFadeSeconds = .35;        // background / figure crossfade
+        float AsyncLoadingTimeLimitMs = 12.f; // game-thread async-loading budget per frame while champion select is open
     };
     CIRESTEAMSURVIVAL_API const FTunables& Tunables();
+    /** Raises s.AsyncLoadingTimeLimit to the tunable while a draft stage lives (ref-counted), restores it after. */
+    CIRESTEAMSURVIVAL_API void RetainLoadingBudget(bool bRetain);
     CIRESTEAMSURVIVAL_API void Reload();
 
     // ---- probe counters ----

@@ -1,12 +1,15 @@
 {
   "schemaVersion": 1,
-  "notes": "Champion select tunables (champ-select). performance: hoverDebounceSeconds = how long a hover must settle before the 3D body starts streaming (0.12-0.2 feels instant without loading every tile the mouse crosses); bodyCacheSize = streamed bodies kept resident; backgroundCacheSize = painted scenes kept resident (pinned full resolution); previewPoolSize = spawned preview bodies kept hidden for instant revisits (counts the visible one); neighbourPreload = bodies preloaded either side of the hovered hero once it is on screen; crossFadeSeconds = scene and card-to-body crossfade.",
+  "notes": "Champion select tunables (champ-select). performance: hoverDebounceSeconds = how long a hover must settle before the 3D body starts streaming (0.12-0.2 feels instant without loading every tile the mouse crosses); paragonHoverDebounceSeconds = the same for the much heavier Paragon bodies; preloadParagonNeighbours = also preload Paragon bodies next to the hovered hero (off: in the editor each Paragon mesh rebuilds for seconds on its first load); bodyCacheSize = streamed bodies kept resident; backgroundCacheSize = painted scenes kept resident (pinned full resolution); previewPoolSize = spawned preview bodies kept hidden for instant revisits (counts the visible one); neighbourPreload = bodies preloaded either side of the hovered hero once it is on screen; crossFadeSeconds = scene and card-to-body crossfade; asyncLoadingTimeLimitMs = game-thread async-loading budget per frame while champion select is open (UE default 5).",
   "performance": {
     "hoverDebounceSeconds": 0.15,
+    "paragonHoverDebounceSeconds": 0.35,
+    "preloadParagonNeighbours": false,
     "bodyCacheSize": 6,
     "backgroundCacheSize": 10,
     "previewPoolSize": 4,
     "neighbourPreload": 1,
-    "crossFadeSeconds": 0.35
+    "crossFadeSeconds": 0.35,
+    "asyncLoadingTimeLimitMs": 12
   }
 }
