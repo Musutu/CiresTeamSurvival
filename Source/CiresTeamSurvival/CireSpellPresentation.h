@@ -133,6 +133,11 @@ private:
     bool bFabGround = false; float FabTargetRadius = 0.f, FabScale = 1.f; FString FabSkipReason;
 public:
     bool HasFabGroundOverlay() const { return bFabGround && FabFX.IsValid(); }
+    // vfx-loop-fix: the Fab system is ground-anchored (FabVFX.json "groundAnchored") and was spawned on the floor under the unit.
+    bool HasGroundAnchoredFab() const { return bFabAnchoredGround && FabFX.IsValid(); }
+    UFXSystemComponent* GetFabFX() const { return FabFX.Get(); }
+    bool WasFabTried() const { return bFabTried; } float GetAgeSeconds() const { return Age; }
+    bool bFabAnchoredGround = false; FVector FabSpawnAt = FVector::ZeroVector; // set even when the spawn is culled (tests)
     float FabGroundScale() const { return FabScale; }
     const FString& FabGroundSkipReason() const { return FabSkipReason; }
 private:

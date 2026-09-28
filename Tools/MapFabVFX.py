@@ -324,7 +324,7 @@ def main() -> int:
         "abilities": abilities,
     }
     # telegraphs: the curated ground-overlay allow-list / exclusions are hand data (RunSpellGallery.py --fab-ground).
-    for key in ("groundNotes", "groundRadius", "groundExcluded"):
+    for key in ("groundNotes", "groundRadius", "groundExcluded", "anchorNotes", "groundAnchored", "lifetime"):  # vfx-loop-fix: hand data too
         if key in existing:
             data[key] = existing[key]
     OUT.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")

@@ -833,7 +833,8 @@ void ACireHUD::UpdateLevelUps(ACireHero* Hero)
             if(CireFabVFX::Enabled()&&H->GetRootComponent())
                 if(const auto* E=CireFabVFX::FindKey(TEXT("level_up"),CireFabVFX::ERole::Cast))
                     if(UFXSystemAsset* S=CireFabVFX::Resolve(E))
-                        CireFabVFX::ApplyEntryTint(CireFabVFX::SpawnAttached(S,H->GetRootComponent(),FVector(0,0,-88.f),E->Scale*CireAbilityVFX::SpellEffectScale(GetWorld()),true),*E);
+                        if(UFXSystemComponent* Up=CireFabVFX::SpawnAttached(S,H->GetRootComponent(),CireFabVFX::FeetOffset(H),E->Scale*CireAbilityVFX::SpellEffectScale(GetWorld()),true))
+                        {CireFabVFX::ApplyEntryTint(Up,*E);CireFabVFX::Bound(Up,E->Lifetime>0?E->Lifetime:CireFabVFX::LevelUpSeconds());} // vfx-loop-fix: feet + bounded
             if(H==Hero){PlayWowSound(0,1.f);CireBanners::Show(ECireBanner::LevelUp,FString::Printf(TEXT("Level %d"),H->Level),TEXT("+2 primary attribute  /  +1 to the others"));}
         }
         *Seen=H->Level;
