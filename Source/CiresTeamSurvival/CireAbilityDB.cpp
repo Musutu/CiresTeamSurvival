@@ -166,6 +166,24 @@ bool CireAbilityDB::Reload()
     const FString Path=FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/Abilities.json"));
     if(!FFileHelper::LoadFileToString(Json,*Path)||!ParseJson(Json,A,K,M,Error))
     {UE_LOG(LogCireAbilityDB,Error,TEXT("Ability database rejected; keeping previous: %s"),*Error);return false;}
+    // ability-expansion: Content/Data/AbilitiesExpansion.json (same row format) is merged additively: new rows only,
+    // each champion's purchasable list grows by the expansion ids listed for it, buff modifier rows join the table.
+    FString XJson,XError;TArray<FCireAbilityDef> XA;TMap<FString,FCireChampionKit> XK;TMap<FName,TArray<FCireModifier>> XM;
+    if(FFileHelper::LoadFileToString(XJson,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/AbilitiesExpansion.json"))))
+    {
+        if(!ParseJson(XJson,XA,XK,XM,XError)){UE_LOG(LogCireAbilityDB,Error,TEXT("Ability expansion rejected: %s"),*XError);}
+        else
+        {
+            TSet<FString> Have;for(const auto& D:A)Have.Add(D.Id);
+            for(auto& D:XA){if(Have.Contains(D.Id)){UE_LOG(LogCireAbilityDB,Warning,TEXT("Expansion row %s duplicates a base ability; skipped"),*D.Id);continue;}Have.Add(D.Id);A.Add(MoveTemp(D));}
+            for(const auto& Pair:XK)if(FCireChampionKit* Base=K.Find(Pair.Key))
+            {
+                for(const FString& S:Pair.Value.Purchasable)Base->Purchasable.AddUnique(S);
+                for(const FString& S:Pair.Value.PurchasableImplemented)Base->PurchasableImplemented.AddUnique(S);
+            }
+            for(auto& Pair:XM)if(!M.Contains(Pair.Key))M.Add(Pair.Key,MoveTemp(Pair.Value));
+        }
+    }
     GAbilities=MoveTemp(A);GKits=MoveTemp(K);GModifiers=MoveTemp(M);GIndex.Reset();GNameIndex.Reset();
     for(int32 I=0;I<GAbilities.Num();++I){GIndex.Add(GAbilities[I].Id,I);GNameIndex.Add(GAbilities[I].Name,I);}
     UE_LOG(LogCireAbilityDB,Display,TEXT("CIRE_ABILITY_DB_LOADED abilities=%d champions=%d"),GAbilities.Num(),GKits.Num());
@@ -244,6 +262,15 @@ bool CireAbilityDB::RunSmoke()
     int32 Checks=0;bool bPass=true;
     const auto Check=[&](bool b,const TCHAR* Why){++Checks;if(!b){bPass=false;UE_LOG(LogCireAbilityDB,Error,TEXT("CIRE_ABILITY_DB_FAIL %s"),Why);}};
     Check(Reload()&&All().Num()>=100,TEXT("database loads 100+ abilities"));
+    // ability-expansion: the expansion file merges (rows + champion purchasable lists).
+    {
+        FString XJson,XError;TArray<FCireAbilityDef> XA;TMap<FString,FCireChampionKit> XK;TMap<FName,TArray<FCireModifier>> XM;
+        const bool bParsed=FFileHelper::LoadFileToString(XJson,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/AbilitiesExpansion.json")))&&ParseJson(XJson,XA,XK,XM,XError);
+        Check(bParsed&&XA.Num()>0,TEXT("AbilitiesExpansion.json parses"));
+        bool bMerged=true;for(const auto& D:XA)bMerged&=Find(D.Id)!=nullptr;
+        for(const auto& Pair:XK)for(const FString& S:Pair.Value.Purchasable)bMerged&=CanLearn(Pair.Key,S);
+        Check(bMerged,TEXT("expansion rows and purchasable lists merged"));
+    }
     for(const auto& S:Cires::StarterSkillPool())Check(Find(UTF8_TO_TCHAR(S.Id.c_str()))&&Find(UTF8_TO_TCHAR(S.Id.c_str()))->IsImplemented(),TEXT("every pool skill has an implemented row"));
     for(const auto& P:CireChampionRoster::All())
     {
