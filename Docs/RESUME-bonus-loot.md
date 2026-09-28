@@ -90,6 +90,16 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bonus-loot`, ports 17540-17549. The sp
 - `Rules/CireItemRules.h/.cpp`: `LootKind::SkillPoint`, `LootBundle::SkillPoints`.
 
 ## Gate logs
+Re-gate 2026-09-28 after merging main 8b323888 (waves-modes, arena-flow, ability-tuner, initiation, pack-usage-3,
+paragon-champions): merge was clean (no conflicts; the stage roll stays in waves-modes RollWaveType), no merge fallout to fix.
+Build: Result: Succeeded. Ports 17900-17924.
+
+- **Native: PASS.** `Saved/ExpansionChecks/20260928T075059068116Z/report.json` (`CIRE_BONUS_LOOT_PASS checks=95 pvp_uniques=10`,
+  `CIRE_COMBAT_EXPANSION_PASS`).
+- **Network: PASS.** `Saved/NetworkSmoke/20260928T075456269947Z/report.json`.
+- **Interface: PASS.** `Saved/InterfaceSmoke/20260928T075622342993Z/report.json`.
+
+Earlier run (after merging main 13b101ed):
 All three gates were run on 2026-09-28, after merging main (with feat/waves-modes, 13b101ed). Build: Result: Succeeded
 (`Saved/build7.log`).
 
