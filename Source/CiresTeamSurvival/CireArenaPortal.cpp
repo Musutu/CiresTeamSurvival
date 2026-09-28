@@ -100,7 +100,7 @@ void LoadConfig(FConfig& C)
                 const TSharedPtr<FJsonObject>* LO = nullptr;
                 if ((*VO)->TryGetObjectField(Key, LO)) { List = PList(*LO, TEXT("candidates")); Scale = FMath::Clamp(PNum(*LO, TEXT("scale"), 1.f), .05f, 20.f); }
             };
-            Layer(TEXT("ring"), C.RingVFX, C.RingScale); C.bTintRing = (*VO)->HasField(TEXT("ring")) && (*VO)->GetObjectField(TEXT("ring"))->HasTypedField<EJson::Boolean>(TEXT("tint")) && (*VO)->GetObjectField(TEXT("ring"))->GetBoolField(TEXT("tint")); Layer(TEXT("base"), C.BaseVFX, C.BaseScale);
+            Layer(TEXT("ring"), C.RingVFX, C.RingScale); C.bTintRing = !((*VO)->HasField(TEXT("ring")) && (*VO)->GetObjectField(TEXT("ring"))->HasTypedField<EJson::Boolean>(TEXT("tint")) && !(*VO)->GetObjectField(TEXT("ring"))->GetBoolField(TEXT("tint"))); // pack-usage-3: recoloured unless "tint": false Layer(TEXT("base"), C.BaseVFX, C.BaseScale);
             Layer(TEXT("open"), C.OpenVFX, C.OpenScale); Layer(TEXT("enter"), C.EnterVFX, C.EnterScale);
         }
         const TSharedPtr<FJsonObject>* SO = nullptr;
@@ -461,7 +461,12 @@ void ACireArenaPortal::MulticastSwallow_Implementation(FVector_NetQuantize At)
     const FConfig& C = Config();
     CireAudio::PlayCue(this, C.EnterSound, At);
     CireFabVFX::FEntry Entry; Entry.Candidates = C.EnterVFX;
-    if (UFXSystemAsset* System = CireFabVFX::Resolve(&Entry)) CireFabVFX::SpawnAt(GetWorld(), System, At, FRotator::ZeroRotator, C.EnterScale);
+    if (UFXSystemAsset* System = CireFabVFX::Resolve(&Entry))
+        if (UFXSystemComponent* Fx = CireFabVFX::SpawnAt(GetWorld(), System, At, FRotator::ZeroRotator, C.EnterScale); Fx && C.bTintRing && ArenaIndex != INDEX_NONE)
+        {
+            const FLook L = LookFor(ArenaIndex); // pack-usage-3: the swallow burst wears the arena's hue too
+            CireFabVFX::Recolor(Fx, FLinearColor(L.Tint.R, L.Tint.G, L.Tint.B, 1.f), .85f);
+        }
 }
 
 void ACireArenaPortal::BuildVisuals()
@@ -529,19 +534,24 @@ void ACireArenaPortal::BuildVisuals()
     Keep(Light);
 
     // Optional Shadow_Magic layers (local Fab pack): a swirling rim stood upright and a shadow pool at the base.
-    auto Layer = [&](const TArray<FString>& Candidates, float Scale, const FVector& At, const FRotator& Rot, bool bTint) {
+    // pack-usage-3 (Eric, playtest 6): the layers take the real recolour (CireFabVFX::Recolor: every exposed colour parameter
+    // moves to the arena's hue, brightness kept); the generic ApplyTint stays only as the fallback for systems without any.
+    auto Layer = [&](const TArray<FString>& Candidates, float Scale, const FVector& At, const FRotator& Rot, bool bTint, float TintStrength) {
         CireFabVFX::FEntry Entry; Entry.Candidates = Candidates;
         UFXSystemAsset* System = CireFabVFX::Resolve(&Entry);
         UFXSystemComponent* Comp = System ? CireFabVFX::SpawnAttached(System, Root, At, Scale, false) : nullptr;
         if (!Comp) return;
         Comp->SetRelativeRotation(Rot);
-        if (bTint) CireFabVFX::ApplyTint(Comp, FLinearColor(L.Tint.R, L.Tint.G, L.Tint.B, 1.f));
+        if (bTint && CireFabVFX::Recolor(Comp, FLinearColor(L.Tint.R, L.Tint.G, L.Tint.B, 1.f), TintStrength) == 0)
+            CireFabVFX::ApplyTint(Comp, FLinearColor(L.Tint.R, L.Tint.G, L.Tint.B, 1.f));
         FX.Add(Comp); ++FabLayers;
     };
-    Layer(C.RingVFX, C.RingScale * C.Radius / 150.f, Centre, FRotator(-90, 0, 0), C.bTintRing);
-    Layer(C.BaseVFX, C.BaseScale * C.Radius / 150.f, FVector(0, 0, 4), FRotator::ZeroRotator, false);
+    Layer(C.RingVFX, C.RingScale * C.Radius / 150.f, Centre, FRotator(-90, 0, 0), C.bTintRing, 1.f);
+    Layer(C.BaseVFX, C.BaseScale * C.Radius / 150.f, FVector(0, 0, 4), FRotator::ZeroRotator, C.bTintRing, .6f); // the pool keeps some shadow
     CireFabVFX::FEntry OpenEntry; OpenEntry.Candidates = C.OpenVFX;
-    if (UFXSystemAsset* Burst = CireFabVFX::Resolve(&OpenEntry)) CireFabVFX::SpawnAt(GetWorld(), Burst, GetActorLocation() + GetActorRotation().RotateVector(Centre), GetActorRotation(), C.OpenScale);
+    if (UFXSystemAsset* Burst = CireFabVFX::Resolve(&OpenEntry))
+        if (UFXSystemComponent* OpenFx = CireFabVFX::SpawnAt(GetWorld(), Burst, GetActorLocation() + GetActorRotation().RotateVector(Centre), GetActorRotation(), C.OpenScale); OpenFx && C.bTintRing)
+            CireFabVFX::Recolor(OpenFx, FLinearColor(L.Tint.R, L.Tint.G, L.Tint.B, 1.f), .85f);
 
     if (!bCollapsing)
     {

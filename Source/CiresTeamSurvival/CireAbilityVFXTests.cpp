@@ -733,7 +733,8 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
     PurgeNew();
     {
         ReloadVFXTuning();
-        Check(FMath::IsNearlyEqual(DesignSpellEffectScale(),1.3f,.001f),FString::Printf(TEXT("design spell-effect scale from VFXTuning.json is 1.3 (%.2f)"),DesignSpellEffectScale()));
+        Check(FMath::IsNearlyEqual(DesignSpellEffectScale(),1.17f,.001f),FString::Printf(TEXT("design spell-effect scale from VFXTuning.json is 1.17 (%.2f)"),DesignSpellEffectScale()));
+        Check(FMath::IsNearlyEqual(DesignHitEffectScale()*DesignSpellEffectScale(),.8f*1.3f,.01f),FString::Printf(TEXT("hit visuals are 80%% of the former 1.3 size (%.2f)"),DesignHitEffectScale()*DesignSpellEffectScale()));
         Check(FMath::IsNearlyEqual(SpellEffectScaleFor(1.f),DesignSpellEffectScale())&&FMath::IsNearlyEqual(SpellEffectScaleFor(std::numeric_limits<float>::quiet_NaN()),DesignSpellEffectScale()),
             TEXT("player multiplier 1 (or garbage) = the design scale"));
         Check(FMath::IsNearlyEqual(SpellEffectScaleFor(10.f),MaxSpellEffectScale)&&FMath::IsNearlyEqual(SpellEffectScaleFor(.01f),MinSpellEffectScale),TEXT("effective scale clamped 0.5..2"));
@@ -831,10 +832,10 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             }
             // (e) buff / aura layers: 1.1x, hand / weapon glows 1.2x (Eric's follow-up), tethers and overhead marks unscaled.
             {
-                Check(FMath::IsNearlyEqual(DesignAuraLayerScale(),1.1f,.001f)&&FMath::IsNearlyEqual(DesignHandGlowScale(),1.2f,.001f),
-                    FString::Printf(TEXT("aura layers 1.1, hand / weapon glows 1.2 from VFXTuning.json (%.2f / %.2f)"),DesignAuraLayerScale(),DesignHandGlowScale()));
+                Check(FMath::IsNearlyEqual(DesignAuraLayerScale(),.99f,.001f)&&FMath::IsNearlyEqual(DesignHandGlowScale(),1.08f,.001f),
+                    FString::Printf(TEXT("aura layers .99, hand / weapon glows 1.08 from VFXTuning.json (%.2f / %.2f)"),DesignAuraLayerScale(),DesignHandGlowScale()));
                 SetScale(DesignSpellEffectScale());
-                Check(FMath::IsNearlyEqual(AuraLayerScale(World),1.1f,.01f)&&FMath::IsNearlyEqual(HandGlowScale(World),1.2f,.01f),TEXT("live aura / hand scales at the design size"));
+                Check(FMath::IsNearlyEqual(AuraLayerScale(World),.99f,.01f)&&FMath::IsNearlyEqual(HandGlowScale(World),1.08f,.01f),TEXT("live aura / hand scales at the design size"));
                 using CireAuraVisuals::LayerScale;
                 Check(FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Ring,1.1f,1.2f),1.1f)&&FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Shell,1.1f,1.2f),1.1f)&&
                     FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Hands,1.1f,1.2f),1.2f)&&FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Weapon,1.1f,1.2f),1.2f)&&
