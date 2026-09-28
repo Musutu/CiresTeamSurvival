@@ -201,4 +201,6 @@ namespace CireWorldEdit
     CIRESTEAMSURVIVAL_API bool RunTests(ACireGameMode* Mode);
     /** -CireWorldEditProbe: the town-load probe (server and client). Called from ACireWorld::Tick; returns true once done. */
     CIRESTEAMSURVIVAL_API void TickProbe(UWorld* World);
+    /** -CireWorldEditGallery: the scripted, captured WORLD tab session (CireWorldEditGallery.cpp). */
+    CIRESTEAMSURVIVAL_API void TickGallery(UWorld* World);
 }

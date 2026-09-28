@@ -940,6 +940,7 @@ void WEProbeFinish(bool bServer)
 
 void CireWorldEdit::TickProbe(UWorld* World)
 {
+    TickGallery(World);
     static const bool bProbe = WEHasParam(TEXT("CireWorldEditProbe")), bDump = WEHasParam(TEXT("CireWorldEditDump"));
     if ((!bProbe && !bDump) || !World || GWEProbe.Stage == 99) return;
     const double Now = FPlatformTime::Seconds();
