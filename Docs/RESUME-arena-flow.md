@@ -44,5 +44,9 @@ Design and data: `Docs/Arenas.md` "Arena flow (September 27, Playtest 6)".
   `CireInterfaceProbe.cpp` (two added conditions).
 - Data: `Content/Data/Arenas.json` (+`flow`, countdown 7), `Tools/AuthorArenas.py` (`FLOW`), `BuffModifiers.json`, `BuffVisuals.json`.
 
-## Gate logs
-- 2026-09-28: first build hit a full F: drive (environmental); resumed after space was freed.
+## Gate logs (2026-09-28, after merging main at waves-modes; commit 620cc368)
+- Build: Result: Succeeded
+- Native: CIRE_COMBAT_EXPANSION_PASS (CIRE_ARENA_FLOW_TESTS_PASS checks=13, CIRE_ARENA_PORTAL_TESTS_PASS) - Saved/ExpansionChecks/20260928T061533302026Z/report.json
+- Network: CIRE_NETWORK_SMOKE_PASS - Saved/NetworkSmoke/20260928T061913109103Z/report.json
+- Interface: CIRE_INTERFACE_SMOKE_PASS (portal open/enter/countdown/pull 10) - Saved/InterfaceSmoke/20260928T062030176292Z/report.json
+- Earlier runs: two interface "server readiness timeout" failures (environmental load); ran with --startup-timeout 300.
