@@ -105,6 +105,14 @@ on its first load in **every editor session**, inside the loader's game-thread P
   it is set, `Clip()` skips non-gait/attack roles. Only the champion-select stage sets it.
 - `Tools/RunDraftGallery.py`: the new shot list and the readability floor text.
 
-## Gate logs
+## Gate logs (after merging main daddb063)
 
-(filled below)
+- **Native: PASS.** `Saved/ExpansionChecks/20260928T153535070876Z` (CIRE_DRAFT_ASSETS_PASS 17, CIRE_DRAFT_BROWSER_PASS 33,
+  CIRE_COMBAT_EXPANSION_PASS).
+- **Network: PASS.** `Saved/NetworkSmoke/20260928T154106254972Z`. The first attempt hit an environmental probe timeout.
+- **Interface: PASS.** `Saved/InterfaceSmoke/20260928T154249720948Z`.
+- **Gallery: PASS at 1920x1080, 1600x900 and 3840x2160** (10 states, audit: text >= 12, no text / card / region overlaps).
+  Report: `Saved/DraftGalleryChecks/20260928T142001369924Z`.
+- **Review captures for Eric:** `Saved/ChampSelectReview/20260928T142655Z/index.html`.
+- Bug found by the native gate and fixed: `DraftBodyLru()` read the tunables inside its own static initialiser
+  (Tunables -> Reload -> DraftBodyLru), which re-entered the initialiser and deadlocked on the first call.
