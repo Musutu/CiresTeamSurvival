@@ -37,6 +37,8 @@ struct FTrack
     float SampleAt = 0, StuckFor = 0, SuppressUntil = 0, GhostRefreshAt = 0, ForcedAt = 0;
     int32 Nudges = 0;
     bool bForcedMarch = false;
+    bool bArmored = false, bPassive = false; // waves-modes: armored traits (speed, slow immunity, stun) / damage off
+    float LiveHealth = 1.f, LiveDamage = 1.f; // waves-modes: live scale this unit carries (rescaled when it changes)
     float BestProgress = -1.f, BestProgressAt = 0.f; // layout-wiring: cm along its own path, and when it last improved
     int32 StallNudges = 0; float LastStallNudgeAt = -1000.f; // layout-wiring: recent stall nudges (each one reaches further)
     FCireWaveUnitInfo Info; // economy hook
@@ -48,6 +50,7 @@ struct FWaveRecord
     bool bMustClear = true;
     int32 WaveNumber = 0, WaveInCycle = 0, Cycle = 1;
     ECireWaveType WaveType = ECireWaveType::Normal;
+    bool bSuddenDeath = false; // waves-modes
 };
 struct FOrder
 {
@@ -57,6 +60,7 @@ struct FOrder
     float Reward = 1;
     ECireNPCRank Rank = ECireNPCRank::Normal; // monster-races: row rank plus campaign promotion
     bool bBonus = false; // monster-expansion: bonus loot wave creature
+    int32 Pack = 0; bool bPassive = false; float GapAfter = 0; // waves-modes: pack, damage off, pause before the next pack
 };
 struct FBotState
 {
@@ -84,6 +88,7 @@ struct FRuntime
     int32 LastWaveNumber = 0;
     // monster-expansion: rare spawns and bonus waves this cycle and this match.
     int32 RaresThisCycle = 0, BonusThisCycle = 0, RaresTotal = 0, BonusTotal = 0;
+    TMap<int32, int32> PackPath[2]; // waves-modes: (serial * 16 + pack) -> path, so a pack marches one path together
 };
 /** Phase clock and breather from the pacing block (normal matches only; smoke/probes keep their own timing). */
 void ApplyPacing(ACireGameMode* Mode, const FCireWaveConfig& C)
@@ -196,6 +201,7 @@ bool PlayerSide(const ACireHero* Attacker)
     if (const auto* Summon = Cast<ACireSummon>(Attacker)) return IsValid(Summon->GetOwnerHero()) && !Summon->GetOwnerHero()->bBot;
     return !Attacker->bBot;
 }
+void RescaleLiving(FRuntime& R); // waves-modes (defined with the live scale below)
 }
 
 // ---------------------------------------------------------------- config
@@ -212,7 +218,15 @@ void CireWaveDirector::Initialize(ACireGameMode* Mode)
     bFileLoaded = false; // pick up Waves.json edits made between sessions
     FRuntime& R = Get(Mode);
     CireRaces::BeginMatch(Mode); // monster-races: this match's seeded skill draw
-    if (auto* S = Mode->GetGameState<ACireGameState>()) S->WavesPerCycle = R.Config.WavesPerCycle;
+    if (auto* S = Mode->GetGameState<ACireGameState>())
+    {
+        S->WavesPerCycle = R.Config.WavesPerCycle;
+        // waves-modes: the host's game type (kept across a layout restart), or -CireWavePreset=<id>; else Waves.json as saved.
+        FString Arg; FName Pick = S->WavePreset;
+        if (FParse::Value(FCommandLine::Get(), TEXT("CireWavePreset="), Arg) && !Arg.IsEmpty()) Pick = FName(*Arg);
+        if (const FCireWavePreset* P = Pick.IsNone() ? nullptr : FindPreset(Pick)) { ApplyPreset(R.Config, *P); Validate(R.Config, nullptr, true); }
+        S->WavePreset = R.Config.Preset;
+    }
     ApplyPacing(Mode, R.Config);
     Publish(Mode);
     UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_READY waves=%d per_cycle=%d cycles=%d breather=%.1f failsafe=%d max=%.0f stuck=%.1f"), R.Config.Waves.Num(),
@@ -225,7 +239,9 @@ bool CireWaveDirector::ApplyLive(ACireGameMode* Mode, const FCireWaveConfig& In,
     FCireWaveConfig C = In;
     if (!Validate(C, Error, true)) return false;
     FRuntime& R = Get(Mode);
+    const bool bRescale = !(R.Config.Live == C.Live);
     R.Config = MoveTemp(C);
+    if (bRescale) RescaleLiving(R); // waves-modes: the live scale reaches the monsters already on the road
     if (auto* S = Mode->GetGameState<ACireGameState>()) S->WavesPerCycle = R.Config.WavesPerCycle;
     if (!Mode->bSmoke)
     {
@@ -237,18 +253,118 @@ bool CireWaveDirector::ApplyLive(ACireGameMode* Mode, const FCireWaveConfig& In,
     return true;
 }
 
+// ---------------------------------------------------------------- waves-modes: schedule and packs
+namespace
+{
+/** Deterministic 0..N-1 draw for a pack of a wave (no RNG state: the same wave always resolves the same way). */
+int32 PackRoll(int32 GlobalWave, int32 Pack, int32 N)
+{
+    if (N <= 1) return 0;
+    uint32 H = static_cast<uint32>(GlobalWave) * 2654435761u ^ static_cast<uint32>(Pack + 17) * 40503u;
+    H ^= H >> 13; H *= 0x5bd1e995u; H ^= H >> 15;
+    return static_cast<int32>(H % static_cast<uint32>(N));
+}
+/** Expands a pack wave: the non-boss rows are the recipe (counts are weights); each pack gets Size units split by
+ *  largest remainder, rotating the leftover so packs differ. Escortees lead, bosses close the column. */
+void ExpandPacks(FCireWaveDef& W, int32 GlobalWave, int32 Bonus)
+{
+    TArray<FCireWaveUnit> Recipe, Lead, Tail;
+    for (const auto& U : W.Units) (U.bEscortee ? Lead : U.bBoss ? Tail : Recipe).Add(U);
+    if (Recipe.IsEmpty() || W.Packs <= 0) return;
+    int32 Weight = 0; for (const auto& U : Recipe) Weight += FMath::Max(1, U.Count);
+    TArray<FCireWaveUnit> Out = Lead;
+    for (int32 P = 1; P <= W.Packs; ++P)
+    {
+        const int32 Size = FMath::Clamp(W.PackSizeMin + PackRoll(GlobalWave, P, W.PackSizeMax - W.PackSizeMin + 1) + Bonus, 1, 10);
+        TArray<int32> N; TArray<float> Rest; int32 Given = 0;
+        for (const auto& U : Recipe)
+        {
+            const float Exact = Size * static_cast<float>(FMath::Max(1, U.Count)) / Weight;
+            N.Add(FMath::FloorToInt(Exact)); Rest.Add(Exact - N.Last()); Given += N.Last();
+        }
+        // Leftover units go to the largest remainders, ties broken by a rotation per pack (packs are not all alike).
+        for (int32 Left = Size - Given; Left > 0; --Left)
+        {
+            int32 Best = 0; float BestRest = -1.f;
+            for (int32 K = 0; K < Recipe.Num(); ++K)
+            {
+                const int32 I = (K + P - 1) % Recipe.Num();
+                if (Rest[I] > BestRest + 1.e-4f) { BestRest = Rest[I]; Best = I; }
+            }
+            ++N[Best]; Rest[Best] = -1.f;
+            if (!Rest.ContainsByPredicate([](float R) { return R >= 0.f; })) for (float& R : Rest) R = 0.f;
+        }
+        for (int32 I = 0; I < Recipe.Num(); ++I)
+            if (N[I] > 0) { FCireWaveUnit U = Recipe[I]; U.Count = N[I]; U.Pack = P; Out.Add(U); }
+    }
+    Out.Append(Tail);
+    W.Units = MoveTemp(Out);
+}
+FCireWaveDef ResolveImpl(const FCireWaveConfig& C, int32 GlobalWave, bool bExpandPacks);
+}
+
+int32 CireWaveDirector::GlobalWaveOf(const FCireWaveConfig& C, int32 WaveInCycle, int32 Cycle)
+{
+    return FMath::Clamp(Cycle, 0, 100) * FMath::Max(1, C.WavesPerCycle) + FMath::Max(0, WaveInCycle) + 1;
+}
+bool CireWaveDirector::IsSuddenDeath(const FCireWaveConfig& C, int32 GlobalWave)
+{
+    return C.Match.TotalWaves > 0 && GlobalWave > C.Match.TotalWaves;
+}
+FCireMatchSchedule CireWaveDirector::Schedule(const UWorld* World) { return Config(World).Match; }
+bool CireWaveDirector::IsPvpAfterWave(const UWorld* World, int32 GlobalWave) { return PvpRoundAfterWave(World, GlobalWave) > 0; }
+int32 CireWaveDirector::PvpRoundAfterWave(const UWorld* World, int32 GlobalWave)
+{
+    const int32 Index = Config(World).Match.PvpAfterWaves.IndexOfByKey(GlobalWave);
+    return Index == INDEX_NONE ? 0 : Index + 1;
+}
+int32 CireWaveDirector::NextPvpWave(const UWorld* World, int32 GlobalWave)
+{
+    for (const int32 W : Config(World).Match.PvpAfterWaves) if (W >= GlobalWave) return W;
+    return 0;
+}
+FCireWaveDef CireWaveDirector::RollWaveType(const FCireWaveConfig& Config, const FCireWaveDef& Planned, int32 GlobalWave, int32 Seed)
+{
+    // feat/bonus-loot: roll a bonus loot stage / special wave type here. Keep Boss waves (Planned.Type == Boss) unchanged
+    // and stay deterministic in (Seed, GlobalWave). The returned wave is queued as-is (its packs are already expanded).
+    (void)Config; (void)GlobalWave; (void)Seed;
+    return Planned;
+}
+
 FCireWaveDef CireWaveDirector::ResolveWave(const FCireWaveConfig& C, int32 WaveInCycle, int32 Cycle)
 {
+    return ResolveImpl(C, GlobalWaveOf(C, WaveInCycle, Cycle), true);
+}
+
+namespace
+{
+FCireWaveDef ResolveImpl(const FCireWaveConfig& C, int32 GlobalWave, bool bExpandPacks)
+{
+    using namespace CireWaveDirector;
     if (C.Waves.IsEmpty()) return Template(ECireWaveType::Normal);
-    Cycle = FMath::Clamp(Cycle, 0, 100);
-    FCireWaveDef W = C.Waves[WaveIndex(C, WaveInCycle, Cycle) % C.Waves.Num()];
-    const float Health = 1.f + C.CycleHealthGrowth * Cycle, Damage = 1.f + C.CycleDamageGrowth * Cycle;
+    const int32 PerCycle = FMath::Max(1, C.WavesPerCycle);
+    GlobalWave = FMath::Max(1, GlobalWave);
+    int32 Cycle = FMath::Clamp((GlobalWave - 1) / PerCycle, 0, 100);
+    const int32 WaveInCycle = (GlobalWave - 1) % PerCycle;
+    // waves-modes: Sudden Death replays the last N regular waves in a loop (campaign order).
+    const bool bSudden = IsSuddenDeath(C, GlobalWave);
+    int32 Index = WaveIndex(C, WaveInCycle, Cycle);
+    if (bSudden && C.bCampaignOrder)
+    {
+        const int32 Loop = FMath::Clamp(C.Match.SuddenDeathLoop, 1, C.Match.TotalWaves);
+        Index = C.Match.TotalWaves - Loop + (GlobalWave - C.Match.TotalWaves - 1) % Loop;
+    }
+    FCireWaveDef W = C.Waves[Index % C.Waves.Num()];
+    const float Health = (1.f + C.CycleHealthGrowth * Cycle) * (bSudden ? C.Match.SuddenDeathHealth : 1.f);
+    const float Damage = (1.f + C.CycleDamageGrowth * Cycle) * (bSudden ? C.Match.SuddenDeathDamage : 1.f);
+    if (bSudden) W.Label = FString::Printf(TEXT("Sudden Death: %s"), *W.Label);
+    const bool bPacks = W.Packs > 0;
     int32 Total = 0;
     for (auto& U : W.Units)
     {
         U.HealthScale = FMath::Clamp(U.HealthScale * Health, .1f, 200.f);
         U.DamageScale = FMath::Clamp(U.DamageScale * Damage, .05f, 100.f);
-        if (!U.bBoss && !U.bEscortee) U.Count = FMath::Clamp(U.Count + C.CycleExtraUnits * Cycle, 1, 20);
+        if (!bPacks && !U.bBoss && !U.bEscortee) U.Count = FMath::Clamp(U.Count + C.CycleExtraUnits * Cycle, 1, 20);
         Total += U.Count;
     }
     // monster-races: slot rows take the unit of the wave's race (rotation per cycle, mixed races alternate by row),
@@ -263,13 +379,16 @@ FCireWaveDef CireWaveDirector::ResolveWave(const FCireWaveConfig& C, int32 WaveI
         if (U.bBoss && C.Campaign.MythicBossFromCycle > 0 && Cycle + 1 >= C.Campaign.MythicBossFromCycle) U.Rank = ECireNPCRank::Mythic;
     }
     // Never exceed the per-lane spawn budget, even after many looping cycles.
-    while (Total > 30)
+    while (!bPacks && Total > 30)
     {
         bool bTrimmed = false;
         for (auto& U : W.Units) if (Total > 30 && U.Count > 1 && !U.bBoss && !U.bEscortee) { --U.Count; --Total; bTrimmed = true; }
         if (!bTrimmed) break;
     }
+    // waves-modes: packs of PackSizeMin..Max (+ the pack-size modifier); smoke runs keep the authored rows (one pack's recipe).
+    if (bPacks && bExpandPacks) ExpandPacks(W, GlobalWave, C.PackSizeBonus);
     return W;
+}
 }
 
 // ---------------------------------------------------------------- spawning
@@ -278,9 +397,18 @@ namespace
 void QueueWave(FRuntime& R, const FCireWaveDef& W, int32 Serial, bool bFast, int32 Cycle = 0, bool bBonus = false, bool bVariants = false)
 {
     TMap<FName, int32> VariantCounters; // monster-expansion: per race-slot counter for Bestiary.json race variants
-    // Escortees lead, bosses close the column; other rows interleave for a mixed wave.
-    TArray<FCireWaveUnit> Lead, Mixed, Bosses;
-    for (const auto& U : W.Units) (U.bEscortee ? Lead : U.bBoss ? Bosses : Mixed).Add(U);
+    // Escortees lead, bosses close the column; other rows interleave for a mixed wave. waves-modes: a pack wave spawns
+    // pack by pack (rows interleaved inside each pack) with a short gap between packs. Rows carry their fight-back
+    // number: the pack (pack waves) or the row (legacy waves).
+    struct FRow { FCireWaveUnit U; int32 Fight = 0; };
+    TArray<FRow> Lead, Mixed, Bosses;
+    int32 MaxPack = 0;
+    for (int32 I = 0; I < W.Units.Num(); ++I)
+    {
+        const auto& U = W.Units[I];
+        (U.bEscortee ? Lead : U.bBoss ? Bosses : Mixed).Add({U, U.Pack > 0 ? U.Pack : I + 1});
+        MaxPack = FMath::Max(MaxPack, U.Pack);
+    }
     int32 Slot = 0, Promotable = 0;
     // monster-races: from the campaign's promotion cycles every Nth normal attacker spawns veteran/elite/champion.
     const FCireCampaign& K = R.Config.Campaign;
@@ -292,25 +420,38 @@ void QueueWave(FRuntime& R, const FCireWaveDef& W, int32 Serial, bool bFast, int
     // Champion rank shows in a default 3-cycle match without every promoted unit jumping two tiers.
     const bool bChampionsAlternate = Promotion == ECireNPCRank::Champion && K.EliteFromCycle > 0 && CycleNumber >= K.EliteFromCycle;
     int32 Promoted = 0;
-    auto Emit = [&](const FCireWaveUnit& U)
+    auto Emit = [&](const FRow& Row)
     {
+        const FCireWaveUnit& U = Row.U;
         FOrder O; O.Unit = U; O.Slot = Slot++; O.Serial = Serial; O.bMustClear = W.bMustClear; O.Reward = W.RewardMultiplier; O.Rank = U.EffectiveRank();
         // monster-expansion: bonus-wave creatures (an authored bonus_loot wave, or the occasional bonus wave) never block
         // the cycle and are never promoted; rares keep their own look instead of a promotion.
         O.bBonus = bBonus || W.Type == ECireWaveType::BonusLoot;
         if (O.bBonus) O.bMustClear = false;
+        // waves-modes: damage off for this wave -> passive marchers, except the Hybrid fight-back packs.
+        O.Pack = U.Pack;
+        O.bPassive = !O.bBonus && !U.bNonAttacking && !W.bDealsDamage && !W.FightBackPacks.Contains(Row.Fight);
         if (bVariants && !O.bBonus && !U.bRare && !U.bBoss && !U.bNonAttacking) O.Unit.Archetype = CireMonsterExpansion::VariantFor(U.Archetype, VariantCounters);
         if (O.Rank == ECireNPCRank::Normal && !U.bBoss && !U.bNonAttacking && !O.bBonus && !U.bRare && Promotion != ECireNPCRank::Normal && ++Promotable % FMath::Max(1, K.PromoteEvery) == 0)
             O.Rank = bChampionsAlternate && (Promoted++ % 2 == 1) ? ECireNPCRank::Elite : Promotion;
         R.Queue.Add(O);
     };
-    for (const auto& U : Lead) for (int32 I = 0; I < U.Count; ++I) Emit(U);
-    for (bool bAny = true; bAny;)
+    for (const auto& Row : Lead) for (int32 I = 0; I < Row.U.Count; ++I) Emit(Row);
+    auto Interleave = [&](int32 Pack)
     {
-        bAny = false;
-        for (auto& U : Mixed) if (U.Count > 0) { Emit(U); --U.Count; bAny = true; }
-    }
-    for (const auto& U : Bosses) for (int32 I = 0; I < U.Count; ++I) Emit(U);
+        TArray<FRow> Rows;
+        for (const auto& Row : Mixed) if (Pack < 0 || Row.U.Pack == Pack) Rows.Add(Row);
+        const int32 Before = R.Queue.Num();
+        for (bool bAny = true; bAny;)
+        {
+            bAny = false;
+            for (auto& Row : Rows) if (Row.U.Count > 0) { Emit(Row); --Row.U.Count; bAny = true; }
+        }
+        if (Pack > 0 && R.Queue.Num() > Before && !bFast) R.Queue.Last().GapAfter = R.Config.Monsters.PackGapSeconds;
+    };
+    if (MaxPack > 0) for (int32 P = 1; P <= MaxPack; ++P) Interleave(P);
+    else Interleave(-1);
+    for (const auto& Row : Bosses) for (int32 I = 0; I < Row.U.Count; ++I) Emit(Row);
     R.SpawnInterval = bFast ? FMath::Min(W.SpawnInterval, .05f) : W.SpawnInterval;
     R.SpawnTimer = 0;
 }
@@ -346,7 +487,15 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
         if (!O.Unit.bNonAttacking)
             for (const auto& Pair : R.Tracks)
                 if (Pair.Value.Serial == O.Serial && Pair.Value.bEscortee && AliveUnit(Pair.Key.Get()) && Pair.Key->Lane == Team) { Escortee = Pair.Key.Get(); break; }
-        Path = Escortee ? Escortee->LanePath : CireLanePath::PathForSlot(Routes, Team, R.PathSlot[Team]++);
+        // waves-modes: a pack keeps to one path (its first unit draws it).
+        if (Escortee) Path = Escortee->LanePath;
+        else if (O.Pack > 0)
+        {
+            const int32 Key = O.Serial * 16 + O.Pack;
+            if (const int32* Known = R.PackPath[Team].Find(Key)) Path = *Known;
+            else Path = R.PackPath[Team].Add(Key, CireLanePath::PathForSlot(Routes, Team, R.PathSlot[Team]++));
+        }
+        else Path = CireLanePath::PathForSlot(Routes, Team, R.PathSlot[Team]++);
         Breach = CireLanePath::PathStart(World, Team, Path);
     }
     // pacing: waves appear SpawnAlongRoute of the way down the road (0 = the breach gate).
@@ -375,8 +524,11 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
     const FCireWaveUnit& U = O.Unit;
     const int32 GlobalWave = S ? S->Wave : 1;
     CireNPCCombat::ConfigureArchetype(M, U.Archetype, GlobalWave, 0, Mode->Clock.Round(), U.bBoss);
-    M->MaxHealth = M->Health = FMath::Clamp(M->MaxHealth * U.HealthScale, 1.f, 1.e8f);
-    M->Damage = FMath::Clamp(M->Damage * U.DamageScale, 1.f, 100000.f);
+    // waves-modes: the live wave scale rides on top of the row's (cycle / Sudden Death) scale.
+    const bool bLiveScaled = !O.bBonus;
+    const float LiveHealth = bLiveScaled ? R.Config.Live.Health : 1.f, LiveDamage = bLiveScaled ? R.Config.Live.Damage : 1.f;
+    M->MaxHealth = M->Health = FMath::Clamp(M->MaxHealth * U.HealthScale * LiveHealth, 1.f, 1.e8f);
+    M->Damage = FMath::Clamp(M->Damage * U.DamageScale * LiveDamage, 1.f, 100000.f);
     if (U.LeakCost > 0) M->LeakCostOverride = U.LeakCost;
     // monster-races: rank (the old elite flag is rank elite: x1.6 health, x1.25 damage, Elite classification), palette
     // reskin and this monster's drawn, wave-gated skills.
@@ -394,14 +546,18 @@ ACireMonster* SpawnUnit(ACireGameMode* Mode, FRuntime& R, const FOrder& O, int32
     FTrack T;
     T.Serial = O.Serial; T.SpawnedAt = Now(M); T.Size = U.SizeScale * SpecialSize; T.Reward = O.Reward; T.bMustClear = O.bMustClear;
     T.bEscortee = U.bEscortee; T.Anchor = Position; T.SampleAt = T.SpawnedAt + 1.f;
+    T.bArmored = U.bNonAttacking && !O.bBonus; T.bPassive = O.bPassive && !U.bNonAttacking; T.LiveHealth = LiveHealth; T.LiveDamage = LiveDamage; // waves-modes
     if (const FWaveRecord* Rec = R.Records.Find(O.Serial))
     {
         T.Info.bValid = true; T.Info.WaveNumber = Rec->WaveNumber; T.Info.WaveInCycle = Rec->WaveInCycle; T.Info.Cycle = Rec->Cycle; T.Info.Type = Rec->WaveType;
+        T.Info.bSuddenDeath = Rec->bSuddenDeath; // waves-modes
     }
     else { T.Info.bValid = true; T.Info.WaveNumber = GlobalWave; T.Info.Cycle = Mode->Clock.Round(); }
     T.Info.bArmored = U.bNonAttacking; T.Info.bEscortee = U.bEscortee; T.Info.bBoss = U.bBoss;
     T.Info.bElite = !U.bBoss && O.Rank >= ECireNPCRank::Elite;
     T.Info.bRare = U.bRare && !O.bBonus; T.Info.bBonus = O.bBonus; // monster-expansion
+    T.Info.Pack = O.Pack; T.Info.bPassive = T.bPassive; // waves-modes
+    if (T.bPassive) { CireThreat::Clear(M); M->bEngaged = false; } // waves-modes: damage off: it only walks to the castle
     if (U.bNonAttacking && !O.bBonus)
     {
         // Non-attacking marchers reuse the armored-escort behaviour: they ignore combat,
@@ -440,8 +596,13 @@ bool CireWaveDirector::StartWave(ACireGameMode* Mode, bool bLive)
     if (!S || Mode->Clock.Phase() != Cires::MatchPhase::Survival || Mode->CycleWavesSpawned >= S->WavesPerCycle) return false;
     FRuntime& R = Get(Mode);
     const int32 WaveInCycle = Mode->CycleWavesSpawned;
-    FCireWaveDef W = ResolveWave(R.Config, WaveInCycle, Mode->Clock.Round() - 1);
+    // waves-modes: resolve by the global wave number (Sudden Death after the schedule's total), packs expanded (smoke runs
+    // keep the authored rows so their leak arithmetic stays small), then the wave-type roll hook (feat/bonus-loot).
+    const int32 Planned = GlobalWaveOf(R.Config, WaveInCycle, Mode->Clock.Round() - 1);
+    FCireWaveDef W = ResolveImpl(R.Config, Planned, !Mode->bSmoke);
     ++S->Wave; ++Mode->CycleWavesSpawned;
+    const bool bSudden = IsSuddenDeath(R.Config, Planned);
+    if (bLive && !Mode->bSmoke) W = RollWaveType(R.Config, W, S->Wave, CireRaces::MatchSeed(Mode->GetWorld()));
     // monster-expansion: a rare creature may join this wave (both lanes; deterministic per match seed and wave).
     const bool bRareJoined = bLive && !Mode->bSmoke && RollRare(R.Config, W, S->Wave, CireRaces::MatchSeed(Mode->GetWorld()), R.RaresThisCycle);
     if (bRareJoined) { ++R.RaresThisCycle; ++R.RaresTotal; }
@@ -451,6 +612,7 @@ bool CireWaveDirector::StartWave(ACireGameMode* Mode, bool bLive)
     FWaveRecord& Rec = R.Records.Add(Serial);
     Rec.Label = W.Label; Rec.Type = TypeName(W.Type); Rec.StartedAt = Now(Mode); Rec.LastSpawnAt = Rec.StartedAt; Rec.bMustClear = W.bMustClear;
     Rec.WaveNumber = S->Wave; Rec.WaveInCycle = Mode->CycleWavesSpawned; Rec.Cycle = Mode->Clock.Round(); Rec.WaveType = W.Type;
+    Rec.bSuddenDeath = bSudden; // waves-modes
     R.LastWaveNumber = S->Wave; R.Ready.Reset();
     // monster-races: the wave's race rides with its label and on the replicated game state.
     const int32 Cycle = Mode->Clock.Round() - 1;
@@ -458,14 +620,17 @@ bool CireWaveDirector::StartWave(ACireGameMode* Mode, bool bLive)
     if (!Race.IsEmpty()) Rec.Label = FString::Printf(TEXT("%s (%s)"), *W.Label, *Race);
     S->WaveRace = RaceFor(R.Config, W, Cycle, 0, WaveInCycle);
     QueueWave(R, W, Serial, Mode->bSmoke, Cycle, false, bLive && !Mode->bSmoke);
-    const TCHAR* Lead = W.Type == ECireWaveType::Armored ? TEXT("ARMORED | They will not fight back. Stop them before the gate!") :
+    const TCHAR* Lead = bSudden ? TEXT("SUDDEN DEATH | Monster health and damage doubled.") : // waves-modes
+        W.Type == ECireWaveType::Armored ? TEXT("ARMORED | They will not fight back, cannot be slowed and stay stunned twice as long. Stop them before the gate!") :
         W.Type == ECireWaveType::ArmoredEscort ? TEXT("ARMORED ESCORT | Break the escorted tank; its guards will defend it.") :
         W.Type == ECireWaveType::Boss ? TEXT("SIEGE | A lane boss marches with this wave. A leak costs 10 lives.") : TEXT("DEFEND THE GATES");
     S->Announcement = FString::Printf(TEXT("%s | Wave %d of %d: %s"), Lead, Mode->CycleWavesSpawned, S->WavesPerCycle, *Rec.Label);
+    if (!W.bDealsDamage && !bSudden) S->Announcement += W.FightBackPacks.IsEmpty() ? TEXT(" | They march without fighting.") : TEXT(" | Only some packs fight back."); // waves-modes
+    if (const int32 Pvp = PvpRoundAfterWave(Mode->GetWorld(), S->Wave)) S->Announcement += FString::Printf(TEXT(" | PvP round %d follows this wave."), Pvp);
     if (bRareJoined) S->Announcement += TEXT(" | A RARE creature marches with it!"); // monster-expansion
     Publish(Mode);
-    UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_START round=%d wave=%d cycle=%d/%d type=%s label=\"%s\" units=%d race=%s"), S->Round, S->Wave, Mode->CycleWavesSpawned,
-        S->WavesPerCycle, TypeName(W.Type), *W.Label, W.UnitsPerLane(), *S->WaveRace.ToString());
+    UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_START round=%d wave=%d cycle=%d/%d type=%s label=\"%s\" units=%d race=%s packs=%d damage=%d sudden=%d preset=%s"), S->Round, S->Wave, Mode->CycleWavesSpawned,
+        S->WavesPerCycle, TypeName(W.Type), *W.Label, W.UnitsPerLane(), *S->WaveRace.ToString(), W.Packs, W.bDealsDamage ? 1 : 0, bSudden ? 1 : 0, *R.Config.Preset.ToString());
     return true;
 }
 
@@ -524,7 +689,7 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
             R.Queue.RemoveAt(0);
             for (int32 Team = 0; Team < 2; ++Team) SpawnUnit(Mode, R, O, Team);
             if (FWaveRecord* Rec = R.Records.Find(O.Serial)) Rec->LastSpawnAt = Time;
-            R.SpawnTimer += R.SpawnInterval;
+            R.SpawnTimer += R.SpawnInterval + O.GapAfter; // waves-modes: packs arrive as groups
         }
         if (R.Queue.IsEmpty()) R.SpawnTimer = 0;
     }
@@ -697,7 +862,7 @@ float CireWaveDirector::RewardMultiplier(const ACireMonster* M) { const FTrack* 
 float CireWaveDirector::StuckSeconds(const ACireMonster* M) { const FTrack* T = TrackOf(M); return T ? T->StuckFor : 0.f; }
 float CireWaveDirector::SizeScale(const ACireMonster* M) { const FTrack* T = TrackOf(M); return T && T->Serial >= 0 ? T->Size : 0.f; }
 bool CireWaveDirector::IsForcedMarch(const ACireMonster* M) { const FTrack* T = TrackOf(M); return T && T->bForcedMarch; }
-bool CireWaveDirector::AggroSuppressed(const ACireMonster* M) { const FTrack* T = TrackOf(M); return T && (T->bForcedMarch || T->SuppressUntil > Now(M)); }
+bool CireWaveDirector::AggroSuppressed(const ACireMonster* M) { const FTrack* T = TrackOf(M); return T && (T->bForcedMarch || T->bPassive || T->SuppressUntil > Now(M)); }
 ACireMonster* CireWaveDirector::EscortCharge(const ACireMonster* M)
 {
     const FTrack* T = TrackOf(M);
@@ -1059,25 +1224,96 @@ FCireWaveUnitInfo CireWaveDirector::UnitFlags(const ACireMonster* M)
 }
 float CireWaveDirector::MarchSpeed(const ACireMonster* M)
 {
-    if (!IsValid(M) || M->PackId >= 0 || IsValid(M->Victim)) return 1.f;
+    // waves-modes: every wave monster also carries its speed factor (-20%, the live scale, armored -50%), fighting or not.
+    const float Factor = SpeedFactor(M);
+    if (!IsValid(M) || M->PackId >= 0 || IsValid(M->Victim)) return Factor;
     const FTrack* T = TrackOf(M);
-    if (!T) return 1.f;
+    if (!T) return Factor;
     const FCireWaveConfig& C = Config(M->GetWorld());
     // world-scale: non-attacking marchers never stop to fight: they keep their own (hero-like) pace the whole way, and
     // escort guards walking beside their escortee keep that pace too, so the escort does not break formation.
-    if (M->bArmoredEscort || (T->bGuard && AliveUnit(T->Charge.Get()))) return FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed);
+    // waves-modes: damage-off (passive) units march at the normal column pace below instead.
+    if ((M->bArmoredEscort && !T->bPassive) || (T->bGuard && AliveUnit(T->Charge.Get()))) return FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed) * Factor;
     // world-scale: hurry across the empty outer districts; march at the normal pace once a defender is near.
     if (C.RallySpeed > C.MarchSpeedMultiplier)
     {
         const auto* Mode = M->GetWorld()->GetAuthGameMode<ACireGameMode>();
-        if (!Mode) return C.MarchSpeedMultiplier;
+        if (!Mode) return C.MarchSpeedMultiplier * Factor;
         const FVector P = M->GetActorLocation();
         for (const ACireHero* H : Mode->Heroes)
             if (IsValid(H) && !H->bDead && H->TeamId == M->Lane && FVector::DistSquared2D(H->GetActorLocation(), P) < FMath::Square(C.RallyRadius))
-                return C.MarchSpeedMultiplier;
-        return C.RallySpeed;
+                return C.MarchSpeedMultiplier * Factor;
+        return C.RallySpeed * Factor;
     }
-    return C.MarchSpeedMultiplier;
+    return C.MarchSpeedMultiplier * Factor;
+}
+
+// ---------------------------------------------------------------- waves-modes: armored traits, damage toggle, live scale
+float CireWaveDirector::SpeedFactor(const ACireMonster* M)
+{
+    if (!IsValid(M) || M->PackId >= 0) return 1.f;
+    const FTrack* T = TrackOf(M);
+    if (!T || T->Info.bBonus) return 1.f; // bonus creatures keep their own flee pace
+    const FCireWaveConfig& C = Config(M->GetWorld());
+    return C.Monsters.Speed * C.Live.Speed * (T->bArmored ? C.Monsters.ArmoredSpeed : 1.f);
+}
+bool CireWaveDirector::IsSlowImmune(const ACireMonster* M)
+{
+    const FTrack* T = TrackOf(M);
+    return T && T->bArmored && Config(M->GetWorld()).Monsters.bArmoredSlowImmune;
+}
+float CireWaveDirector::StunMultiplier(const AActor* Target)
+{
+    const auto* M = Cast<ACireMonster>(Target);
+    const FTrack* T = TrackOf(M);
+    return T && T->bArmored ? Config(M->GetWorld()).Monsters.ArmoredStunMultiplier : 1.f;
+}
+bool CireWaveDirector::IsPassive(const ACireMonster* M)
+{
+    const FTrack* T = TrackOf(M);
+    return T && T->bPassive;
+}
+bool CireWaveDirector::SetLiveScale(ACireGameMode* Mode, const FCireWaveScale& Scale, FString* Error)
+{
+    if (!Mode || !Mode->HasAuthority()) { if (Error) *Error = TEXT("Only the authoritative server can change the wave scale."); return false; }
+    FCireWaveConfig C = Get(Mode).Config;
+    C.Live = Scale;
+    return ApplyLive(Mode, C, Error);
+}
+namespace
+{
+/** Living wave units take the new live health/damage scale (health keeps its fraction). */
+void RescaleLiving(FRuntime& R)
+{
+    for (auto& Pair : R.Tracks)
+    {
+        ACireMonster* M = Pair.Key.Get();
+        FTrack& T = Pair.Value;
+        if (!AliveUnit(M) || T.Info.bBonus || T.Serial < 0) continue;
+        const float H = R.Config.Live.Health / FMath::Max(.01f, T.LiveHealth), D = R.Config.Live.Damage / FMath::Max(.01f, T.LiveDamage);
+        if (!FMath::IsNearlyEqual(H, 1.f)) { M->MaxHealth = FMath::Clamp(M->MaxHealth * H, 1.f, 1.e8f); M->Health = FMath::Clamp(M->Health * H, 1.f, M->MaxHealth); }
+        if (!FMath::IsNearlyEqual(D, 1.f)) M->Damage = FMath::Clamp(M->Damage * D, 0.f, 100000.f);
+        T.LiveHealth = R.Config.Live.Health; T.LiveDamage = R.Config.Live.Damage;
+        M->ForceNetUpdate();
+    }
+}
+}
+bool CireWaveDirector::SelectPreset(ACireGameMode* Mode, FName Id, FString* Error)
+{
+    auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    if (!S || !Mode->HasAuthority()) { if (Error) *Error = TEXT("Only the host picks the game type."); return false; }
+    if (S->Wave > 0) { if (Error) *Error = TEXT("The game type is fixed once the first wave starts."); return false; }
+    const FCireWavePreset* P = FindPreset(Id);
+    if (!P) { if (Error) *Error = FString::Printf(TEXT("Unknown game type '%s'."), *Id.ToString()); return false; }
+    // The file's schedule is the base; the preset may override the PvP rounds.
+    FCireWaveConfig C = Get(Mode).Config;
+    C.Match.PvpAfterWaves = GlobalConfig().Match.PvpAfterWaves;
+    ApplyPreset(C, *P);
+    if (!ApplyLive(Mode, C, Error)) return false;
+    if (S->WavePreset != P->Id) { S->WavePreset = P->Id; S->ForceNetUpdate(); }
+    UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_PRESET %s \"%s\" damage=%d fightBack=%d scale=%.2f/%.2f/%.2f packBonus=%d"), *P->Id.ToString(), *P->Label,
+        P->bDefaultDamage ? 1 : 0, P->DefaultFightBack.Num(), P->Scale.Health, P->Scale.Damage, P->Scale.Speed, P->PackSizeBonus);
+    return true;
 }
 bool CireWaveDirector::IsBreather(const ACireGameMode* Mode)
 {
