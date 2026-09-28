@@ -670,3 +670,129 @@ distance, Momentum cap, Shadow Dance recovery, Blur odds); native `CIRE_ROLL_SKI
 checks (heal per roll and per charge, cooldown %, instant cast consumed once, next-attack empower and crit,
 Momentum cap, cleanse order, Shadow Dance, Bloodrush, Riposte once per roll, Evasive Stance, Frost Wake,
 mines, bots roll, 20 DB rows); `CireMobilityTests` drives the real `StartRoll` twice and a real i-frame hit.
+
+<!-- AUTO:expansion -->
+## Expansion pool (ability-expansion)
+
+111 abilities from `Content/Data/AbilitiesExpansion.json` (written by `Tools/BuildAbilityExpansion.py`), merged additively into the
+Ability Database by `CireAbilityDB::Reload`; gameplay in `CireAbilityExpansion.cpp` (generic delivery recipes routed from `CireSignatureSkills`).
+Every row scales off the PRIMARY stat (damage / heal / barrier / summon and construct hits: `base + coef x Primary`; buffs and passives: potency
++0.4% per Primary, max +40%), carries a level-15 bonus (actives) or team aura (passives), a Skill Shop section, role types and a true telegraph.
+Signature Fab systems (`FabVFX.expansion.json`) come from the purchased packs' previously unused A/B-rated (or unrated moving) systems.
+
+| Ability | Kind | Delivery | School | Roles | Section | Base (+coef x Primary) | Lv 15 | Signature VFX | Champions |
+|---|---|---|---|---|---|---|---|---|---|
+| Glacial Eruption (`glacial_eruption`) | active | circle | cold | DPS | control | 80 + 1.4x impact damage | stun | area: Ice_Magic_IceSpike2 | 4 |
+| Rime Spike (`rime_spike`) | active | circle | cold | DPS/TANK | control | 60 + 1.1x impact damage | slow | impact: Ice_Magic_IceSpike | 7 |
+| Frostcleave (`frostcleave`) | active | cone | cold | TANK/DPS | attack | 65 + 1.2x damage | vulnerability | cast: Ice_Magic_Slash1 | 7 |
+| Frost Pirouette (`frost_pirouette`) | active | nova | cold | TANK/DPS | attack | 60 + 1.1x damage | stun | cast: Ice_Magic_Slash2 | 7 |
+| Blizzard (`blizzard`) | active | zone | cold | DPS/HEAL | control | 22 + 0.45x damage per second | slow | area: Ice_Magic_Snowstorm1 (tinted) | 5 |
+| Glacier Wall (`glacier_wall`) | active | wall | cold | TANK/HEAL | defensive | 400 + 8x wall health | slow | cast: Ice_Magic_Wall | 4 |
+| Crimson Crystals (`crimson_crystals`) | active | circle | physical | DPS | spell | 80 + 1.4x impact damage | dot | area: Blood_Magic_Crystal5 | 7 |
+| Sanguine Lash (`sanguine_lash`) | active | strike | physical | DPS/TANK | spell | 70 + 1.3x damage | healCut | impact: Blood_Magic_Beam2 | 7 |
+| Blood Bolt (`blood_bolt`) | active | bolt | physical | DPS | spell | 70 + 1.3x damage | dot | projectile: Blood_Magic_Projectile2 | 7 |
+| Haemic Orb (`haemic_orb`) | active | pierce | physical | DPS/HEAL | spell | 60 + 1.2x damage per target | healCut | projectile: Blood_Magic_Projectile3 | 7 |
+| Hemorrhage (`hemorrhage`) | active | strike | physical | DPS | attack | 90 + 1.6x damage | healCut | impact: BloodBurst_Extreme (tinted) | 7 |
+| Arterial Slash (`arterial_slash`) | active | cone | physical | DPS/TANK | attack | 65 + 1.2x damage | dot | impact: BloodSplash_High | 7 |
+| Crimson Volley (`crimson_volley`) | active | pierce | physical | DPS | attack | 60 + 1.2x damage per target | vulnerability | impact: BulletHit_Sample | 7 |
+| Blood Pool (`blood_pool`) | active | zone | physical | DPS | control | 22 + 0.45x damage per second | healCut | area: SphericalDecalSplatter_Extreme | 7 |
+| Bloodletting (`bloodletting`) | active | selfBuff | physical | DPS/TANK | defensive | 20% (potency) % | dot | cast: Dripping_High | 7 |
+| Lacerate (`lacerate`) | active | strike | physical | DPS/TANK | attack | 70 + 1.3x damage | dot | impact: Dripping_Splash_High | 7 |
+| Rending Leap (`rending_leap`) | active | leap | physical | DPS/TANK | attack | 70 + 1.2x damage | slow | impact: Splatter_Omni_02_Decal | 7 |
+| Savage Cleave (`savage_cleave`) | active | nova | physical | TANK/DPS | attack | 60 + 1.1x damage | vulnerability | impact: Splatter_Omni_03_Decal | 7 |
+| Gore Charge (`gore_charge`) | active | dash | physical | TANK/DPS | attack | 65 + 1.1x damage | stun | impact: Splatter_Directional_02_Decal | 7 |
+| Flay (`flay`) | active | chain | physical | DPS | attack | 55 + 1x damage per bounce | healCut | impact: Splatter_Omni_04_Decal | 7 |
+| Toxic Bubble (`toxic_bubble`) | active | nova | poison | TANK/DPS | control | 60 + 1.1x damage | healCut | impact: Posion_Magic_Shild_Splash | 7 |
+| Venom Dart (`venom_dart`) | active | bolt | poison | DPS | spell | 70 + 1.3x damage | dot | projectile: Posion_Magic_Projectile3 | 7 |
+| Plague Orb (`plague_orb`) | active | bolt | poison | DPS/HEAL | spell | 70 + 1.3x damage | dot | projectile: Posion_Magic_Projectile4 | 7 |
+| Riptide Bolt (`riptide_bolt`) | active | bolt | tide | DPS/HEAL | spell | 70 + 1.3x damage | slow | projectile: Water_Magic_Projectile2 | 4 |
+| Tidal Lance (`tidal_lance`) | active | pierce | tide | DPS | spell | 60 + 1.2x damage per target | vulnerability | projectile: Water_Magic_Projectile3 | 4 |
+| Maelstrom (`maelstrom`) | active | zone | tide | DPS/HEAL | control | 22 + 0.45x damage per second | slow | area: P_ky_aquaStorm | 4 |
+| Umbral Ward (`umbral_ward`) | active | barrier | void | TANK/HEAL | defensive | 140 + 3x barrier health | purge | cast: Dark_Magic_Shield_Splash | 7 |
+| Void Pyre (`void_pyre`) | active | zone | void | DPS | spell | 26 + 0.45x damage per second | dot | area: Dark_Magic_Dark_Flame | 7 |
+| Abyssal Pillar (`abyssal_pillar`) | active | circle | void | DPS/TANK | control | 80 + 1.4x impact damage | vulnerability | area: Dark_Magic_Wall1 | 7 |
+| Ring of Ruin (`ring_of_ruin`) | active | nova | void | TANK/DPS | control | 60 + 1.1x damage | stun | area: Dark_Magic_Wall2 | 7 |
+| Void Bolt (`void_bolt`) | active | bolt | void | DPS | spell | 70 + 1.3x damage | vulnerability | projectile: Dark_Magic_Projectile2 | 7 |
+| Rift Line (`rift_line`) | active | line | void | DPS | spell | 75 + 1.3x damage | damageAmp | cast: Dark_Magic_Line_Splash1 | 7 |
+| Sunlance (`sunlance`) | active | bolt | holy | DPS/HEAL | spell | 70 + 1.3x damage | purge | projectile: Light_Magic_Projectile1_Circle | 7 |
+| Radiant Orb (`radiant_orb`) | active | pierce | holy | HEAL/DPS | spell | 60 + 1.2x damage per target | healCut | projectile: Light_Magic_Projectile2_Circle | 7 |
+| Blade of Judgment (`blade_of_judgment`) | active | line | holy | TANK/DPS | attack | 75 + 1.3x damage | stun | cast: Light_Magic_Sword_Line2 | 7 |
+| Thunderclap (`thunderclap`) | active | circle | storm | DPS | control | 80 + 1.4x impact damage | vulnerability | impact: P_ky_lightning1 | 7 |
+| Storm Call (`storm_call`) | active | circle | storm | DPS/HEAL | spell | 90 + 1.5x impact damage | damageAmp | impact: P_ky_lightning2 | 7 |
+| Ground Surge (`ground_surge`) | active | nova | storm | TANK/DPS | control | 60 + 1.1x damage | stun | area: P_ky_lightning3 | 7 |
+| Tempest Line (`tempest_line`) | active | line | storm | DPS | spell | 75 + 1.3x damage | slow | cast: Lightning_Magic_Tornado_Line | 7 |
+| Thunder Line (`thunder_line`) | active | line | storm | DPS | spell | 75 + 1.3x damage | stun | cast: Lightning_Magic_Tunder_Line | 7 |
+| Static Arc (`static_arc`) | active | chain | storm | DPS/HEAL | spell | 55 + 1x damage per bounce | stun | impact: Lightning_Magic_Lightning2 | 7 |
+| Storm Slash (`storm_slash`) | active | cone | storm | TANK/DPS | attack | 65 + 1.2x damage | vulnerability | cast: Lightning_Magic_Slash1 | 7 |
+| Shade Wave (`shade_wave`) | active | line | shadow | DPS | spell | 75 + 1.3x damage | dot | cast: Shadow_Magic_Area_Line_Attack2 | 7 |
+| Night Spear (`night_spear`) | active | line | shadow | DPS | control | 75 + 1.3x damage | damageAmp | cast: Shadow_Magic_Line_Attack3 | 7 |
+| Dusk Orb (`dusk_orb`) | active | bolt | shadow | DPS/HEAL | spell | 70 + 1.3x damage | healCut | projectile: Shadow_Magic_Orb2 | 7 |
+| Crystal Prison (`crystal_prison`) | active | nova | shadow | TANK/HEAL | control | 60 + 1.1x damage | stun | area: Shadow_Magic_Wall1 | 4 |
+| Shadow Palisade (`shadow_palisade`) | active | wall | shadow | TANK | defensive | 400 + 8x wall health | slow | cast: Shadow_Magic_Wall2 | 4 |
+| Shadow Rend (`shadow_rend`) | active | line | shadow | DPS/TANK | spell | 75 + 1.3x damage | vulnerability | cast: Shadow_Magic_Area_Line_Attack3 | 7 |
+| Umbral Scythe (`umbral_scythe`) | active | line | shadow | DPS | spell | 75 + 1.3x damage | healCut | cast: Shadow_Magic_Area_Line_Attack4 | 7 |
+| Gloom Lance (`gloom_lance`) | active | line | shadow | DPS | spell | 85 + 1.45x damage | damageAmp | cast: Shadow_Magic_Line_Attack4 | 7 |
+| Shadow Dart (`shadow_dart`) | active | bolt | shadow | DPS | spell | 55 + 1.1x damage | dot | projectile: Shadow_Magic_Projectile3 | 6 |
+| Stone Spire (`stone_spire`) | active | circle | earth | TANK/DPS | control | 80 + 1.4x impact damage | vulnerability | area: Earth_Magic_Spike6 | 7 |
+| Magma Rift (`magma_rift`) | active | line | earth | DPS/TANK | spell | 85 + 1.45x damage | stun | cast: Earth_Spells_Area_Spike_Line3 | 7 |
+| Stone Henge (`stone_henge`) | active | nova | earth | TANK | control | 60 + 1.1x damage | stun | area: Earth_Spells_Wall4 | 7 |
+| Boulder Toss (`boulder_toss`) | active | bolt | earth | TANK/DPS | attack | 70 + 1.3x damage | stun | projectile: Earth_Spells_Projectile4 | 7 |
+| Spikebreaker (`spikebreaker`) | active | line | earth | TANK/DPS | control | 75 + 1.3x damage | stun | cast: Earth_Spells_Area_Spike_Line4 | 7 |
+| Gale Arrow (`gale_arrow`) | active | pierce | arcane | DPS | attack | 60 + 1.2x damage per target | slow | projectile: Air_Magic_Arrow3 | 7 |
+| Zephyr Arrow (`zephyr_arrow`) | active | bolt | arcane | DPS/HEAL | attack | 70 + 1.3x damage | vulnerability | projectile: Air_Magic_Arrow4 | 7 |
+| Cinder Shot (`cinder_shot`) | active | bolt | fire | DPS | spell | 70 + 1.3x damage | dot | projectile: Fire_Magic_Projectile5 | 7 |
+| Mending Rain (`mending_rain`) | active | healZone | tide | HEAL | defensive | 30 + 0.6x healing per second | purge | area: Water_Magic_Waterflow1 | 4 |
+| Radiant Mend (`radiant_mend`) | active | heal | holy | HEAL | defensive | 110 + 3x healing | purge | cast: Light_Magic_Shield_Splash | 7 |
+| Transfusion (`transfusion`) | active | heal | physical | HEAL/TANK | defensive | 95 + 3x healing | healCut | cast: BrainBurst (tinted) | 7 |
+| Verdant Renewal (`verdant_renewal`) | active | heal | nature | HEAL | defensive | 100 + 3x healing | purge | cast: Posion_Magic_Explosion2 (tinted) | 7 |
+| Stoneguard (`stoneguard`) | active | barrier | earth | TANK/HEAL | defensive | 140 + 3x barrier health | slow | cast: Earth_Spells_Hit3 | 7 |
+| Adrenaline Surge (`adrenaline`) | active | selfBuff | physical | DPS/TANK | defensive | 25% (potency) % | slow | cast: Blood_Magic_Explo2 | 7 |
+| Iron Resolve (`iron_resolve`) | active | selfBuff | earth | TANK | defensive | 25% (potency) % | stun | cast: Earth_Spells_Attack1 (tinted) | 7 |
+| Rallying Cry (`rallying_banner`) | active | partyBuff | physical | TANK/HEAL | defensive | 15% (potency) % | purge | cast: BloodBurst_Extreme (tinted) | 7 |
+| Tailwind (`wind_ward`) | active | partyBuff | arcane | HEAL/DPS | defensive | 15% (potency) % | slow | cast: Air_Magic_Hit1 (tinted) | 7 |
+| Skeletal Warband (`skeletal_warband`) | active | summon | shadow | DPS | summon | 16 + 0.4x damage per hit | dot | cast: Shadow_Magic_Attack1 (tinted) | 6 |
+| Stone Sentinel (`stone_sentinel`) | active | summon | earth | TANK | summon | 18 + 0.4x damage per hit | stun | cast: Earth_Spells_Attack1 (tinted) | 10 |
+| Spirit Wolves (`spirit_wolves`) | active | summon | nature | DPS/HEAL | summon | 16 + 0.4x damage per hit | slow | cast: Posion_Magic_SpikeHit (tinted) | 10 |
+| Blood Thralls (`blood_thralls`) | active | summon | physical | DPS/TANK | summon | 16 + 0.4x damage per hit | healCut | cast: BloodBurst_Extreme (tinted) | 10 |
+| Frost Wraith (`frost_wraith`) | active | summon | cold | DPS/HEAL | summon | 22 + 0.5x damage per hit | slow | cast: Ice_Magic_Splash (tinted) | 10 |
+| Radiant Guardian (`radiant_guardian`) | active | summon | holy | HEAL/TANK | summon | 16 + 0.4x damage per hit | purge | cast: Light_Magic_Explosion1 (tinted) | 10 |
+| Storm Elemental (`storm_elemental`) | active | summon | storm | DPS | summon | 24 + 0.55x damage per hit | stun | cast: Lightning_Magic_Blink1 (tinted) | 4 |
+| Clockwork Knight (`clockwork_knight`) | active | summon | arcane | TANK/DPS | summon | 18 + 0.4x damage per hit | vulnerability | cast: Air_Magic_Hit3 (tinted) | 10 |
+| Frost Sentry (`frost_sentry`) | active | construct | cold | DPS/HEAL | construct | 220 + 0.35x construct health | slow | cast: Ice_Magic_Splash (tinted) | 10 |
+| Siege Ballista (`siege_ballista`) | active | construct | physical | DPS | construct | 300 + 0.8x construct health | vulnerability | cast: BrainBurst (tinted) | 4 |
+| Venom Totem (`venom_totem`) | active | construct | poison | DPS/HEAL | construct | 200 + 0.3x construct health | healCut | cast: Posion_Magic_Shild_Splash (tinted) | 5 |
+| Warding Obelisk (`warding_obelisk`) | active | construct | holy | HEAL/TANK | construct | 240 + 0.3x construct health | purge | cast: Light_Magic_Heal_Hit | 10 |
+| War Drum (`war_drum`) | active | construct | physical | TANK/DPS | construct | 260 + 0.3x construct health | stun | cast: Blood_Magic_Explo2 (tinted) | 10 |
+| Thunder Coil (`thunder_coil`) | active | construct | storm | DPS | construct | 60 + 1x construct health | stun | cast: Lightning_Magic_Shield_Splash (tinted) | 3 |
+| Frost Snare (`frost_snare`) | active | construct | cold | TANK/DPS | construct | 60 + 0.3x construct health | slow | cast: Ice_Magic_Slash1 (tinted) | 10 |
+| Clockwork Scarabs (`clockwork_scarabs`) | active | construct | arcane | DPS | construct | 30 + 0.55x construct health | damageAmp | cast: Air_Magic_Hit1 (tinted) | 3 |
+| Hex Lantern (`hex_lantern`) | active | construct | shadow | HEAL/DPS | construct | 60 + 0.8x construct health | purge | cast: Shadow_Magic_Hit3 (tinted) | 3 |
+| Reaper's Instinct (`reapers_instinct`) | passive | passive | shadow | DPS | passive | 20% (potency) % damage | crit |  | 3 |
+| Opportunist (`opportunist`) | passive | passive | physical | DPS/TANK | passive | 15% (potency) % damage | doubleAttack |  | 10 |
+| First Blood (`first_blood`) | passive | passive | physical | DPS | passive | 15% (potency) % damage | rangedDamage |  | 3 |
+| Iron Hide (`iron_hide`) | passive | passive | earth | TANK | passive | 8% (potency) % damage reduction | armor |  | 9 |
+| Last Bastion (`last_bastion`) | passive | passive | holy | TANK/HEAL | passive | 25% (potency) % damage reduction | stunIgnore |  | 10 |
+| Legion's Bond (`legions_bond`) | passive | passive | arcane | DPS/TANK/HEAL | passive | 20% (potency) % unit damage | aoeResist |  | 10 |
+| Arcane Echo (`arcane_echo`) | passive | passive | arcane | DPS/HEAL | passive | 50% (potency) % echo damage | magicLifesteal |  | 9 |
+| Serrated Edge (`serrated_edge`) | passive | passive | physical | DPS/TANK | passive | 40% (potency) % bleed | physicalLifesteal |  | 10 |
+| Sanguine Pact (`sanguine_pact`) | passive | passive | physical | DPS/TANK | passive | 8% (potency) % lifesteal | magicResist |  | 9 |
+| Fleetfoot (`fleetfoot`) | passive | passive | nature | DPS/TANK/HEAL | passive | 8% (potency) % move speed | attackSpeed |  | 10 |
+| Battle Trance (`battle_trance`) | passive | passive | physical | DPS/TANK | passive | 12% (potency) % attack speed | stunOnHit |  | 7 |
+| Mana Font (`mana_font`) | passive | passive | arcane | HEAL/DPS | passive | 4% (potency) % max mana per kill | magicResist |  | 7 |
+| Soul Harvest (`soul_harvest`) | passive | passive | shadow | TANK/DPS | passive | 3% (potency) % max health per kill | armor |  | 3 |
+| Frostbite (`frostbite`) | passive | passive | cold | DPS/TANK/HEAL | passive | 20% (potency) % slow chance | aoeResist |  | 10 |
+| Eye of the Void (`eye_of_the_void`) | ultimate | zone | void | DPS | ultimate | 55 + 1.1x damage per second | vulnerability | area: P_ky_darkStorm | 3 |
+| Heaven's Wrath (`heavens_wrath`) | ultimate | barrage | storm | DPS | ultimate | 75 + 1.2x damage per strike | stun | area: P_ky_thunderStorm | 3 |
+| Meteor Rain (`meteor_rain`) | ultimate | barrage | fire | DPS/TANK | ultimate | 70 + 1.15x damage per strike | dot | area: Fire_Magic_Arena | 3 |
+| Frozen Eternity (`frozen_eternity`) | ultimate | nova | cold | DPS/TANK | ultimate | 200 + 3x damage | slow | area: Ice_Magic_IceSpike2 (tinted) | 5 |
+| Sanguine Ascension (`sanguine_ascension`) | ultimate | selfBuff | physical | DPS/TANK | ultimate | 200 + 3x barrier health | healCut | cast: BloodBurst_Extreme (tinted) | 4 |
+| Call of the Legion (`call_of_the_legion`) | ultimate | summon | shadow | DPS/TANK | ultimate | 26 + 0.6x damage per hit | dot | cast: Shadow_Magic_Attack1 (tinted) | 3 |
+| Awaken the Colossus (`awaken_the_colossus`) | ultimate | summon | earth | TANK | ultimate | 40 + 0.9x damage per hit | stun | cast: Earth_Spells_Attack1 (tinted) | 4 |
+| Sanctified Ground (`sanctified_ground`) | ultimate | healZone | holy | HEAL | ultimate | 60 + 1.2x healing per second | purge | area: Light_Magic_Circle | 6 |
+| Aegis of Ages (`aegis_of_ages`) | ultimate | partyBuff | earth | TANK/HEAL | ultimate | 180 + 2.5x barrier health | purge | cast: Earth_Magic_Hit (tinted) | 10 |
+| Warlord's Anthem (`warlords_anthem`) | ultimate | partyBuff | physical | TANK/DPS | ultimate | 120 + 2x barrier health | slow | cast: Blood_Magic_Explo2 (tinted) | 4 |
+| Earthshatter (`earthshatter`) | ultimate | line | earth | TANK/DPS | ultimate | 200 + 3x damage | vulnerability | cast: Earth_Spells_Area_Spike_Line3 (tinted) | 4 |
+| Tidal Cataclysm (`tidal_cataclysm`) | ultimate | zone | tide | DPS/HEAL | ultimate | 50 + 1x damage per second | slow | area: P_ky_aquaStorm (tinted) | 6 |
+
+Champion pool growth: aetheri_artificer +31, aetheri_warden +30, bear +28, drakish_footman +30, dryad +24, dwarf_miner +27, ether_golem_bruiser +31, ether_golem_support +18, ether_golem_tank +27, evergrove_centaur +31, gunblade +31, huntress +31, keeper_of_light +16, knight +30, lancer +31, orc_chieftain +30, paladin_holy +15, paladin_righteous +30, ranger +31, scholar +22, summoner +30, totemic_behemoth +26, troll_berserker_melee +30, troll_berserker_ranged +30, whisp +22, witch_slayer +30, wizard +30
+<!-- /AUTO:expansion -->

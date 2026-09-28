@@ -758,10 +758,10 @@ SHADOW = "/Game/Shadow_Magic/VFX_Niagara/"
 # arena-flow (Docs/Arenas.md "Arena flow"): after each scheduled PvP wave a portal opens beside every champion; prepSeconds
 # to prepare (enter early), then stragglers are drawn through and a countdownSeconds countdown starts the fight. Rewards:
 # killGold per killing blow; winGold split across the winners; a stacking team buff (+pveBuffPercent damage to monsters)
-# for the winners and a stacking debuff (-pveDebuffPercent) for the losers. pvpAfterWaves is the fallback schedule
-# until feat/waves-modes owns it. legacyPowerLoot re-enables the old +3% power / +8% loot per win (it also affects PvP).
+# for the winners and a stacking debuff (-pveDebuffPercent) for the losers. The PvP schedule is Waves.json "match"
+# (feat/waves-modes). legacyPowerLoot re-enables the old +3% power / +8% loot per win (it also affects PvP).
 FLOW = {"prepSeconds": 30, "countdownSeconds": 7, "killGold": 50, "winGold": 250, "pveBuffPercent": 15, "pveDebuffPercent": 15,
-        "legacyPowerLoot": False, "pvpAfterWaves": [5, 10, 15, 20]}
+        "legacyPowerLoot": False}
 PORTAL = {
     "leadSeconds": 12, "radius": 150, "height": 175, "offset": 330, "arrivalSeconds": 4, "returnSeconds": 6, "countdownSeconds": 7,
     "discMaterial": "/Game/Arenas/Portal/M_ArenaPortal.M_ArenaPortal",

@@ -5,6 +5,7 @@
 #include "CireArenaPortal.h"
 #include "CireEffects.h"
 #include "CireBuffs.h"
+#include "CireWaves.h"
 #include "CireAmbience.h"
 #include "CireMusic.h"
 #include "Components/DirectionalLightComponent.h"
@@ -199,8 +200,12 @@ bool CireArenaFlow::RunTests(ACireGameMode* Mode)
     const CireArenaPortal::FConfig& C = CireArenaPortal::Config();
     Check(FMath::IsNearlyEqual(C.PrepSeconds, 30.f) && FMath::IsNearlyEqual(C.CountdownSeconds, 7.f), TEXT("30 s prep, then a 7 s countdown (Arenas.json flow)"));
     Check(C.KillGold == 50 && C.WinGold == 250 && FMath::IsNearlyEqual(C.PvEBuffPercent, 15.f) && FMath::IsNearlyEqual(C.PvEDebuffPercent, 15.f), TEXT("reward data: 50 g kill, 250 g win, +/-15% PvE"));
-    Check(PvPAfterWaves(World) == TArray<int32>({5, 10, 15, 20}), TEXT("fallback PvP schedule is 5/10/15/20"));
-    Check(IsPvPAfterWave(World, 5) && IsPvPAfterWave(World, 20) && !IsPvPAfterWave(World, 7) && !IsPvPAfterWave(World, 25), TEXT("schedule adapter answers per wave"));
+    const TArray<int32> Schedule = PvPAfterWaves(World);
+    Check(Schedule == CireWaveDirector::Schedule(World).PvpAfterWaves && !Schedule.IsEmpty(), TEXT("the PvP schedule comes from the wave director (Waves.json match)"));
+    bool bScheduled = true; for (int32 W : Schedule) bScheduled &= IsPvPAfterWave(World, W) || CireWaveDirector::IsSuddenDeath(CireWaveDirector::Config(World), W);
+    Check(bScheduled && !IsPvPAfterWave(World, 7), TEXT("scheduled waves lead to an arena, others do not"));
+    const int32 SuddenDeathWave = CireWaveDirector::Schedule(World).TotalWaves + 5;
+    Check(CireWaveDirector::Schedule(World).TotalWaves <= 0 || !IsPvPAfterWave(World, SuddenDeathWave), TEXT("no arena after a Sudden Death wave"));
 
     // Team buff / debuff: stacks, multiplier, icons.
     const int32 Saved[4] = {State->EmberArenaBuffs, State->EmberArenaDebuffs, State->DuskArenaBuffs, State->DuskArenaDebuffs};

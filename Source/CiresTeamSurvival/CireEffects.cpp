@@ -119,7 +119,7 @@ bool CireEffects::Parse(const FString& Json, TMap<FName, FCireEffectInfo>& Out, 
 bool CireEffects::Reload(FString& Error)
 {
     TMap<FName, FCireEffectInfo> Rows; GKindSet.Reset();
-    for (const TCHAR* File : {TEXT("Data/BuffModifiers.json"), TEXT("Data/Abilities.json")})
+    for (const TCHAR* File : {TEXT("Data/BuffModifiers.json"), TEXT("Data/Abilities.json"), TEXT("Data/AbilitiesExpansion.json")}) // ability-expansion
     {
         FString Text; const FString Path = FPaths::Combine(FPaths::ProjectContentDir(), File);
         if (!FFileHelper::LoadFileToString(Text, *Path)) { if (FCString::Strstr(File, TEXT("BuffModifiers"))) { Error = TEXT("Missing BuffModifiers.json"); } continue; }

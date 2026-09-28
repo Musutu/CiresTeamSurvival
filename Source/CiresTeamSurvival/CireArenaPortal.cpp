@@ -5,6 +5,7 @@
 #include "CireFabVFX.h"
 #include "CireGame.h"
 #include "CireItems.h"
+#include "CireWaves.h" // arena-flow: the PvP schedule (feat/waves-modes)
 #include "CireLanePath.h"
 #include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
@@ -113,7 +114,7 @@ void LoadConfig(FConfig& C)
         }
     }
     else C.Errors.Add(TEXT("Arenas.json has no top-level 'portal' block"));
-    // arena-flow: prep, countdown, rewards and the fallback PvP schedule.
+    // arena-flow: prep, countdown and rewards (the PvP schedule lives in Waves.json "match").
     const TSharedPtr<FJsonObject>* FO = nullptr;
     if (Root->TryGetObjectField(TEXT("flow"), FO))
     {
@@ -125,13 +126,6 @@ void LoadConfig(FConfig& C)
         C.PvEBuffPercent = FMath::Clamp(PNum(F, TEXT("pveBuffPercent"), C.PvEBuffPercent), 0.f, 500.f);
         C.PvEDebuffPercent = FMath::Clamp(PNum(F, TEXT("pveDebuffPercent"), C.PvEDebuffPercent), 0.f, 90.f);
         bool bLegacy = false; if (F->TryGetBoolField(TEXT("legacyPowerLoot"), bLegacy)) C.bLegacyPowerLoot = bLegacy;
-        const TArray<TSharedPtr<FJsonValue>>* Waves = nullptr;
-        if (F->TryGetArrayField(TEXT("pvpAfterWaves"), Waves))
-        {
-            C.PvPAfterWaves.Reset();
-            for (const auto& W : *Waves) { double N = 0; if (W->TryGetNumber(N) && N >= 1) C.PvPAfterWaves.AddUnique(static_cast<int32>(N)); }
-            C.PvPAfterWaves.Sort();
-        }
     }
     else C.Errors.Add(TEXT("Arenas.json has no top-level 'flow' block"));
     const TArray<TSharedPtr<FJsonValue>>* Arenas = nullptr;
@@ -715,13 +709,13 @@ void ACireArenaPortal::Tick(float DeltaSeconds)
 // ======================================================================== arena flow
 TArray<int32> CireArenaFlow::PvPAfterWaves(const UWorld* World)
 {
-    // MERGE POINT (feat/waves-modes, Docs/RESUME-waves-modes.md): replace this line with
-    //   return CireWaveDirector::Schedule(World).PvpAfterWaves;   (CireWaves.h; Waves.json "match.pvpAfterWaves")
-    // Until then the fallback is Arenas.json "flow.pvpAfterWaves" (5/10/15/20).
-    return CireArenaPortal::Config().PvPAfterWaves;
+    // feat/waves-modes owns the schedule (Waves.json "match.pvpAfterWaves", a game-type preset may override it).
+    return CireWaveDirector::Schedule(World).PvpAfterWaves;
 }
 bool CireArenaFlow::IsPvPAfterWave(const UWorld* World, int32 WavesCleared)
 {
+    // Sudden Death waves (after match.totalWaves) never lead to an arena, whatever the list says.
+    if (CireWaveDirector::IsSuddenDeath(CireWaveDirector::Config(World), WavesCleared)) return false;
     return PvPAfterWaves(World).Contains(WavesCleared);
 }
 void CireArenaFlow::SkipArena(ACireGameMode* Mode)

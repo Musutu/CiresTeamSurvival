@@ -167,6 +167,7 @@ void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireGameState,ArenaIndex); DOREPLIFETIME(ACireGameState,Announcement);
     DOREPLIFETIME(ACireGameState,ArenaStage); DOREPLIFETIME(ACireGameState,ArenaCountdownLength); // arena-flow
     DOREPLIFETIME(ACireGameState,EmberArenaBuffs); DOREPLIFETIME(ACireGameState,EmberArenaDebuffs); DOREPLIFETIME(ACireGameState,DuskArenaBuffs); DOREPLIFETIME(ACireGameState,DuskArenaDebuffs); // arena-flow
+    DOREPLIFETIME(ACireGameState,WavePreset); // waves-modes
     DOREPLIFETIME(ACireGameState,ProgressionMode); DOREPLIFETIME(ACireGameState,bReadyGateHold); DOREPLIFETIME(ACireGameState,ReadyGateLeft); // progression-shop
     DOREPLIFETIME(ACireGameState,WaveLabel); DOREPLIFETIME(ACireGameState,NextWaveLabel); // wave-director
     DOREPLIFETIME(ACireGameState,BreatherReady); DOREPLIFETIME(ACireGameState,BreatherPlayers); // wave-director
@@ -497,7 +498,7 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
         // wave-director: the first wave's authored delay, and the finite cycle count.
         const auto& Waves=CireWaveDirector::Config(GetWorld());
         if(!bSmoke&&!Waves.Waves.IsEmpty())WaveTimer=CireWaveDirector::ResolveWave(Waves,0,Clock.Round()-1).DelayBefore;
-        if(Waves.Cycles>0&&Clock.Round()>Waves.Cycles) {
+        if(Waves.Cycles>0&&Clock.Round()>Waves.Cycles&&Waves.Match.TotalWaves<=0) { // waves-modes: with Sudden Death on, the match runs until a team is out of lives
             bCyclesComplete=true;
             EndSurvival(S->EmberLives==S->DuskLives?-1:S->EmberLives>S->DuskLives?0:1);
             return;

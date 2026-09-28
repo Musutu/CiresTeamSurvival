@@ -4,8 +4,8 @@ Worktree `F:\CiresTeamSurvival-agents\cts-arena-flow`, ports 17530-17539. Spec: 
 Design and data: `Docs/Arenas.md` "Arena flow (September 27, Playtest 6)".
 
 ## Done
-- PvP schedule adapter `CireArenaFlow::PvPAfterWaves / IsPvPAfterWave` (CireArenaPortal.h/.cpp), fallback
-  `Arenas.json flow.pvpAfterWaves` = 5/10/15/20. Non-PvP cycle ends skip the prep/arena (`SkipArena`, clock walked silently).
+- PvP schedule `CireArenaFlow::PvPAfterWaves / IsPvPAfterWave` now reads `CireWaveDirector::Schedule(World).PvpAfterWaves`
+  (waves-modes merged); Sudden Death waves never lead to an arena. Non-PvP cycle ends skip the prep/arena (`SkipArena`).
 - Prep = `flow.prepSeconds` 30 + `flow.countdownSeconds` 7; portals beside every human open at prep start (not at T-12 s).
 - Enter early (existing trigger); last human through -> bots follow -> countdown. Timer end -> `ServerPullAll` pulls everyone
   still in town (humans + bots) -> countdown. Replicated `ACireGameState::ArenaStage` (1 prep, 2 countdown) + `ArenaCountdownLength`.
@@ -19,9 +19,12 @@ Design and data: `Docs/Arenas.md` "Arena flow (September 27, Playtest 6)".
 
 ## Not done / next
 - (fill after gates) see "Gate logs".
-- On merge with feat/waves-modes: switch the body of `CireArenaFlow::PvPAfterWaves` to its schedule accessor (one line) and
-  drop `flow.pvpAfterWaves` if unused. If waves-modes also sets the prep length, `OnPhaseChanged(1)` here overrides it with
+- waves-modes switch done (flow.pvpAfterWaves removed). `OnPhaseChanged(1)` overrides Waves.json prepSeconds with
   flow.prepSeconds + countdown for PvP preps (intended).
+- The native run has no champions, so the icon + killing-blow checks in `CireArenaFlow::RunTests` are skipped there
+  (logged CIRE_ARENA_FLOW_NOTE); the interface probe covers the portal flow end to end.
+- Merge fix: main's CireMatch.cpp had `bReadyGateHold`/`ReadyGateLeft` DOREPLIFETIME swallowed by a `// waves-modes` comment;
+  restored in the conflict resolution.
 
 ## Assumptions / questions for Eric
 - "Loaded" = teleported into the arena (the arena is prebuilt hidden on every peer during prep).

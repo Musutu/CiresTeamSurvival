@@ -1,6 +1,7 @@
 #include "CireDeveloperTools.h"
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireKitSkills.h" // kits-complete
+#include "CireAbilityExpansion.h" // ability-expansion
 #include <algorithm>
 #include "CireSkillShop.h" // progression-shop: game mode
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
@@ -836,6 +837,7 @@ void ACireHero::BotThink(float DeltaSeconds)
             {
                 if (IsPassive(Skills[Slot]) || Cooldowns[Slot] > 0 || GlobalCooldown > 0) continue;
                 if (CireKitSkills::Knows(Skills[Slot]) && !CireKitSkills::BotWantsCast(this, Skills[Slot])) continue; // kits-complete: no wasted heals/buffs
+                if (CireAbilityExpansion::Knows(Skills[Slot]) && !CireAbilityExpansion::BotWantsCast(this, Skills[Slot])) continue; // ability-expansion
                 if((Skills[Slot]==TEXT("second_wind")||Skills[Slot]==TEXT("last_stand"))&&Health>=MaxHealth*.8f)continue;
                 if(Skills[Slot]==TEXT("challenge_of_iron")||Skills[Slot]==TEXT("seismic_reprisal"))
                 {

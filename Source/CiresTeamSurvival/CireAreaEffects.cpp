@@ -209,9 +209,27 @@ ACireAreaEffect::ACireAreaEffect()
     GroundMesh->bUseAsyncCooking = false;
 }
 
+bool ACireAreaEffect::IsBarrierPolygon(const TArray<FVector2D>& P)
+{
+    if (P.Num() != 4) return false;
+    // A rectangle (any rotation): opposite sides equal and parallel, adjacent sides perpendicular.
+    const FVector2D A = P[1] - P[0], B = P[2] - P[1], C = P[3] - P[2], D = P[0] - P[3];
+    const double Scale = FMath::Max(1.0, FMath::Max(A.Size(), B.Size()));
+    return (A + C).Size() < .02 * Scale && (B + D).Size() < .02 * Scale && FMath::Abs(FVector2D::DotProduct(A.GetSafeNormal(), B.GetSafeNormal())) < .02;
+}
+void ACireAreaEffect::NormalizeShape(FCireAreaSpec& Spec)
+{
+    if (Spec.Shape == ECireAreaShape::Square) { Spec.Shape = ECireAreaShape::Circle; Spec.Radius = FMath::Max(1.f, Spec.Width * .5f); }
+    else if (Spec.Shape == ECireAreaShape::Custom && !IsBarrierPolygon(Spec.CustomPolygon))
+    {
+        float Reach = 0; for (const FVector2D& V : Spec.CustomPolygon) Reach = FMath::Max(Reach, static_cast<float>(V.Size()));
+        Spec.Shape = ECireAreaShape::Circle; Spec.Radius = Spec.Radius > 1.f ? Spec.Radius : FMath::Max(1.f, Reach); Spec.CustomPolygon.Reset();
+    }
+}
 ACireAreaEffect* ACireAreaEffect::Spawn(AActor* Source, const FCireAreaSpec& InputSpec, FVector GroundCenter, FRotator Heading)
 {
     FCireAreaSpec Spec=InputSpec;if(Source)CireDeveloperTools::AdjustArea(Source->GetWorld(),Spec);
+    NormalizeShape(Spec); // casting-rules: Line / Barrier / Cone / Circle only
     if(Source){const float Wide=CireItems::AreaRadiusMultiplier(Source);Spec.Radius=FMath::Min(Spec.Radius*Wide,static_cast<float>(MaxDimension));Spec.Length=FMath::Min(Spec.Length*Wide,static_cast<float>(MaxDimension));Spec.Width=FMath::Min(Spec.Width*Wide,static_cast<float>(MaxDimension));} // items-v2: Heart of the Cataclysm
     if (!CireCombat::IsAlive(Source) || !Source->HasAuthority() ||
         !ValidateSpec(Spec) || GroundCenter.ContainsNaN() || Heading.ContainsNaN()) return nullptr;

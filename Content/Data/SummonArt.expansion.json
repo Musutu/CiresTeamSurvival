@@ -1,0 +1,106 @@
+{
+ "schemaVersion": 1,
+ "description": "ability-expansion: bodies for the expansion summons (SummonArt.json row shape; SummonArt.json wins on a clash). Written by Tools/BuildAbilityExpansion.py.",
+ "summons": [
+  {
+   "id": "skeletal_warrior",
+   "status": "ready",
+   "mesh": "/Game/Tripo/ChampionsHQ/SummonSpectral/CTS_ChampHQ_SummonSpectral.CTS_ChampHQ_SummonSpectral",
+   "locomotion": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/BS_Idle_Walk_Run_SummonSpectral.BS_Idle_Walk_Run_SummonSpectral",
+   "attack": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/CTS_ChampHQ_SummonSpectral_slash.CTS_ChampHQ_SummonSpectral_slash",
+   "heightCm": 176,
+   "yaw": -90,
+   "note": "ability-expansion: Skeletal Warband reuses the spectral_companion HQ summon body"
+  },
+  {
+   "id": "stone_sentinel",
+   "status": "ready",
+   "mesh": "/Game/Tripo/ChampionsHQ/SummonGuardian/CTS_ChampHQ_SummonGuardian.CTS_ChampHQ_SummonGuardian",
+   "locomotion": "/Game/Tripo/ChampionsHQ/SummonGuardian/Animations/BS_Idle_Walk_Run_SummonGuardian.BS_Idle_Walk_Run_SummonGuardian",
+   "attack": "/Game/Tripo/ChampionsHQ/SummonGuardian/Animations/CTS_ChampHQ_SummonGuardian_slash.CTS_ChampHQ_SummonGuardian_slash",
+   "heightCm": 200,
+   "yaw": -90,
+   "note": "ability-expansion: Stone Sentinel reuses the oathbound_guardian HQ summon body"
+  },
+  {
+   "id": "spirit_wolf",
+   "status": "ready",
+   "mesh": "/Game/Tripo/ChampionsHQ/SummonSpectral/CTS_ChampHQ_SummonSpectral.CTS_ChampHQ_SummonSpectral",
+   "locomotion": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/BS_Idle_Walk_Run_SummonSpectral.BS_Idle_Walk_Run_SummonSpectral",
+   "attack": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/CTS_ChampHQ_SummonSpectral_slash.CTS_ChampHQ_SummonSpectral_slash",
+   "heightCm": 176,
+   "yaw": -90,
+   "note": "ability-expansion: Spirit Wolves reuses the spectral_companion HQ summon body"
+  },
+  {
+   "id": "blood_thrall",
+   "status": "ready",
+   "mesh": "/Game/Tripo/ChampionsHQ/SummonSpectral/CTS_ChampHQ_SummonSpectral.CTS_ChampHQ_SummonSpectral",
+   "locomotion": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/BS_Idle_Walk_Run_SummonSpectral.BS_Idle_Walk_Run_SummonSpectral",
+   "attack": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/CTS_ChampHQ_SummonSpectral_slash.CTS_ChampHQ_SummonSpectral_slash",
+   "heightCm": 176,
+   "yaw": -90,
+   "note": "ability-expansion: Blood Thralls reuses the spectral_companion HQ summon body"
+  },
+  {
+   "id": "frost_wraith",
+   "status": "ready",
+   "mesh": "/Game/Tripo/ChampionsHQ/SummonSpectral/CTS_ChampHQ_SummonSpectral.CTS_ChampHQ_SummonSpectral",
+   "locomotion": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/BS_Idle_Walk_Run_SummonSpectral.BS_Idle_Walk_Run_SummonSpectral",
+   "attack": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/CTS_ChampHQ_SummonSpectral_slash.CTS_ChampHQ_SummonSpectral_slash",
+   "heightCm": 176,
+   "yaw": -90,
+   "note": "ability-expansion: Frost Wraith reuses the spectral_companion HQ summon body"
+  },
+  {
+   "id": "radiant_guardian",
+   "status": "ready",
+   "mesh": "/Game/Tripo/ChampionsHQ/SummonGuardian/CTS_ChampHQ_SummonGuardian.CTS_ChampHQ_SummonGuardian",
+   "locomotion": "/Game/Tripo/ChampionsHQ/SummonGuardian/Animations/BS_Idle_Walk_Run_SummonGuardian.BS_Idle_Walk_Run_SummonGuardian",
+   "attack": "/Game/Tripo/ChampionsHQ/SummonGuardian/Animations/CTS_ChampHQ_SummonGuardian_slash.CTS_ChampHQ_SummonGuardian_slash",
+   "heightCm": 200,
+   "yaw": -90,
+   "note": "ability-expansion: Radiant Guardian reuses the oathbound_guardian HQ summon body"
+  },
+  {
+   "id": "storm_elemental",
+   "status": "ready",
+   "mesh": "/Game/Tripo/ChampionsHQ/SummonSpectral/CTS_ChampHQ_SummonSpectral.CTS_ChampHQ_SummonSpectral",
+   "locomotion": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/BS_Idle_Walk_Run_SummonSpectral.BS_Idle_Walk_Run_SummonSpectral",
+   "attack": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/CTS_ChampHQ_SummonSpectral_slash.CTS_ChampHQ_SummonSpectral_slash",
+   "heightCm": 176,
+   "yaw": -90,
+   "note": "ability-expansion: Storm Elemental reuses the spectral_companion HQ summon body"
+  },
+  {
+   "id": "clockwork_knight",
+   "status": "ready",
+   "mesh": "/Game/Tripo/ChampionsHQ/SummonMechTank/CTS_ChampHQ_SummonMechTank.CTS_ChampHQ_SummonMechTank",
+   "locomotion": "/Game/Tripo/ChampionsHQ/SummonMechTank/Animations/BS_Idle_Walk_Run_SummonMechTank.BS_Idle_Walk_Run_SummonMechTank",
+   "attack": "/Game/Tripo/ChampionsHQ/SummonMechTank/Animations/CTS_ChampHQ_SummonMechTank_slash.CTS_ChampHQ_SummonMechTank_slash",
+   "heightCm": 190,
+   "yaw": -90,
+   "note": "ability-expansion: Clockwork Knight reuses the mechanical_tank HQ summon body"
+  },
+  {
+   "id": "spectral_legionnaire",
+   "status": "ready",
+   "mesh": "/Game/Tripo/ChampionsHQ/SummonSpectral/CTS_ChampHQ_SummonSpectral.CTS_ChampHQ_SummonSpectral",
+   "locomotion": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/BS_Idle_Walk_Run_SummonSpectral.BS_Idle_Walk_Run_SummonSpectral",
+   "attack": "/Game/Tripo/ChampionsHQ/SummonSpectral/Animations/CTS_ChampHQ_SummonSpectral_slash.CTS_ChampHQ_SummonSpectral_slash",
+   "heightCm": 176,
+   "yaw": -90,
+   "note": "ability-expansion: Call of the Legion reuses the spectral_companion HQ summon body"
+  },
+  {
+   "id": "stone_colossus",
+   "status": "ready",
+   "mesh": "/Game/Tripo/ChampionsHQ/SummonMechTank/CTS_ChampHQ_SummonMechTank.CTS_ChampHQ_SummonMechTank",
+   "locomotion": "/Game/Tripo/ChampionsHQ/SummonMechTank/Animations/BS_Idle_Walk_Run_SummonMechTank.BS_Idle_Walk_Run_SummonMechTank",
+   "attack": "/Game/Tripo/ChampionsHQ/SummonMechTank/Animations/CTS_ChampHQ_SummonMechTank_slash.CTS_ChampHQ_SummonMechTank_slash",
+   "heightCm": 260,
+   "yaw": -90,
+   "note": "ability-expansion: Awaken the Colossus reuses the mechanical_tank HQ summon body"
+  }
+ ]
+}

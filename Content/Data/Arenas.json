@@ -55,13 +55,7 @@
   "winGold": 250,
   "pveBuffPercent": 15,
   "pveDebuffPercent": 15,
-  "legacyPowerLoot": false,
-  "pvpAfterWaves": [
-   5,
-   10,
-   15,
-   20
-  ]
+  "legacyPowerLoot": false
  },
  "slots": {
   "proxy_box": {

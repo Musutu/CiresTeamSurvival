@@ -58,7 +58,6 @@ namespace CireArenaPortal
         int32 WinGold = 250;                            // split across the winning team
         float PvEBuffPercent = 15.f, PvEDebuffPercent = 15.f; // per stack: winners' / losers' damage to monsters
         bool bLegacyPowerLoot = false;                  // also grant the old +3% power / +8% loot per win (applies to PvP too)
-        TArray<int32> PvPAfterWaves = {5, 10, 15, 20};  // fallback schedule until feat/waves-modes publishes one
         FString DiscMaterial = TEXT("/Game/Arenas/Portal/M_ArenaPortal.M_ArenaPortal");
         FString MoteMaterial = TEXT("/Game/Arenas/Portal/M_ArenaPortalMote.M_ArenaPortalMote");
         TArray<FString> RingVFX, BaseVFX, OpenVFX, EnterVFX; // optional Shadow_Magic Niagara layers (local Fab pack)
@@ -113,8 +112,7 @@ namespace CireArenaFlow
 {
     inline const FName VictorId = TEXT("arena_victor");         // stacking team buff: +PvE damage per arena win
     inline const FName VanquishedId = TEXT("arena_vanquished"); // stacking team debuff: -PvE damage per arena loss
-    /** The PvP schedule: waves after which an arena round runs. MERGE POINT with feat/waves-modes: switch the body of
-     *  PvPAfterWaves (CireArenaPortal.cpp) to its schedule; everything else reads through these two calls. */
+    /** The PvP schedule (owned by feat/waves-modes: Waves.json "match.pvpAfterWaves"); Sudden Death waves never lead to an arena. */
     CIRESTEAMSURVIVAL_API TArray<int32> PvPAfterWaves(const UWorld* World);
     CIRESTEAMSURVIVAL_API bool IsPvPAfterWave(const UWorld* World, int32 WavesCleared);
     /** A cycle ended on a wave that is not in the schedule: advance the clock to the next cycle with no arena. */

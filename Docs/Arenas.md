@@ -248,9 +248,9 @@ then the match starts." Rewards: +50 g per killing blow; winners 250 g split and
 losers a stacking -15% PvE damage debuff.
 
 **Schedule.** A wave cycle that ends on a scheduled PvP wave leads to the prep + arena; any other cycle end rolls straight into
-the next cycle (`CireArenaFlow::SkipArena`). The schedule is read through one adapter, `CireArenaFlow::PvPAfterWaves`
-(`CireArenaPortal.cpp`); until feat/waves-modes publishes its schedule it returns `flow.pvpAfterWaves` (5/10/15/20). The
-merge with that branch is a one-line switch of that function's body.
+the next cycle (`CireArenaFlow::SkipArena`). The schedule is read through `CireArenaFlow::PvPAfterWaves`, which returns
+`CireWaveDirector::Schedule(World).PvpAfterWaves` (Waves.json `match.pvpAfterWaves`, default 5/10/15/20, a game-type preset
+may override it). Sudden Death waves (after `match.totalWaves`) never lead to an arena.
 
 **Timeline (server, `CireArenaPortal.cpp`).**
 1. The cycle clears on a PvP wave: prep (phase 1) starts and lasts `flow.prepSeconds + flow.countdownSeconds` (30 + 7 s).

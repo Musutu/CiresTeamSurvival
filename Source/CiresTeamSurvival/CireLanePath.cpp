@@ -207,8 +207,9 @@ bool CireLanePath::ParseJson(const FString& Json, FCireBattlefieldRoutes& Out, F
                     if ((*Object)->HasField(TEXT("tier"))) Entry.Tier = FMath::Clamp(FMath::RoundToInt(TierValue), 1, FCireChallengeBay::MaxTier);
                     FString Pack; if ((*Object)->TryGetStringField(TEXT("pack"),Pack)) Entry.PackType = CireJunglePacks::NormalizeType(Pack);
                     const TArray<TSharedPtr<FJsonValue>>* Comp = nullptr;
-                    if ((*Object)->TryGetArrayField(TEXT("comp"),Comp) && Comp && Comp->Num() == 3)
-                        Entry.Comp = CireJunglePacks::Clamp({FMath::RoundToInt32((*Comp)[0]->AsNumber()), FMath::RoundToInt32((*Comp)[1]->AsNumber()), FMath::RoundToInt32((*Comp)[2]->AsNumber())});
+                    FCirePackComposition Read(0, 0, 0); // pack-formations: [t,h,d] or [t,h,d,melee,ranged,caster]
+                    if ((*Object)->TryGetArrayField(TEXT("comp"),Comp) && Comp && CireJunglePacks::CompFromJson(*Comp, Read) && !Read.IsZero())
+                        Entry.Comp = CireJunglePacks::Clamp(Read);
                     double SeedValue = 0; if ((*Object)->TryGetNumberField(TEXT("seed"),SeedValue) && FMath::IsFinite(SeedValue)) Entry.Seed = static_cast<uint32>(FMath::Clamp(SeedValue, 0., 2147483647.));
                 }
                 else return Fail(TEXT("Challenge packs are { x, y, radius, tier } objects or [x, y] points"));
@@ -463,7 +464,7 @@ FString CireLanePath::ToJson(const FCireBattlefieldRoutes& R)
             // jungle-packs: type and composition override ride along (mixed / automatic stay implicit).
             FString Extra;
             if (B.PackType != CireJunglePacks::Mixed) Extra += FString::Printf(TEXT(", \"pack\": \"%s\""), *B.PackType.ToString());
-            if (B.HasCompOverride()) Extra += FString::Printf(TEXT(", \"comp\": [%d,%d,%d]"), B.Comp.Tanks, B.Comp.Healers, B.Comp.Dps);
+            if (B.HasCompOverride()) Extra += TEXT(", \"comp\": ") + CireJunglePacks::CompJson(B.Comp);
             if (B.Seed != 0) Extra += FString::Printf(TEXT(", \"seed\": %u"), B.Seed);
             Items.Add(FString::Printf(TEXT("      { \"x\": %s, \"y\": %s, \"radius\": %s, \"tier\": %d%s }"), *N(B.Position.X), *N(B.Position.Y), *N(B.Radius), B.Tier, *Extra));
         }

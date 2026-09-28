@@ -171,6 +171,11 @@ bool CireAuraData::Reload(FString& Error)
     if(!FFileHelper::LoadFileToString(Text,*Path)||Text.Len()>400000){Error=TEXT("Missing or oversized BuffVisuals.json");return false;}
     TMap<FName,FCireAuraDef> Candidate;FCireAuraLimits Limits;TMap<FName,FName> Items;
     if(!Parse(Text,Candidate,Limits,Error,&Items))return false;
+    // ability-expansion: BuffVisuals.expansion.json (same schema) adds the expansion pool's buff visuals; BuffVisuals.json wins.
+    FString XText;TMap<FName,FCireAuraDef> XDefs;FCireAuraLimits XLimits;FString XError;
+    if(FFileHelper::LoadFileToString(XText,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/BuffVisuals.expansion.json")))&&XText.Len()<=400000&&
+       Parse(XText,XDefs,XLimits,XError,nullptr))
+        for(auto& Pair:XDefs)if(!Candidate.Contains(Pair.Key))Candidate.Add(Pair.Key,MoveTemp(Pair.Value));
     GDefs=MoveTemp(Candidate);GLimits=Limits;GItemBuffs=MoveTemp(Items);GLoaded=true;return true;
 }
 const FCireAuraDef* CireAuraData::Find(FName Id){EnsureLoaded();return GDefs.Find(Id);}

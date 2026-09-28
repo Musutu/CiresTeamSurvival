@@ -17,13 +17,18 @@ const TMap<FString, FIconMeta>& Meta()
     bLoaded = true;
     FString Json;
     TSharedPtr<FJsonObject> Root;
-    const FString Path = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/AbilityIcons.json"));
+    // ability-expansion: AbilityIcons.expansion.json rows (same shape) join the table; AbilityIcons.json wins on a clash.
+    for (const TCHAR* File : {TEXT("Data/AbilityIcons.json"), TEXT("Data/AbilityIcons.expansion.json")})
+    {
+    Json.Reset(); Root.Reset();
+    const FString Path = FPaths::Combine(FPaths::ProjectContentDir(), File);
     if (!FFileHelper::LoadFileToString(Json, *Path) || Json.Len() > 512 * 1024 ||
-        !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Root) || !Root.IsValid()) return Table;
+        !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), Root) || !Root.IsValid()) continue;
     const TSharedPtr<FJsonObject>* Icons = nullptr;
-    if (!Root->TryGetObjectField(TEXT("icons"), Icons) || !Icons) return Table;
+    if (!Root->TryGetObjectField(TEXT("icons"), Icons) || !Icons) continue;
     for (const auto& Pair : (*Icons)->Values)
     {
+        if (Table.Contains(FString(Pair.Key))) continue;
         const TSharedPtr<FJsonObject>* Row = nullptr;
         if (!Pair.Value->TryGetObject(Row) || !Row) continue;
         FIconMeta M;
@@ -32,6 +37,7 @@ const TMap<FString, FIconMeta>& Meta()
         if ((*Row)->TryGetStringField(TEXT("accent"), Hex) && Hex.Len() == 7 && Hex[0] == '#')
             M.Accent = FLinearColor::FromSRGBColor(FColor::FromHex(Hex));
         Table.Add(FString(Pair.Key), M);
+    }
     }
     return Table;
 }
