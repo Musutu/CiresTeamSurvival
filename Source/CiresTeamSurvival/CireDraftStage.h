@@ -81,7 +81,15 @@ public:
     virtual void Tick(float DeltaSeconds) override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
     FBox BodyBounds() const;
+    // champ-select-perf: game-thread cost of the last ShowProfile (hover probe): spawn, bind (DraftProfile: body mesh,
+    // anims, weapons) and first visuals (anim init, prestream).
+    struct FShowTimings { double SpawnMs = 0, BindMs = 0, VisualsMs = 0, TotalMs = 0; };
+    const FShowTimings& GetLastShowTimings() const { return LastShow; }
+    /** Session totals of every ShowProfile that spawned a body (hover probe deltas). */
+    static FShowTimings& ShowTotals() { static FShowTimings Totals; return Totals; }
+    static int32& ShowCount() { static int32 Count = 0; return Count; }
 private:
+    FShowTimings LastShow;
     void BuildStage();
     void FitStage(float BodyHeight);
     void FrameCamera(float DeltaSeconds, bool bSnap);

@@ -18,6 +18,7 @@
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/ScopeExit.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "RenderingThread.h"
@@ -289,6 +290,8 @@ void ACireDraftStage::ShowProfile(const FString& Id)
     DestroyPreview();ProfileId=Id;ShownAt=FPlatformTime::Seconds();ShownFrame=GFrameCounter;LastAttackAt=ShownAt;Yaw=bSpin?-28.f:Yaw;
     if(Id.IsEmpty()||!CireChampionRoster::Find(Id))return;
     UWorld* World=GetWorld();if(!World)return;
+    const double T0=FPlatformTime::Seconds();LastShow=FShowTimings();
+    ON_SCOPE_EXIT{LastShow.TotalMs=(FPlatformTime::Seconds()-T0)*1000.0;FShowTimings& Sum=ShowTotals();Sum.SpawnMs+=LastShow.SpawnMs;Sum.BindMs+=LastShow.BindMs;Sum.VisualsMs+=LastShow.VisualsMs;Sum.TotalMs+=LastShow.TotalMs;++ShowCount();};
     FActorSpawnParameters P;P.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     P.bDeferConstruction=true;P.ObjectFlags|=RF_Transient;
     const FTransform Spawn(FRotator(0,Yaw,0),StageOrigin+FVector(0,0,200.f));
@@ -302,10 +305,13 @@ void ACireDraftStage::ShowProfile(const FString& Id)
     Hero->GetCharacterMovement()->SetComponentTickEnabled(false);
     // A locally spawned actor has local authority, so the real draft path binds
     // exactly the same profile snapshot (body, weapons, scale, stats) as in play.
+    const double T1=FPlatformTime::Seconds();LastShow.SpawnMs=(T1-T0)*1000.0;
     if(!Hero->DraftProfile(Id)){Hero->Destroy();UE_LOG(LogCireDraftStage,Warning,TEXT("Draft preview could not bind %s"),*Id);return;}
     Hero->Notice.Reset();
     Hero->GetMesh()->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+    const double T2=FPlatformTime::Seconds();LastShow.BindMs=(T2-T1)*1000.0;
     Hero->ChampionArt->UpdateVisuals(*Hero,.016f);
+    ON_SCOPE_EXIT{LastShow.VisualsMs=(FPlatformTime::Seconds()-T2)*1000.0;};
     Preview=Hero;Capture->ShowOnlyActors.AddUnique(Hero);
     RefreshCutoutParts();
     // Exposure: the live cutout preview meters itself (cached per champion); portraits and the

@@ -44,6 +44,7 @@
 #include "Misc/PackageName.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "Misc/ScopeExit.h"
 #include "UObject/StrongObjectPtr.h"
 #include "Dom/JsonObject.h" // new-champions: DraftBackgrounds.json
 #include "Serialization/JsonReader.h"
@@ -54,6 +55,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "CireWaves.h" // waves-modes: GAME TYPE picker
 #include "CireParagonChampions.h" // paragon-champions: locally captured portraits
+#include "CireDraftHoverProbe.h" // champ-select-perf: hover timing probe
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireDraft,Log,All);
 
@@ -226,6 +228,7 @@ struct FDraftUI
     FRect FigurePx;float FigureUV[4]={0,0,1,1}; // last live figure draw (gallery diagnostics)
     uint8 LastMode=255;double ModeFlashAt=-100; // rules-conformance: game-mode picker feedback (any client sees the host's change)
     bool bTypeDropdown=false;FRect TypeR;FName LastType;double TypeFlashAt=-100; // waves-modes: GAME TYPE (wave preset) picker
+    FCireDraftHoverProbe HoverProbe;FString ProbeHover;double LastDrawAt=0;bool bFigureDrawn=false; // champ-select-perf
 };
 TMap<TWeakObjectPtr<const ACireHUD>,FDraftUI> States;
 FDraftUI& StateFor(const ACireHUD* HUD)
@@ -234,11 +237,14 @@ FDraftUI& StateFor(const ACireHUD* HUD)
     return States.FindOrAdd(HUD);
 }
 
+// champ-select-perf: game-thread milliseconds spent loading draft assets (hover probe counters).
+double GDraftPortraitLoadMs=0,GDraftBackgroundLoadMs=0;int32 GDraftPortraitLoads=0,GDraftBackgroundLoads=0;
 UTexture2D* Portrait(const FString& Id)
 {
     // Generated from the real champion meshes by Tools/RunDraftPortraits.py.
     static TMap<FString,TStrongObjectPtr<UTexture2D>> Cache;
     if(const auto* Found=Cache.Find(Id))return Found->Get();
+    const double LoadStart=FPlatformTime::Seconds();ON_SCOPE_EXIT{GDraftPortraitLoadMs+=(FPlatformTime::Seconds()-LoadStart)*1000.0;++GDraftPortraitLoads;};
     const FString Path=FString::Printf(TEXT("/Game/UI/Draft/Portraits/T_Portrait_%s.T_Portrait_%s"),*Id,*Id);
     UTexture2D* Texture=FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))?LoadObject<UTexture2D>(nullptr,*Path):nullptr;
     if(!Texture)Texture=CireParagonChampions::Portrait(Id); // paragon-champions: /Game/ParagonDerived/Portraits (local only)
@@ -376,6 +382,7 @@ UTexture2D* Background(const FString& Id)
 {
     static TMap<FString,TStrongObjectPtr<UTexture2D>> Cache;
     if(const auto* Found=Cache.Find(Id))return Found->Get();
+    const double LoadStart=FPlatformTime::Seconds();ON_SCOPE_EXIT{GDraftBackgroundLoadMs+=(FPlatformTime::Seconds()-LoadStart)*1000.0;++GDraftBackgroundLoads;};
     const FString Path=FString::Printf(TEXT("/Game/UI/Draft/Backgrounds/T_DraftBg_%s.T_DraftBg_%s"),*Id,*Id);
     UTexture2D* Texture=FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))?LoadObject<UTexture2D>(nullptr,*Path):nullptr;
     Cache.Add(Id,TStrongObjectPtr<UTexture2D>(Texture));
@@ -490,6 +497,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     auto& S=StateFor(this);
     UWorld* World=GetWorld();
     const double Now=FPlatformTime::Seconds();
+    const double FrameMs=S.LastDrawAt>0?(Now-S.LastDrawAt)*1000.0:0.0;S.LastDrawAt=Now; // champ-select-perf
+    S.bFigureDrawn=false;
     RefreshDraftPalette();
     const auto PX=[&](float V){return V*Scale;};
     const float VW=ViewW,VH=ViewH;
@@ -573,6 +582,12 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     {
         S.Portraits.bActive=FParse::Param(FCommandLine::Get(),TEXT("CireDraftPortraits"));
         S.Gallery.bActive=!S.Portraits.bActive&&FParse::Param(FCommandLine::Get(),TEXT("CireDraftGallery"));
+        if(!S.Portraits.bActive&&!S.Gallery.bActive&&FParse::Param(FCommandLine::Get(),TEXT("CireDraftHoverProbe")))
+        {
+            TArray<FString> Ids;for(const auto& P:CireChampionRoster::All())Ids.Add(P.Id);
+            FString Tag;FParse::Value(FCommandLine::Get(),TEXT("CireDraftHoverTag="),Tag);
+            S.HoverProbe.Begin(Ids,Now,Tag);
+        }
     }
     S.bAudit=S.Gallery.bActive&&!S.Gallery.bDone&&!Hero->bDrafted;
     if(S.bForceOutro&&!Hero->bDrafted){bLockedView=true;OutroAge=.9f;}
@@ -727,6 +742,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     const bool bOverDropdown=S.bDropdown&&Hit(DropR.X,DropR.B(),DropR.W+60,4*(RowH-6)+8);
     if(Interactive&&!bOverDropdown)for(const FTile& T:S.Tiles)if(Hit(T.X,T.Y,T.W,T.H)){HoverNow=T.Profile->Id;break;}
     if(!S.ForcedHover.IsEmpty())HoverNow=S.ForcedHover;
+    if(!S.ProbeHover.IsEmpty())HoverNow=S.ProbeHover; // champ-select-perf: virtual mouse (same settle as a real hover)
     if(HoverNow!=S.Hovered){S.Hovered=HoverNow;S.HoverSince=Now;}
     const FCireChampionProfile* Selected=S.bChosen?CireChampionRoster::Find(S.SelectedId):nullptr;
     if(!Selected)S.bChosen=false;
@@ -849,8 +865,9 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 S.FigurePx=FRect{PX(Box.X),PX(Box.Y),PX(Box.W),PX(Box.H)};S.FigureUV[0]=(1-UW)*.5f;S.FigureUV[1]=.06f+(.86f-VHt)*.5f;S.FigureUV[2]=UW;S.FigureUV[3]=VHt;
             }
             else Tex(Stage->GetRenderTarget(),Box,(1-UW)*.5f,.06f+(.86f-VHt)*.5f,UW,VHt,FLinearColor(1,1,1,Ease));
+            S.bFigureDrawn=true;
         }
-        else if(UTexture2D* Face=Portrait(Shown->Id))Tex(Face,FRect{Box.X+Box.W*.2f,Box.Y+Box.H*.2f,Box.W*.6f,Box.W*.6f},0,0,1,1,FLinearColor(1,1,1,.35f));
+        else if(UTexture2D* Face=Portrait(Shown->Id)){Tex(Face,FRect{Box.X+Box.W*.2f,Box.Y+Box.H*.2f,Box.W*.6f,Box.W*.6f},0,0,1,1,FLinearColor(1,1,1,.35f));S.bFigureDrawn=true;}
         if(T<1.f&&bLive){const float SX=Box.X+Box.W*(-.2f+1.4f*Ease);CireUIStyle::Glow(Pen(),SX-20,Box.Y,40,Box.H,FLinearColor(1.f,.92f,.75f,.20f*(1.f-T)));}
         // State tag over the figure's shoulder.
         const ACireHero* const* Taker=Picked.Find(Shown->Id);const bool bTaken=Taker&&!(*Taker)->bBot&&!bLockedView;
@@ -1537,6 +1554,19 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     if(Hero->bDrafted){ResetTransform();return;}
 
 #if !UE_BUILD_SHIPPING
+    // ---------- Fixture: hover timing probe (Tools/RunDraftHoverProbe.py) ----------
+    if(S.HoverProbe.bActive&&!S.HoverProbe.bDone)
+    {
+        FCireDraftHoverSample Sample;
+        Sample.SplashId=S.SplashId;Sample.StageId=Stage?Stage->GetProfileId():FString();
+        Sample.bStageReady=Stage&&Stage->IsPreviewReady();Sample.bFigureShown=S.bFigureDrawn;
+        Sample.BackgroundMs=GDraftBackgroundLoadMs;Sample.BackgroundLoads=GDraftBackgroundLoads;
+        Sample.PortraitMs=GDraftPortraitLoadMs;Sample.PortraitLoads=GDraftPortraitLoads;
+        const ACireDraftStage::FShowTimings& Shows=ACireDraftStage::ShowTotals();
+        Sample.BodyMs=Shows.TotalMs;Sample.BindMs=Shows.BindMs;Sample.VisualsMs=Shows.VisualsMs;Sample.BodyShows=ACireDraftStage::ShowCount();
+        S.ProbeHover=S.HoverProbe.Tick(Now,FrameMs,Sample);
+        DebugSetPointer(FVector2D(VW-1.f,VH-1.f)); // the real cursor never hovers a tile during the probe
+    }
     // ---------- Fixture: portraits from the real meshes (Tools/RunDraftPortraits.py) ----------
     if(S.Portraits.bActive&&!S.Portraits.bDone&&Stage)
     {
