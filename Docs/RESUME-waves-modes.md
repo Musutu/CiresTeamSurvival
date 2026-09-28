@@ -41,11 +41,19 @@ in `CireWaves.cpp` is called for every live (non-smoke) wave just before it is q
 Extend it to swap in a bonus loot stage / special wave: never replace `Type == Boss`, stay deterministic in
 `(Seed, GlobalWave)`. `Planned` already has packs expanded (rows carry `Pack`), damage flags and Sudden Death scaling.
 
-## Done
-- (in progress, see git log)
+## Done (all code compiles; link blocked by F: disk full, 2026-09-28)
+- Waves.json: 25 waves (5 cycles x 5), packs (1-5: 5x5, 6-25: 7x5-7), match schedule, Sudden Death, monster rules, live scale.
+- Runtime: pack expansion (deterministic, per-pack path, pack gap), -20% speed, armored -50% / slow immune / 2x stun,
+  damage-off (passive) units, fight-back packs, live scale rescaling living units, Sudden Death (loop waves 21-25, x2),
+  RollWaveType hook, schedule API, presets (WavePresets.json: Standard / Hero TD / Hybrid), SelectPreset,
+  console cire.WaveScale / cire.WavePreset, -CireWavePreset=<id>.
+- UI: champion select GAME TYPE dropdown (host, before wave 1; ServerAction 11); F8 > Waves > MODES & SCALE page.
+- Native tests added in CireWaveTests.cpp (packs, schedule, Sudden Death, presets, armored, passive, live scale, SelectPreset).
+- Docs/Waves.md "Playtest 6" section.
 
 ## Not done / Next
-- see below once the first build is green
+- Link + run the three gates (F: was at 0 bytes free: LNK1106 / LNK1318). Then merge latest main and rerun.
+- Eye-check the GAME TYPE picker placement in champion select at 1080p / narrow widths.
 
 ## Assumptions / questions for Eric
 - Armored waves: -50% on top of the -20% all-wave speed (0.8 x 0.5 = 0.4 of their old pace). "Path blocking" = walls /
