@@ -166,7 +166,14 @@ FDraftPathIndex& DraftPaths()
 // ---------- bodies ----------
 struct FDraftBody{TSharedPtr<FStreamableHandle> Handle;double RequestedAt=0;bool bEmpty=false;};
 TMap<FString,FDraftBody>& DraftBodies(){static TMap<FString,FDraftBody> M;return M;}
-CireDraftBrowser::FLru& DraftBodyLru(){static CireDraftBrowser::FLru L(CireDraftAssets::Tunables().BodyCacheSize);return L;}
+// Constructed first, sized after: Tunables() -> Reload() resizes this cache, so reading the tunables inside the static
+// initialiser would re-enter it (a deadlock on the first call).
+CireDraftBrowser::FLru& DraftBodyLru()
+{
+    static CireDraftBrowser::FLru L(6);static bool bSized=false;
+    if(!bSized){bSized=true;L.SetCapacity(CireDraftAssets::Tunables().BodyCacheSize);}
+    return L;
+}
 void DraftReleaseBody(const FString& Key)
 {
     if(FDraftBody* B=DraftBodies().Find(Key))
