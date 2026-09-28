@@ -41,6 +41,7 @@ Each section names the owning branch. Anything ambiguous: pick the sensible defa
 
 ## F. Shop anywhere (feat/shop-anywhere)
 - Skills and items buyable any time, anywhere. −10% at the matching vendor; +10% surcharge when buying out of town.
+- Eric (2026-09-28): the Skill Shop follows the SAME rules: skills buyable any time, anywhere; -10% at the matching vendor (by primary stat/role), +10% out of town, same confirmation dialog.
 - Out-of-town purchase shows a confirmation dialog with "Don't show this again", plus Options → a setting to disable confirmation dialogs.
 
 ## G. Casting & skill rules (feat/casting-rules)
