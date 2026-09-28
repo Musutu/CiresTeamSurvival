@@ -368,6 +368,16 @@ bool CireDraftAssets::RunTests()
             Check(BodyPaths(TEXT("pg_greystone"),SkinKey).Num()>BodyPaths(TEXT("pg_greystone")).Num(),TEXT("skin body adds the skin mesh"));
         }
     }
+    // Completion: an authored body whose packages the earlier smoke tests already made resident completes at once and
+    // must report ready, stay cached and survive a cancel. (No synchronous load here: with async loads in flight it
+    // would flush the loader inside the probe frame.)
+    FString Small;
+    for(const TCHAR* Candidate:{TEXT("knight"),TEXT("ranger"),TEXT("scholar"),TEXT("lancer"),TEXT("bear")})
+    {
+        bool bResident=BodyPaths(Candidate).Num()>0;
+        for(const FString& P:BodyPaths(Candidate))if(const UObject* O=FindObject<UObject>(nullptr,*P);!O||(Cast<USkinnedAsset>(O)&&Cast<USkinnedAsset>(O)->IsCompiling()))bResident=false;
+        if(bResident){Small=Candidate;break;}
+    }
     // Request / hit / cancel / LRU on a scratch capacity.
     const int32 SavedCapacity=DraftBodyLru().GetCapacity();
     {
@@ -387,15 +397,18 @@ bool CireDraftAssets::RunTests()
     const bool bWasLoading=BodiesInFlight()>0;
     const int32 Dropped=CancelBodiesExcept(TSet<FString>());
     Check(!bWasLoading||(Dropped==1&&!IsBodyRequested(Hero)&&Stats().AsyncCancelled>Before.AsyncCancelled),TEXT("stale in-flight request cancelled"));
-    // Completion: after a flush the body is resident and stays cached.
-    RequestBody(Hero,FString(),true);
-    FlushAsyncLoading();
-    Check(IsBodyReady(Hero),TEXT("body ready after the async load completes"));
-    if(bHasPaths){const FString Mesh=BodyPaths(Hero)[0];Check(FindObject<UObject>(nullptr,*Mesh)!=nullptr,TEXT("body asset resident after load"));}
-    Check(CancelBodiesExcept(TSet<FString>())==0&&IsBodyRequested(Hero),TEXT("completed bodies are never cancelled"));
+    if(!Small.IsEmpty())
+    {
+        RequestBody(Small,FString(),true);
+        Check(IsBodyReady(Small),TEXT("resident body reports ready"));
+        Check(CancelBodiesExcept(TSet<FString>())==0&&IsBodyRequested(Small),TEXT("completed bodies are never cancelled"));
+    }
+    else UE_LOG(LogCireDraftAssets,Display,TEXT("CIRE_DRAFT_ASSETS_NOTE no resident authored body: completion checks skipped"));
+    RequestBody(Hero,FString(),false);
+
     // LRU eviction: capacity 2, three distinct keys -> the oldest is released.
     RequestBody(TEXT("lru_a"),FString(),false);RequestBody(TEXT("lru_b"),FString(),false);
-    Check(!IsBodyRequested(Hero)&&IsBodyRequested(TEXT("lru_a"))&&IsBodyRequested(TEXT("lru_b")),TEXT("body LRU evicts the least recently used"));
+    Check((Small.IsEmpty()||!IsBodyRequested(Small))&&!IsBodyRequested(Hero)&&IsBodyRequested(TEXT("lru_a"))&&IsBodyRequested(TEXT("lru_b")),TEXT("body LRU evicts the least recently used"));
     Check(IsBodyReady(TEXT("lru_a")),TEXT("a hero without binding paths is ready at once"));
     {
         TArray<FString> Ev;DraftBodyLru().SetCapacity(SavedCapacity,&Ev);for(const FString& K:Ev)DraftReleaseBody(K);
@@ -406,7 +419,6 @@ bool CireDraftAssets::RunTests()
         const int32 Req0=Stats().BackgroundRequests;
         Background(TEXT("knight"));Background(TEXT("knight"));
         Check(Stats().BackgroundRequests-Req0<=1,TEXT("shared background requested once"));
-        FlushAsyncLoading();
         UTexture2D* Knight=Background(TEXT("knight"));
         Check(!HasBackground(TEXT("knight"))||(Knight==nullptr||Knight->bForceMiplevelsToBeResident),TEXT("cached background pinned full resolution"));
         Check(DraftBackgrounds().Lru.Num()<=DraftBackgrounds().Lru.GetCapacity(),TEXT("background cache bounded"));
