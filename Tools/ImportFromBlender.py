@@ -92,6 +92,12 @@ def import_row(fbx, dest, skeleton_path):
         mesh.set_editor_property("materials", slots)
         unreal.log("CIRE_IMPORT_MATERIALS %s" % [k.get_path_name() if k else None for k in kept])
     unreal.EditorAssetLibrary.save_loaded_asset(mesh, only_if_is_dirty=False)
+    # blender-rig: bones the FBX adds (tentacle chains, add_chain.py) are merged into the Skeleton asset: save it too.
+    writable(skeleton_path)
+    unreal.EditorAssetLibrary.save_loaded_asset(skeleton, only_if_is_dirty=False)
+    comp = unreal.SkeletalMeshComponent()
+    comp.set_skeletal_mesh_asset(mesh)
+    unreal.log_warning("CIRE_IMPORT_BONES %s bones=%d" % (dest, comp.get_num_bones()))
     return mesh
 
 
@@ -100,6 +106,9 @@ def compare(new, old):
         comp = unreal.SkeletalMeshComponent()
         comp.set_skeletal_mesh_asset(m)
         return [str(comp.get_bone_name(i)) for i in range(comp.get_num_bones())]
+    if not isinstance(old, unreal.SkeletalMesh):
+        unreal.log_warning("CIRE_IMPORT_COMPARE skipped: original not loadable")
+        return
     bn, bo = bones(new), bones(old)
     bn_box, bo_box = new.get_bounds(), old.get_bounds()
     unreal.log("CIRE_IMPORT_COMPARE bones=%d/%d same_names=%s extent_new=%s extent_old=%s materials=%d/%d" % (
@@ -113,7 +122,7 @@ def main():
         try:
             fbx, dest, skeleton = row.split("|")
             mesh = import_row(fbx, dest, skeleton)
-            unreal.log("CIRE_IMPORT_OK %s <- %s" % (dest, fbx))
+            unreal.log_warning("CIRE_IMPORT_OK %s <- %s" % (dest, fbx))
             if original:
                 compare(mesh, unreal.load_asset(original))
         except Exception as error:  # noqa: BLE001
