@@ -283,17 +283,61 @@ void ACireDraftStage::DestroyPreview()
     if(Capture)Capture->ShowOnlyActors.Remove(nullptr);
 }
 
+void ACireDraftStage::SetPoolCapacity(int32 Capacity)
+{
+    PoolCapacity=FMath::Clamp(Capacity,1,12);TrimPool();
+}
+void ACireDraftStage::ParkPreview()
+{
+    // champ-select-perf: keep the body spawned but hidden and frozen instead of destroying it.
+    if(!IsValid(Preview)||ProfileId.IsEmpty()||PortraitTarget||PoolCapacity<=1){DestroyPreview();return;}
+    if(Capture)Capture->ShowOnlyActors.Remove(Preview);
+    Preview->SetActorHiddenInGame(true);
+    TArray<USkeletalMeshComponent*> Meshes;Preview->GetComponents(Meshes);
+    for(USkeletalMeshComponent* M:Meshes)M->SetComponentTickEnabled(false);
+    if(TObjectPtr<ACireHero>* Old=Pool.Find(ProfileId);Old&&*Old!=Preview&&IsValid(*Old))(*Old)->Destroy();
+    Pool.Add(ProfileId,Preview);PoolOrder.Remove(ProfileId);PoolOrder.Add(ProfileId);
+    Preview=nullptr;bFramed=false;
+    TrimPool();
+}
+void ACireDraftStage::TrimPool()
+{
+    while(PoolOrder.Num()>FMath::Max(0,PoolCapacity-1))
+    {
+        const FString Oldest=PoolOrder[0];PoolOrder.RemoveAt(0);
+        if(TObjectPtr<ACireHero>* H=Pool.Find(Oldest);H&&IsValid(*H))(*H)->Destroy();
+        Pool.Remove(Oldest);
+    }
+}
+
 void ACireDraftStage::ShowProfile(const FString& Id)
 {
     if(Id==ProfileId&&(Id.IsEmpty()||IsValid(Preview)))return;
     if(Capture)Capture->ShowOnlyActors.Remove(Preview);
-    DestroyPreview();ProfileId=Id;ShownAt=FPlatformTime::Seconds();ShownFrame=GFrameCounter;LastAttackAt=ShownAt;Yaw=bSpin?-28.f:Yaw;
+    ParkPreview();ProfileId=Id;ShownAt=FPlatformTime::Seconds();ShownFrame=GFrameCounter;LastAttackAt=ShownAt;Yaw=bSpin?-28.f:Yaw;
     if(Id.IsEmpty()||!CireChampionRoster::Find(Id))return;
     UWorld* World=GetWorld();if(!World)return;
     const double T0=FPlatformTime::Seconds();LastShow=FShowTimings();
+    // champ-select-perf: a pooled body comes back instantly (already bound, framed once, metered and streamed).
+    if(TObjectPtr<ACireHero>* Pooled=Pool.Find(Id);Pooled&&IsValid(*Pooled))
+    {
+        Preview=*Pooled;Pool.Remove(Id);PoolOrder.Remove(Id);
+        Preview->SetActorHiddenInGame(false);
+        TArray<USkeletalMeshComponent*> Meshes;Preview->GetComponents(Meshes);
+        for(USkeletalMeshComponent* M:Meshes)M->SetComponentTickEnabled(true);
+        Capture->ShowOnlyActors.AddUnique(Preview);RefreshCutoutParts();
+        bMetered=false;bShownMetered=false;MeterPasses=0;MeterRequestFrame=0;MeterSettleFrame=0;SettledAt=0;
+        MeterQualityKey=MeterKey(Id);
+        if(const float* Cached=MeteredExposure().Find(MeterQualityKey);Cached&&bCutout&&!PortraitTarget){SetExposureOffset(*Cached);bMetered=bShownMetered=true;}
+        else SetExposureOffset(bCutout&&!PortraitTarget?0.f:StoredExposure(Id));
+        bFramed=false;bReusedFromPool=true;++PoolReuses();
+        LastShow.TotalMs=(FPlatformTime::Seconds()-T0)*1000.0;ShowTotals().TotalMs+=LastShow.TotalMs;
+        return;
+    }
     ON_SCOPE_EXIT{LastShow.TotalMs=(FPlatformTime::Seconds()-T0)*1000.0;FShowTimings& Sum=ShowTotals();Sum.SpawnMs+=LastShow.SpawnMs;Sum.BindMs+=LastShow.BindMs;Sum.VisualsMs+=LastShow.VisualsMs;Sum.TotalMs+=LastShow.TotalMs;++ShowCount();};
     FActorSpawnParameters P;P.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     P.bDeferConstruction=true;P.ObjectFlags|=RF_Transient;
+    bReusedFromPool=false;
     const FTransform Spawn(FRotator(0,Yaw,0),StageOrigin+FVector(0,0,200.f));
     auto* Hero=World->SpawnActor<ACireHero>(ACireHero::StaticClass(),Spawn,P);
     if(!Hero)return;
@@ -351,7 +395,7 @@ FBox ACireDraftStage::BodyBounds() const
 }
 
 // bShownMetered: once a champion was metered it stays on screen while a preset change re-meters it.
-bool ACireDraftStage::IsPreviewReady() const {return IsValid(Preview)&&bFramed&&SecondsShown()>.35f&&FramesShown()>6&&(bMetered||bShownMetered||PortraitTarget||!bCutout);}
+bool ACireDraftStage::IsPreviewReady() const {return IsValid(Preview)&&bFramed&&(bReusedFromPool?SecondsShown()>.05f&&FramesShown()>2:SecondsShown()>.35f&&FramesShown()>6)&&(bMetered||bShownMetered||PortraitTarget||!bCutout);}
 bool ACireDraftStage::IsContentSettled() const
 {
     // video-crash: meter only the finished look. At startup the preview renders while its meshes build
@@ -699,6 +743,8 @@ void ACireDraftStage::EndPlay(const EEndPlayReason::Type Reason)
 {
     if(bCutout){bCutout=false;RetainPropagateAlpha(false);}
     DestroyPreview();
+    for(auto& Pair:Pool)if(IsValid(Pair.Value))Pair.Value->Destroy();
+    Pool.Reset();PoolOrder.Reset();
     Super::EndPlay(Reason);
 }
 

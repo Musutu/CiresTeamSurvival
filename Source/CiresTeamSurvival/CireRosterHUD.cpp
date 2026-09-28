@@ -56,6 +56,8 @@
 #include "CireWaves.h" // waves-modes: GAME TYPE picker
 #include "CireParagonChampions.h" // paragon-champions: locally captured portraits
 #include "CireDraftHoverProbe.h" // champ-select-perf: hover timing probe
+#include "CireDraftBrowser.h" // champ-select: filters, search, sort, paging, favourites
+#include "CireDraftAssets.h" // champ-select-perf: async portraits, backgrounds, bodies
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireDraft,Log,All);
 
@@ -94,6 +96,7 @@ void RefreshDraftPalette()
 }
 const FLinearColor TankColor=SRGB(92,148,228),DpsColor=SRGB(216,80,64),SupportColor=SRGB(88,198,126);
 const FLinearColor LockRed=SRGB(150,34,34),PassiveColor=SRGB(190,156,236);
+const FLinearColor ParagonColor=SRGB(150,128,238); // champ-select: Paragon source accent
 
 struct FRoleColumn { Cires::SkillDraftRole Role; const TCHAR* Title; const TCHAR* Sigil; const TCHAR* Blurb; FLinearColor Color; };
 const FRoleColumn Columns[3]={
@@ -182,6 +185,7 @@ struct FTile
     const FCireChampionProfile* Profile=nullptr;
     int32 Column=0;          // role index of this listing (0 tank, 1 dps, 2 support)
     bool bSecondary=false;   // hybrid listing in a role that is not its primary
+    bool bParagon=false;     // champ-select: source accent
     float X=0,Y=0,W=0,H=0;
 };
 // Layout audit (gallery only): every text run and card with the box it must stay inside.
@@ -229,6 +233,12 @@ struct FDraftUI
     uint8 LastMode=255;double ModeFlashAt=-100; // rules-conformance: game-mode picker feedback (any client sees the host's change)
     bool bTypeDropdown=false;FRect TypeR;FName LastType;double TypeFlashAt=-100; // waves-modes: GAME TYPE (wave preset) picker
     FCireDraftHoverProbe HoverProbe;FString ProbeHover;double LastDrawAt=0;bool bFigureDrawn=false; // champ-select-perf
+    // champ-select (large roster): browser state.
+    CireDraftBrowser::FQuery Query;FString QueryKey;int32 Page=0,ForcedPage=-1,PendingPageStep=0,PendingEdgeSelect=0;double PageFlashAt=-100;
+    bool bSortDropdown=false;FRect SortListR;
+    TMap<FString,int32> SkinPick; // 0 = default body
+    // champ-select-perf: body debounce / streaming and the card -> live figure crossfade.
+    CireDraftBrowser::FDebounce BodyDebounce;FString BodyWant;double BodyWantSince=0;FString LiveId;double LiveSince=0;
 };
 TMap<TWeakObjectPtr<const ACireHUD>,FDraftUI> States;
 FDraftUI& StateFor(const ACireHUD* HUD)
@@ -239,18 +249,15 @@ FDraftUI& StateFor(const ACireHUD* HUD)
 
 // champ-select-perf: game-thread milliseconds spent loading draft assets (hover probe counters).
 double GDraftPortraitLoadMs=0,GDraftBackgroundLoadMs=0;int32 GDraftPortraitLoads=0,GDraftBackgroundLoads=0;
+// champ-select-perf: never a synchronous load on the hover path. The asset streamer returns the texture once it is
+// resident (null meanwhile: callers draw a cheap stand-in). The counters feed the hover probe.
 UTexture2D* Portrait(const FString& Id)
 {
-    // Generated from the real champion meshes by Tools/RunDraftPortraits.py.
-    static TMap<FString,TStrongObjectPtr<UTexture2D>> Cache;
-    if(const auto* Found=Cache.Find(Id))return Found->Get();
-    const double LoadStart=FPlatformTime::Seconds();ON_SCOPE_EXIT{GDraftPortraitLoadMs+=(FPlatformTime::Seconds()-LoadStart)*1000.0;++GDraftPortraitLoads;};
-    const FString Path=FString::Printf(TEXT("/Game/UI/Draft/Portraits/T_Portrait_%s.T_Portrait_%s"),*Id,*Id);
-    UTexture2D* Texture=FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))?LoadObject<UTexture2D>(nullptr,*Path):nullptr;
-    if(!Texture)Texture=CireParagonChampions::Portrait(Id); // paragon-champions: /Game/ParagonDerived/Portraits (local only)
-
-    Cache.Add(Id,TStrongObjectPtr<UTexture2D>(Texture));
-    return Texture;
+    const double LoadStart=FPlatformTime::Seconds();
+    const int32 Before=CireDraftAssets::Stats().PortraitRequests;
+    UTexture2D* T=CireDraftAssets::Portrait(Id);
+    GDraftPortraitLoadMs+=(FPlatformTime::Seconds()-LoadStart)*1000.0;GDraftPortraitLoads+=CireDraftAssets::Stats().PortraitRequests-Before;
+    return T;
 }
 
 int32 Nearest(const TArray<FTile>& Tiles,int32 From,int32 DX,int32 DY)
@@ -341,6 +348,25 @@ TArray<FString> BalancedLines(const FCireUIPainter& P,const FString& Name,float 
     Lines.Add(Join(0,Best));Lines.Add(Join(Best,W.Num()));
     return Lines;
 }
+// champ-select: a tile name on one line, else balanced over two (split at spaces or hyphens), never below the
+// readability floor: what still does not fit is fitted with the kit ellipsis (the full name is in the tooltip).
+TArray<FString> TileNameLines(const FCireUIPainter& P,const FString& Name,float Size,float Width,ECireFont Font)
+{
+    TArray<FString> Lines;
+    if(P.TextWidth(Name,Size,Font)<=Width){Lines.Add(Name);return Lines;}
+    int32 Best=INDEX_NONE;float BestWidth=MAX_flt;
+    for(int32 I=1;I<Name.Len()-1;++I)
+    {
+        if(Name[I]!=TEXT(' ')&&Name[I]!=TEXT('-'))continue;
+        const FString A=Name[I]==TEXT('-')?Name.Left(I+1):Name.Left(I),B=Name.Mid(I+1);
+        const float W=FMath::Max(P.TextWidth(A,Size,Font),P.TextWidth(B,Size,Font));
+        if(W<BestWidth){BestWidth=W;Best=I;}
+    }
+    if(Best==INDEX_NONE){Lines.Add(P.Fit(Name,Size,Width,Font));return Lines;}
+    Lines.Add(P.Fit(Name[Best]==TEXT('-')?Name.Left(Best+1):Name.Left(Best),Size,Width,Font));
+    Lines.Add(P.Fit(Name.Mid(Best+1),Size,Width,Font));
+    return Lines;
+}
 // Per-champion painted backdrop (Content/UI/Draft/Backgrounds); variants of one body share it.
 // new-champions: Content/Data/DraftBackgrounds.json names a painting per champion that has none yet, and the
 // role-themed painting of an existing champion to show until it is painted (Tools/AuthorNewChampions.py).
@@ -380,14 +406,21 @@ FString BackgroundId(const FString& ProfileId)
 }
 UTexture2D* Background(const FString& Id)
 {
-    static TMap<FString,TStrongObjectPtr<UTexture2D>> Cache;
-    if(const auto* Found=Cache.Find(Id))return Found->Get();
-    const double LoadStart=FPlatformTime::Seconds();ON_SCOPE_EXIT{GDraftBackgroundLoadMs+=(FPlatformTime::Seconds()-LoadStart)*1000.0;++GDraftBackgroundLoads;};
-    const FString Path=FString::Printf(TEXT("/Game/UI/Draft/Backgrounds/T_DraftBg_%s.T_DraftBg_%s"),*Id,*Id);
-    UTexture2D* Texture=FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))?LoadObject<UTexture2D>(nullptr,*Path):nullptr;
-    Cache.Add(Id,TStrongObjectPtr<UTexture2D>(Texture));
-    return Texture;
+    const double LoadStart=FPlatformTime::Seconds();
+    const int32 Before=CireDraftAssets::Stats().BackgroundRequests;
+    UTexture2D* T=CireDraftAssets::Background(Id);
+    GDraftBackgroundLoadMs+=(FPlatformTime::Seconds()-LoadStart)*1000.0;GDraftBackgroundLoads+=CireDraftAssets::Stats().BackgroundRequests-Before;
+    return T;
 }
+// BackgroundId per profile, once (it probes packages and the data tables).
+FString CachedBackgroundId(const FString& ProfileId)
+{
+    static TMap<FString,FString> Cache;
+    if(const FString* Found=Cache.Find(ProfileId))return *Found;
+    return Cache.Add(ProfileId,BackgroundId(ProfileId));
+}
+// "<key>|<display name>" (CireParagonChampions::Skins) -> key.
+FString SkinKeyOf(const FString& Entry){int32 Bar=INDEX_NONE;return Entry.FindChar(TEXT('|'),Bar)?Entry.Left(Bar):Entry;}
 // Short, list-free guidance on what this champion's skills are like (skills come from the Skill Shop).
 FString Capitalized(FString S){if(!S.IsEmpty())S[0]=FChar::ToUpper(S[0]);return S;}
 TArray<FString> HowItPlays(const FCireChampionProfile& P)
@@ -470,11 +503,15 @@ void ACireHUD::ChangeDraftRosterPage(int32 Delta)
     if(!H||H->bDrafted||bSettings||bEditLayout)return;
     RosterPage=FMath::Clamp(RosterPage+FMath::Clamp(Delta,-1,1),0,DraftRosterPageCount()-1);
     auto& S=StateFor(this);
-    if(S.Tiles.Num()>0&&Delta!=0)ChooseTile(S,S.bChosen?Nearest(S.Tiles,S.Cursor,Delta>0?1:-1,0):S.Cursor);
+    if(S.Tiles.Num()==0||Delta==0)return;
+    if(!S.bChosen){ChooseTile(S,S.Cursor);return;}
+    // champ-select: at the edge of the page the arrow flips to the neighbouring page.
+    const int32 To=Nearest(S.Tiles,S.Cursor,Delta>0?1:-1,0);
+    if(To==S.Cursor)S.PendingPageStep=Delta>0?1:-1;else ChooseTile(S,To);
 }
 bool ACireHUD::DraftRosterSlot(int32 Slot)
 {
-    // Number keys 1-6 select the Nth card of the current role (the cursor's role in ALL).
+    // Number keys 1-6 select the Nth portrait of the current page.
     // Locking in is a separate, deliberate action (Space / LOCK IN / double-click).
     auto* PC=Cast<ACireController>(PlayerOwner);auto* H=PC?Cast<ACireHero>(PC->GetPawn()):nullptr;
     const auto* State=GetWorld()?GetWorld()->GetGameState<ACireGameState>():nullptr;
@@ -482,10 +519,9 @@ bool ACireHUD::DraftRosterSlot(int32 Slot)
     if(CireChampionRoster::Count()==0)
     {if(Slot<0||Slot>=5)return false;PC->ServerAction(5,Slot,nullptr);return true;}
     auto& S=StateFor(this);
-    if(!S.Tiles.IsValidIndex(S.Cursor))return false;
-    const int32 Column=S.Tiles[S.Cursor].Column;int32 Seen=0;
-    for(int32 I=0;I<S.Tiles.Num();++I)if(S.Tiles[I].Column==Column&&Seen++==Slot){ChooseTile(S,I);return true;}
-    return false;
+    // champ-select: the Nth portrait of the current page.
+    if(!S.Tiles.IsValidIndex(Slot))return false;
+    ChooseTile(S,Slot);return true;
 }
 
 void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
@@ -544,6 +580,14 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         Panel(R.X,R.Y,R.W,R.H,ThemeUI(8,12,20,uint8(255*Alpha)));
         Outline(R,1,WithAlpha(Edge,.55f));Outline(R.Inset(3),1,WithAlpha(Edge,.18f));
         for(const FVector2D& C:{FVector2D(R.X,R.Y),FVector2D(R.R(),R.Y),FVector2D(R.X,R.B()),FVector2D(R.R(),R.B())})Diamond(C.X,C.Y,4,WithAlpha(Edge,.9f));
+    };
+    // champ-select: favourite star (filled or outlined).
+    const auto Star=[&](float CX,float CY,float R,const FLinearColor& Color,bool bFilled)
+    {
+        FVector2D Pt[10];
+        for(int32 I=0;I<10;++I){const float A=-PI*.5f+I*PI/5.f,Rad=(I%2)?R*.45f:R;Pt[I]=FVector2D(CX+FMath::Cos(A)*Rad,CY+FMath::Sin(A)*Rad);}
+        if(bFilled)for(int32 I=0;I<10;++I)Tri(FVector2D(CX,CY),Pt[I],Pt[(I+1)%10],Color);
+        else for(int32 I=0;I<10;++I)Seg(Pt[I].X,Pt[I].Y,Pt[(I+1)%10].X,Pt[(I+1)%10].Y,Color,1.5f);
     };
 
     // Legacy fallback if the roster data failed to load: the five original bodies.
@@ -609,10 +653,14 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     if(Stage){Stage->Touch();if(!S.Portraits.bActive)Stage->SetCutout(CutoutMaterial()!=nullptr);}
 
     // =====================================================================
-    // Layout, derived from the logical viewport:
-    //   header: team (left) | title + timer ring (centre) | nav (right)
-    //   body:   roster panel (left) | champion over the backdrop + info panel + LOCK IN (centre) | identity (right)
+    // champ-select (large roster): layout derived from the logical viewport:
+    //   header: team (left) | title + timer ring (centre) | mode / type / nav (right)
+    //   body:   roster browser (role tabs, search / sort / favourites, stat + source chips, paged portrait grid)
+    //           | the champion over its painted scene + skin strip + LOCK IN (centre) | hero details (right)
+    // Text never goes below 12 logical units (18 px at 1080p, 15 px at 900p); the gallery audits it.
     // =====================================================================
+    const CireDraftAssets::FTunables& Tune=CireDraftAssets::Tunables();
+    if(Stage&&!S.Portraits.bActive)Stage->SetPoolCapacity(Tune.PreviewPoolSize);
     const float M=FMath::Clamp(FMath::Min(VW,VH)*.022f,12.f,26.f);           // safe margin
     float LX=M,CW=VW-2*M;
     if(CW>VH*2.6f){CW=VH*2.6f;LX=(VW-CW)*.5f;}                               // super-wide: centre the content
@@ -622,95 +670,123 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     // Header.
     const float TitleSize=24.f,TitleLH=LH(TitleSize,ECireFont::Display);
     const float RingR=FMath::Clamp(VH*.042f,24.f,40.f),RingCY=M+TitleLH+RingR-2.f;
-    const float PrepSize=11.f,PrepY=RingCY+RingR+4.f,PrepLH=LH(PrepSize,ECireFont::Heading);
+    const float PrepSize=12.f,PrepY=RingCY+RingR+4.f,PrepLH=LH(PrepSize,ECireFont::Heading);
     const float BodyY=PrepY+PrepLH+8.f;
     const bool bTagline=VH>=840.f;
-    const float TagSize=9.5f,TagLH=LH(TagSize,ECireFont::Heading);
+    const float TagSize=12.f,TagLH=LH(TagSize,ECireFont::Heading);
     const float BodyB=VH-M-(bTagline?TagLH+6.f:0.f);
-    // Columns.
-    const float LeftW=FMath::Clamp(CW*.40f,360.f,760.f),RightW=FMath::Clamp(CW*.19f,230.f,380.f);
+    // Columns: a wide roster browser, the champion, the details column.
+    const float LeftW=FMath::Clamp(CW*.46f,400.f,900.f),RightW=FMath::Clamp(CW*.245f,270.f,440.f);
     const FRect LeftR{LX,BodyY,LeftW,BodyB-BodyY};
     const FRect RightR{LX+CW-RightW,BodyY,RightW,BodyB-BodyY};
-    const float CX0=LeftR.R()+Gap,CWc=RightR.X-Gap-CX0;
-    // Centre: LOCK IN at the bottom, the info panel above it, the champion above that.
-    const float BtnH=FMath::Max(48.f,LH(17,ECireFont::Heading)+22.f),BtnW=FMath::Clamp(CWc*.62f,240.f,380.f);
+    const float CX0=LeftR.R()+Gap,CWc=RightR.X-14.f-Gap-CX0; // the details backing extends 14 left of RightR
+    // Centre: LOCK IN at the bottom, the skin strip above it, the champion above that.
+    const float BtnH=FMath::Max(50.f,LH(17,ECireFont::Heading)+LH(12,ECireFont::Body)+12.f),BtnW=FMath::Clamp(CWc*.86f,220.f,380.f);
     const FRect BtnR{CX0+(CWc-BtnW)*.5f,BodyB-BtnH,BtnW,BtnH};
-    const float InfoH=FMath::Clamp((BodyB-BodyY)*.36f,186.f,290.f);
-    const FRect InfoR{CX0,BtnR.Y+BtnH*.35f-InfoH,CWc,InfoH};
-    // The champion stands from just under the timer to the info panel (feet on its top edge).
-    const FRect FigureR{CX0,BodyY-6.f,CWc,InfoR.Y+InfoH*.10f-(BodyY-6.f)};
-    // Roster panel internals: filter row(s), then the card grid.
-    const float TabSize=12.5f,RowH=FMath::Max(34.f,LH(TabSize,ECireFont::Heading)+14.f),LPad=10.f;
-    const FRect LeftIn=LeftR.Inset(LPad);
-    static const int32 TabOrder[]={0,1,2};
-    float TabWs[3],TabsW=0;
-    for(int32 I=0;I<3;++I){TabWs[I]=TW(Columns[TabOrder[I]].Title,TabSize,ECireFont::Heading)+48.f;TabsW+=TabWs[I]+(I?6.f:0.f);}
-    const float DropW=TW(TEXT("All Champions"),11.5f,ECireFont::Body)+40.f,SearchMin=150.f;
-    const bool bOneRow=TabsW+DropW+SearchMin+2*8.f<=LeftIn.W;
-    const FRect TabsR{LeftIn.X,LeftIn.Y,TabsW,RowH};
-    const FRect DropR=bOneRow?FRect{TabsR.R()+8,LeftIn.Y,DropW,RowH}:FRect{LeftIn.X,LeftIn.Y+RowH+8,DropW,RowH};
-    const FRect SearchR=FRect{DropR.R()+8,DropR.Y,LeftIn.R()-(DropR.R()+8),RowH};
-    const float GridTop=DropR.B()+10.f;
-    const FRect GridR{LeftIn.X,GridTop,LeftIn.W,LeftIn.B()-GridTop};
-    const float CardGap=10.f;
-    const FRect CardsR=GridR.Inset(4.f);
+    const float SkinH=FMath::Max(34.f,LH(12,ECireFont::Heading)+14.f);
+    const FRect SkinR{CX0,BtnR.Y-10.f-SkinH,CWc,SkinH};
+    const FRect FigureR{CX0,BodyY-6.f,CWc,SkinR.Y-8.f-(BodyY-6.f)};
+    // Roster browser internals.
+    const float LPad=10.f;const FRect LeftIn=LeftR.Inset(LPad);
+    const float TabSize=12.5f,RowH=FMath::Max(34.f,LH(TabSize,ECireFont::Heading)+14.f);
+    const float ChipSize=12.f,ChipH=FMath::Max(28.f,LH(ChipSize,ECireFont::Heading)+10.f);
+    const FRect TabsR{LeftIn.X,LeftIn.Y,LeftIn.W,RowH};
+    const FRect ToolsR{LeftIn.X,TabsR.B()+8.f,LeftIn.W,RowH};
+    const FRect ChipsR{LeftIn.X,ToolsR.B()+8.f,LeftIn.W,ChipH};
+    const float PagerH=FMath::Max(30.f,LH(12,ECireFont::Heading)+12.f);
+    const FRect PagerR{LeftIn.X,LeftIn.B()-PagerH,LeftIn.W,PagerH};
+    const FRect GridR{LeftIn.X,ChipsR.B()+10.f,LeftIn.W,PagerR.Y-8.f-(ChipsR.B()+10.f)};
+    const float CardGap=8.f,NameSize=12.f;
+    // Tools row: search | sort | favourites.
+    const float SortW=TW(TEXT("Sort: Difficulty"),12.f,ECireFont::Body)+40.f;
+    const bool bFavLabel=LeftIn.W>=470.f;
+    const float FavW=RowH+(bFavLabel?TW(TEXT("Favourites"),12.f,ECireFont::Body)+10.f:0.f);
+    const FRect FavR{ToolsR.R()-FavW,ToolsR.Y,FavW,RowH};
+    const FRect SortR{FavR.X-8.f-SortW,ToolsR.Y,SortW,RowH};
+    const FRect SearchR{ToolsR.X,ToolsR.Y,SortR.X-8.f-ToolsR.X,RowH};
+    const FRect DropR=SortR; // the sort list opens under the sort button
 
     // ---------- Search (controller-owned text) ----------
     FString Search=Controller?Controller->DraftSearch.TrimStartAndEnd():FString();
     if(bLockedView)Search.Reset();
 
-    // ---------- Tiles: ALL = every champion once (by role); a role tab adds its hybrids ----------
+    // ---------- Query -> filtered, sorted roster -> the current page of tiles ----------
     S.Filter=FMath::Clamp(S.Filter,-1,2);
-    S.Tiles.Reset();
-    for(int32 C=0;C<3;++C)
+    const TArray<CireDraftBrowser::FEntry>& Entries=CireDraftBrowser::RosterEntries();
+    CireDraftBrowser::FQuery Query=S.Query;
+    Query.Role=S.Filter<0?CireDraftBrowser::ERole::All:S.Filter==0?CireDraftBrowser::ERole::Tank:S.Filter==1?CireDraftBrowser::ERole::Damage:CireDraftBrowser::ERole::Support;
+    Query.Search=Search;
+    const TSet<FString>& Favs=CireDraftBrowser::Favourites();
+    const TArray<int32> Visible=CireDraftBrowser::Filter(Entries,Query,Favs);
+    const CireDraftBrowser::FGridFit Grid=CireDraftBrowser::FitGrid(GridR.W,GridR.H,CardGap,84.f,132.f,1.10f);
+    const int32 GridPageSize=FMath::Max(1,Grid.PageSize());
+    const int32 Pages=CireDraftBrowser::PageCount(Visible.Num(),GridPageSize);
     {
-        if(S.Filter>=0&&S.Filter!=C)continue;
-        for(int32 Pass=0;Pass<(S.Filter<0?1:2);++Pass)for(const auto& P:CireChampionRoster::All())
+        // A new query (or page size) jumps to the page holding the cursor / selection.
+        const FString Key=FString::Printf(TEXT("%d|%d|%d|%d|%d|%s|%d"),int32(Query.Role),int32(Query.Stat),int32(Query.Source),int32(Query.Sort),Query.bFavouritesOnly?1:0,*Query.Search,GridPageSize);
+        if(Key!=S.QueryKey)
         {
-            const bool bPrimary=CireChampionProfiles::PrimaryRole(P)==Columns[C].Role;
-            const bool bSecondary=!bPrimary&&(CireChampionProfiles::ProfileRoleMask(P)&Cires::RoleBit(Columns[C].Role))!=0;
-            if((Pass==0&&!bPrimary)||(Pass==1&&!bSecondary))continue;
-            if(!Search.IsEmpty()&&!P.DisplayName.Contains(Search)&&!P.ClassType.Contains(Search)&&!P.Race.Contains(Search))continue;
-            FTile T;T.Profile=&P;T.Column=C;T.bSecondary=Pass==1;S.Tiles.Add(T);
+            S.QueryKey=Key;int32 Focus=INDEX_NONE;
+            const FString Want=!S.CursorId.IsEmpty()?S.CursorId:S.SelectedId;
+            for(int32 I=0;I<Visible.Num()&&Focus==INDEX_NONE;++I)if(Entries[Visible[I]].Id==Want)Focus=I;
+            S.Page=Focus!=INDEX_NONE?CireDraftBrowser::PageOf(Focus,GridPageSize):0;
         }
+        if(S.ForcedPage>=0)S.Page=S.ForcedPage;
+        S.Page=CireDraftBrowser::ClampPage(S.Page,Visible.Num(),GridPageSize);
     }
-    TMap<FString,int32> NameUses;for(const auto& P:CireChampionRoster::All())NameUses.FindOrAdd(P.DisplayName)++;
-    // Card grid: the column count (4-7) that gives the largest card that fits the panel.
-    const auto NameSizeFor=[](float W){return FMath::Clamp(W*.12f,10.f,14.f);};
-    const auto PlateFor=[&](float W){return 2*LH(NameSizeFor(W),ECireFont::Bold)+8.f;};
-    if(S.Tiles.Num()>0)
+    S.Tiles.Reset();
     {
-        const int32 N=S.Tiles.Num();float Best=-1;int32 GridCols=1;
-        for(int32 Cols=FMath::Min(4,N);Cols<=FMath::Max(FMath::Min(7,N),1);++Cols)
+        const int32 First=S.Page*GridPageSize,Last=FMath::Min(Visible.Num(),First+GridPageSize);
+        const int32 Cols=FMath::Max(1,FMath::Min(Grid.Cols,Last-First>0?Grid.Cols:1));
+        const float UsedW=Grid.Cols*Grid.TileW+(Grid.Cols-1)*CardGap;
+        const float OX=GridR.X+(GridR.W-UsedW)*.5f,OY=GridR.Y;
+        for(int32 K=First;K<Last;++K)
         {
-            const int32 Rows=FMath::DivideAndRoundUp(N,Cols);
-            float W=FMath::Min(170.f,(CardsR.W-(Cols-1)*CardGap)/Cols);
-            const float MaxH=(CardsR.H-(Rows-1)*CardGap)/Rows;
-            for(int32 It=0;It<8&&W+PlateFor(W)>MaxH;++It)W=MaxH-PlateFor(W);
-            if(W+PlateFor(W)>MaxH)W-=W+PlateFor(W)-MaxH;
-            if(W>Best+.5f){Best=W;GridCols=Cols;}
+            const CireDraftBrowser::FEntry& E=Entries[Visible[K]];
+            const FCireChampionProfile* P=CireChampionRoster::FindByIndex(E.Order);
+            if(!P||P->Id!=E.Id)P=CireChampionRoster::Find(E.Id);
+            if(!P)continue;
+            const int32 Slot=K-First;
+            FTile T;T.Profile=P;T.Column=E.PrimaryRole;T.bSecondary=S.Filter>=0&&E.PrimaryRole!=S.Filter;T.bParagon=E.bParagon;
+            T.X=OX+(Slot%Grid.Cols)*(Grid.TileW+CardGap);T.Y=OY+(Slot/Grid.Cols)*(Grid.TileH+CardGap);T.W=Grid.TileW;T.H=Grid.TileH;
+            S.Tiles.Add(T);
         }
-        const float CardW=FMath::Max(36.f,FMath::FloorToFloat(Best)),CardH=CardW+PlateFor(CardW);
-        const int32 Rows=FMath::DivideAndRoundUp(N,GridCols);
-        const float UsedW=GridCols*CardW+(GridCols-1)*CardGap;
-        const float OX=CardsR.X+(CardsR.W-UsedW)*.5f,OY=CardsR.Y+3.f;
-        for(int32 I=0;I<N;++I){FTile& T=S.Tiles[I];T.X=OX+(I%GridCols)*(CardW+CardGap);T.Y=OY+(I/GridCols)*(CardH+CardGap);T.W=CardW;T.H=CardH;}
-        (void)Rows;
+        (void)Cols;
         int32 Found=INDEX_NONE;
-        for(int32 I=0;I<N&&Found==INDEX_NONE;++I)if(S.Tiles[I].Profile->Id==S.CursorId&&!S.Tiles[I].bSecondary)Found=I;
-        for(int32 I=0;I<N&&Found==INDEX_NONE;++I)if(S.Tiles[I].Profile->Id==S.CursorId)Found=I;
-        S.Cursor=Found!=INDEX_NONE?Found:FMath::Clamp(S.Cursor,0,N-1);
-        if(S.CursorId.IsEmpty())S.CursorId=S.Tiles[S.Cursor].Profile->Id;
+        for(int32 I=0;I<S.Tiles.Num()&&Found==INDEX_NONE;++I)if(S.Tiles[I].Profile->Id==S.CursorId)Found=I;
+        S.Cursor=Found!=INDEX_NONE?Found:FMath::Clamp(S.Cursor,0,FMath::Max(0,S.Tiles.Num()-1));
+        if(S.CursorId.IsEmpty()&&S.Tiles.IsValidIndex(S.Cursor))S.CursorId=S.Tiles[S.Cursor].Profile->Id;
+        // Lightweight prefetch: this page and the next (portraits are small; they are kept once loaded).
+        TArray<FString> Ids;for(int32 K=First;K<FMath::Min(Visible.Num(),Last+GridPageSize);++K)Ids.Add(Entries[Visible[K]].Id);
+        CireDraftAssets::PrefetchPortraits(Ids);
     }
 
-    // ---------- Keyboard: Up/Down/Home/Space/Tab here; Left/Right and 1-6 arrive via the controller ----------
-    const auto SetFilter=[&](int32 F){if(F!=S.Filter){S.Filter=F;S.Hovered.Reset();PlayWowSound(4,.35f);}S.bDropdown=false;};
+    // ---------- Keyboard: Up/Down/Home/PageUp/PageDown/Space/Tab here; Left/Right and 1-6 arrive via the controller ----------
+    const auto SetFilter=[&](int32 F){if(F!=S.Filter){S.Filter=F;S.Hovered.Reset();PlayWowSound(4,.35f);}S.bSortDropdown=false;};
+    const auto TurnPage=[&](int32 Step)
+    {
+        const int32 To=CireDraftBrowser::ClampPage(S.Page+Step,Visible.Num(),GridPageSize);
+        if(To!=S.Page){S.Page=To;S.PageFlashAt=Now;S.Hovered.Reset();PlayWowSound(4,.3f);}
+    };
     if(Interactive&&!bTyping&&PlayerOwner&&S.Tiles.Num()>0)
     {
         if(PlayerOwner->WasInputKeyJustPressed(EKeys::Up))ChooseTile(S,S.bChosen?Nearest(S.Tiles,S.Cursor,0,-1):S.Cursor);
         if(PlayerOwner->WasInputKeyJustPressed(EKeys::Down))ChooseTile(S,S.bChosen?Nearest(S.Tiles,S.Cursor,0,1):S.Cursor);
-        if(PlayerOwner->WasInputKeyJustPressed(EKeys::Home))ChooseTile(S,0);
+        if(PlayerOwner->WasInputKeyJustPressed(EKeys::Home)){S.Page=0;S.QueryKey.Reset();ChooseTile(S,0);}
     }
+    if(Interactive&&!bTyping&&PlayerOwner)
+    {
+        if(PlayerOwner->WasInputKeyJustPressed(EKeys::PageUp))TurnPage(-1);
+        if(PlayerOwner->WasInputKeyJustPressed(EKeys::PageDown))TurnPage(1);
+        if(Hit(LeftR.X,LeftR.Y,LeftR.W,LeftR.H)&&!S.bSortDropdown)
+        {
+            if(PlayerOwner->WasInputKeyJustPressed(EKeys::MouseScrollDown))TurnPage(1);
+            if(PlayerOwner->WasInputKeyJustPressed(EKeys::MouseScrollUp))TurnPage(-1);
+        }
+        // Left/Right at the edge of the page flip to the neighbouring page (requested by ChangeDraftRosterPage).
+        if(S.PendingPageStep!=0){const int32 Step=S.PendingPageStep;S.PendingPageStep=0;const int32 Before=S.Page;TurnPage(Step);if(S.Page!=Before)S.PendingEdgeSelect=Step;}
+    }
+    if(S.PendingEdgeSelect!=0&&S.Tiles.Num()>0){ChooseTile(S,S.PendingEdgeSelect>0?0:S.Tiles.Num()-1);S.PendingEdgeSelect=0;}
     if(Interactive&&!bTyping&&PlayerOwner&&PlayerOwner->WasInputKeyJustPressed(EKeys::Tab))
     {
         static const int32 Order[]={-1,0,1,2};int32 At=0;for(int32 I=0;I<4;++I)if(Order[I]==S.Filter)At=I;
@@ -737,41 +813,91 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         return M->HeroName.IsEmpty()||M->HeroName==TEXT("Unbound")?FString(TEXT("Player")):M->HeroName;
     };
 
-    // Hover detection before drawing so the splash reacts this frame.
+    // ---------- Hover: the lightweight presentation (details, portrait card, scene) follows the mouse at once ----------
     FString HoverNow;
-    const bool bOverDropdown=S.bDropdown&&Hit(DropR.X,DropR.B(),DropR.W+60,4*(RowH-6)+8);
+    const bool bOverDropdown=S.bSortDropdown&&Hit(S.SortListR.X,S.SortListR.Y,S.SortListR.W,S.SortListR.H);
     if(Interactive&&!bOverDropdown)for(const FTile& T:S.Tiles)if(Hit(T.X,T.Y,T.W,T.H)){HoverNow=T.Profile->Id;break;}
     if(!S.ForcedHover.IsEmpty())HoverNow=S.ForcedHover;
-    if(!S.ProbeHover.IsEmpty())HoverNow=S.ProbeHover; // champ-select-perf: virtual mouse (same settle as a real hover)
+    if(!S.ProbeHover.IsEmpty())HoverNow=S.ProbeHover; // champ-select-perf: virtual mouse (same path as a real hover)
     if(HoverNow!=S.Hovered){S.Hovered=HoverNow;S.HoverSince=Now;}
     const FCireChampionProfile* Selected=S.bChosen?CireChampionRoster::Find(S.SelectedId):nullptr;
     if(!Selected)S.bChosen=false;
-    const bool bHoverSettled=!S.Hovered.IsEmpty()&&(Now-S.HoverSince>.12||!S.ForcedHover.IsEmpty());
-    const FCireChampionProfile* Shown=bLockedView?Selected:bHoverSettled?CireChampionRoster::Find(S.Hovered):nullptr;
+    const FCireChampionProfile* Shown=bLockedView?Selected:!S.Hovered.IsEmpty()?CireChampionRoster::Find(S.Hovered):nullptr;
     if(!Shown)Shown=Selected;
     // Browsing with nothing hovered or selected still presents the champion under the cursor.
     const bool bIdle=!Shown;
     if(!Shown&&S.Tiles.IsValidIndex(S.Cursor))Shown=S.Tiles[S.Cursor].Profile;
     if(!Shown)Shown=&CireChampionRoster::All()[0];
-    if(Stage&&!S.Portraits.bActive)
-    {
-        Stage->ShowProfile(Shown->Id);
-        // Face the camera in a 3/4 front pose with a slow idle sway, lit to match the scene.
-        Stage->SetTurntable(false,-18.f+6.f*FMath::Sin(static_cast<float>(Now)*.45f));
-        const FSceneMood Mood=MoodFor(BackgroundId(Shown->Id));
-        Stage->SetMood(Mood.Key,Mood.Rim,Mood.Fill);
-    }
     if(Shown->Id!=S.SplashId){S.SplashId=Shown->Id;S.SplashSince=Now;}
     const auto ShownPrimary=CireChampionProfiles::PrimaryRole(*Shown);
     const FLinearColor ShownColor=RoleColor(ShownPrimary);
     const ACireHero* const* SelectedTaker=Selected?Picked.Find(Selected->Id):nullptr;
     const bool bSelectedBlocked=SelectedTaker&&!(*SelectedTaker)->bBot&&!bLockedView;
     const bool bPending=!bLockedView&&Selected&&S.LockRequestedId==Selected->Id&&Now-S.LockRequestedAt<2.0;
+    // Selected skin (Paragon reskins): 0 = default body.
+    const TArray<FString> SelectedSkins=Selected?CireParagonChampions::Skins(Selected->Id):TArray<FString>();
+    int32 SkinIndex=0;FString SelectedSkin;
+    if(Selected&&SelectedSkins.Num()>0)
+    {
+        int32& Pick=S.SkinPick.FindOrAdd(Selected->Id);Pick=FMath::Clamp(Pick,0,SelectedSkins.Num());SkinIndex=Pick;
+        if(Pick>0)SelectedSkin=SkinKeyOf(SelectedSkins[Pick-1]);
+    }
     // Tell the server what we selected (teammates see it; the timer locks it at zero).
     if(!bLockedView&&Controller&&!S.Gallery.bActive)
     {
         const FString Want=Selected?Selected->Id:FString();
         if(Want!=S.SentHoverId){S.SentHoverId=Want;Controller->ServerDraftHover(Want);}
+    }
+    // Kit icons of the shown hero stream in the background (the sigil stands in meanwhile).
+    {
+        TArray<FString> Kit;for(const FCireChampionSkill& K:Shown->Actives)Kit.Add(K.Id);Kit.Add(Shown->Passive.Id);Kit.Add(Shown->Ultimate.Id);
+        Kit.Add(CireClassTraits::Info(ShownPrimary).Id);
+        CireDraftAssets::PrefetchIcons(Kit);
+    }
+
+    // ---------- The 3D body: heavy, so it waits for the hover to settle and streams asynchronously ----------
+    // The stage only spawns a body whose packages are resident (or pooled from a recent view); a hover that moves on
+    // cancels its stale request. Neighbours of the settled hero preload at low priority once it is on screen.
+    S.BodyDebounce.Update(S.Hovered,Now,!S.ForcedHover.IsEmpty()?0.0:Tune.HoverDebounceSeconds);
+    FString StageWant;
+    if(bLockedView&&Selected)StageWant=Selected->Id;
+    else if(!S.Hovered.IsEmpty())StageWant=S.BodyDebounce.Settled==S.Hovered?S.Hovered:FString();
+    else StageWant=Shown->Id;
+    const FString StageSkin=Selected&&StageWant==Selected->Id?SelectedSkin:FString();
+    if(Stage&&!S.Portraits.bActive&&!StageWant.IsEmpty())
+    {
+        CireDraftAssets::RequestBody(StageWant,FString(),true);
+        if(!StageSkin.IsEmpty())CireDraftAssets::RequestBody(StageWant,StageSkin,true);
+        if(StageWant!=S.BodyWant){S.BodyWant=StageWant;S.BodyWantSince=Now;}
+        const bool bResident=CireDraftAssets::IsBodyReady(StageWant)||Stage->IsPooled(StageWant)||Stage->GetProfileId()==StageWant;
+        if(bResident||Now-S.BodyWantSince>8.0)
+        {
+            if(!bResident&&Stage->GetProfileId()!=StageWant)++CireDraftAssets::Stats().SyncFallbacks; // streaming stalled: bind anyway
+            Stage->ShowProfile(StageWant);
+        }
+        if(Stage->GetProfileId()==StageWant&&CireDraftAssets::IsBodyReady(StageWant,StageSkin))Stage->SetPreviewSkin(StageSkin);
+        TSet<FString> Keep;Keep.Add(StageWant);Keep.Add(CireDraftAssets::BodyKey(StageWant,StageSkin));
+        if(Selected){Keep.Add(Selected->Id);Keep.Add(CireDraftAssets::BodyKey(Selected->Id,SelectedSkin));}
+        // Neighbours (in the filtered order) once the wanted body is live and nothing else is streaming.
+        int32 At=INDEX_NONE;for(int32 I=0;I<Visible.Num()&&At==INDEX_NONE;++I)if(Entries[Visible[I]].Id==StageWant)At=I;
+        const bool bSettledLive=Stage->GetProfileId()==StageWant&&Stage->IsPreviewReady();
+        for(int32 D=1;D<=Tune.NeighbourPreload&&At!=INDEX_NONE;++D)for(const int32 N:{At-D,At+D})if(Visible.IsValidIndex(N))
+        {
+            const FString& Nb=Entries[Visible[N]].Id;
+            if(bSettledLive&&(CireDraftAssets::IsBodyRequested(Nb)||CireDraftAssets::BodiesInFlight()==0))
+            {
+                CireDraftAssets::RequestBody(Nb,FString(),false);Keep.Add(Nb);
+                CireDraftAssets::PrefetchBackground(CachedBackgroundId(Nb));
+            }
+        }
+        CireDraftAssets::CancelBodiesExcept(Keep);
+    }
+    if(Stage&&!S.Portraits.bActive)
+    {
+        // Face the camera in a 3/4 front pose with a slow idle sway, lit to match the scene.
+        Stage->SetTurntable(false,-18.f+6.f*FMath::Sin(static_cast<float>(Now)*.45f));
+        const FSceneMood Mood=MoodFor(CachedBackgroundId(Stage->GetProfileId().IsEmpty()?Shown->Id:Stage->GetProfileId()));
+        Stage->SetMood(Mood.Key,Mood.Rim,Mood.Fill);
     }
     // Timer (server world time); the gallery forces a value.
     float Remaining=-1.f,Total=1.f;
@@ -786,16 +912,23 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     // =====================================================================
     // Drawing
     // =====================================================================
-    // ---------- Background: the champion's painted scene, crossfading on change ----------
+    // ---------- Background: the hero's painted scene. It switches only once the new painting is resident (the old
+    // one stays up meanwhile, no pop, no checker), then crossfades. Heroes that share a painting never reload it. ----------
     {
-        const FString Want=BackgroundId(Shown->Id);
-        if(Want!=S.BgId){S.PrevBgId=S.BgId;S.BgId=Want;S.BgSince=Now;}
-        const float Blend=FMath::Clamp(static_cast<float>(Now-S.BgSince)/.6f,0.f,1.f);
+        const FString Want=CachedBackgroundId(Shown->Id);
+        UTexture2D* WantTex=Background(Want);
+        if(Want!=S.BgId&&(WantTex||!CireDraftAssets::HasBackground(Want)||Now-S.HoverSince>3.0)){S.PrevBgId=S.BgId;S.BgId=Want;S.BgSince=Now;}
+        // Scenes of the tiles around the hovered one are fetched while the player looks at this one.
+        {
+            int32 At=INDEX_NONE;for(int32 I=0;I<S.Tiles.Num()&&At==INDEX_NONE;++I)if(S.Tiles[I].Profile==Shown)At=I;
+            for(const int32 N:{At-1,At+1})if(At!=INDEX_NONE&&S.Tiles.IsValidIndex(N))CireDraftAssets::PrefetchBackground(CachedBackgroundId(S.Tiles[N].Profile->Id));
+        }
+        const float Blend=FMath::Clamp(static_cast<float>((Now-S.BgSince)/Tune.CrossFadeSeconds),0.f,1.f);
         Panel(0,0,VW,VH,Backdrop);
         const auto DrawBackground=[&](const FString& Id,float Alpha)
         {
             if(Alpha<=0||Id.IsEmpty())return;
-            const FCireChampionProfile* P=nullptr;for(const auto& Q:CireChampionRoster::All())if(BackgroundId(Q.Id)==Id){P=&Q;break;}
+            const FCireChampionProfile* P=nullptr;for(const auto& Q:CireChampionRoster::All())if(CachedBackgroundId(Q.Id)==Id){P=&Q;break;}
             const FLinearColor Col=P?RoleColor(CireChampionProfiles::PrimaryRole(*P)):Gold;
             if(UTexture2D* Bg=Background(Id))
             {
@@ -807,7 +940,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             }
             else
             {
-                // Role-themed fallback until a painted scene exists for this champion.
+                // Cheap role-themed stand-in (no painting yet, or it is still streaming).
                 for(int32 I=0;I<16;++I)Panel(0,VH*I/16.f,VW,VH/16.f,Tint(Col,FMath::Lerp(.34f,.06f,I/15.f),Alpha));
                 for(int32 I=0;I<5;++I)
                 {
@@ -821,7 +954,6 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         if(Blend<1.f)DrawBackground(S.PrevBgId,1.f);
         DrawBackground(S.BgId,Blend<1.f?Blend:1.f);
         // Grade: darker under the side panels and the header, a vignette at the bottom.
-        // Exact, non-overlapping strips (overlaps would show as bands).
         const int32 Steps=24;
         const float LW=LeftR.R()*1.05f,RW=VW-RightR.X+Gap,HW=BodyY,FW=VH*.25f;
         for(int32 I=0;I<Steps;++I)
@@ -834,28 +966,55 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         }
     }
 
-    // ---------- Champion: live model standing on the backdrop ----------
+    // ---------- Champion: portrait card at once, crossfading into the live 3D body when it is ready ----------
     {
-        const float Age=static_cast<float>(Now-S.SplashSince),T=FMath::Clamp(Age/.5f,0.f,1.f),Ease=1.f-FMath::Pow(1.f-T,3.f);
-        // The render frames the body in roughly the middle 90% of its height: crop to that so
-        // the champion fills the column, and never stretch (UV window keeps the target's aspect).
         const float BH=FigureR.H,BW=FMath::Min(FigureR.W,BH*.80f);
         const FRect Box{FigureR.X+(FigureR.W-BW)*.5f,FigureR.Y,BW,BH};
         // champ-select-hq: 2x supersampled (the cutout material resolves a 4x4 tap grid per screen pixel).
         if(Stage&&!S.Portraits.bActive)Stage->SetPreviewHeight(FMath::RoundToInt(PX(BH)/.86f*2.f));
         const bool bLive=Stage&&!S.Portraits.bActive&&Stage->GetProfileId()==Shown->Id&&Stage->IsPreviewReady();
+        if(bLive&&S.LiveId!=Shown->Id){S.LiveId=Shown->Id;S.LiveSince=Now;}
+        if(!bLive)S.LiveId.Reset();
+        const float LiveT=bLive?FMath::Clamp(static_cast<float>((Now-S.LiveSince)/Tune.CrossFadeSeconds),0.f,1.f):0.f;
+        const float Ease=1.f-FMath::Pow(1.f-LiveT,3.f);
+        const float CardIn=FMath::Clamp(static_cast<float>((Now-S.SplashSince)/.12),0.f,1.f);
         // Ground shadow and a role-coloured halo behind the figure.
-        CireUIStyle::Glow(Pen(),Box.X+Box.W*.2f,Box.Y+Box.H*.15f,Box.W*.6f,Box.H*.7f,WithAlpha(ShownColor,.10f*Ease));
-        // Contact shadow under the feet (the stage reports where its floor lands in the render), in soft layers.
+        CireUIStyle::Glow(Pen(),Box.X+Box.W*.2f,Box.Y+Box.H*.15f,Box.W*.6f,Box.H*.7f,WithAlpha(ShownColor,.10f));
         {
             float FeetY=Box.Y+Box.H*.975f;
-            if(Stage&&!S.Portraits.bActive){float VHt0=.86f;const float UW0=(BW/BH)*VHt0/.75f;if(UW0>1.f)VHt0/=UW0;FeetY=Box.Y+FMath::Clamp((Stage->GetFeetV()-(.06f+(.86f-VHt0)*.5f))/VHt0,.5f,1.f)*Box.H;}
-            for(int32 L=0;L<4;++L)Ellipse(Box.X+Box.W*.5f,FeetY,Box.W*(.34f-L*.06f),Box.H*(.035f-L*.006f),FLinearColor(0,0,0,.16f*Ease));
+            if(bLive){float VHt0=.86f;const float UW0=(BW/BH)*VHt0/.75f;if(UW0>1.f)VHt0/=UW0;FeetY=Box.Y+FMath::Clamp((Stage->GetFeetV()-(.06f+(.86f-VHt0)*.5f))/VHt0,.5f,1.f)*Box.H;}
+            for(int32 L=0;L<4;++L)Ellipse(Box.X+Box.W*.5f,FeetY,Box.W*(.34f-L*.06f),Box.H*(.035f-L*.006f),FLinearColor(0,0,0,.16f*FMath::Max(Ease,.5f)));
+        }
+        // Portrait card: instant, from the lightweight portrait (or the role sigil), fading out as the body fades in.
+        const float CardA=CardIn*(1.f-Ease);
+        if(CardA>.01f)
+        {
+            const float CS=FMath::Min(BW*.74f,BH*.46f);
+            const FRect CardBox{Box.X+(Box.W-CS)*.5f,Box.Y+Box.H*.30f-CS*.35f,CS,CS};
+            PanelAlpha=Fade*CardA;
+            CireUIStyle::Glow(Pen(),CardBox.X-18,CardBox.Y-18,CardBox.W+36,CardBox.H+36,WithAlpha(ShownColor,.28f));
+            Panel(CardBox.X,CardBox.Y,CardBox.W,CardBox.H,ThemeUI(10,14,22,235));
+            if(UTexture2D* Face=Portrait(Shown->Id))Tex(Face,CardBox,.12f,.05f,.76f,.76f,FLinearColor(1,1,1,CardA));
+            else
+            {
+                for(int32 B=0;B<6;++B)Panel(CardBox.X,CardBox.Y+B*CardBox.H/6,CardBox.W,CardBox.H/6,Tint(ShownColor,.22f*(6-B)/6.f+.05f,CardA));
+                Icon(RoleSigil(ShownPrimary),CardBox.X+CardBox.W*.22f,CardBox.Y+CardBox.H*.2f,CardBox.W*.56f,WithAlpha(ShownColor,.7f));
+            }
+            Outline(CardBox,2,WithAlpha(Gold,.85f));Outline(CardBox.Inset(4),1,WithAlpha(Gold,.3f));
+            for(const FVector2D& C:{FVector2D(CardBox.X,CardBox.Y),FVector2D(CardBox.R(),CardBox.Y),FVector2D(CardBox.X,CardBox.B()),FVector2D(CardBox.R(),CardBox.B())})Diamond(C.X,C.Y,5,Gold);
+            // The body is streaming: a slow rune ring under the card says the champion is on its way.
+            if(Stage&&!S.Portraits.bActive&&!bLockedView&&!StageWant.IsEmpty()&&StageWant==Shown->Id)
+            {
+                const float RY=CardBox.B()+22.f,RR=11.f,A0=static_cast<float>(Now)*4.f;
+                for(int32 I=0;I<18;++I){const float A=A0+I*.26f;Seg(CardBox.X+CardBox.W*.5f+FMath::Cos(A)*RR,RY+FMath::Sin(A)*RR,CardBox.X+CardBox.W*.5f+FMath::Cos(A+.2f)*RR,RY+FMath::Sin(A+.2f)*RR,WithAlpha(BrightGold,.9f*(I/18.f)),2.f);}
+                Line(TEXT("Summoning..."),CardBox.X-20,RY+RR+6,CardBox.W+40,12.f,ThemeUI(226,210,170),FigureR,ECireFont::Heading,1);
+            }
+            PanelAlpha=Fade;S.bFigureDrawn=true;
         }
         if(bLive)
         {
             float VHt=.86f;float UW=(BW/BH)*VHt/.75f;if(UW>1.f){VHt/=UW;UW=1.f;}
-            const float Zoom=1.f+.05f*(1.f-Ease);UW/=Zoom;VHt/=Zoom;
+            const float Zoom=1.f+.04f*(1.f-Ease);UW/=Zoom;VHt/=Zoom;
             UMaterialInstanceDynamic* Cutout=CutoutMaterial();
             if(Cutout&&Stage->IsCutout())
             {
@@ -866,14 +1025,13 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             }
             else Tex(Stage->GetRenderTarget(),Box,(1-UW)*.5f,.06f+(.86f-VHt)*.5f,UW,VHt,FLinearColor(1,1,1,Ease));
             S.bFigureDrawn=true;
+            if(LiveT<1.f){const float SX=Box.X+Box.W*(-.2f+1.4f*Ease);CireUIStyle::Glow(Pen(),SX-20,Box.Y,40,Box.H,FLinearColor(1.f,.92f,.75f,.20f*(1.f-LiveT)));}
         }
-        else if(UTexture2D* Face=Portrait(Shown->Id)){Tex(Face,FRect{Box.X+Box.W*.2f,Box.Y+Box.H*.2f,Box.W*.6f,Box.W*.6f},0,0,1,1,FLinearColor(1,1,1,.35f));S.bFigureDrawn=true;}
-        if(T<1.f&&bLive){const float SX=Box.X+Box.W*(-.2f+1.4f*Ease);CireUIStyle::Glow(Pen(),SX-20,Box.Y,40,Box.H,FLinearColor(1.f,.92f,.75f,.20f*(1.f-T)));}
         // State tag over the figure's shoulder.
         const ACireHero* const* Taker=Picked.Find(Shown->Id);const bool bTaken=Taker&&!(*Taker)->bBot&&!bLockedView;
         const bool bIsSel=Selected==Shown;
         const FString Tag=bLockedView?FString(TEXT("LOCKED IN")):bTaken?FString(TEXT("LOCKED BY "))+MateName(*Taker).ToUpper():bIsSel?FString(TEXT("SELECTED")):bIdle?FString(TEXT("BROWSING")):FString(TEXT("PREVIEW"));
-        const float TS=11.f,TagH=LH(TS,ECireFont::Heading)+8,TagW=FMath::Min(FigureR.W-16,TW(Tag,TS,ECireFont::Heading)+(bIsSel?34.f:18.f));
+        const float TS=12.f,TagH=LH(TS,ECireFont::Heading)+8,TagW=FMath::Min(FigureR.W-16,TW(Tag,TS,ECireFont::Heading)+(bIsSel?34.f:18.f));
         const FRect TagR{FigureR.X+(FigureR.W-TagW)*.5f,FigureR.Y+2,TagW,TagH};
         Panel(TagR.X,TagR.Y,TagR.W,TagR.H,bLockedView||bTaken?WithAlpha(LockRed,.92f):bIsSel?WithAlpha(Tint(Gold,.55f),.95f):FLinearColor(0,0,0,.55f));
         Outline(TagR,1,bIsSel||bLockedView?Gold:WithAlpha(Faint,.9f));
@@ -908,7 +1066,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         const float NS=FMath::Min(RingR*.95f,32.f);
         Txt(Num,MidX-TW(Num,NS,Remaining>=0&&!bLockedView?ECireFont::Numbers:ECireFont::Heading)*.5f,RingCY-LH(NS,ECireFont::Numbers)*.5f,NS,TimeColor,RingBox,Remaining>=0&&!bLockedView?ECireFont::Numbers:ECireFont::Heading,true);
         const FString Prep=bLockedView?TEXT("LOCKED IN  |  FINALIZING"):bLow?TEXT("HURRY: AUTO LOCK AT ZERO"):S.bChosen?TEXT("LOCK IN YOUR CHAMPION"):TEXT("PREPARE FOR BATTLE");
-        Line(Prep,MidX-150,PrepY,300,PrepSize,bLow?DpsColor:ThemeUI(222,196,140),HeaderR,ECireFont::Heading,1);
+        Line(Prep,MidX-170,PrepY,340,PrepSize,bLow?DpsColor:ThemeUI(222,196,140),HeaderR,ECireFont::Heading,1);
         Tip(TEXT("Pick timer"),Remaining>=0?TEXT("When it reaches zero your selected champion is locked in (a random free one if you have not selected any)."):TEXT("This session has no pick timer."),RingBox.X,RingBox.Y,RingBox.W,RingBox.H);
 
         // Team (left): you and four slots; ghosted = selected but not locked, solid = locked.
@@ -916,8 +1074,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             int32 Locked=bLockedView?1:0;for(const auto* Mate:Mates)Locked+=Mate->bDrafted;
             const float Room=MidX-TW(Title,TitleSize,ECireFont::Display)*.5f-20-LX;
             const FString Head=FString::Printf(TEXT("YOUR TEAM  |  %d / %d LOCKED"),Locked,TeamSlots);
-            Line(Head,LX,M,Room,11,Gold,HeaderR,ECireFont::Heading);
-            const float SlotS=FMath::Clamp(BodyY-M-LH(11,ECireFont::Heading)-14,26.f,40.f),SY=M+LH(11,ECireFont::Heading)+5;
+            Line(Head,LX,M,Room,12,Gold,HeaderR,ECireFont::Heading);
+            const float SlotS=FMath::Clamp(BodyY-M-LH(12,ECireFont::Heading)-14,26.f,40.f),SY=M+LH(12,ECireFont::Heading)+5;
             for(int32 I=0;I<TeamSlots;++I)
             {
                 const FRect R{LX+I*(SlotS+6),SY,SlotS,SlotS};
@@ -938,7 +1096,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         // Nav (right): CHAMPIONS (here), LOADOUTS (explains the opening ability), SETTINGS (options).
         {
             static const TCHAR* Items[]={TEXT("SETTINGS"),TEXT("LOADOUTS"),TEXT("CHAMPIONS"),TEXT("HERO CREATOR")};
-            float X=LX+CW;const float NS2=11.5f,NY=M+2;
+            float X=LX+CW;const float NS2=12.f,NY=M+2;
             const int32 NavCount=CireKitEditor::IsAvailable()&&!bLockedView?4:3; // kit-editor: dev/editor mode entry
             for(int32 I=0;I<NavCount;++I)
             {
@@ -965,8 +1123,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             const bool bModeLocked=GS&&(GS->Wave>0||GS->Phase!=0);
             const uint8 ModeNow=bShopMode?1:0;
             if(S.LastMode!=ModeNow){if(S.LastMode!=255){S.ModeFlashAt=Now;PlayWowSound(4,.5f);}S.LastMode=ModeNow;}
-            const float CapS=9.5f,BS=10.5f,PY=M+LH(11,ECireFont::Heading)+5;
-            const float BH=FMath::Clamp(FMath::Min(BodyY-M-LH(11,ECireFont::Heading)-14,RingCY-7.f-PY),24.f,40.f),IconS=BH-8; // stays above the header rule
+            const float CapS=12.f,BS=12.f,PY=M+LH(12,ECireFont::Heading)+5;
+            const float BH=FMath::Clamp(FMath::Min(BodyY-M-LH(12,ECireFont::Heading)-14,RingCY-7.f-PY),24.f,40.f),IconS=BH-8; // stays above the header rule
             static const TCHAR* ModeNames[2]={TEXT("SKILL SHOP"),TEXT("CLASSIC DRAFT")};
             static const TCHAR* ModeBlurbs[2]={
                 TEXT("Default. Skills are bought and levelled in the Skill Shop that opens after every cleared wave; levelling up only raises your stats."),
@@ -1039,7 +1197,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                     const FString Why=!bHost?FString(TEXT("Only the host picks the game type; everyone sees the choice here.")):bModeLocked?FString(TEXT("Locked: the game type is fixed once the first wave starts.")):
                         FString(TEXT("Click to choose the game type. New types are saved from F8 > Waves > Modes & Scale."));
                     // kit-editor: the Hero Creator kit profile this game type starts the heroes with.
-                    Line(FString::Printf(TEXT("KITS: %s"),*CireKitEditor::ActiveProfile(World).ToUpper()),R.X,R.B()+2,R.W,9.f,Gold,FRect{R.X,R.B()+2,R.W,LH(9.f,ECireFont::Heading)},ECireFont::Heading,2);
+                    Line(FString::Printf(TEXT("KITS: %s"),*CireKitEditor::ActiveProfile(World).ToUpper()),R.X-40,R.B()+2,R.W+40,12.f,Gold,FRect{R.X-40,R.B()+2,R.W+40,LH(12.f,ECireFont::Heading)},ECireFont::Heading,2);
                     Tip(FString(TEXT("Game type: "))+(Type?Type->Label:TypeId.ToString()),(Type?Type->Description+TEXT("\n"):FString())+Why,R.X,R.Y,R.W,R.H);
                 }
                 else S.bTypeDropdown=false;
@@ -1048,32 +1206,35 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         }
     }
 
-    // ---------- Roster panel: role tabs, scope dropdown, search, card grid ----------
+    // ---------- Roster browser: role tabs, search / sort / favourites, stat + source chips, paged grid ----------
     Ornate(LeftR,.72f,Gold);
     {
-        float X=TabsR.X;
-        for(int32 I=0;I<3;++I)
+        // Role tabs with live counts (the other filters applied).
+        const auto CountFor=[&](CireDraftBrowser::ERole ForRole){CireDraftBrowser::FQuery Q2=Query;Q2.Role=ForRole;int32 N=0;for(const auto& E:Entries)N+=CireDraftBrowser::Matches(E,Q2,Favs);return N;};
+        struct FTabDef{int32 Filter;const TCHAR* Title;const TCHAR* Sigil;FLinearColor Color;CireDraftBrowser::ERole Role;const TCHAR* Blurb;};
+        const FTabDef TabDefs[4]={
+            {-1,TEXT("ALL"),TEXT("role1"),Gold,CireDraftBrowser::ERole::All,TEXT("Every champion")},
+            {0,Columns[0].Title,Columns[0].Sigil,Columns[0].Color,CireDraftBrowser::ERole::Tank,Columns[0].Blurb},
+            {1,Columns[1].Title,Columns[1].Sigil,Columns[1].Color,CireDraftBrowser::ERole::Damage,Columns[1].Blurb},
+            {2,Columns[2].Title,Columns[2].Sigil,Columns[2].Color,CireDraftBrowser::ERole::Support,Columns[2].Blurb}};
+        const float TabW=(TabsR.W-3*6.f)/4.f;
+        for(int32 I=0;I<4;++I)
         {
-            const int32 F=TabOrder[I];const FRect R{X,TabsR.Y,TabWs[I],RowH};X+=TabWs[I]+6;
-            const bool bActive=S.Filter==F,bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H);
-            const FLinearColor Col=Columns[F].Color;
+            const FTabDef& D=TabDefs[I];const FRect R{TabsR.X+I*(TabW+6.f),TabsR.Y,TabW,RowH};
+            const bool bActive=S.Filter==D.Filter,bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H);
             Panel(R.X,R.Y,R.W,R.H,bActive?ThemeUI(18,34,58,240):bOver?ThemeUI(24,30,42,235):ThemeUI(10,14,22,215));
-            Outline(R,1,bActive?Gold:WithAlpha(Tint(Col,.8f),.55f));
+            Outline(R,1,bActive?Gold:WithAlpha(Tint(D.Color,.8f),.55f));
             if(bActive){Panel(R.X+R.W*.3f,R.B()-2,R.W*.4f,2,Gold);Diamond(R.X+R.W*.5f,R.B(),3,Gold);}
-            const float IS=FMath::Min(20.f,R.H-12);
-            Icon(Columns[F].Sigil,R.X+12,R.Y+(R.H-IS)*.5f,IS,Col);
-            Txt(Columns[F].Title,R.X+18+IS,R.Y+(R.H-LH(TabSize,ECireFont::Heading))*.5f,TabSize,bActive?Text:bOver?Gold:ThemeUI(206,202,190),R,ECireFont::Heading);
-            if(bOver&&Clicked){SetFilter(bActive?-1:F);Clicked=false;}
-            Tip(Columns[F].Title,FString(Columns[F].Blurb)+TEXT(". Shows its champions plus hybrids who can also fill it. Click again (or Tab) for all champions."),R.X,R.Y,R.W,R.H);
-        }
-        // Scope dropdown.
-        {
-            const bool bOver=Interactive&&Hit(DropR.X,DropR.Y,DropR.W,DropR.H);
-            Panel(DropR.X,DropR.Y,DropR.W,DropR.H,S.bDropdown?ThemeUI(24,30,42,240):ThemeUI(10,14,22,215));Outline(DropR,1,S.bDropdown||bOver?Gold:WithAlpha(GoldDim,.9f));
-            const FString Label=S.Filter<0?FString(TEXT("All Champions")):Capitalized(FString(Columns[S.Filter].Title).ToLower())+TEXT(" only");
-            Line(S.Filter==1?FString(TEXT("DPS only")):Label,DropR.X+10,DropR.Y+(RowH-LH(11.5f,ECireFont::Body))*.5f,DropR.W-34,11.5f,Text,DropR,ECireFont::Body);
-            CireUIStyle::Chevron(Pen(),DropR.R()-20,DropR.Y+(RowH-10)*.5f,10,false,Gold);
-            if(bOver&&Clicked){S.bDropdown=!S.bDropdown;Clicked=false;}
+            const float IS=FMath::Min(18.f,R.H-14);
+            const FString Count=FString::FromInt(CountFor(D.Role));
+            const float CountW=TW(Count,12.f,ECireFont::Numbers);
+            const bool bIcon=R.W>=TW(D.Title,TabSize,ECireFont::Heading)+CountW+IS+34.f;
+            float X=R.X+8;
+            if(bIcon){Icon(D.Sigil,X,R.Y+(R.H-IS)*.5f,IS,D.Color);X+=IS+6;}
+            Line(D.Title,X,R.Y+(R.H-LH(TabSize,ECireFont::Heading))*.5f,R.R()-X-CountW-12,TabSize,bActive?Text:bOver?Gold:ThemeUI(206,202,190),R,ECireFont::Heading);
+            Txt(Count,R.R()-8-CountW,R.Y+(R.H-LH(12.f,ECireFont::Numbers))*.5f,12.f,bActive?BrightGold:Muted,R,ECireFont::Numbers);
+            if(bOver&&Clicked){SetFilter(D.Filter);Clicked=false;}
+            Tip(D.Title,FString(D.Blurb)+(D.Filter>=0?TEXT(". Shows its champions first, then hybrids who can also fill it. Tab cycles the roles."):TEXT(". Tab cycles the roles.")),R.X,R.Y,R.W,R.H);
         }
         // Search box.
         {
@@ -1083,7 +1244,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             const float GX=B.X+15,GY=B.Y+B.H*.5f-2;Circle(GX,GY,5.5f,bFocus?Gold:Muted,1.5f,20);Seg(GX+4,GY+4,GX+8,GY+8,bFocus?Gold:Muted,2.f);
             const float TX=B.X+30,TWd=B.W-38,SY=B.Y+(B.H-LH(12,ECireFont::Body))*.5f;
             const FString Typed=Controller?Controller->DraftSearch:FString();
-            if(Typed.IsEmpty()&&!bFocus)Line(TEXT("Search champions..."),TX,SY,TWd,12,Muted,B,ECireFont::Body);
+            if(Typed.IsEmpty()&&!bFocus)Line(TEXT("Search name, class, role..."),TX,SY,TWd,12,Muted,B,ECireFont::Body);
             else
             {
                 FString Vis=Typed;while(Vis.Len()>0&&TW(Vis,12,ECireFont::Body)>TWd-8)Vis.RightChopInline(1);
@@ -1091,18 +1252,73 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 if(bFocus&&FMath::Fmod(static_cast<float>(Now),1.f)<.55f)Panel(TX+W+2,SY+2,2,LH(12,ECireFont::Body)-4,Gold);
             }
             if(Interactive&&Clicked&&Controller){if(bOver){Controller->bDraftSearch=true;Clicked=false;}else Controller->bDraftSearch=false;}
-            Tip(TEXT("Search"),TEXT("Click and type to filter champions by name, class or race. Enter keeps the filter, Esc clears it."),B.X,B.Y,B.W,B.H);
+            Tip(TEXT("Search"),TEXT("Click and type: every word must match a name, class or race, or a keyword (tank, dps, support, str, agi, int, paragon). Enter keeps the filter, Esc clears it."),B.X,B.Y,B.W,B.H);
+        }
+        // Sort button (opens the list below).
+        {
+            const bool bOver=Interactive&&Hit(SortR.X,SortR.Y,SortR.W,SortR.H);
+            Panel(SortR.X,SortR.Y,SortR.W,SortR.H,S.bSortDropdown?ThemeUI(24,30,42,240):ThemeUI(10,14,22,215));Outline(SortR,1,S.bSortDropdown||bOver?Gold:WithAlpha(GoldDim,.9f));
+            Line(FString(TEXT("Sort: "))+CireDraftBrowser::SortLabel(S.Query.Sort),SortR.X+10,SortR.Y+(RowH-LH(12.f,ECireFont::Body))*.5f,SortR.W-34,12.f,Text,SortR,ECireFont::Body);
+            CireUIStyle::Chevron(Pen(),SortR.R()-20,SortR.Y+(RowH-10)*.5f,10,false,Gold);
+            if(bOver&&Clicked){S.bSortDropdown=!S.bSortDropdown;Clicked=false;PlayWowSound(4,.3f);}
+            Tip(TEXT("Sort"),TEXT("Order the roster by role, name, difficulty or source. Favourites always come first."),SortR.X,SortR.Y,SortR.W,SortR.H);
+        }
+        // Favourites filter.
+        {
+            const bool bOn=S.Query.bFavouritesOnly,bOver=Interactive&&Hit(FavR.X,FavR.Y,FavR.W,FavR.H);
+            Panel(FavR.X,FavR.Y,FavR.W,FavR.H,bOn?SRGB(46,36,14,242):bOver?ThemeUI(24,30,42,235):ThemeUI(10,14,22,215));Outline(FavR,1,bOn||bOver?Gold:WithAlpha(GoldDim,.9f));
+            Star(FavR.X+RowH*.5f,FavR.Y+RowH*.5f,RowH*.3f,bOn?BrightGold:WithAlpha(Gold,bOver?1.f:.6f),bOn);
+            if(bFavLabel)Line(TEXT("Favourites"),FavR.X+RowH,FavR.Y+(RowH-LH(12.f,ECireFont::Body))*.5f,FavR.W-RowH-6,12.f,bOn?BrightGold:Text,FavR,ECireFont::Body);
+            if(bOver&&Clicked){S.Query.bFavouritesOnly=!bOn;Clicked=false;PlayWowSound(4,.35f);}
+            Tip(TEXT("Favourites"),FString::Printf(TEXT("Show only your favourites (%d). Click the star on a portrait to add or remove one; favourites are listed first everywhere."),Favs.Num()),FavR.X,FavR.Y,FavR.W,FavR.H);
+        }
+        // Chips: primary stat and source toggles, plus the result count.
+        {
+            float X=ChipsR.X;
+            const auto Chip=[&](const FString& Label,bool bOn,const FLinearColor& Col,const FString& TipText)->bool
+            {
+                const float W=TW(Label,ChipSize,ECireFont::Heading)+22.f;
+                if(X+W>ChipsR.R())return false;
+                const FRect R{X,ChipsR.Y,W,ChipH};X+=W+6.f;
+                const bool bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H);
+                Panel(R.X,R.Y,R.W,R.H,bOn?Tint(Col,.45f,.95f):bOver?ThemeUI(24,30,42,235):ThemeUI(10,14,22,210));
+                Outline(R,1,bOn?Col:WithAlpha(Col,bOver?.8f:.4f));
+                Line(Label,R.X+11,R.Y+(ChipH-LH(ChipSize,ECireFont::Heading))*.5f,R.W-16,ChipSize,bOn?Text:bOver?Col:ThemeUI(200,196,186),R,ECireFont::Heading);
+                Tip(Label,TipText,R.X,R.Y,R.W,R.H);
+                if(bOver&&Clicked){Clicked=false;PlayWowSound(4,.3f);return true;}
+                return false;
+            };
+            static const CireDraftBrowser::EStat Stats[3]={CireDraftBrowser::EStat::Strength,CireDraftBrowser::EStat::Agility,CireDraftBrowser::EStat::Intelligence};
+            static const TCHAR* StatNames[3]={TEXT("Strength"),TEXT("Agility"),TEXT("Intelligence")};
+            const FLinearColor StatColors[3]={SRGB(232,120,90),SRGB(120,210,120),SRGB(120,160,240)};
+            for(int32 I=0;I<3;++I)
+                if(Chip(CireDraftBrowser::StatLabel(Stats[I]),S.Query.Stat==Stats[I],StatColors[I],FString::Printf(TEXT("Only champions whose primary stat is %s. Click again to clear."),StatNames[I])))
+                    S.Query.Stat=S.Query.Stat==Stats[I]?CireDraftBrowser::EStat::Any:Stats[I];
+            X+=8.f;
+            if(Chip(TEXT("AUTHORED"),S.Query.Source==CireDraftBrowser::ESource::Authored,Gold,TEXT("Only the Emberhold champions made for this game.")))
+                S.Query.Source=S.Query.Source==CireDraftBrowser::ESource::Authored?CireDraftBrowser::ESource::Any:CireDraftBrowser::ESource::Authored;
+            if(Chip(TEXT("PARAGON"),S.Query.Source==CireDraftBrowser::ESource::Paragon,ParagonColor,TEXT("Only the Paragon heroes (and the new champions built from their skins).")))
+                S.Query.Source=S.Query.Source==CireDraftBrowser::ESource::Paragon?CireDraftBrowser::ESource::Any:CireDraftBrowser::ESource::Paragon;
+            const FString Count=FString::Printf(TEXT("%d / %d"),Visible.Num(),Entries.Num());
+            const float CW2=TW(Count,12.f,ECireFont::Numbers);
+            if(X+CW2+6<=ChipsR.R())
+            {
+                Txt(Count,ChipsR.R()-CW2,ChipsR.Y+(ChipH-LH(12.f,ECireFont::Numbers))*.5f,12.f,Muted,ChipsR,ECireFont::Numbers);
+                Tip(TEXT("Champions"),TEXT("Shown by the current filters / the whole roster."),ChipsR.R()-CW2,ChipsR.Y,CW2,ChipH);
+            }
         }
         if(S.Tiles.IsEmpty())
         {
-            Line(FString::Printf(TEXT("No champion matches \"%s\""),*Search),GridR.X,GridR.Y+GridR.H*.35f,GridR.W,14,Text,GridR,ECireFont::Body,1);
-            Line(TEXT("Press Esc in the search box to clear it"),GridR.X,GridR.Y+GridR.H*.35f+LH(14,ECireFont::Body)+4,GridR.W,11.5f,Muted,GridR,ECireFont::Body,1);
+            const FString Why=!Search.IsEmpty()?FString::Printf(TEXT("No champion matches \"%s\""),*Search):FString(TEXT("No champion matches these filters"));
+            Line(Why,GridR.X,GridR.Y+GridR.H*.35f,GridR.W,14,Text,GridR,ECireFont::Body,1);
+            Line(TEXT("Clear the search (Esc) or a filter chip"),GridR.X,GridR.Y+GridR.H*.35f+LH(14,ECireFont::Body)+4,GridR.W,12.f,Muted,GridR,ECireFont::Body,1);
         }
     }
-    // Cards. Draw order: plain, hovered, selected (it overlaps its neighbours).
+    // Tiles. Draw order: plain, hovered, selected (it overlaps its neighbours).
     TArray<int32> Order;for(int32 I=0;I<S.Tiles.Num();++I)Order.Add(I);
     const auto Rank=[&](int32 I){const auto& P=*S.Tiles[I].Profile;return Selected==&P?2:S.Hovered==P.Id?1:0;};
     Order.StableSort([&](int32 A,int32 B){return Rank(A)<Rank(B);});
+    const float PageIn=FMath::Clamp(static_cast<float>((Now-S.PageFlashAt)/.18),0.f,1.f);
     for(const int32 I:Order)
     {
         const FTile& T=S.Tiles[I];const auto& P=*T.Profile;
@@ -1111,101 +1327,66 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         const bool bSel=Selected==&P,bOver=S.Hovered==P.Id&&!bLockedView,bKey=I==S.Cursor&&!bSel&&S.bChosen;
         const ACireHero* const* Taker=Picked.Find(P.Id);
         const bool bHumanTaken=Taker&&!(*Taker)->bBot;
-        const float Grow=bSel?.03f:0.f,Lift=bOver&&!bSel?3.f:0.f;
-        const FRect C{T.X-T.W*Grow,T.Y-T.H*Grow-Lift,T.W*(1+2*Grow),T.H*(1+2*Grow)};
-        const float PW=C.W;
+        const bool bFav=Favs.Contains(P.Id);
+        const float Grow=bSel?.03f:0.f,Lift=bOver&&!bSel?3.f:0.f,Slide=(1.f-PageIn)*10.f;
+        const FRect C{T.X-T.W*Grow+Slide,T.Y-T.H*Grow-Lift,T.W*(1+2*Grow),T.H*(1+2*Grow)};
         if(S.bAudit)S.Audit.Add({TEXT("card:")+P.Id,C,LeftR.Inset(2.f),0,2});
+        PanelAlpha=Fade*(.35f+.65f*PageIn);
         Panel(C.X+2,C.Y+(bOver||bSel?6.f:3.f),C.W,C.H,FLinearColor(0,0,0,.5f));
         if(bSel)CireUIStyle::Glow(Pen(),C.X-3,C.Y-3,C.W+6,C.H+6,WithAlpha(BrightGold,.45f+.15f*FMath::Sin(static_cast<float>(Now)*4.f)));
-        const float BW=bSel?3.f:bOver||bKey?2.f:1.f;
-        Outline(C,BW,bSel?BrightGold:bOver?WithAlpha(Gold,.9f):bKey?GoldDim:bHumanTaken?Faint:ThemeUI(58,72,96));
-        Panel(C.X,C.Y,PW,PW,ThemeUI(14,20,30));
-        // Portrait graded toward the target's painted look: warm key, role-tinted base, dark vignette.
-        // Painted portraits are shown untinted (their own colour); only taken/hybrid listings dim.
+        Panel(C.X,C.Y,C.W,C.H,ThemeUI(14,20,30));
+        // Portrait fills the tile (cropped to its aspect); the name sits on a dark band over its lower part.
         const FLinearColor FaceTint=bHumanTaken?SRGB(70,70,70):T.bSecondary?FLinearColor(.82f,.82f,.82f):FLinearColor::White;
-        if(UTexture2D* Face=Portrait(P.Id))Tex(Face,FRect{C.X,C.Y,PW,PW},.15f,.08f,.70f,.70f,FaceTint);
+        if(UTexture2D* Face=Portrait(P.Id))
+        {
+            const float UW=.70f,VHt=UW*C.H/C.W;
+            Tex(Face,C,.15f,FMath::Max(0.f,.06f-(VHt-UW)*.3f),UW,FMath::Min(VHt,1.f),FaceTint);
+        }
         else
         {
-            for(int32 B=0;B<6;++B)Panel(C.X,C.Y+B*PW/6,PW,PW/6,Tint(Col,.20f*(6-B)/6.f+.05f));
-            Icon(RoleSigil(Primary),C.X+PW*.25f,C.Y+PW*.2f,PW*.5f,WithAlpha(Col,.55f));
+            for(int32 B=0;B<6;++B)Panel(C.X,C.Y+B*C.H/6,C.W,C.H/6,Tint(Col,.20f*(6-B)/6.f+.05f));
+            Icon(RoleSigil(Primary),C.X+C.W*.25f,C.Y+C.H*.12f,C.W*.5f,WithAlpha(Col,.55f));
         }
+        // Name band.
+        const float NS=NameSize,NL=LH(NS,ECireFont::Bold);
+        TArray<FString> Lines=TileNameLines(Pen(),P.DisplayName,NS,C.W-8,ECireFont::Bold);
+        const float BandH=Lines.Num()*NL+8.f;
+        const FRect Band{C.X,C.B()-BandH,C.W,BandH};
+        for(int32 V=0;V<6;++V)Panel(C.X,Band.Y-(V+1)*5.f,C.W,5.f,FLinearColor(0,0,0,.55f*(1.f-(V+.5f)/6.f)));
+        Panel(Band.X,Band.Y,Band.W,Band.H,bSel?ThemeUI(58,46,22,242):bHumanTaken?WithAlpha(LockRed,.9f):bOver?ThemeUI(30,38,54,240):FLinearColor(0,0,0,.72f));
         {
-            const int32 VS=8;const float E=PW*.18f/VS;
-            for(int32 V=0;V<VS;++V)
-            {
-                const float A=.26f*(1.f-(V+.5f)/VS);
-                Panel(C.X+V*E,C.Y,E,PW,FLinearColor(0,0,0,A));Panel(C.R()-(V+1)*E,C.Y,E,PW,FLinearColor(0,0,0,A));
-                Panel(C.X,C.Y+V*E,PW,E,FLinearColor(0,0,0,A*.8f));
-                Panel(C.X,C.Y+PW-(V+1)*E*1.6f,PW,E*1.6f,WithAlpha(Tint(Col,.30f),A*.9f));
-            }
+            float Y=Band.Y+4.f;
+            for(const FString& L:Lines){Txt(L,Band.X+(Band.W-TW(L,NS,ECireFont::Bold))*.5f,Y,NS,bSel?BrightGold:bHumanTaken?Muted:Text,Band,ECireFont::Bold,false,1);Y+=NL;}
         }
-        if(bOver&&!bSel)Panel(C.X,C.Y,PW,PW,FLinearColor(1.f,.9f,.7f,.07f));
-        if(bHumanTaken)Panel(C.X,C.Y,PW,PW,FLinearColor(0,0,0,.35f));
-        // Status band along the portrait's bottom edge (never across the face): difficulty pips,
-        // plus BOT PICK / LOCKED BY.
-        const float BandS=9.5f,BandH=LH(BandS,ECireFont::Heading)+4;
-        const FRect Band{C.X,C.Y+PW-BandH,PW,BandH};
-        Panel(Band.X,Band.Y,Band.W,Band.H,bHumanTaken?WithAlpha(LockRed,.92f):FLinearColor(0,0,0,.62f));
-        const float PipW=FMath::Clamp(PW*.08f,6.f,12.f),PipH=4.f;
-        float PipEnd=Band.X+4;
-        // Look-alikes whose name needs two lines carry their variant on the band instead of the pips.
-        const bool bBandVariant=NameUses.FindRef(P.DisplayName)>1&&TW(P.DisplayName,10.f,ECireFont::Bold)>C.W-6&&!Taker;
-        if(bBandVariant)Line(VariantWord(P).ToUpper(),Band.X+3,Band.Y+2,Band.W-6,BandS,BrightGold,Band,ECireFont::Heading,1);
-        else if(!bHumanTaken)for(int32 D=0;D<3;++D){Panel(Band.X+5+D*(PipW+3),Band.Y+(BandH-PipH)*.5f,PipW,PipH,D<P.Difficulty?Gold:WithAlpha(Faint,.9f));PipEnd=Band.X+5+(D+1)*(PipW+3);}
-        if(Taker)
-        {
-            const FString What=bHumanTaken?FString(TEXT("LOCKED BY "))+MateName(*Taker).ToUpper():FString(TEXT("BOT PICK"));
-            Line(What,PipEnd+2,Band.Y+2,Band.R()-PipEnd-6,BandS,bHumanTaken?Text:ThemeUI(190,194,198),Band,ECireFont::Heading,bHumanTaken?1:2);
-        }
-        const float BadgeR=FMath::Clamp(PW*.11f,8.f,15.f);
+        if(bOver&&!bSel)Panel(C.X,C.Y,C.W,Band.Y-C.Y,FLinearColor(1.f,.9f,.7f,.07f));
+        if(bHumanTaken)Panel(C.X,C.Y,C.W,Band.Y-C.Y,FLinearColor(0,0,0,.35f));
+        // Frame: role / source rule, gold when selected.
+        const float BW=bSel?3.f:bOver||bKey?2.f:1.f;
+        Outline(C,BW,bSel?BrightGold:bOver?WithAlpha(Gold,.9f):bKey?GoldDim:bHumanTaken?Faint:T.bParagon?WithAlpha(ParagonColor,.75f):ThemeUI(58,72,96));
+        // Role badge (top-left), hybrid pips, favourite star (top-right, clickable).
+        const float BadgeR=FMath::Clamp(C.W*.10f,8.f,13.f);
         Disc(C.X+4+BadgeR,C.Y+4+BadgeR,BadgeR+1.5f,WithAlpha(Col,.95f));Disc(C.X+4+BadgeR,C.Y+4+BadgeR,BadgeR,WithAlpha(Backdrop,.92f));
         Icon(RoleSigil(Primary),C.X+4+BadgeR*.35f,C.Y+4+BadgeR*.35f,BadgeR*1.3f,Col);
         {
-            float PipX=C.R()-10-(bSel?BadgeR*2+6:0.f);
-            for(const Cires::SkillDraftRole Extra:HybridRoles(P))
-                if(RoleIndex(Extra)!=T.Column||!T.bSecondary){Panel(PipX-1,C.Y+5,9,9,Backdrop);Panel(PipX,C.Y+6,7,7,RoleColor(Extra));PipX-=11;}
-            if(T.bSecondary)
-            {
-                const float TagS=9.5f,TagW=TW(TEXT("HYBRID"),TagS,ECireFont::Heading)+8,TagX=PipX-TagW+6;
-                if(TagX>C.X+4+2*BadgeR+4)
-                {
-                    const FRect TagR{TagX,C.Y+4,TagW,LH(TagS,ECireFont::Heading)+2};
-                    Panel(TagR.X,TagR.Y,TagR.W,TagR.H,FLinearColor(0,0,0,.78f));
-                    Txt(TEXT("HYBRID"),TagR.X+4,TagR.Y+1,TagS,Columns[T.Column].Color,TagR,ECireFont::Heading);
-                }
-            }
+            float PipY=C.Y+6+2*BadgeR+4;
+            for(const Cires::SkillDraftRole Extra:HybridRoles(P)){Panel(C.X+4+BadgeR-5,PipY-1,11,11,Backdrop);Panel(C.X+4+BadgeR-4,PipY,9,9,RoleColor(Extra));PipY+=13;}
         }
-        if(bSel)
+        const float StarR=FMath::Clamp(C.W*.085f,7.f,11.f);const FRect StarHit{C.R()-6-2*StarR-4,C.Y+2,2*StarR+8,2*StarR+8};
+        const bool bOverStar=Interactive&&Hit(StarHit.X,StarHit.Y,StarHit.W,StarHit.H);
+        if(bFav||bOver||bOverStar)
         {
-            const float CR=FMath::Clamp(PW*.12f,9.f,16.f),CXc=C.R()-5-CR,CYc=C.Y+5+CR;
-            Disc(CXc,CYc,CR+2,Backdrop);Disc(CXc,CYc,CR,BrightGold);Check(CXc,CYc,CR,Backdrop,FMath::Max(2.f,CR*.22f));
+            Disc(StarHit.X+StarHit.W*.5f,StarHit.Y+StarHit.H*.5f,StarR+3,FLinearColor(0,0,0,.55f));
+            Star(StarHit.X+StarHit.W*.5f,StarHit.Y+StarHit.H*.5f,StarR,bFav?BrightGold:WithAlpha(Text,bOverStar?1.f:.7f),bFav);
         }
-        const FRect Plate{C.X,C.Y+PW,C.W,C.H-PW};
-        Panel(Plate.X,Plate.Y,Plate.W,Plate.H,bSel?ThemeUI(58,46,22,250):bOver?ThemeUI(30,38,54,250):ThemeUI(10,15,24,245));
+        if(bSel&&!bFav&&!bOver){const float CR=FMath::Clamp(C.W*.1f,8.f,13.f),CXc=C.R()-5-CR,CYc=C.Y+5+CR;Disc(CXc,CYc,CR+2,Backdrop);Disc(CXc,CYc,CR,BrightGold);Check(CXc,CYc,CR,Backdrop,FMath::Max(2.f,CR*.22f));}
+        if(Taker&&!bHumanTaken)
         {
-            const float NS=NameSizeFor(T.W),NL=LH(NS,ECireFont::Bold);
-            const bool bTwin=NameUses.FindRef(P.DisplayName)>1;
-            TArray<FString> Lines;float Size=NS;
-            // champ-select-hq: names always read in full. Shrink (never below 10) until the name fits on
-            // one line, else balance it over two lines (shrinking those too); look-alikes whose name
-            // needs both lines show their variant on the portrait's status band instead of a third line.
-            const float NameW=Plate.W-6;
-            const auto Fits=[&](const TArray<FString>& L,float Sz){for(const FString& X:L)if(TW(X,Sz,ECireFont::Bold)>NameW)return false;return true;};
-            while(Size>10.f&&TW(P.DisplayName,Size,ECireFont::Bold)>NameW&&(bTwin||Size>NS-1.5f))Size=FMath::Max(10.f,Size-.5f);
-            if(TW(P.DisplayName,Size,ECireFont::Bold)<=NameW)Lines.Add(P.DisplayName);
-            else
-            {
-                Size=NS;Lines=BalancedLines(Pen(),P.DisplayName,Size,ECireFont::Bold);
-                while(Size>10.f&&!Fits(Lines,Size)){Size=FMath::Max(10.f,Size-.5f);Lines=BalancedLines(Pen(),P.DisplayName,Size,ECireFont::Bold);}
-                for(FString& X:Lines)X=Pen().Fit(X,Size,NameW,ECireFont::Bold);
-            }
-            const bool bVariantLine=bTwin&&Lines.Num()==1;
-            const float VS=FMath::Max(10.f,NS*.85f),VL=LH(VS,ECireFont::Body);
-            const float LineH=LH(Size,ECireFont::Bold);
-            float Y=Plate.Y+(Plate.H-Lines.Num()*LineH-(bVariantLine?VL:0.f))*.5f;
-            for(const FString& L:Lines){Txt(L,Plate.X+(Plate.W-TW(L,Size,ECireFont::Bold))*.5f,Y,Size,bSel?BrightGold:bHumanTaken?Muted:Text,Plate,ECireFont::Bold,false,1);Y+=LineH;}
-            if(bVariantLine)Line(FString(TEXT("· "))+VariantWord(P)+TEXT(" ·"),Plate.X+3,Y,Plate.W-6,VS,bSel?Text:Gold,Plate,ECireFont::Body,1);
+            const FString What=TEXT("BOT");const float W=TW(What,12.f,ECireFont::Heading)+10;
+            const FRect BotR{C.R()-W-4,Band.Y-LH(12.f,ECireFont::Heading)-8,W,LH(12.f,ECireFont::Heading)+4};
+            Panel(BotR.X,BotR.Y,BotR.W,BotR.H,FLinearColor(0,0,0,.7f));Txt(What,BotR.X+5,BotR.Y+2,12.f,ThemeUI(190,194,198),BotR,ECireFont::Heading);
         }
+        PanelAlpha=Fade;
+        if(Interactive&&bOverStar&&Clicked&&!bOverDropdown){CireDraftBrowser::ToggleFavourite(P.Id);PlayWowSound(4,.4f);Clicked=false;}
         if(Interactive&&bOver&&Clicked&&S.ForcedHover.IsEmpty()&&!bOverDropdown)
         {
             const bool bDouble=S.LastClickId==P.Id&&Now-S.LastClickAt<.35;
@@ -1218,24 +1399,51 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         {
             FString TipBody=P.ClassType+TEXT(" | ")+RoleName(Primary);
             for(const auto Extra:HybridRoles(P))TipBody+=FString(TEXT(" + "))+RoleName(Extra);
+            TipBody+=T.bParagon?TEXT(" | Paragon hero"):TEXT("");
             if(Taker)TipBody+=FString::Printf(TEXT(". Picked by %s%s"),*MateName(*Taker),(*Taker)->bBot?TEXT(" (bot; still available)"):TEXT(""));
-            Tip(P.DisplayName,TipBody+TEXT(". Click to select; double-click or Space to lock in."),T.X,T.Y,T.W,T.H);
+            Tip(P.DisplayName,TipBody+(bOverStar?TEXT(". Click the star to add or remove a favourite."):TEXT(". Click to select; double-click or Space to lock in. The star marks a favourite.")),T.X,T.Y,T.W,T.H);
         }
     }
-    // Scope dropdown list (over the grid).
-    if(S.bDropdown&&!bLockedView)
+    // Pager: previous / page dots / next (mouse wheel and PageUp/PageDown also turn pages).
     {
-        static const int32 Scopes[]={-1,0,1,2};static const TCHAR* Names[]={TEXT("All Champions"),TEXT("Tank only"),TEXT("DPS only"),TEXT("Support only")};
-        const float IH=RowH-6;const FRect L{DropR.X,DropR.B()+2,DropR.W+60,4*IH+8};
-        Panel(L.X,L.Y,L.W,L.H,ThemeUI(8,12,20,250));Outline(L,1,Gold);
-        for(int32 I=0;I<4;++I)
+        const float BS=PagerH;const FRect Prev{PagerR.X,PagerR.Y,BS*1.4f,BS},Next{PagerR.R()-BS*1.4f,PagerR.Y,BS*1.4f,BS};
+        const bool bCanPrev=S.Page>0,bCanNext=S.Page<Pages-1;
+        const bool bOverPrev=Interactive&&bCanPrev&&Hit(Prev.X,Prev.Y,Prev.W,Prev.H),bOverNext=Interactive&&bCanNext&&Hit(Next.X,Next.Y,Next.W,Next.H);
+        CireUIStyle::Button(Pen(),Prev.X,Prev.Y,Prev.W,Prev.H,TEXT("<"),!bCanPrev?ECireButtonState::Disabled:bOverPrev?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
+        CireUIStyle::Button(Pen(),Next.X,Next.Y,Next.W,Next.H,TEXT(">"),!bCanNext?ECireButtonState::Disabled:bOverNext?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
+        if(bOverPrev&&Clicked){TurnPage(-1);Clicked=false;}
+        if(bOverNext&&Clicked){TurnPage(1);Clicked=false;}
+        Tip(TEXT("Previous page"),TEXT("Mouse wheel up or Page Up."),Prev.X,Prev.Y,Prev.W,Prev.H);Tip(TEXT("Next page"),TEXT("Mouse wheel down or Page Down."),Next.X,Next.Y,Next.W,Next.H);
+        const FString Label=FString::Printf(TEXT("PAGE %d / %d"),S.Page+1,Pages);
+        const float LW=TW(Label,12.f,ECireFont::Heading);
+        const float DotsW=Pages*16.f;const float Mid=PagerR.X+PagerR.W*.5f;
+        const bool bDots=Pages>1&&Pages<=14&&DotsW+LW+24<=Next.X-Prev.R()-16;
+        const float StartX=bDots?Mid-(DotsW+14+LW)*.5f:Mid-LW*.5f;
+        if(bDots)for(int32 P=0;P<Pages;++P)
         {
-            const FRect R{L.X+4,L.Y+4+I*IH,L.W-8,IH};const bool bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H);
-            if(bOver||S.Filter==Scopes[I])Panel(R.X,R.Y,R.W,R.H,bOver?ThemeUI(30,38,54,250):ThemeUI(22,28,40,250));
-            Line(Names[I],R.X+8,R.Y+(IH-LH(11.5f,ECireFont::Body))*.5f,R.W-16,11.5f,S.Filter==Scopes[I]?Gold:Text,R,ECireFont::Body);
-            if(bOver&&Clicked){SetFilter(Scopes[I]);Clicked=false;}
+            const float DX=StartX+P*16.f+8.f,DY=PagerR.Y+PagerR.H*.5f;const bool bHere=P==S.Page;
+            const bool bOverDot=Interactive&&Hit(DX-7,DY-9,14,18);
+            Diamond(DX,DY,bHere?6.f:4.f,bHere?BrightGold:bOverDot?Gold:WithAlpha(GoldDim,.9f));
+            if(bOverDot&&Clicked&&!bHere){TurnPage(P-S.Page);Clicked=false;}
         }
-        if(Clicked&&!Hit(L.X,L.Y,L.W,L.H)){S.bDropdown=false;}
+        Txt(Label,bDots?StartX+DotsW+14:StartX,PagerR.Y+(PagerH-LH(12.f,ECireFont::Heading))*.5f,12.f,Gold,PagerR,ECireFont::Heading);
+    }
+    // Sort list (over the grid).
+    S.SortListR=FRect();
+    if(S.bSortDropdown&&!bLockedView)
+    {
+        const float IH=FMath::Max(28.f,LH(12.f,ECireFont::Body)+10.f);const int32 N=int32(CireDraftBrowser::ESort::Count);
+        const FRect L{DropR.X,DropR.B()+2,DropR.W,N*IH+8};S.SortListR=L;
+        Panel(L.X,L.Y,L.W,L.H,ThemeUI(8,12,20,250));Outline(L,1,Gold);
+        for(int32 I=0;I<N;++I)
+        {
+            const auto Mode=CireDraftBrowser::ESort(I);
+            const FRect R{L.X+4,L.Y+4+I*IH,L.W-8,IH};const bool bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H),bOn=S.Query.Sort==Mode;
+            if(bOver||bOn)Panel(R.X,R.Y,R.W,R.H,bOver?ThemeUI(30,38,54,250):ThemeUI(22,28,40,250));
+            Line(CireDraftBrowser::SortLabel(Mode),R.X+8,R.Y+(IH-LH(12.f,ECireFont::Body))*.5f,R.W-16,12.f,bOn?Gold:Text,R,ECireFont::Body);
+            if(bOver&&Clicked){S.Query.Sort=Mode;S.bSortDropdown=false;Clicked=false;PlayWowSound(4,.35f);}
+        }
+        if(Clicked&&!Hit(L.X,L.Y,L.W,L.H)&&!Hit(SortR.X,SortR.Y,SortR.W,SortR.H)){S.bSortDropdown=false;}
     }
     // waves-modes: GAME TYPE list (over the page): every wave preset with its description; the host's pick goes to the server.
     if(S.bTypeDropdown&&!bLockedView)
@@ -1243,259 +1451,222 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         const TArray<FCireWavePreset>& Types=CireWaveDirector::Presets();
         const ACireGameState* TGS=World?World->GetGameState<ACireGameState>():nullptr;
         const FName Now2=TGS&&!TGS->WavePreset.IsNone()?TGS->WavePreset:CireWaveDirector::Config(World).Preset;
-        const float IH=56.f,LW=FMath::Max(S.TypeR.W,380.f); // game-profiles: a third line with the bundle summary
-        const FRect L{S.TypeR.R()-LW,S.TypeR.B()+4,LW,Types.Num()*IH+30};
+        const float IH=66.f,LW=FMath::Max(S.TypeR.W,380.f); // game-profiles: a third line with the bundle summary
+        const FRect L{S.TypeR.R()-LW,S.TypeR.B()+4,LW,Types.Num()*IH+34};
         Panel(L.X,L.Y,L.W,L.H,ThemeUI(8,12,20,250));Outline(L,1,Gold);
-        Line(TEXT("CUSTOM GAME TYPE  |  WAVE PRESETS"),L.X+10,L.Y+6,L.W-20,9.5f,Gold,L,ECireFont::Heading);
+        Line(TEXT("CUSTOM GAME TYPE  |  WAVE PRESETS"),L.X+10,L.Y+6,L.W-20,12.f,Gold,L,ECireFont::Heading);
         for(int32 I=0;I<Types.Num();++I)
         {
             const FCireWavePreset& P=Types[I];
-            const FRect R{L.X+4,L.Y+24+I*IH,L.W-8,IH-2};const bool bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H),bOn=P.Id==Now2;
+            const FRect R{L.X+4,L.Y+28+I*IH,L.W-8,IH-2};const bool bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H),bOn=P.Id==Now2;
             if(bOver||bOn)Panel(R.X,R.Y,R.W,R.H,bOver?ThemeUI(30,38,54,250):ThemeUI(22,28,40,250));
             if(bOn)Panel(R.X,R.Y,3,R.H,BrightGold);
-            Line(P.Label+(P.bBuiltIn?FString():FString(TEXT("  (custom)"))),R.X+10,R.Y+3,R.W-20,11.5f,bOn?Gold:Text,R,ECireFont::Heading);
-            Line(P.Description,R.X+10,R.Y+21,R.W-20,9.f,Muted,R,ECireFont::Body);
-            Line(CireGameProfiles::Summary(P),R.X+10,R.Y+36,R.W-20,9.f,bOn?Gold:Text,R,ECireFont::Body); // game-profiles: what this game type bundles
+            Line(P.Label+(P.bBuiltIn?FString():FString(TEXT("  (custom)"))),R.X+10,R.Y+3,R.W-20,12.5f,bOn?Gold:Text,R,ECireFont::Heading);
+            Line(P.Description,R.X+10,R.Y+23,R.W-20,12.f,Muted,R,ECireFont::Body);
+            Line(CireGameProfiles::Summary(P),R.X+10,R.Y+42,R.W-20,12.f,bOn?Gold:Text,R,ECireFont::Body); // game-profiles: what this game type bundles
             Tip(P.Label,P.Description+FString::Printf(TEXT("\nHero kits: %s profile.\nProfiles: %s."),*CireKitEditor::ProfileForMode(P.KitProfile),*CireGameProfiles::Summary(P)),R.X,R.Y,R.W,R.H); // kit-editor, game-profiles
             if(bOver&&Clicked){if(Controller)Controller->ServerAction(11,I,nullptr);S.bTypeDropdown=false;PlayWowSound(4,.45f);Clicked=false;}
         }
         if(Clicked&&!Hit(L.X,L.Y,L.W,L.H)&&!Hit(S.TypeR.X,S.TypeR.Y,S.TypeR.W,S.TypeR.H)){S.bTypeDropdown=false;}
     }
 
-    // ---------- Identity column (right): who they are, the key facts, the trait, how they play ----------
+    // ---------- Details column (right): name, class, roles, key facts, lore, the kit (8 icons), stats, class trait ----------
     {
-        const float Age=static_cast<float>(Now-S.SplashSince),T=FMath::Clamp(Age/.45f,0.f,1.f),Ease=1.f-FMath::Pow(1.f-T,3.f);
-        const float Slide=18.f*(1.f-Ease);
+        const float Age=static_cast<float>(Now-S.SplashSince),T=FMath::Clamp(Age/.25f,0.f,1.f),Ease=1.f-FMath::Pow(1.f-T,3.f);
+        const float Slide=12.f*(1.f-Ease);
         PanelAlpha=Fade;
         // Dark panel behind the text so it reads over any painted scene.
         const FRect Back{RightR.X-14,RightR.Y-10,RightR.W+28,RightR.H+10};
-        Panel(Back.X,Back.Y,Back.W,Back.H,ThemeUI(6,9,15,196));
-        for(int32 I=0;I<8;++I){const float A=(8-I)/8.f*.6f;Panel(Back.X-(I+1)*3.f,Back.Y,3.f,Back.H,ThemeUI(6,9,15,uint8(196*A)));}
+        Panel(Back.X,Back.Y,Back.W,Back.H,ThemeUI(6,9,15,206));
+        for(int32 I=0;I<8;++I){const float A=(8-I)/8.f*.6f;Panel(Back.X-(I+1)*3.f,Back.Y,3.f,Back.H,ThemeUI(6,9,15,uint8(206*A)));}
         Outline(Back,1,WithAlpha(Gold,.22f));
-        PanelAlpha=Fade*Ease;
+        PanelAlpha=Fade*(.4f+.6f*Ease);
         const FRect R{RightR.X+Slide,RightR.Y,RightR.W-Slide,RightR.H};
-        const float RK=FMath::Clamp(RightW/260.f,1.f,1.25f);
+        const float RK=FMath::Clamp(RightW/290.f,1.f,1.25f);
         float Y=R.Y+2;
+        const auto Fits=[&](float Need){return Y+Need<=R.B()-2;};
         const auto Section=[&](const FString& Head)
         {
-            const float HS=12.5f*RK,HL=LH(HS,ECireFont::Display);
+            const float HS=13.f*RK,HL=LH(HS,ECireFont::Display);
             Diamond(R.X+4,Y+HL*.5f,3.5f,Gold);
             const float W=Line(Head,R.X+14,Y,R.W-30,HS,Gold,R,ECireFont::Display);
             Seg(R.X+14+W+10,Y+HL*.5f,R.R()-8,Y+HL*.5f,WithAlpha(Gold,.35f),1.f);Diamond(R.R()-4,Y+HL*.5f,2.5f,WithAlpha(Gold,.7f));
             Y+=HL+6;
         };
-        // Quote.
-        if(!Shown->Lore.IsEmpty())
-        {
-            const float QS=12.5f*RK;
-            Y+=Para(TEXT("\"")+Shown->Lore+TEXT("\""),R.X,Y,R.W,QS,ThemeUI(226,196,140),3,R,ECireFont::Body)+10;
-        }
-        // Name (display serif), then class and race in small caps.
-        const float NS=FMath::Clamp(R.W*.125f,24.f,40.f);
+        // Name (display serif), then class and race.
+        const float NS=FMath::Clamp(R.W*.105f,24.f,36.f);
         Y+=Para(FullName(*Shown),R.X,Y,R.W,NS,ThemeUI(248,236,208),2,R,ECireFont::Display);
         FString Caption=Shown->ClassType.ToUpper();if(!Shown->Race.IsEmpty())Caption+=TEXT("   ·   ")+Shown->Race.ToUpper();
-        Y+=Para(Caption,R.X,Y+2,R.W,11.5f*RK,Gold,2,R,ECireFont::Heading)+12;
-        // Role badge + one-line identity.
+        Y+=Para(Caption,R.X,Y+2,R.W,12.f*RK,Gold,2,R,ECireFont::Heading)+10;
+        // Role chips + source chip.
         {
-            float ChipX=R.X;const float CS=11.f*RK,ChipH=FMath::Max(24.f,LH(CS,ECireFont::Heading)+10);
-            const auto Chip=[&](Cires::SkillDraftRole ChipRole,bool bPrimaryRole)
+            float ChipX=R.X;const float CS=12.f*RK,ChH=FMath::Max(26.f,LH(CS,ECireFont::Heading)+10);
+            const auto Chip=[&](const FString& Label,const FLinearColor& Col,bool bSolid,const TCHAR* Sigil)
             {
-                const FString RoleText=bPrimaryRole?FString(RoleName(ChipRole)):FString(RoleName(ChipRole))+TEXT(" HYBRID");
-                const float W=TW(RoleText,CS,ECireFont::Heading)+32;const FLinearColor Col=RoleColor(ChipRole);
+                const float IS=Sigil?16.f:0.f,W=TW(Label,CS,ECireFont::Heading)+(Sigil?34.f:18.f);
                 if(ChipX+W>R.R())return;
-                const FRect ChipR{ChipX,Y,W,ChipH};
-                Panel(ChipR.X,ChipR.Y,ChipR.W,ChipR.H,bPrimaryRole?Tint(Col,.50f,.97f):ThemeUI(10,14,22,230));Outline(ChipR,1,WithAlpha(Col,.8f));
-                Icon(RoleSigil(ChipRole),ChipR.X+7,ChipR.Y+(ChipH-16)*.5f,16,bPrimaryRole?Text:Col);
-                Txt(RoleText,ChipR.X+27,ChipR.Y+(ChipH-LH(CS,ECireFont::Heading))*.5f,CS,bPrimaryRole?Text:Col,ChipR,ECireFont::Heading);ChipX+=W+6;
+                const FRect ChipR{ChipX,Y,W,ChH};
+                Panel(ChipR.X,ChipR.Y,ChipR.W,ChipR.H,bSolid?Tint(Col,.50f,.97f):ThemeUI(10,14,22,230));Outline(ChipR,1,WithAlpha(Col,.8f));
+                if(Sigil)Icon(Sigil,ChipR.X+7,ChipR.Y+(ChH-IS)*.5f,IS,bSolid?Text:Col);
+                Txt(Label,ChipR.X+(Sigil?27.f:9.f),ChipR.Y+(ChH-LH(CS,ECireFont::Heading))*.5f,CS,bSolid?Text:Col,ChipR,ECireFont::Heading);ChipX+=W+6;
             };
-            Chip(ShownPrimary,true);
-            for(const auto Extra:HybridRoles(*Shown))Chip(Extra,false);
-            Y+=ChipH+8;
-            Y+=Para(Playstyle(*Shown),R.X,Y,R.W,13.f*RK,Text,2,R,ECireFont::Bold)+12;
+            Chip(RoleName(ShownPrimary),ShownColor,true,RoleSigil(ShownPrimary));
+            for(const auto Extra:HybridRoles(*Shown))Chip(FString(RoleName(Extra))+TEXT(" HYBRID"),RoleColor(Extra),false,RoleSigil(Extra));
+            const bool bPg=CireParagonChampions::IsParagon(Shown->Id);
+            Chip(bPg?TEXT("PARAGON"):TEXT("EMBERHOLD"),bPg?ParagonColor:Gold,false,nullptr);
+            Y+=ChH+10;
         }
         // Key facts: labelled cells in a 2x2 grid.
         {
-            const float LS=9.5f*RK,VS=12.5f*RK,LL=LH(LS,ECireFont::Heading),VL=LH(VS,ECireFont::Bold);
+            const float LS=12.f,VS=13.f*RK,LL=LH(LS,ECireFont::Heading),VL=LH(VS,ECireFont::Bold);
             const float CellW=(R.W-8)*.5f,CellH=LL+VL+12;
-            const bool bRanged=Shown->BasicAttackRange>300;
-            const FLinearColor PrimeCol=Shown->PrimaryStat==TEXT("strength")?SRGB(232,120,90):Shown->PrimaryStat==TEXT("agility")?SRGB(120,210,120):SRGB(120,160,240);
-            struct FCell{const TCHAR* Label;FString Value;FLinearColor Color;int32 Pips;};
-            const FCell Cells[]={
-                {TEXT("DIFFICULTY"),Capitalized(FString(DifficultyWord(Shown->Difficulty)).ToLower()),Gold,Shown->Difficulty},
-                {TEXT("PRIMARY STAT"),Capitalized(PrimaryName(Shown->PrimaryStat).ToLower()),PrimeCol,0},
-                {TEXT("ATTACK RANGE"),FString::Printf(TEXT("%s  %.1f m"),bRanged?TEXT("Ranged"):TEXT("Melee"),Shown->BasicAttackRange/100.f),Text,0},
-                {TEXT("WEAPON"),FString::Printf(TEXT("%s  %.1f s"),*WeaponLabel(*Shown),Shown->AttackSeconds),Text,0}};
-            for(int32 I=0;I<4;++I)
+            if(Fits(2*CellH+6))
             {
-                const FRect C{R.X+(I%2)*(CellW+8),Y+(I/2)*(CellH+6),CellW,CellH};
-                Panel(C.X,C.Y,C.W,C.H,ThemeUI(14,19,30,225));Panel(C.X,C.Y,2,C.H,WithAlpha(Cells[I].Color,.9f));
-                Line(Cells[I].Label,C.X+9,C.Y+5,C.W-14,LS,Muted,C,ECireFont::Heading);
-                float VX=C.X+9;
-                if(Cells[I].Pips>0){for(int32 D=0;D<3;++D)Panel(VX+D*12,C.Y+5+LL+VL*.5f-3,9,6,D<Cells[I].Pips?Gold:Faint);VX+=40;}
-                Line(Cells[I].Value,VX,C.Y+6+LL,C.R()-VX-5,VS,Cells[I].Color,C,ECireFont::Bold);
+                const bool bRanged=Shown->BasicAttackRange>300;
+                const FLinearColor PrimeCol=Shown->PrimaryStat==TEXT("strength")?SRGB(232,120,90):Shown->PrimaryStat==TEXT("agility")?SRGB(120,210,120):SRGB(120,160,240);
+                struct FCell{const TCHAR* Label;FString Value;FLinearColor Color;int32 Pips;};
+                const FCell Cells[]={
+                    {TEXT("DIFFICULTY"),Capitalized(FString(DifficultyWord(Shown->Difficulty)).ToLower()),Gold,Shown->Difficulty},
+                    {TEXT("PRIMARY"),Capitalized(PrimaryName(Shown->PrimaryStat).ToLower()),PrimeCol,0},
+                    {TEXT("ATTACK"),FString::Printf(TEXT("%s %.1f m"),bRanged?TEXT("Ranged"):TEXT("Melee"),Shown->BasicAttackRange/100.f),Text,0},
+                    {TEXT("WEAPON"),FString::Printf(TEXT("%s %.1f s"),*WeaponLabel(*Shown),Shown->AttackSeconds),Text,0}};
+                for(int32 I=0;I<4;++I)
+                {
+                    const FRect C{R.X+(I%2)*(CellW+8),Y+(I/2)*(CellH+6),CellW,CellH};
+                    Panel(C.X,C.Y,C.W,C.H,ThemeUI(14,19,30,225));Panel(C.X,C.Y,2,C.H,WithAlpha(Cells[I].Color,.9f));
+                    Line(Cells[I].Label,C.X+9,C.Y+5,C.W-14,LS,Muted,C,ECireFont::Heading);
+                    float VX=C.X+9;
+                    if(Cells[I].Pips>0){for(int32 D=0;D<3;++D)Panel(VX+D*11,C.Y+5+LL+VL*.5f-3,8,6,D<Cells[I].Pips?Gold:Faint);VX+=38;}
+                    Line(Cells[I].Value,VX,C.Y+6+LL,C.R()-VX-5,VS,Cells[I].Color,C,ECireFont::Bold);
+                }
+                Y+=2*CellH+6+10;
             }
-            Y+=2*CellH+6+14;
+        }
+        // Lore.
+        if(!Shown->Lore.IsEmpty()&&Fits(LH(12.5f*RK,ECireFont::Body)*2))
+        {
+            const float QS=12.5f*RK;const int32 MaxLines=FMath::Clamp(FMath::FloorToInt((R.B()-Y)/LH(QS,ECireFont::Body))-8,1,3);
+            Y+=Para(TEXT("\"")+Shown->Lore+TEXT("\""),R.X,Y,R.W,QS,ThemeUI(226,196,140),MaxLines,R,ECireFont::Body)+10;
+        }
+        // The kit: six actives, the passive and the ultimate as icons (details in the tooltip).
+        {
+            TArray<const FCireChampionSkill*> Kit;
+            for(int32 I=0;I<Shown->Actives.Num()&&I<6;++I)Kit.Add(&Shown->Actives[I]);
+            if(!Shown->Passive.Id.IsEmpty())Kit.Add(&Shown->Passive);
+            if(!Shown->Ultimate.Id.IsEmpty())Kit.Add(&Shown->Ultimate);
+            const int32 PerRow=4;const float IconS=FMath::Min(54.f,(R.W-(PerRow-1)*8.f)/PerRow);
+            const int32 Rows=FMath::DivideAndRoundUp(Kit.Num(),PerRow);
+            const float HL=LH(13.f*RK,ECireFont::Display)+6;
+            if(Kit.Num()>0&&Fits(HL+Rows*(IconS+8)))
+            {
+                Section(TEXT("Kit"));
+                for(int32 I=0;I<Kit.Num();++I)
+                {
+                    const FCireChampionSkill& K=*Kit[I];
+                    const bool bPassive=&K==&Shown->Passive,bUlt=&K==&Shown->Ultimate;
+                    const float IX=R.X+(I%PerRow)*(IconS+8.f),IY=Y+(I/PerRow)*(IconS+8.f);
+                    FCireIconSlot Slot;Slot.IconId=SkillSigil(K);Slot.IconTexture=CireDraftAssets::KitIcon(K.Id);Slot.Tint=CireAbilityIcons::Accent(K.Id);
+                    Slot.Kind=bPassive?ECireSlotKind::Passive:bUlt?ECireSlotKind::Ultimate:ECireSlotKind::Normal;
+                    Slot.bHover=Interactive&&Hit(IX,IY,IconS,IconS);
+                    CireUIStyle::IconSlot(Pen(),IX,IY,IconS,Slot,Now);
+                    const FString Kind=bPassive?TEXT("Passive"):bUlt?TEXT("Ultimate"):FString::Printf(TEXT("Ability %d"),I+1);
+                    Tip(K.DisplayName.IsEmpty()?K.Id:K.DisplayName,Kind+(K.Mechanic.IsEmpty()?FString():TEXT("\n")+K.Mechanic)+(K.IsImplemented()?FString():FString(TEXT("\n(planned)"))),IX,IY,IconS,IconS);
+                }
+                Y+=Rows*(IconS+8.f)+6;
+            }
+        }
+        // Base attributes.
+        {
+            const float SS=12.f,SL=LH(SS,ECireFont::Heading),Row=SL+12;
+            const float HL=LH(13.f*RK,ECireFont::Display)+6;
+            if(Fits(HL+3*Row))
+            {
+                Section(TEXT("Attributes"));
+                struct FStatRow {const TCHAR* Key;int32 Value;const TCHAR* Stat;};
+                const FStatRow Rows[]={{TEXT("STR"),Shown->Strength,TEXT("strength")},{TEXT("AGI"),Shown->Agility,TEXT("agility")},{TEXT("INT"),Shown->Intelligence,TEXT("intelligence")}};
+                const float KeyW=TW(TEXT("INT"),SS,ECireFont::Heading)+14,NumW=TW(TEXT("00"),SS,ECireFont::Numbers)+8;
+                for(const FStatRow& Row2:Rows)
+                {
+                    const bool bPrime=Shown->PrimaryStat==Row2.Stat;
+                    Txt(Row2.Key,R.X,Y,SS,bPrime?Gold:ThemeUI(206,206,200),R,ECireFont::Heading);
+                    Bar(R.X+KeyW,Y+SL*.5f-3,R.W-KeyW-NumW,7,Row2.Value/30.f,bPrime?Gold:ThemeUI(110,122,138));
+                    const FString V=FString::FromInt(Row2.Value);
+                    Txt(V,R.R()-TW(V,SS,ECireFont::Numbers),Y,SS,bPrime?BrightGold:Text,R,ECireFont::Numbers);
+                    Y+=Row;
+                }
+                Y+=4;
+            }
         }
         // Class trait: short and bold.
         {
             const FCireClassTrait Trait=CireClassTraits::Info(ShownPrimary);
-            if(!Trait.Id.IsEmpty())
+            const float TS=13.f*RK,BS=12.f,IS=34.f,HL=LH(13.f*RK,ECireFont::Display)+6;
+            if(!Trait.Id.IsEmpty()&&Fits(HL+FMath::Max(IS,LH(TS,ECireFont::Bold)+LH(BS,ECireFont::Body))))
             {
                 Section(TEXT("Class Trait"));
-                const float TS=13.f*RK,BS=11.5f*RK,IS=34.f;
-                FCireIconSlot Slot;Slot.IconId=Trait.Id;Slot.IconTexture=CireAbilityIcons::Texture(Trait.Id);Slot.Tint=Trait.Color;Slot.Kind=ECireSlotKind::Passive;
+                FCireIconSlot Slot;Slot.IconId=Trait.Id;Slot.IconTexture=CireDraftAssets::KitIcon(Trait.Id);Slot.Tint=Trait.Color;Slot.Kind=ECireSlotKind::Passive;
                 CireUIStyle::IconSlot(Pen(),R.X+2,Y+2,IS,Slot,Now);
                 const float TX=R.X+IS+12;
                 Line(Trait.Name,TX,Y,R.R()-TX,TS,Trait.Color,R,ECireFont::Bold);
-                const float Used=Para(Trait.Summary,TX,Y+LH(TS,ECireFont::Bold),R.R()-TX,BS,ThemeUI(226,220,206),2,R,ECireFont::Body);
+                const int32 MaxLines=FMath::Clamp(FMath::FloorToInt((R.B()-Y-LH(TS,ECireFont::Bold))/LH(BS,ECireFont::Body)),1,2);
+                const float Used=Para(Trait.Summary,TX,Y+LH(TS,ECireFont::Bold),R.R()-TX,BS,ThemeUI(226,220,206),MaxLines,R,ECireFont::Body);
                 Tip(Trait.Name+TEXT("  (class trait)"),Trait.Tooltip,R.X,Y,R.W,FMath::Max(IS,LH(TS,ECireFont::Bold)+Used));
-                Y+=FMath::Max(IS+4,LH(TS,ECireFont::Bold)+Used)+14;
-            }
-        }
-        // How it plays: three short bullets.
-        {
-            Section(TEXT("How It Plays"));
-            const float PS=12.f*RK,PL=LH(PS,ECireFont::Body);
-            for(const FString& B:HowItPlays(*Shown))
-            {
-                const int32 MaxLines=FMath::Min(2,FMath::FloorToInt((R.B()-4-Y)/PL));
-                if(MaxLines<1)break;
-                Diamond(R.X+5,Y+PL*.5f,3,Gold);
-                Y+=Para(B,R.X+16,Y,R.W-16,PS,ThemeUI(226,220,206),MaxLines,R,ECireFont::Body)+6;
+                Y+=FMath::Max(IS+4,LH(TS,ECireFont::Bold)+Used)+10;
             }
         }
         PanelAlpha=Fade;
     }
 
-    // ---------- Info panel (centre): OVERVIEW | ABILITIES | LORE ----------
+    // ---------- Skin strip (Paragon reskins of the selected hero): Default + each skin as a chip; < > or [ ] cycle ----------
+    if(Selected&&!bSelectedBlocked&&SelectedSkins.Num()>0&&Shown==Selected)
     {
-        Ornate(InfoR,.88f,Gold);
-        static const TCHAR* Tabs[]={TEXT("OVERVIEW"),TEXT("ABILITIES"),TEXT("LORE")};
-        const float TabRowH=FMath::Max(30.f,LH(13.5f,ECireFont::Display)+12),TW3=InfoR.W/3.f;
-        for(int32 I=0;I<3;++I)
+        const int32 N=SelectedSkins.Num()+1;
+        const float AW=SkinH;const FRect LeftA{SkinR.X,SkinR.Y,AW,SkinH},RightA{SkinR.R()-AW,SkinR.Y,AW,SkinH};
+        const bool bOverL=Interactive&&Hit(LeftA.X,LeftA.Y,LeftA.W,LeftA.H),bOverR=Interactive&&Hit(RightA.X,RightA.Y,RightA.W,RightA.H);
+        CireUIStyle::Button(Pen(),LeftA.X,LeftA.Y,LeftA.W,LeftA.H,TEXT("<"),bOverL?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
+        CireUIStyle::Button(Pen(),RightA.X,RightA.Y,RightA.W,RightA.H,TEXT(">"),bOverR?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
+        Tip(TEXT("Previous skin"),TEXT("Also [ ."),LeftA.X,LeftA.Y,LeftA.W,LeftA.H);Tip(TEXT("Next skin"),TEXT("Also ] ."),RightA.X,RightA.Y,RightA.W,RightA.H);
+        // Chips: a window of skins centred on the current one, as many as fit.
+        const FRect Strip{LeftA.R()+6,SkinR.Y,RightA.X-6-(LeftA.R()+6),SkinH};
+        const auto SkinName=[&](int32 I){FString Name=TEXT("Default");if(I>0)SelectedSkins[I-1].Split(TEXT("|"),nullptr,&Name);return Name;};
+        const auto ChipW=[&](int32 I){return TW(SkinName(I),12.f,ECireFont::Heading)+22.f;};
+        int32 First=SkinIndex,Last=SkinIndex;float Used=ChipW(SkinIndex);
+        for(bool bGrew=true;bGrew;)
         {
-            const FRect R{InfoR.X+I*TW3,InfoR.Y+2,TW3,TabRowH};
-            const bool bActive=S.InfoTab==I,bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H);
-            Line(Tabs[I],R.X,R.Y+(TabRowH-LH(13.5f,ECireFont::Display))*.5f,R.W,13.5f,bActive?ThemeUI(248,236,208):bOver?Gold:ThemeUI(176,172,160),R,ECireFont::Display,1);
-            if(bActive){Panel(R.X+R.W*.25f,R.B()-2,R.W*.5f,2,ThemeUI(120,170,230));Diamond(R.X+R.W*.5f,R.B()-1,3,ThemeUI(160,200,240));}
-            if(bOver&&Clicked){S.InfoTab=I;Clicked=false;}
+            bGrew=false;
+            if(Last+1<N&&Used+6+ChipW(Last+1)<=Strip.W){Used+=6+ChipW(++Last);bGrew=true;}
+            if(First>0&&Used+6+ChipW(First-1)<=Strip.W){Used+=6+ChipW(--First);bGrew=true;}
         }
-        Panel(InfoR.X+8,InfoR.Y+2+TabRowH+2,InfoR.W-16,1,WithAlpha(Gold,.3f));
-        const FRect Body{InfoR.X+14,InfoR.Y+TabRowH+12,InfoR.W-28,BtnR.Y-6-(InfoR.Y+TabRowH+12)};
-        const float Age=static_cast<float>(Now-S.SplashSince),T=FMath::Clamp(Age/.35f,0.f,1.f);
-        PanelAlpha=Fade*T;
-        // Larger type when the panel has room (tall and wide screens).
-        const float TK=FMath::Clamp(FMath::Min(InfoH/200.f,CWc/560.f),1.f,1.3f);
-        const float HS=11.f*TK,HL=FMath::Max(LH(HS,ECireFont::Heading),LH(HS,ECireFont::Display)),BS=11.5f*TK,BL=LH(BS,ECireFont::Body);
-        const float HalfW=(Body.W-20)*.5f;
-        const FRect L{Body.X,Body.Y,HalfW,Body.H},Rr{Body.X+HalfW+20,Body.Y,HalfW,Body.H};
-        const Cires::RoleMask Bit=Cires::RoleBit(ShownPrimary);
-        if(S.InfoTab==0)
+        int32 Step=0,Jump=-1;
+        float X=Strip.X+(Strip.W-Used)*.5f;
+        for(int32 I=First;I<=Last;++I)
         {
-            // Base attributes + difficulty, combat style | class trait summary + opening ability.
-            float Y=L.Y;
-            Line(TEXT("BASE ATTRIBUTES"),L.X,Y,L.W*.6f,HS,Gold,L,ECireFont::Display);
-            for(int32 D=0;D<3;++D)Panel(L.R()-3*20+D*20,Y+HL*.5f-3,16,6,D<Shown->Difficulty?Gold:Faint);
-            Y+=HL+4;
-            struct FStatRow {const TCHAR* Key;int32 Value;const TCHAR* Stat;};
-            const FStatRow Rows[]={{TEXT("STRENGTH"),Shown->Strength,TEXT("strength")},{TEXT("AGILITY"),Shown->Agility,TEXT("agility")},{TEXT("INTELLIGENCE"),Shown->Intelligence,TEXT("intelligence")}};
-            const float SS=10.f*TK,SL=LH(SS,ECireFont::Heading);
-            const float RowStep=FMath::Clamp((L.H-HL-4-HL*2-10)/3.f,SL+8,SL+22);
-            for(const FStatRow& Row:Rows)
-            {
-                const bool bPrime=Shown->PrimaryStat==Row.Stat;
-                // champ-select-hq: readable stat rows: label and value on one baseline, value in large numerals, bar under both.
-                Txt(Row.Key,L.X,Y,SS,bPrime?Gold:ThemeUI(206,206,200),L,ECireFont::Heading);
-                const FString V=FString::FromInt(Row.Value);const float VS2=SS*1.3f;
-                Txt(V,L.R()-TW(V,VS2,ECireFont::Numbers),Y+SL-LH(VS2,ECireFont::Numbers),VS2,bPrime?BrightGold:Text,L,ECireFont::Numbers);
-                Bar(L.X,Y+SL+3,L.W,7,Row.Value/30.f,bPrime?Gold:ThemeUI(110,122,138));
-                Y+=RowStep;
-            }
-            const bool bRanged=Shown->BasicAttackRange>300;
-            Line(TEXT("COMBAT STYLE"),L.X,Y+2,L.W,HS,Gold,L,ECireFont::Display);
-            // str-scaling: level-1 health (starting-STR base + 10 per STR point); growth is +10 health per STR point.
-            const double StartHealth=Cires::StartingBaseHealth(Shown->Strength)+Shown->Strength*Cires::HealthPerStrength;
-            Line(FString::Printf(TEXT("%s  |  %s  |  %.1f m  |  %.1f s  |  %.0f HP"),bRanged?TEXT("RANGED"):TEXT("MELEE"),*WeaponLabel(*Shown),Shown->BasicAttackRange/100.f,Shown->AttackSeconds,StartHealth),L.X,Y+2+HL+2,L.W,BS,Text,L,ECireFont::Body);
-            Panel(Rr.X-10,Rr.Y,1,Rr.H,WithAlpha(Gold,.25f));
-            float RY=Rr.Y;
-            Line(TEXT("OPENING ABILITY"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;
-            RY+=Para(FString::Printf(TEXT("Right after lock-in you choose 1 of 4 %s actives. Passives and ultimates come from level 3."),RoleName(ShownPrimary)),Rr.X,RY,Rr.W,BS,ThemeUI(222,216,200),FMath::FloorToInt((Rr.B()-RY)/BL*.6f),Rr,ECireFont::Body)+8;
-            if(RY+HL+BL<=Rr.B())
-            {
-                const ACireGameState* ModeGS=World?World->GetGameState<ACireGameState>():nullptr;
-                const bool bShopMode=!ModeGS||ModeGS->ProgressionMode!=0; // rules-conformance: follows the picked game mode
-                Line(bShopMode?TEXT("SKILL SHOP"):TEXT("CLASSIC DRAFT"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;
-                Para(bShopMode?TEXT("Buy and level more skills from your role's pool after every cleared wave."):TEXT("New skill offers from your role's pool arrive as you level."),
-                    Rr.X,RY,Rr.W,BS,ThemeUI(222,216,200),FMath::FloorToInt((Rr.B()-RY)/BL),Rr,ECireFont::Body);
-            }
+            const float W=FMath::Min(ChipW(I),Strip.W);const FRect C{X,Strip.Y,W,SkinH};X+=W+6;
+            const bool bOn=I==SkinIndex,bOver=Interactive&&Hit(C.X,C.Y,C.W,C.H);
+            Panel(C.X,C.Y,C.W,C.H,bOn?SRGB(46,36,14,242):bOver?ThemeUI(24,30,42,235):ThemeUI(10,14,22,215));
+            Outline(C,bOn?1.5f:1.f,bOn?BrightGold:WithAlpha(GoldDim,bOver?1.f:.8f));
+            if(bOn){Panel(C.X+C.W*.25f,C.B()-2,C.W*.5f,2,BrightGold);}
+            Line(SkinName(I),C.X+11,C.Y+(SkinH-LH(12.f,ECireFont::Heading))*.5f,C.W-16,12.f,bOn?BrightGold:bOver?Gold:Text,C,ECireFont::Heading);
+            Tip(SkinName(I),FString::Printf(TEXT("Skin %d of %d. Cosmetic only: same kit and loadouts."),I+1,N),C.X,C.Y,C.W,C.H);
+            if(bOver&&Clicked&&!bOn){Jump=I;Clicked=false;}
         }
-        else if(S.InfoTab==1)
+        if(Clicked&&bOverL){Step=-1;Clicked=false;}else if(Clicked&&bOverR){Step=1;Clicked=false;}
+        if(Interactive&&!bTyping&&PlayerOwner){if(PlayerOwner->WasInputKeyJustPressed(EKeys::LeftBracket))Step=-1;if(PlayerOwner->WasInputKeyJustPressed(EKeys::RightBracket))Step=1;}
+        if((Step!=0||Jump>=0)&&!bLockedView)
         {
-            // What the skills are like (no list): themes, role pool size, where they come from.
-            float Y=L.Y;
-            Line(TEXT("SKILL STYLE"),L.X,Y,L.W,HS,Gold,L,ECireFont::Display);Y+=HL+4;
-            const TArray<FString> Bullets=HowItPlays(*Shown);
-            for(int32 I=0;I<Bullets.Num();++I)
-            {
-                const int32 MaxLines=FMath::FloorToInt((L.B()-Y)/BL);if(MaxLines<1)break;
-                Diamond(L.X+4,Y+BL*.5f,3,Gold);Y+=Para(Bullets[I],L.X+14,Y,L.W-14,BS,ThemeUI(222,216,200),FMath::Min(3,MaxLines),L,ECireFont::Body)+4;
-            }
-            const auto Pool=Cires::StarterSkillPoolForRoles(static_cast<Cires::RoleMask>(CireChampionProfiles::ProfileRoleMask(*Shown)));
-            int32 Actives=0,Passives=0,Ultimates=0;
-            for(const auto& Skill:Pool){Actives+=Skill.Kind==Cires::SkillKind::Active;Passives+=Skill.Kind==Cires::SkillKind::Passive;Ultimates+=Skill.Kind==Cires::SkillKind::Ultimate;}
-            Panel(Rr.X-10,Rr.Y,1,Rr.H,WithAlpha(Gold,.25f));
-            float RY=Rr.Y;
-            FString PoolName=RoleName(ShownPrimary);for(const auto Extra:HybridRoles(*Shown))PoolName+=FString(TEXT(" + "))+RoleName(Extra);
-            Line(PoolName+TEXT(" SKILL POOL"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+4;
-            RY+=Para(FString::Printf(TEXT("%d actives, %d passives and %d ultimates to draft from, shared with the rest of your role."),Actives,Passives,Ultimates),Rr.X,RY,Rr.W,BS,Text,3,Rr,ECireFont::Body)+8;
-            (void)Bit;
-            if(RY+HL<=Rr.B())
-            {
-                Line(TEXT("CLASS TRAIT"),Rr.X,RY,Rr.W,HS,Gold,Rr,ECireFont::Display);RY+=HL+2;
-                const FCireClassTrait Trait=CireClassTraits::Info(ShownPrimary);
-                Para(Trait.Name+TEXT(": ")+Trait.Summary,Rr.X,RY,Rr.W,BS,ThemeUI(222,216,200),FMath::FloorToInt((Rr.B()-RY)/BL),Rr,ECireFont::Body);
-            }
+            int32& Pick=S.SkinPick.FindOrAdd(Selected->Id);
+            Pick=Jump>=0?Jump:CireDraftBrowser::CycleSkin(Pick,Step,SelectedSkins.Num());
+            const FString NewKey=Pick>0?SkinKeyOf(SelectedSkins[Pick-1]):FString();
+            CireDraftAssets::RequestBody(Selected->Id,NewKey,true);
+            if(Controller)Controller->ServerSetChampionSkin(Selected->Id,NewKey);
+            PlayWowSound(4,.4f);
         }
-        else
-        {
-            float Y=Body.Y;
-            if(!Shown->Lore.IsEmpty())Y+=Para(TEXT("\"")+Shown->Lore+TEXT("\""),Body.X,Y,Body.W,14.f*TK,ThemeUI(226,190,120),3,Body,ECireFont::Body)+12;
-            const FString Facts=FString::Printf(TEXT("%s  |  %s  |  %s"),*Shown->ClassType,*Capitalized(Shown->Race),*WeaponLabel(*Shown));
-            Line(Facts,Body.X,Y,Body.W,12.5f*TK,Text,Body,ECireFont::Body);Y+=LH(12.5f*TK,ECireFont::Body)+10;
-            Para(Playstyle(*Shown),Body.X,Y,Body.W,BS,ThemeUI(206,200,186),FMath::FloorToInt((Body.B()-Y)/BL),Body,ECireFont::Body);
-        }
-        PanelAlpha=Fade;
     }
-
-    // ---------- SKIN (paragon-champions: Paragon reskins, cycled with the arrows or [ and ]) ----------
-    if(Selected&&!bSelectedBlocked)
+    else if(Selected&&!bSelectedBlocked&&!bLockedView)
     {
-        const TArray<FString> Skins=CireParagonChampions::Skins(Selected->Id);
-        static TMap<FString,int32> SkinPick; // 0 = default body
-        if(Skins.Num()>0)
-        {
-            int32& Pick=SkinPick.FindOrAdd(Selected->Id);Pick=FMath::Clamp(Pick,0,Skins.Num());
-            const float UIK=FMath::Clamp(BtnR.H/56.f,1.f,1.4f);const float SH=30.f*UIK,SW=FMath::Min(BtnR.W,360.f*UIK);const FRect SkinR{BtnR.X+(BtnR.W-SW)*.5f,BtnR.Y-SH-10.f*UIK,SW,SH};
-            const FRect LeftA{SkinR.X,SkinR.Y,SH,SH},RightA{SkinR.R()-SH,SkinR.Y,SH,SH};
-            const bool bOverL=Interactive&&Hit(LeftA.X,LeftA.Y,LeftA.W,LeftA.H),bOverR=Interactive&&Hit(RightA.X,RightA.Y,RightA.W,RightA.H);
-            CireUIStyle::Button(Pen(),SkinR.X,SkinR.Y,SkinR.W,SkinR.H,FString(),ECireButtonState::Normal,Gold,12.f);
-            CireUIStyle::Button(Pen(),LeftA.X,LeftA.Y,LeftA.W,LeftA.H,TEXT("<"),bOverL?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
-            CireUIStyle::Button(Pen(),RightA.X,RightA.Y,RightA.W,RightA.H,TEXT(">"),bOverR?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
-            FString SkinName=TEXT("Default");if(Pick>0){Skins[Pick-1].Split(TEXT("|"),nullptr,&SkinName);}
-            Line(FString::Printf(TEXT("SKIN  %s  (%d/%d)"),*SkinName.ToUpper(),Pick+1,Skins.Num()+1),SkinR.X+SH+6,SkinR.Y+(SH-LH(12.f*UIK,ECireFont::Heading))*.5f,SkinR.W-2*SH-12,12.f*UIK,BrightGold,SkinR,ECireFont::Heading,1,true);
-            int32 Step=0;
-            if(Clicked&&bOverL){Step=-1;Clicked=false;}else if(Clicked&&bOverR){Step=1;Clicked=false;}
-            if(Interactive&&!bTyping&&PlayerOwner){if(PlayerOwner->WasInputKeyJustPressed(EKeys::LeftBracket))Step=-1;if(PlayerOwner->WasInputKeyJustPressed(EKeys::RightBracket))Step=1;}
-            const FString Key=Pick>0?Skins[Pick-1].Left(Skins[Pick-1].Find(TEXT("|"))):FString();
-            if(Step!=0&&!bLockedView)
-            {
-                Pick=(Pick+Step+Skins.Num()+1)%(Skins.Num()+1);
-                const FString NewKey=Pick>0?Skins[Pick-1].Left(Skins[Pick-1].Find(TEXT("|"))):FString();
-                if(Controller)Controller->ServerSetChampionSkin(Selected->Id,NewKey);
-            }
-            if(Stage&&Stage->GetProfileId()==Selected->Id)Stage->SetPreviewSkin(Pick>0?Skins[Pick-1].Left(Skins[Pick-1].Find(TEXT("|"))):FString());
-            (void)Key;
-        }
+        // No skins (or a hover preview): a quiet hint line keeps the layout steady.
+        const FString Hint=Shown!=Selected?FString(TEXT("Previewing: click to select")):FString(TEXT("Default look"));
+        Line(Hint,SkinR.X,SkinR.Y+(SkinH-LH(12.f,ECireFont::Body))*.5f,SkinR.W,12.f,WithAlpha(Muted,.9f),SkinR,ECireFont::Body,1);
     }
     // ---------- LOCK IN ----------
     {
@@ -1516,7 +1687,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         Outline(BtnR.Inset(3),1,WithAlpha(CapC,.6f));
         const FString Main=bLockedView?FString(TEXT("LOCKED IN")):bPending?FString(TEXT("LOCKING IN...")):bSelectedBlocked?FString(TEXT("TAKEN BY "))+MateName(*SelectedTaker).ToUpper():Selected?FString(TEXT("LOCK IN  "))+FullName(*Selected).ToUpper():FString(TEXT("SELECT A CHAMPION"));
         const FString Sub=bLockedView?FString(TEXT("Next: choose your opening ability")):!Selected?FString(TEXT("Click a portrait to select it")):bSelectedBlocked?FString(TEXT("Pick another champion")):bPending?FString(TEXT("Waiting for the server")):FString(TEXT("Space or double-click also locks in"));
-        const float MS=17.f,SubS=10.5f,ML=LH(MS,ECireFont::Heading),SubL=LH(SubS,ECireFont::Body),BY=BtnR.Y+(BtnR.H-ML-SubL)*.5f;
+        const float MS=17.f,SubS=12.f,ML=LH(MS,ECireFont::Heading),SubL=LH(SubS,ECireFont::Body),BY=BtnR.Y+(BtnR.H-ML-SubL)*.5f;
         Line(Main,BtnR.X+14,BY,BtnR.W-28,MS,bCanLock||bLockedView?(bOver?FLinearColor(1.f,.93f,.72f,1):BrightGold):Muted,BtnR,ECireFont::Heading,1,true);
         Line(Sub,BtnR.X+14,BY+ML,BtnR.W-28,SubS,bCanLock||bLockedView?ThemeUI(226,220,204):Muted,BtnR,ECireFont::Body,1);
         bool bLock=false;
@@ -1524,7 +1695,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         if(Interactive&&!bTyping&&PlayerOwner&&PlayerOwner->WasInputKeyJustPressed(EKeys::SpaceBar))bLock=true;
         if(bLock&&bCanLock&&Controller){Controller->ServerDraftProfile(Selected->Id);S.LockRequestedAt=Now;S.LockRequestedId=Selected->Id;}
         if(!bLockedView&&!Hero->Notice.IsEmpty()&&Now-S.LockRequestedAt<6.0&&Now-S.LockRequestedAt>.5)
-            Line(Hero->Notice,CX0,InfoR.Y-LH(11,ECireFont::Body)-4,CWc,11,DpsColor,FigureR,ECireFont::Body,1);
+            Line(Hero->Notice,CX0,SkinR.Y-LH(12,ECireFont::Body)-4,CWc,12,DpsColor,FigureR,ECireFont::Body,1);
     }
     // Taglines under the panels on tall screens.
     if(bTagline)
@@ -1640,17 +1811,19 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     {
         auto& G=S.Gallery;
         // Filter: -1 all, 0 tank, 1 dps, 2 support. Empty Select = nothing chosen yet. Timer = seconds shown.
-        struct FShot{const TCHAR* Name;int32 Filter;const TCHAR* Hover;const TCHAR* Select;int32 Tab;bool bOutro;float Timer;const TCHAR* Search;};
+        // champ-select: Page (-1 = follow the selection), Stat 0 any / 1 STR / 2 AGI / 3 INT, Source 0 any / 1 authored / 2 Paragon, Skin index.
+        struct FShot{const TCHAR* Name;int32 Filter;const TCHAR* Hover;const TCHAR* Select;int32 Tab;bool bOutro;float Timer;const TCHAR* Search;int32 Page=-1;int32 Stat=0;int32 Source=0;int32 Skin=0;};
         static const FShot Shots[]={
-            {TEXT("01_browse_all"),-1,TEXT(""),TEXT(""),0,false,84.f,TEXT("")},
+            {TEXT("01_browse_all"),-1,TEXT(""),TEXT(""),0,false,84.f,TEXT(""),0},
             {TEXT("02_tank_hover_knight"),0,TEXT("knight"),TEXT(""),0,false,77.f,TEXT("")},
-            {TEXT("03_tank_selected_knight"),0,TEXT(""),TEXT("knight"),0,false,69.f,TEXT("")},
-            {TEXT("04_dps_selected_hybrid_wizard"),1,TEXT(""),TEXT("wizard"),0,false,61.f,TEXT("")},
-            {TEXT("05_support_abilities_hover_keeper"),2,TEXT("keeper_of_light"),TEXT("wizard"),1,false,52.f,TEXT("")},
-            {TEXT("06_teammate_locked_dryad_lore"),2,TEXT("dryad"),TEXT("whisp"),2,false,41.f,TEXT("")},
+            {TEXT("03_selected_knight_details"),0,TEXT(""),TEXT("knight"),0,false,69.f,TEXT("")},
+            {TEXT("04_paragon_selected_skin_strip"),-1,TEXT(""),TEXT("pg_greystone"),0,false,61.f,TEXT(""),-1,0,0,1},
+            {TEXT("05_page_two"),-1,TEXT(""),TEXT(""),0,false,56.f,TEXT(""),1},
+            {TEXT("06_filter_int_paragon"),-1,TEXT(""),TEXT("pg_gideon"),0,false,47.f,TEXT(""),-1,3,2},
             {TEXT("07_search_golem"),-1,TEXT("ether_golem_support"),TEXT(""),0,false,33.f,TEXT("golem")},
-            {TEXT("08_timer_low_behemoth"),-1,TEXT(""),TEXT("totemic_behemoth"),0,false,6.f,TEXT("")},
-            {TEXT("09_locked_in_knight"),-1,TEXT(""),TEXT("knight"),0,true,0.f,TEXT("")}};
+            {TEXT("08_teammate_locked_dryad"),2,TEXT("dryad"),TEXT("whisp"),0,false,41.f,TEXT("")},
+            {TEXT("09_timer_low_behemoth"),-1,TEXT(""),TEXT("totemic_behemoth"),0,false,6.f,TEXT("")},
+            {TEXT("10_locked_in_knight"),-1,TEXT(""),TEXT("knight"),0,true,0.f,TEXT("")}};
         // new-champions: -CireDraftGalleryChampions=a,b,... replaces the fixed states with each champion
         // selected (overview) and on its abilities tab, so new rosters can be reviewed in champion select.
         static TArray<FShot> ShotList;static TArray<FString> ShotStrings;
@@ -1687,12 +1860,23 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 if(A.Kind!=2)
                 {
                     MinText=FMath::Min(MinText,A.Size);
-                    if(A.Size<9.4f)Issues.Add(FString::Printf(TEXT("text '%s' too small (%.1f)"),*A.What,A.Size));
+                    if(A.Size<11.95f)Issues.Add(FString::Printf(TEXT("text '%s' too small (%.1f)"),*A.What,A.Size)); // champ-select: 12 = 18 px at 1080p, 15 px at 900p
                 }
-                if(A.Kind==1){++Names;MinName=FMath::Min(MinName,A.Size);if(A.Size<10.f)Issues.Add(FString::Printf(TEXT("card name '%s' too small (%.1f)"),*A.What,A.Size));}
+                if(A.Kind==1){++Names;MinName=FMath::Min(MinName,A.Size);if(A.Size<11.95f)Issues.Add(FString::Printf(TEXT("card name '%s' too small (%.1f)"),*A.What,A.Size));}
                 FString What=A.What.Replace(TEXT("\\"),TEXT("\\\\")).Replace(TEXT("\""),TEXT("\\\""));
                 Json+=FString::Printf(TEXT("    {\"kind\": %d, \"what\": \"%s\", \"size\": %.1f, \"rect\": [%.1f, %.1f, %.1f, %.1f], \"box\": [%.1f, %.1f, %.1f, %.1f], \"ok\": %s}%s\n"),
                     A.Kind,*What,A.Size,A.Rect.X,A.Rect.Y,A.Rect.W,A.Rect.H,A.Box.X,A.Box.Y,A.Box.W,A.Box.H,bInBox&&bOnScreen?TEXT("true"):TEXT("false"),I+1<S.Audit.Num()?TEXT(","):TEXT(""));
+            }
+            // champ-select: no two text runs may overlap (more than 25% of the smaller one), and no two cards.
+            int32 Overlaps=0;
+            for(int32 I=0;I<S.Audit.Num();++I)for(int32 J=I+1;J<S.Audit.Num();++J)
+            {
+                const FAuditItem& A=S.Audit[I];const FAuditItem& B=S.Audit[J];
+                if((A.Kind==2)!=(B.Kind==2))continue;
+                const float IW=FMath::Min(A.Rect.R(),B.Rect.R())-FMath::Max(A.Rect.X,B.Rect.X),IH=FMath::Min(A.Rect.B(),B.Rect.B())-FMath::Max(A.Rect.Y,B.Rect.Y);
+                if(IW<=1.f||IH<=1.f)continue;
+                const float Smaller=FMath::Max(1.f,FMath::Min(A.Rect.W*A.Rect.H,B.Rect.W*B.Rect.H));
+                if(IW*IH>(A.Kind==2?.02f:.25f)*Smaller&&++Overlaps<=8)Issues.Add(FString::Printf(TEXT("overlap '%s' / '%s'"),*A.What,*B.What));
             }
             bool bTitle=false;for(const FAuditItem& A:S.Audit)bTitle|=A.Kind==3;
             if(!bTitle)Issues.Add(TEXT("title not drawn"));
@@ -1740,17 +1924,19 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             const FShot& Shot=ShotList[G.Stage];
             DebugSetPointer(FVector2D(VW-1.f,VH-1.f)); // keep the real cursor from raising tooltips
             S.Filter=Shot.Filter;S.InfoTab=Shot.Tab;S.ForcedHover=Shot.Hover;S.bForceOutro=Shot.bOutro;S.ForcedTimer=Shot.Timer;
-            S.bChosen=*Shot.Select!=0;S.SelectedId=Shot.Select;if(S.bChosen)S.CursorId=Shot.Select;
+            S.bChosen=*Shot.Select!=0&&CireChampionRoster::Find(Shot.Select)!=nullptr;S.SelectedId=Shot.Select;if(S.bChosen)S.CursorId=Shot.Select;
+            S.ForcedPage=Shot.Page;S.Query.Stat=CireDraftBrowser::EStat(FMath::Clamp(Shot.Stat,0,3));S.Query.Source=CireDraftBrowser::ESource(FMath::Clamp(Shot.Source,0,2));
+            if(S.bChosen)S.SkinPick.Add(Shot.Select,Shot.Skin);
             if(Controller){Controller->DraftSearch=Shot.Search;Controller->bDraftSearch=*Shot.Search!=0;}
             FString Want=FString(Shot.Hover).IsEmpty()?FString(Shot.Select):FString(Shot.Hover);
             if(Want.IsEmpty()&&S.Tiles.IsValidIndex(S.Cursor))Want=S.Tiles[S.Cursor].Profile->Id;
             // Freshly imported textures compile asynchronously in -game: wait until the backdrop
             // and every visible portrait are real (not the default checker).
-            bool bTexturesReady=true;
-            if(UTexture2D* Bg=Background(S.BgId))bTexturesReady&=!Bg->IsDefaultTexture();
-            for(const FTile& T:S.Tiles)if(UTexture2D* Face=Portrait(T.Profile->Id))bTexturesReady&=!Face->IsDefaultTexture();
+            // champ-select-perf: textures stream asynchronously: wait for the scene of the shown hero and every visible portrait.
+            bool bTexturesReady=S.BgId==CachedBackgroundId(S.SplashId)&&(!CireDraftAssets::HasBackground(S.BgId)||Background(S.BgId)!=nullptr);
+            for(const FTile& T:S.Tiles)bTexturesReady&=!CireDraftAssets::HasPortrait(T.Profile->Id)||Portrait(T.Profile->Id)!=nullptr;
             const bool bStageReady=Want.IsEmpty()||(Stage&&Stage->GetProfileId()==Want&&Stage->IsPreviewReady()&&Stage->SecondsShown()>2.6f&&Stage->FramesShown()>60);
-            const bool bReady=bStageReady&&bTexturesReady&&Now-G.Started>6.0&&Now-S.SplashSince>1.0&&Now-G.StageAt>.5&&Now-S.BgSince>.8;
+            const bool bReady=bStageReady&&bTexturesReady&&Now-G.Started>6.0&&Now-S.SplashSince>1.0&&Now-G.StageAt>.5&&Now-S.BgSince>.8&&Now-S.LiveSince>.6&&Now-S.PageFlashAt>.4;
             if(G.ShotAt==0&&bReady)
             {
                 const FString File=FPaths::Combine(G.Directory,FString(Shot.Name)+TEXT(".png"));
@@ -1789,13 +1975,13 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         }
         else if(Now-G.StageAt>1.0)
         {
-            G.bDone=true;S.bForceOutro=false;S.ForcedTimer=-1;S.InfoTab=0;if(Controller){Controller->DraftSearch.Reset();Controller->bDraftSearch=false;}
+            G.bDone=true;S.bForceOutro=false;S.ForcedTimer=-1;S.InfoTab=0;S.ForcedPage=-1;if(Controller){Controller->DraftSearch.Reset();Controller->bDraftSearch=false;}
             for(const FString& File:G.Files)G.bPass&=IFileManager::Get().FileSize(*File)>20000;
             G.bPass&=G.Files.Num()==ShotCount&&G.LayoutFailures==0;
             UE_LOG(LogCireDraft,Display,TEXT("CIRE_DRAFT_GALLERY_%s captures=%d layout_failures=%d directory=%s"),G.bPass?TEXT("PASS"):TEXT("FAIL"),G.Files.Num(),G.LayoutFailures,*G.Directory);
             FPlatformMisc::RequestExitWithStatus(false,G.bPass?0:1);
         }
-        if(!G.bDone&&Now-G.Started>240){G.bDone=true;UE_LOG(LogCireDraft,Error,TEXT("CIRE_DRAFT_GALLERY_FAIL timeout"));FPlatformMisc::RequestExitWithStatus(false,1);}
+        if(!G.bDone&&Now-G.Started>480){G.bDone=true;UE_LOG(LogCireDraft,Error,TEXT("CIRE_DRAFT_GALLERY_FAIL timeout"));FPlatformMisc::RequestExitWithStatus(false,1);}
     }
 #endif
     ResetTransform();

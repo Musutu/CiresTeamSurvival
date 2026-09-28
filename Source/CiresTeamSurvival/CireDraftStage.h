@@ -29,6 +29,12 @@ public:
     const FString& GetProfileId() const { return ProfileId; }
     /** kit-editor: the local preview champion (effect placement preview); null while none is shown. */
     ACireHero* GetPreviewHero() const { return Preview; }
+    // champ-select-perf: recently shown bodies stay spawned (hidden, not ticking) so a revisit is instant.
+    // Capacity counts the visible preview too (1 = no pool: every switch destroys and respawns).
+    void SetPoolCapacity(int32 Capacity);
+    bool IsPooled(const FString& Id) const { return Pool.Contains(Id); }
+    int32 PooledCount() const { return Pool.Num(); }
+    static int32& PoolReuses() { static int32 Count = 0; return Count; }
     // paragon-champions: show the preview in a skin ("" = default); the body re-binds on the next update.
     void SetPreviewSkin(const FString& Skin);
 
@@ -90,6 +96,12 @@ public:
     static int32& ShowCount() { static int32 Count = 0; return Count; }
 private:
     FShowTimings LastShow;
+    void ParkPreview();
+    void TrimPool();
+    UPROPERTY(Transient) TMap<FString, TObjectPtr<ACireHero>> Pool;
+    TArray<FString> PoolOrder; // oldest first
+    int32 PoolCapacity = 4;
+    bool bReusedFromPool = false;
     void BuildStage();
     void FitStage(float BodyHeight);
     void FrameCamera(float DeltaSeconds, bool bSnap);
