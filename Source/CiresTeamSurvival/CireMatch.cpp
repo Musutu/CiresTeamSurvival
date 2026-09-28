@@ -104,10 +104,18 @@ void TickServerProbe(ACireGameMode* Mode) {
             Probe.PlayerPawn=Hero;
             Probe.MovementOrigin=Hero->GetActorLocation();
             Mode->SpawnBots();
+            // The probe validates the client's hero to the gold / level / CDR: the nine bots must be inert. Movement and auto-attack
+            // were not enough once the Paragon roster joined the bot pool (playtest-net 2026-09-28): bots still cast (Polymorph on
+            // nearby monsters), their summons fought, and team auras / shared rewards could touch the probe hero. Freeze the bot
+            // pawns and their AI, and remove their summons / pets.
             for(auto* Bot:Mode->Heroes) if(IsValid(Bot)&&Bot->bBot) {
                 Bot->GetCharacterMovement()->DisableMovement();
                 Bot->bAutoAttack=false;
+                Bot->SetActorTickEnabled(false);
+                if(AController* C=Bot->GetController())C->SetActorTickEnabled(false);
             }
+            for(TCireActorIterator<ACireSummon> It(Mode->GetWorld());It;++It)
+                if(ACireHero* Owner=It->GetOwnerHero();IsValid(Owner)&&Owner->bBot)It->Destroy();
             FActorSpawnParameters Params;
             Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
             // The hero joins at its gate. A fixture spawned inside (or with its capsule touching) the team's
@@ -142,7 +150,10 @@ void TickServerProbe(ACireGameMode* Mode) {
         const bool Valid=Hero->Archetype==2&&Hero->Gold==120&&Hero->Skills.Num()==0&&Hero->Cooldowns.Num()==0&&
             Hero->GearRank==0&&FMath::IsNearlyZero(Hero->CDR)&&Hero->Level==1&&
             FVector::Dist2D(Probe.MovementOrigin,Hero->GetActorLocation())>=100;
-        if(!Valid) {Fail(TEXT("server validation state mismatch"));return;}
+        if(!Valid) {
+            UE_LOG(LogCire,Error,TEXT("CIRE_NET_SERVER_STATE archetype=%d gold=%d skills=%d cooldowns=%d gear=%d cdr=%.3f level=%d moved_cm=%.1f"),Hero->Archetype,Hero->Gold,Hero->Skills.Num(),
+                Hero->Cooldowns.Num(),Hero->GearRank,Hero->CDR,Hero->Level,FVector::Dist2D(Probe.MovementOrigin,Hero->GetActorLocation()));
+            Fail(TEXT("server validation state mismatch"));return;}
         Probe.ActionsVerified=true;
         UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_ACTIONS_PASS draft=2 gold=120 skills=0 illegal_shop_rejected=1 movement_cm=%.1f"),FVector::Dist2D(Probe.MovementOrigin,Hero->GetActorLocation()));
         Probe.VerifiedAt=FPlatformTime::Seconds();
@@ -169,7 +180,10 @@ void TickServerProbe(ACireGameMode* Mode) {
         const bool Valid=Mode->Heroes.Contains(Hero)&&Mode->Heroes.Num()==10&&Counts[0]==5&&Counts[1]==5&&
             Hero->bDrafted&&Hero->Archetype==2&&Hero->Level==1&&Hero->Gold==Probe.FieldGold&&Probe.FieldGold<500&& // shop-anywhere: the mid-wave out-of-town buy stuck
             Hero->Inventory&&Hero->Inventory->ToRules().CountOf("sandglass_charm")==1;
-        if(!Valid) {Fail(TEXT("disconnect did not preserve champion/team membership"));return;}
+        if(!Valid) {
+            UE_LOG(LogCire,Error,TEXT("CIRE_NET_SERVER_STATE heroes=%d teams=%d/%d contains=%d drafted=%d archetype=%d level=%d gold=%d expected_gold=%d charms=%d"),Mode->Heroes.Num(),Counts[0],Counts[1],
+                Mode->Heroes.Contains(Hero),Hero->bDrafted,Hero->Archetype,Hero->Level,Hero->Gold,Probe.FieldGold,Hero->Inventory?Hero->Inventory->ToRules().CountOf("sandglass_charm"):-1);
+            Fail(TEXT("disconnect did not preserve champion/team membership"));return;}
         UE_LOG(LogCire,Display,TEXT("CIRE_NET_SERVER_PASS heroes=%d teams=%d/%d preserved_pawn=%s level=%d bot=1"),Mode->Heroes.Num(),Counts[0],Counts[1],*Hero->GetName(),Hero->Level);
         Probe.Done=true;FPlatformMisc::RequestExitWithStatus(false,0);
     }

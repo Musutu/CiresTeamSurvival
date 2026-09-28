@@ -73,7 +73,10 @@ def main() -> int:
     output = args.project.resolve().parent / "Saved" / "NetworkSmoke" / stamp
     output.mkdir(parents=True, exist_ok=False)
     server_log, client_log = output / "server.log", output / "client.log"
-    common = ["-nullrhi", "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-ExecCmds=t.MaxFPS 60"]
+    # playtest-net: -AssetGatherAll=false: a -game / -server process never writes the asset registry cache, so each probe
+    # re-gathered all ~100k packages (66 s+ with the Paragon packs, past the 90 s probe window on a loaded PC) before its
+    # first frame. The smoke needs no full registry; the game resolves packages directly (DoesPackageExist / LoadObject).
+    common = ["-nullrhi", "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-AssetGatherAll=false", "-ExecCmds=t.MaxFPS 60"]
     server_command = [str(args.editor), str(args.project.resolve()), "/Game/Maps/Citadel", "-server", f"-port={args.port}",
                       "-CireNetServerProbe", f"-CireNetProbeTimeout={args.startup_timeout + args.probe_timeout:.0f}", f"-abslog={server_log}", *common]
     client_command = [str(args.editor), str(args.project.resolve()), f"127.0.0.1:{args.port}", "-game",
