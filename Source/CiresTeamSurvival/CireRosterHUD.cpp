@@ -992,6 +992,9 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 const float TypeW=FMath::Clamp(TW(TypeLabel,BS,ECireFont::Heading)+34,96.f,200.f);
                 const float TX=LX+CW-ModeW-10-TypeW;
                 S.TypeR=FRect{TX,PY,TypeW,BH};
+                // Caption left of the box at the GAME MODE caption size (readability floor), only when it fits.
+                const FString TypeCap=TEXT("GAME TYPE");const float TypeCapW=TW(TypeCap,CapS,ECireFont::Heading)+12;
+                if(bCaption&&TX-TypeCapW>=MinX)Txt(TypeCap,TX-TypeCapW,PY+(BH-LH(CapS,ECireFont::Heading))*.5f,CapS,Gold,FRect{TX-TypeCapW,PY,TypeCapW,BH},ECireFont::Heading);
                 if(TX>=MinX)
                 {
                     const FRect& R=S.TypeR;
@@ -1000,9 +1003,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                     if(FlashAge<.9f)CireUIStyle::Glow(Pen(),R.X-8,R.Y-8,R.W+16,R.H+16,FLinearColor(1.f,.8f,.35f,.55f*(1.f-FlashAge/.9f)));
                     Panel(R.X,R.Y,R.W,R.H,S.bTypeDropdown?SRGB(46,36,14,242):bOver&&bCan?SRGB(24,30,42,235):SRGB(10,14,22,215));
                     Outline(R,1,S.bTypeDropdown||(bOver&&bCan)?Gold:WithAlpha(GoldDim,.9f));
-                    const bool bTwoLines=BH>=30.f;
-                    if(bTwoLines)Line(TEXT("GAME TYPE"),R.X+8,R.Y+3,R.W-24,7.5f,Muted,R,ECireFont::Heading);
-                    Line(TypeLabel,R.X+8,bTwoLines?R.B()-LH(BS,ECireFont::Heading)-3:R.Y+(BH-LH(BS,ECireFont::Heading))*.5f,R.W-26,BS,Text,R,ECireFont::Heading);
+                    Line(TypeLabel,R.X+8,R.Y+(BH-LH(BS,ECireFont::Heading))*.5f,R.W-26,BS,Text,R,ECireFont::Heading);
                     const float CX=R.R()-11,CY=R.Y+R.H*.5f; // chevron
                     if(bCan)Tri(FVector2D(CX-4,CY-2),FVector2D(CX+4,CY-2),FVector2D(CX,CY+3),S.bTypeDropdown?BrightGold:Gold);
                     else{const float LkX=R.R()-9,LkY=R.Y+7;Panel(LkX-3,LkY+2,7,5,Muted);Circle(LkX+.5f,LkY+1,2.5f,Muted,1.f,10);}

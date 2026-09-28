@@ -41,7 +41,7 @@ in `CireWaves.cpp` is called for every live (non-smoke) wave just before it is q
 Extend it to swap in a bonus loot stage / special wave: never replace `Type == Boss`, stay deterministic in
 `(Seed, GlobalWave)`. `Planned` already has packs expanded (rows carry `Pack`), damage flags and Sudden Death scaling.
 
-## Done (all code compiles; link blocked by F: disk full, 2026-09-28)
+## Done (built, latest main merged, all three gates PASS, 2026-09-28)
 - Waves.json: 25 waves (5 cycles x 5), packs (1-5: 5x5, 6-25: 7x5-7), match schedule, Sudden Death, monster rules, live scale.
 - Runtime: pack expansion (deterministic, per-pack path, pack gap), -20% speed, armored -50% / slow immune / 2x stun,
   damage-off (passive) units, fight-back packs, live scale rescaling living units, Sudden Death (loop waves 21-25, x2),
@@ -52,8 +52,9 @@ Extend it to swap in a bonus loot stage / special wave: never replace `Type == B
 - Docs/Waves.md "Playtest 6" section.
 
 ## Not done / Next
-- Link + run the three gates (F: was at 0 bytes free: LNK1106 / LNK1318). Then merge latest main and rerun.
-- Eye-check the GAME TYPE picker placement in champion select at 1080p / narrow widths.
+- Eye-checked: GAME TYPE sits left of GAME MODE at 1920x1080 and 1280x720 (draft gallery shot 01 PASS both). The open
+  dropdown list is not covered by a gallery state; check it by hand at the playtest.
+- arena-flow's schedule adapter calls CireWaveDirector::Schedule at merge (coordinator); merge waves-modes first.
 
 ## Assumptions / questions for Eric
 - Armored waves: -50% on top of the -20% all-wave speed (0.8 x 0.5 = 0.4 of their old pace). "Path blocking" = walls /
@@ -72,5 +73,10 @@ Extend it to swap in a bonus loot stage / special wave: never replace `Type == B
 - `CireNPCCombat.cpp`: slow factor skipped for slow-immune units; damage-off units use the marcher branch.
 - `CireCrowdControl.cpp`: Stun x `StunMultiplier`, Slow returns 0 on slow-immune units.
 
-## Gate logs
-- (pending)
+## Gate logs (branch = latest main a5e640e1 + waves-modes)
+- Native: PASS (`CIRE_WAVES_TESTS_PASS checks=123`, `CIRE_COMBAT_EXPANSION_PASS`) Saved/ExpansionChecks/20260928T051220200633Z/report.json.
+  Run with --timeout 480: at 240 the probe passed (~187 s) but editor shutdown under the Paragon asset-registry
+  scan pushed it past 240 s (3 runs; pack-usage-3 saw the same). Paragon has since been unlinked.
+- Network: PASS Saved/NetworkSmoke/20260928T051642250300Z/report.json (illegal action rejected, rejection_ack=1: probe intent intact).
+- Interface: PASS Saved/InterfaceSmoke/20260928T051828528466Z/report.json (phases survival/prep/arena/recovery/survival).
+- Draft gallery (picker eye-check): PASS Saved/DraftGalleryChecks/20260928T054323246193Z/report.json.
