@@ -9,6 +9,7 @@
 #include "CireAbilityShapes.h" // ability-vfx
 #include "CireAbilityVFX.h" // ability-vfx
 #include "CireFabVFX.h" // fab-integration
+#include "CireKitEditor.h" // kit-editor: per-champion effect placement
 #include "Components/AudioComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Engine/World.h"
@@ -697,9 +698,11 @@ void ACireSpellVisual::UpdateFabVFX()
     // ground overlay is fitted to the true zone radius instead (below) and never grows.
     float Scale=Entry->Scale*Extra*(bFollowArea?1.f:Size)*(bFabGround?1.f:FxScale);
     if(bFabGround)Scale=FMath::Clamp(FabTargetRadius*CireFabVFX::GroundFitFraction/FMath::Max(1.f,CireFabVFX::NativeGroundRadius(System)),.02f,5.f);
-    UFXSystemComponent* C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)
+    // kit-editor: a champion's saved effect placement (socket / offset / scale / tint) for its cast of this ability.
+    UFXSystemComponent* C=FabRole==CireFabVFX::ERole::Cast&&bAttach&&!bLoop?CireKitEditor::SpawnPlacedCast(GetWorld(),Skill,Start,System,Scale,Entry):nullptr;
+    if(!C){C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)
         :CireFabVFX::SpawnAt(GetWorld(),System,GetActorLocation(),GetActorRotation(),Scale);
-    CireFabVFX::ApplyEntryTint(C,*Entry); // pack-usage: recolour variants
+    CireFabVFX::ApplyEntryTint(C,*Entry);} // pack-usage: recolour variants (a placed cast applies the entry tint, then its own)
     FabFX=C;FabScale=Scale;
     if(bFabGround&&C)CireFabVFX::DimColors(C,CireAbilityVFX::FabGroundBrightness(CireAbilityVFX::GroundIntensity(GetWorld()))); // ground overlays follow the slider
     UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_SPAWN skill=%s role=%s school=%s system=%s ok=%d"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole),

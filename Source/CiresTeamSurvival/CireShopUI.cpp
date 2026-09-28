@@ -2568,3 +2568,83 @@ bool CireShopUI::ProbeConfirmDialog(ACireHUD& HUD, ACireHero* Hero, FString& Det
 
 void CireShopUI::DebugReset() { const FName Keep = State.Selected; State = FShopState(); State.Selected = Keep; }
 #endif
+
+// ------------------------------------------------------------------ kit-editor: shared Skill Shop card pieces (Hero Creator)
+// The Hero Creator (CireKitEditorUI.cpp) picks spells with the same scroll cards, sections and tooltips as the Skill Shop.
+int32 CireShopUI::SkillSectionCount() { return SectionCount; }
+void CireShopUI::SkillSectionInfo(int32 Index, FString& OutId, FString& OutLabel, FString& OutChip, FLinearColor& OutColor)
+{
+    const FSectionDef& D = SkillSections[FMath::Clamp(Index, 0, SectionCount - 1)];
+    OutId = D.Id; OutLabel = D.Label; OutChip = D.Chip; OutColor = D.Color;
+}
+int32 CireShopUI::SkillSectionOf(const FString& SkillId) { return SectionOf(SkillId); }
+void CireShopUI::DrawSkillMedallion(const FCireUIPainter& P, const FString& Id, float CX, float CY, float R, float Time)
+{
+    SkillMedallion(P, Id, CX, CY, R, 0, Time);
+}
+void CireShopUI::DrawSkillCard(const FCireUIPainter& P, const FString& Id, float X, float Y, float W, float H, float Time, float Lift, bool bDim,
+    const FString& Caption, const FString& Footer, FLinearColor FooterColor)
+{
+    using namespace CireShopArt;
+    const EScroll Tier = ScrollOf(CireSkillShop::KindOf(Id));
+    const FRectF Pr = Scroll(P, Tier, X, Y, W, H, Time, GetTypeHash(Id), bDim ? .7f : 0.f, Lift);
+    const float Mid = Pr.X + Pr.W * .5f;
+    P.Rect(Pr.X - 3, Pr.Y + 2, Pr.W + 6, Pr.H - 4, FLinearColor(.93f, .86f, .70f, Tier == EScroll::Prismatic ? .78f : .45f));
+    const float Ring = FMath::Min(Pr.W * .34f, 30.f);
+    float TY = Pr.Y + 4;
+    SkillMedallion(P, Id, Mid, TY + Ring, Ring, 0, Time);
+    TY += Ring * 2 + 5;
+    TY += CentredWrap(P, ACireHero::SkillName(Id), Mid, TY, Pr.W + 8, 11.f, CireShopArt::Ink, ECireFont::Bold, 2, 0.f) * 11.5f + 1;
+    if (!Caption.IsEmpty())
+    {
+        P.Text(Caption, Mid - P.TextWidth(Caption, 8.5f, ECireFont::Heading) * .5f, TY, 8.5f, InkRed, ECireFont::Heading, false, false);
+        TY += 11.5f;
+    }
+    if (const FCireAbilityDef* Def = CireAbilityDB::Find(Id))
+    {
+        TArray<FString> Tags;
+        for (const FString& Tag : Def->EffectTags) if (Tag != TEXT("Damage") && Tags.Num() < 2) Tags.Add(Tag);
+        if (Tags.IsEmpty() && Def->EffectTags.Contains(TEXT("Damage"))) Tags.Add(TEXT("Damage"));
+        float TW = 0;
+        for (const FString& Tag : Tags) TW += P.TextWidth(Tag.ToUpper(), 7.5f, ECireFont::Heading) + 10 + 3;
+        float TX = Mid - (TW - 3) * .5f;
+        for (const FString& Tag : Tags)
+        {
+            const FString Upper = Tag.ToUpper();
+            const float W1 = P.TextWidth(Upper, 7.5f, ECireFont::Heading) + 10;
+            P.Rect(TX, TY, W1, 12, TagColor(Tag));
+            P.Text(Upper, TX + 5, TY + .5f, 7.5f, FLinearColor::White, ECireFont::Heading, false, false);
+            TX += W1 + 3;
+        }
+        if (Tags.Num()) TY += 15;
+        if (Pr.Y + Pr.H - TY > 10)
+        {
+            const FCireAbilityStats Now1 = CireAbilityDB::EffectiveStats(Id, 1);
+            FString Key;
+            if (Now1.Effect > 0) Key = FString::Printf(TEXT("%s %s"), *Num(Now1.Effect), *ShortLabel(Def->EffectLabel));
+            if (Now1.Cooldown > 0) Key += (Key.IsEmpty() ? TEXT("") : TEXT("  ·  ")) + FString::Printf(TEXT("%ss"), *Num(Now1.Cooldown));
+            Key = P.Fit(Key, 9.f, Pr.W + 10, ECireFont::Bold);
+            P.Text(Key, Mid - P.TextWidth(Key, 9.f, ECireFont::Bold) * .5f, TY, 9.f, FLinearColor(.01f, .06f, .01f, 1), ECireFont::Bold, false, false);
+        }
+    }
+    if (!Footer.IsEmpty())
+    {
+        const float RollH = H - (Pr.Y - Y) - Pr.H;
+        const float PY = Pr.Y + Pr.H + RollH * .5f, PS = 10.f;
+        const float PW = P.TextWidth(Footer, PS, ECireFont::Numbers);
+        P.Rect(X + W * .5f - PW * .5f - 8, PY - PS * .75f, PW + 16, PS * 1.5f, FLinearColor(.05f, .035f, .02f, .92f));
+        P.Line(X + W * .5f - PW * .5f - 8, PY - PS * .75f, X + W * .5f + PW * .5f + 8, PY - PS * .75f, Filigree * .8f, .8f);
+        P.Line(X + W * .5f - PW * .5f - 8, PY + PS * .75f, X + W * .5f + PW * .5f + 8, PY + PS * .75f, Filigree * .8f, .8f);
+        P.Text(Footer, X + W * .5f - PW * .5f, PY - PS * .64f, PS, FooterColor, ECireFont::Numbers, false, false);
+    }
+}
+void CireShopUI::TipSkill(ACireHUD& HUD, const ACireHero* Hero, const FString& Id, const FString& Footer)
+{
+    const FString Db = CireKits::DescribeFor(Hero, Id, 1);
+    FString Body = Db.IsEmpty() ? ACireHero::SkillDescription(Id) : Db;
+    const FCireAbilityDef* Def = CireAbilityDB::Find(Id);
+    Body += FString::Printf(TEXT("\n%s  |  %s  |  %s"), *FString(SkillSections[SectionOf(Id)].Label), *CireSkillShop::SchoolOf(Id), *CireSkillShop::RoleTags(Id));
+    if (Def && Def->EffectTags.Num()) Body += TEXT("\nTags: ") + FString::Join(Def->EffectTags, TEXT(", "));
+    if (!Footer.IsEmpty()) Body += TEXT("\n") + Footer;
+    Tip(HUD, ACireHero::SkillName(Id), Body);
+}

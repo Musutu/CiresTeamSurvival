@@ -1,4 +1,5 @@
 #include "CireChampionProfiles.h"
+#include "CireKitEditor.h" // kit-editor
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireChampionRoster.h"
@@ -119,7 +120,9 @@ bool ACireHero::DraftProfile(const FString& Id)
     bDrafted=true;Recalculate(true);
     // One starting skill point: the opening offer (primary-role actives) is ready immediately;
     // bots pick theirs in BotThink, humans get the opening cards.
-    Notice=TEXT("Champion bound. Choose your opening ability.");RefreshOffer();ForceNetUpdate();return true;
+    Notice=TEXT("Champion bound. Choose your opening ability.");
+    CireKitEditor::GrantOnDraft(this); // kit-editor: the champion's saved base kit (template grantOnDraft)
+    RefreshOffer();ForceNetUpdate();return true;
 }
 
 Cires::PrimaryStat ACireHero::PrimaryStat() const

@@ -182,6 +182,8 @@ struct CIRESTEAMSURVIVAL_API FCireWavePreset
     TArray<int32> PvpAfterWaves;
     /** Shipped preset (Standard / Hero TD/PvP / Hybrid): it can be saved over but always comes back if missing. */
     bool bBuiltIn = false;
+    /** kit-editor: the Hero Creator kit profile this game type uses (empty / unknown = "Standard"). */
+    FString KitProfile;
     bool operator==(const FCireWavePreset& O) const;
 };
 

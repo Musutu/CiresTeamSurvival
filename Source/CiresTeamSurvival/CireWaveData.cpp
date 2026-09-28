@@ -55,7 +55,7 @@ bool FCireWaveScale::operator==(const FCireWaveScale& O) const { return Near(Hea
 bool FCireWavePreset::operator==(const FCireWavePreset& O) const
 {
     return Id == O.Id && Label == O.Label && Description == O.Description && bDefaultDamage == O.bDefaultDamage && DefaultFightBack == O.DefaultFightBack &&
-        Waves == O.Waves && Scale == O.Scale && PackSizeBonus == O.PackSizeBonus && PvpAfterWaves == O.PvpAfterWaves;
+        Waves == O.Waves && Scale == O.Scale && PackSizeBonus == O.PackSizeBonus && PvpAfterWaves == O.PvpAfterWaves && KitProfile == O.KitProfile;
 }
 bool FCireRareSpawnRules::operator==(const FCireRareSpawnRules& O) const
 {
@@ -937,17 +937,17 @@ TArray<FCireWavePreset> CireWaveDirector::BuiltInPresets()
 {
     TArray<FCireWavePreset> Out;
     {
-        FCireWavePreset P; P.Id = TEXT("standard"); P.Label = TEXT("Standard"); P.bBuiltIn = true;
+        FCireWavePreset P; P.Id = TEXT("standard"); P.Label = TEXT("Standard"); P.bBuiltIn = true; P.KitProfile = TEXT("Standard");
         P.Description = TEXT("Every wave fights the heroes, except the armored marches. 25 waves, 4 PvP rounds, then Sudden Death.");
         Out.Add(P);
     }
     {
-        FCireWavePreset P; P.Id = TEXT("hero_td"); P.Label = TEXT("Hero TD / PvP"); P.bBuiltIn = true; P.bDefaultDamage = false;
+        FCireWavePreset P; P.Id = TEXT("hero_td"); P.Label = TEXT("Hero TD / PvP"); P.bBuiltIn = true; P.bDefaultDamage = false; P.KitProfile = TEXT("Hero TD");
         P.Description = TEXT("Pure hero tower defence: waves never attack, they path to the castle like armored rounds. Stop them before the gate.");
         Out.Add(P);
     }
     {
-        FCireWavePreset P; P.Id = TEXT("hybrid"); P.Label = TEXT("Hybrid"); P.bBuiltIn = true; P.bDefaultDamage = false;
+        FCireWavePreset P; P.Id = TEXT("hybrid"); P.Label = TEXT("Hybrid"); P.bBuiltIn = true; P.bDefaultDamage = false; P.KitProfile = TEXT("Standard");
         P.DefaultFightBack = {1, 4, 7};
         P.Description = TEXT("Hero TD with teeth: waves march to the castle, but the vanguard, middle and rear-guard packs (1, 4, 7) fight back, and boss waves fight in full.");
         for (int32 W = 5; W <= 25; W += 5) { FCireWavePreset::FWave O; O.Wave = W; O.bDamage = true; P.Waves.Add(O); }
@@ -977,6 +977,8 @@ bool CireWaveDirector::ParsePresets(const FString& Json, TArray<FCireWavePreset>
         P.PackSizeBonus = static_cast<int32>(Num(*PO, TEXT("packSizeBonus"), 0));
         P.PvpAfterWaves = IntArray(*PO, TEXT("pvpAfterWaves"));
         P.bBuiltIn = Flag(*PO, TEXT("builtIn"), false);
+        (*PO)->TryGetStringField(TEXT("kitProfile"), P.KitProfile); // kit-editor: Hero Creator kit profile
+        P.KitProfile = P.KitProfile.TrimStartAndEnd().Left(40);
         const TSharedPtr<FJsonObject>* Scale = nullptr;
         if ((*PO)->TryGetObjectField(TEXT("scale"), Scale) && Scale)
         {
@@ -1032,6 +1034,7 @@ FString CireWaveDirector::PresetsToJson(const TArray<FCireWavePreset>& List)
         PO->SetObjectField(TEXT("scale"), Scale);
         PO->SetNumberField(TEXT("packSizeBonus"), P.PackSizeBonus);
         if (!P.PvpAfterWaves.IsEmpty()) PO->SetArrayField(TEXT("pvpAfterWaves"), IntValues(P.PvpAfterWaves));
+        if (!P.KitProfile.IsEmpty()) PO->SetStringField(TEXT("kitProfile"), P.KitProfile); // kit-editor
         Out.Add(MakeShared<FJsonValueObject>(PO));
     }
     Root->SetArrayField(TEXT("presets"), Out);

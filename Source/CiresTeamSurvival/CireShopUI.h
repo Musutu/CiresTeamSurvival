@@ -76,6 +76,17 @@ namespace CireShopUI
     CIRESTEAMSURVIVAL_API void DebugFreezeAfterLastEvent(float Age);
     CIRESTEAMSURVIVAL_API FVector2D DebugGridPos(FName ItemId);
 #endif
+    // kit-editor (Hero Creator): the Skill Shop's scroll card, sections ("periodic table") and tooltip, shared.
+    CIRESTEAMSURVIVAL_API int32 SkillSectionCount();
+    CIRESTEAMSURVIVAL_API void SkillSectionInfo(int32 Index, FString& OutId, FString& OutLabel, FString& OutChip, FLinearColor& OutColor);
+    CIRESTEAMSURVIVAL_API int32 SkillSectionOf(const FString& SkillId);
+    CIRESTEAMSURVIVAL_API void DrawSkillMedallion(const FCireUIPainter& P, const FString& Id, float CX, float CY, float R, float Time);
+    /** One scroll card (golden = active, plain = passive, prismatic = ultimate): medallion, name, Caption line, tags, key
+     *  numbers, and Footer on the lower roll (the shop's price spot). */
+    CIRESTEAMSURVIVAL_API void DrawSkillCard(const FCireUIPainter& P, const FString& Id, float X, float Y, float W, float H, float Time, float Lift,
+        bool bDim, const FString& Caption, const FString& Footer, FLinearColor FooterColor);
+    /** The Skill Shop tooltip for a skill at level 1 (Hero may be null), with a footer line. */
+    CIRESTEAMSURVIVAL_API void TipSkill(ACireHUD& HUD, const ACireHero* Hero, const FString& Id, const FString& Footer);
     // Pointer in logical units (the capture fixture's virtual pointer when set).
     CIRESTEAMSURVIVAL_API FVector2D Pointer(const ACireHUD& HUD);
     // Sets the HUD tooltip (and pins it at the virtual pointer during captures).

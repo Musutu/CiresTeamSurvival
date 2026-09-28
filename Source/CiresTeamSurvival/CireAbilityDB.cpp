@@ -3,6 +3,7 @@
 #include "CireChampionProfiles.h"
 #include "CireSkillTuning.h" // casting-rules
 #include "CireChampionRoster.h"
+#include "CireKitEditor.h" // kit-editor: champion kit templates join the purchasable lists
 #include "CireAbilityTuner.h" // ability-tuner: override layer
 #include "CireParagonChampions.h" // paragon-champions
 #include "Dom/JsonObject.h"
@@ -193,6 +194,7 @@ bool CireAbilityDB::Reload()
     CireParagonChampions::MergeAbilities(A,K); // paragon-champions: Paragon kits + Skill Shop pool (installed packs only)
     GAbilities=MoveTemp(A);GKits=MoveTemp(K);GModifiers=MoveTemp(M);GIndex.Reset();GNameIndex.Reset();
     for(int32 I=0;I<GAbilities.Num();++I){GIndex.Add(GAbilities[I].Id,I);GNameIndex.Add(GAbilities[I].Name,I);}
+    CireKitEditor::MergeIntoKits(GKits); // kit-editor: saved base kits are purchasable (Content/Data/ChampionKitTemplates.json)
     UE_LOG(LogCireAbilityDB,Display,TEXT("CIRE_ABILITY_DB_LOADED abilities=%d champions=%d"),GAbilities.Num(),GKits.Num());
     CireAbilityTuner::OnDatabaseReloaded(); // ability-tuner: startup profile + live overrides on top of the fresh rows
     return true;
