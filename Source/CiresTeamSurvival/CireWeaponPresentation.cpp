@@ -33,6 +33,7 @@ struct FLoadout {FString Motion;TArray<FPart> Parts;};
 struct FDatabase
 {
     TMap<FString,FLoadout> Presets;TMap<FString,FString> Profiles;TMap<FString,TArray<FString>> Options;
+    TMap<FString,FVector> SizeClasses; // blender-rig: key -> (scale, girth, maxBodyFraction or 0), for monster props
 };
 FDatabase Database;
 int32 Revision=0;
@@ -101,6 +102,7 @@ bool Parse(const FString& Text,FDatabase& Out,FString& Error)
             if((*Row)->HasField(TEXT("girth"))&&(!(*Row)->TryGetNumberField(TEXT("girth"),Girth)||!FMath::IsFinite(Girth)||Girth<.4||Girth>1))return Bad(TEXT("Size class girth must be .4..1"));
             SizeClasses.Add(FString(Pair.Key.ToView()),TPair<double,double>(Scale,Girth));
             double Cap=0;if((*Row)->TryGetNumberField(TEXT("maxBodyFraction"),Cap)&&FMath::IsFinite(Cap)&&Cap>.1&&Cap<=2)SizeCaps.Add(FString(Pair.Key.ToView()),Cap);
+            Candidate.SizeClasses.Add(FString(Pair.Key.ToView()),FVector(Scale,Girth,SizeCaps.FindRef(FString(Pair.Key.ToView()))));
         }
     for(const auto& Pair:(*Presets)->Values)
     {
@@ -578,6 +580,19 @@ int32 CireWeapons::PrincipalAxis(const FVector& Axis)
     const FVector A=Axis.GetSafeNormal().GetAbs();
     for(int32 I=0;I<3;++I)if(A[I]>.99)return I;
     return INDEX_NONE;
+}
+bool CireWeapons::HeldSizeClass(const UStaticMesh& Mesh,const CireGrip::FWeapon& Grip,FString& OutClass,float& OutScale,float& OutGirth,float& OutMaxBodyFraction)
+{
+    EnsureLoaded();
+    // blender-rig: only a one-handed held weapon (no second grip, not a shield, arrow, carried staff or two-hander).
+    if(Grip.bShield||Grip.bAmmo||Grip.bCarry||Grip.bTwoHand||!Grip.OffHand.IsNearlyZero())return false;
+    const FString Name=Mesh.GetName();
+    OutClass=Name.Contains(TEXT("Mace"))||Name.Contains(TEXT("Hammer"))||Name.Contains(TEXT("Flail"))||Name.Contains(TEXT("Club"))?TEXT("mace"):TEXT("one_hand");
+    const FVector* Row=Database.SizeClasses.Find(OutClass);
+    if(!Row)return false;
+    OutScale=static_cast<float>(Row->X);OutGirth=static_cast<float>(Row->Y);OutMaxBodyFraction=static_cast<float>(Row->Z);
+    if(PrincipalAxis(Grip.Axis)==INDEX_NONE)OutGirth=1.f; // the handle stretch needs a principal handle axis
+    return OutScale>1.001f||OutScale<.999f;
 }
 FTransform CireWeapons::HandleStretch(const CireGrip::FWeapon& Grip,float Factor)
 {

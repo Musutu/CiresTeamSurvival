@@ -7,9 +7,13 @@
 #include "Animation/Skeleton.h"
 #include "AnimationRuntime.h"
 #include "BonePose.h"
+#include "CireRigAudit.h" // blender-rig
+#include "HAL/IConsoleManager.h"
 
 namespace
 {
+TAutoConsoleVariable<int32> CVarElbowGuard(TEXT("cire.Monsters.ElbowGuard"), 1,
+    TEXT("blender-rig: 1: a monster elbow a clip hyperextends is re-solved anatomically (hand kept). 0: clips as authored."));
 FTransform ComponentBone(const UAnimSequence& Sequence, const FReferenceSkeleton& Reference, int32 Bone, double Time)
 {
     FTransform Result = FTransform::Identity;
@@ -206,6 +210,8 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
     UCireMonsterAnimInstance* Owner = nullptr;
     bool bLockRoot = false; // world-dressing
     CireLocomotion::FPoseFeel Feel; // movement-feel
+    float TentacleSpeed = 0.f, TentacleWave = 0.f, TentacleDeg = 0.f, TentacleTime = 0.f; TArray<FIntVector> TentacleBones; // blender-rig
+    int32 GuardArms[2][3] = {{INDEX_NONE, INDEX_NONE, INDEX_NONE}, {INDEX_NONE, INDEX_NONE, INDEX_NONE}}; FVector GuardAnterior[2]; bool bElbowGuard = false; // blender-rig
 
     virtual void PreUpdate(UAnimInstance* Instance, float DeltaSeconds) override
     {
@@ -220,6 +226,10 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
         Hands = Monster->Hands;
         bLockRoot = Monster->bLockRootToReference; // world-dressing
         Feel = Monster->Feel; Feel.Resolve(Monster->GetSkelMeshComponent()); // movement-feel
+        TentacleSpeed = Monster->TentacleSpeed; TentacleWave = Monster->TentacleWave; TentacleDeg = Monster->TentacleDegPerBone; // blender-rig
+        bElbowGuard = Monster->bElbowGuard && CVarElbowGuard.GetValueOnAnyThread() != 0;
+        FMemory::Memcpy(GuardArms, Monster->GuardArms, sizeof(GuardArms)); GuardAnterior[0] = Monster->GuardAnterior[0]; GuardAnterior[1] = Monster->GuardAnterior[1];
+        TentacleBones = Monster->TentacleBones; TentacleTime = FMath::Fmod(TentacleTime + DeltaSeconds, 3600.f);
     }
 
     static bool Sample(const FLayerCopy& Layer, FPoseContext& Into)
@@ -286,7 +296,28 @@ struct FCireMonsterAnimProxy : public FAnimInstanceProxy
         Overlay(Output, Death);
         // A retargeted fall (the gun set's) can drive the feet through the floor too; a fallen body's feet rest on it.
         if (bFloor && Death.Weight > KINDA_SMALL_NUMBER) KeepFeetOnFloor(Output.Pose, FloorZ);
+        // blender-rig: Fab clips retargeted onto Tripo arms can hyperextend an elbow (-13..-26 deg); re-solve it anatomically.
+        // Before the grip IK, so carried / two-handed props still land in the hands afterwards.
+        if (bElbowGuard)
+        {
+            const int32 Fixes = CireGrip::GuardElbows(Output.Pose, GuardArms, GuardAnterior, CireRigAudit::HyperextensionLimitDeg + 4.f, CireRigAudit::HyperextensionLimitDeg - 4.f);
+            if (Owner) Owner->LastElbowGuardFixes = Fixes;
+        }
         if (Hands.Any()) CireGrip::Apply(Output.Pose, Hands);
+        if (TentacleDeg > 0.f) // blender-rig: travelling wave down each chain, chains out of phase
+        {
+            const FBoneContainer& Bones = Output.Pose.GetBoneContainer();
+            for (const FIntVector& T : TentacleBones)
+            {
+                const FCompactPoseBoneIndex Bone = Bones.MakeCompactPoseIndex(FMeshPoseBoneIndex(T.X));
+                if (!Bone.IsValid() || Bone.GetInt() >= Output.Pose.GetNumBones()) continue;
+                const float Phase = TentacleTime * TentacleSpeed * UE_TWO_PI * .5f - T.Z * TentacleWave * 1.2f + T.Y * 2.1f;
+                const FQuat Swing = FQuat(FVector::XAxisVector, FMath::DegreesToRadians(TentacleDeg * FMath::Sin(Phase))) *
+                    FQuat(FVector::ZAxisVector, FMath::DegreesToRadians(.6f * TentacleDeg * FMath::Cos(Phase * .8f + T.Y)));
+                FTransform& Local = Output.Pose[Bone];
+                Local.SetRotation((Local.GetRotation() * Swing).GetNormalized());
+            }
+        }
         if (bLockRoot && Output.Pose.GetNumBones() > 0) // world-dressing: the armature proxy root stays at its bind transform
         {
             const FCompactPoseBoneIndex Root(0);
