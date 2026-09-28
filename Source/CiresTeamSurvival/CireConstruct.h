@@ -32,6 +32,8 @@ public:
     static bool ValidateSpec(const FCireConstructSpec& Spec, FString* Error = nullptr);
     static bool ValidatePlacement(ACireHero* Source, const FCireConstructSpec& Spec, FVector& GroundCenter, FRotator Heading, FString* Error = nullptr);
     static bool ValidatePlacementFor(AActor* Source, const FCireConstructSpec& Spec, FVector& GroundCenter, FRotator Heading, FString* Error = nullptr);
+    /** casting-rules: moves Point onto the navmesh (nearest walkable spot) and the ground surface under it. Never refuses; false = no ground found (Point kept). */
+    static bool SnapToGround(const UWorld* World, FVector& Point, float AgentRadius = 40.f);
     static ACireConstruct* FindBlockingConstruct(AActor* Mover, FVector Destination);
     static ACireConstruct* FindBlockingConstruct(AActor* Mover, AActor* Destination);
     static void ClearAll(UWorld* World);

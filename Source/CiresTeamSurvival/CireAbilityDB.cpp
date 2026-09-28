@@ -1,6 +1,7 @@
 #include "CireAbilityDB.h"
 #include "CireAbilityShapes.h" // aoe-scale
 #include "CireChampionProfiles.h"
+#include "CireSkillTuning.h" // casting-rules
 #include "CireChampionRoster.h"
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
@@ -130,6 +131,7 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
             U.bValid=D.IsUltimate()&&U.Effects.Num()>0;
             if(!U.bValid)return Fail(TEXT("ultimateUpgrade needs an ultimate with effects: ")+D.Id);
         }
+        CireSkillTuning::ApplyCastRules(D,Str(J,TEXT("castRule")),J->HasField(TEXT("castWhileMoving"))); // casting-rules: formula cast times + heal scale
         Seen.Add(D.Id);Parsed.Add(MoveTemp(D));
     }
     TMap<FString,FCireChampionKit> Kits;
@@ -189,7 +191,8 @@ FCireAbilityStats CireAbilityDB::EffectiveStats(const FString& Id,int32 Level)
 FString CireAbilityDB::Describe(const FString& Id,int32 Level)
 {
     const FCireAbilityDef* D=Find(Id);if(!D)return FString();
-    const FCireAbilityStats Now=EffectiveStats(Id,Level),Next=EffectiveStats(Id,Level+1);
+    FCireAbilityStats Now=EffectiveStats(Id,Level),Next=EffectiveStats(Id,Level+1);
+    if(D->ScaleComponent==TEXT("heal")){Now.Effect*=D->HealScale;Next.Effect*=D->HealScale;} // casting-rules: tooltips show the healing actually applied
     FString Text=D->Description.Replace(TEXT("{effect}"),*Trim(Now.Effect));
     TArray<FString> Parts;
     Parts.Add(FString::Printf(TEXT("Level %d"),Now.Level));
@@ -199,7 +202,8 @@ FString CireAbilityDB::Describe(const FString& Id,int32 Level)
     if(Now.Cooldown>0)Parts.Add(FString::Printf(TEXT("%.1fs cooldown (-%.1fs)"),Now.Cooldown,Now.Cooldown-Next.Cooldown));
     if(Now.CastTime>0)Parts.Add(FString::Printf(TEXT("%.1fs cast"),Now.CastTime));
     FString Extra; // scaling-kits: universal primary scaling + level-15 line
-    if(D->ScalePrimary>0)Extra+=FString::Printf(TEXT("\n%s + %sx Primary %s"),*Trim(D->ScaleBase),*FString::SanitizeFloat(D->ScalePrimary,0),*ScalingWord(*D));
+    const float Hs=D->ScaleComponent==TEXT("heal")?D->HealScale:1.f; // casting-rules
+    if(D->ScalePrimary>0)Extra+=FString::Printf(TEXT("\n%s + %sx Primary %s"),*Trim(D->ScaleBase*Hs),*FString::SanitizeFloat(D->ScalePrimary*Hs,0),*ScalingWord(*D));
     else if(D->PotencyPerPoint>0)Extra+=FString::Printf(TEXT("\nPotency: +%s%% effect per Primary (max +%.0f%%)"),*FString::SanitizeFloat(D->PotencyPerPoint,0),D->PotencyCap); // kits-complete
     const FString L15=!D->Aura15Label.IsEmpty()?D->Aura15Label:D->Level15Label;
     if(!L15.IsEmpty())Extra+=TEXT("\n")+L15;
