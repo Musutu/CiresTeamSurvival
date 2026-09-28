@@ -83,3 +83,19 @@ fire eruption around the mid section of the characters. This should appear from 
 - network: Saved/NetworkSmoke/20260928T140036827536Z (CIRE_NETWORK_SMOKE_PASS)
 - interface: Saved/InterfaceSmoke/20260928T135828156625Z (CIRE_INTERFACE_SMOKE_PASS)
 - all on main 489f4a22 merged (already up to date)
+
+## Follow-up: Soul Hook Set-up failed with Paragon installed (main 942e4f61)
+- Root cause: with the Paragon packs installed, CireParagonChampions::MergeAbilities appends Paragon rows to the Ability DB,
+  and the display-name index was last-wins. Paragon rows share 9 display names with roster/expansion rows (Soul Hook x2
+  (Sevarog), Shield Bash, Shield Wall, Stone Skin, Shadow Step, Black Hole, Starfall, Boulder Toss). Combat hits carry the
+  display name, so every "Soul Hook" hit resolved to pg_sevarog_maskedreaper_rmb: no expansion recipe -> no Set-up, no stun,
+  no on-hit riders (the same for the other 8 roster abilities: CC effects / riders silently lost). Real gameplay bug; the test
+  was right.
+- Fix (CireAbilityDB, shared, additive): the name index is first-wins (roster, expansion, then Paragon), plus
+  FindByNameFor(Name, Known skills) which prefers the same-name row the caster knows (a Paragon hero's hit stays on its own
+  row). Used by the three hit resolvers: CireAbilityExpansion::OnAbilityHit, CireCrowdControl::OnAbilityHit,
+  CireSignatureSkills::OnAbilityHit. ReplaceRow never steals a name. New DB checks: shared names keep the roster row, caster
+  resolution, Soul Hook resolves to soul_hook.
+- Gates WITH Paragon (62 installed): native Saved/ExpansionChecks/20260928T144224813719Z (PASS, initiation 85, paragon 947,
+  vfx loop 23); network Saved/NetworkSmoke/20260928T145136159967Z (PASS; first try timed out while the client was still
+  scanning the Paragon asset registry, rerun passed); interface Saved/InterfaceSmoke/20260928T144754605560Z (PASS).
