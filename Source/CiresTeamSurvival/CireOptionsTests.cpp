@@ -29,6 +29,9 @@ bool CireOptions::RunSettingsSmoke()
     Check(A.SetRect(TEXT("Tooltip"),{330,210,410,175},FVector2D(1280,720)),TEXT("tooltip movable"));
     A.SetPanelLocked(TEXT("Tooltip"),true);
     Check(!A.SetRect(TEXT("Tooltip"),{0,0,100,100},FVector2D(1280,720)),TEXT("tooltip lock enforced"));
+    // shop-anywhere: confirmation dialogs default on; both switches persist.
+    Check(A.bConfirmDialogs&&A.bConfirmOutOfTownBuy,TEXT("confirmation dialogs default on"));
+    A.bConfirmDialogs=false;A.bConfirmOutOfTownBuy=false;
     Check(A.Save(),TEXT("save v3"));
     FCireUISettings B;B.Load(File);
     Check(FMath::IsNearlyEqual(B.CameraYawSensitivity,2.3f)&&FMath::IsNearlyEqual(B.CameraPitchSensitivity,.45f)&&B.bInvertMouseY,TEXT("camera roundtrip"));
@@ -37,6 +40,7 @@ bool CireOptions::RunSettingsSmoke()
     Check(B.TooltipMode==2&&B.TooltipAngleDegrees==225&&B.TooltipDistance==160&&!B.bTooltipOffsetLocked,TEXT("tooltip radial roundtrip"));
     Check(FMath::IsNearlyEqual(B.TooltipScale,1.15f),TEXT("tooltip scale roundtrip"));
     Check(B.bQuickGroundCast,TEXT("quick ground cast roundtrip"));
+    Check(!B.bConfirmDialogs&&!B.bConfirmOutOfTownBuy,TEXT("confirmation dialog switches roundtrip"));
     Check(B.StatusFilter==2&&B.bDispellableOnly&&!B.bShowStatusDurations&&!B.bShowCriticalSymbol,TEXT("status crit roundtrip"));
     Check(B.bShowFPS&&!B.bShowNetwork&&!B.bBloom&&B.bMotionBlur,TEXT("diagnostics graphics roundtrip"));
     const auto R=B.GetRect(TEXT("Tooltip"),FVector2D(1280,720));Check(FMath::IsNearlyEqual(R.X,330.f)&&B.IsPanelLocked(TEXT("Tooltip")),TEXT("tooltip layout persisted"));

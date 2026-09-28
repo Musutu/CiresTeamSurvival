@@ -21,6 +21,8 @@
 #include "Misc/PackageName.h"
 #include "Sound/SoundBase.h"
 #include "CireAudio.h" // audio:
+#include "CireLanePath.h" // shop-anywhere: base position (client mirror)
+#include "Misc/ScopeExit.h" // shop-anywhere: the confirmation dialog draws over every shop tab
 
 namespace CI = Cires::Items;
 using namespace CireUIColors;
@@ -89,6 +91,13 @@ struct FShopState
     // Stats window drag
     bool bDragging = false; FVector2D DragOffset = FVector2D::ZeroVector;
     double DebugNow = -1;
+    // shop-anywhere: the out-of-town purchase confirmation (0 item buy, 1 skill learn, 2 skill level up).
+    struct FConfirm
+    {
+        bool bOpen = false; int32 Kind = 0; FName Id; FVector2D From = FVector2D::ZeroVector;
+        bool bDontShow = false; double Start = 0; bool bDryRun = false;
+    } Confirm;
+    int32 ConfirmShown = 0, ConfirmSkipped = 0, ConfirmSent = 0; // probe counters
     // readability: the last buy / sell / undo / error, shown as a strip above the BUY button.
     FString LastEvent; FLinearColor LastEventColor = FLinearColor::White; double LastEventAt = -10; bool bLastEventError = false;
 };
@@ -133,7 +142,8 @@ void Play(ACireHUD& HUD, const TCHAR* Name, float Volume = 1.f)
     else HUD.PlayInterfaceSound(1, .6f * Volume);
 }
 
-int32 PriceFor(const ACireHero* Hero, FName Id)
+// List price after owned recipe parts (before the shop-anywhere location price).
+int32 BasePriceFor(const ACireHero* Hero, FName Id)
 {
     const auto& D = CireItems::Get();
     if (!Hero || !Hero->Inventory) return 0;
@@ -141,13 +151,89 @@ int32 PriceFor(const ACireHero* Hero, FName Id)
     const CI::ItemDef* Item = CireItems::Find(Id);
     return Plan.Ok ? Plan.Cost : Item ? Item->TotalCost : 0;
 }
+// shop-anywhere: the price where the hero stands (vendor -10% / town list / out of town +10%), mirroring the server.
+FCirePriceQuote QuoteFor(const ACireHero* Hero, FName Id) { return CireVendors::QuoteItem(Hero, Id, BasePriceFor(Hero, Id)); }
+int32 PriceFor(const ACireHero* Hero, FName Id) { return QuoteFor(Hero, Id).Price; }
+const FLinearColor DiscountGreen(.55f, 1.f, .5f, 1), SurchargeOrange(1.f, .6f, .28f, 1);
+FLinearColor QuoteColor(const FCirePriceQuote& Q) { return Q.Delta() < 0 ? DiscountGreen : Q.Delta() > 0 ? SurchargeOrange : BrightGold; }
+FCirePriceQuote SkillQuote(const ACireHero* Hero, const FString& Id, bool bOwned) { return bOwned ? CireSkillShop::LevelQuote(Hero, Id) : CireSkillShop::BuyQuote(Hero, Id); }
+
+// A small "-10%" / "+10%" pill ending at RightX (returns its width; 0 at list price).
+float DeltaPill(const FCireUIPainter& P, float RightX, float Y, const FCirePriceQuote& Q, float Size)
+{
+    const FString Tag = CireVendors::QuoteTag(Q);
+    if (Tag.IsEmpty() || Q.Delta() == 0) return 0.f;
+    const float TW = P.TextWidth(Tag, Size, ECireFont::Heading) + 8, TH = CireUIStyle::ReadableSize(Size) * 1.25f + 1;
+    const FLinearColor C = QuoteColor(Q);
+    CireUIStyle::Bevel(P, RightX - TW, Y, TW, TH, 3.f, C * FLinearColor(.3f, .3f, .3f, .95f));
+    CireUIStyle::BevelOutline(P, RightX - TW, Y, TW, TH, 3.f, C, 1.f);
+    P.Text(Tag, RightX - TW + 4, Y + .5f, Size, FMath::Lerp(C, FLinearColor::White, .35f), ECireFont::Heading, true, false);
+    return TW;
+}
+
+// "AT THE WEAPONSMITH  ·  -10% ON HIS WARES" / "IN TOWN  ·  LIST PRICES" / "OUT OF TOWN  ·  +10% SURCHARGE".
+FString ZoneCaption(const ACireHero* Hero, FLinearColor& Color)
+{
+    FName Here;
+    const ECirePriceZone Zone = CireVendors::ZoneFor(Hero, NAME_None, &Here);
+    const auto& Pr = CireVendors::Pricing();
+    if (Zone == ECirePriceZone::Vendor)
+    {
+        const FCireVendorDef* V = CireVendors::Find(Here);
+        Color = DiscountGreen;
+        return FString::Printf(TEXT("AT THE %s  ·  -%d%% ON %s WARES"), V ? *V->Name.ToUpper() : TEXT("MERCHANT"), FMath::RoundToInt(Pr.VendorDiscount * 100), V && V->Stat.Len() ? *V->Stat.ToUpper() : TEXT("HIS"));
+    }
+    if (Zone == ECirePriceZone::Town) { Color = Teal; return TEXT("IN TOWN  ·  LIST PRICES"); }
+    Color = SurchargeOrange;
+    return FString::Printf(TEXT("OUT OF TOWN  ·  +%d%% SURCHARGE"), FMath::RoundToInt(Pr.FieldSurcharge * 100));
+}
 
 // Client mirror of the server shop access rule (phase + town distance), for instant feedback.
 CI::ShopAccess ClientAccess(const ACireHero* Hero, const ACireGameState* GameState)
 {
     if (!Hero || !GameState) return CI::ShopAccess::WrongPhase;
-    const FVector Base = GetDefault<ACireGameMode>()->BasePosition(Hero->TeamId);
+    if (CireVendors::ShopAnywhere()) return !Hero->bDrafted || GameState->Phase == 3 ? CI::ShopAccess::WrongPhase : CI::ShopAccess::Allowed; // shop-anywhere
+    const FVector Base = CireLanePath::BasePosition(Hero->GetWorld(), Hero->TeamId, 110);
     return CI::CheckShopAccess(CireItems::Get().Shop, GameState->Phase, FVector::Dist2D(Hero->GetActorLocation(), Base), Hero->bDead);
+}
+
+// shop-anywhere: send the purchase now, or ask first (out of town, confirmations on, not hidden).
+void SendPurchase(ACireHero* Hero, int32 Kind, FName Id, FVector2D From)
+{
+    if (!Hero || !Hero->Inventory) return;
+    if (Kind == 0) { State.PendingId = Id; State.PendingFrom = From; Hero->Inventory->ServerBuy(Id); }
+    else if (Kind == 1) Hero->Inventory->ServerBuySkill(Id.ToString());
+    else Hero->Inventory->ServerLevelSkill(Id.ToString());
+}
+bool WantsConfirm(const ACireHUD& HUD, const FCirePriceQuote& Q)
+{
+    return Q.Zone == ECirePriceZone::Field && Q.Delta() > 0 && HUD.UISettings.bConfirmDialogs && HUD.UISettings.bConfirmOutOfTownBuy;
+}
+// Returns true when the purchase went out (false = the dialog opened instead).
+bool BeginPurchase(ACireHUD& HUD, ACireHero* Hero, int32 Kind, FName Id, FVector2D From, const FCirePriceQuote& Q, bool bDryRun = false)
+{
+    if (WantsConfirm(HUD, Q))
+    {
+        State.Confirm = {}; State.Confirm.bOpen = true; State.Confirm.Kind = Kind; State.Confirm.Id = Id; State.Confirm.From = From;
+        State.Confirm.Start = Now(); State.Confirm.bDryRun = bDryRun;
+        ++State.ConfirmShown;
+        Play(HUD, TEXT("S_ShopTab"), .5f);
+        return false;
+    }
+    ++State.ConfirmSkipped;
+    if (!bDryRun) SendPurchase(Hero, Kind, Id, From);
+    return true;
+}
+// Closes the dialog; bBuy sends the purchase (and remembers "Don't show this again").
+void ResolveConfirm(ACireHUD& HUD, ACireHero* Hero, bool bBuy)
+{
+    if (!State.Confirm.bOpen) return;
+    const auto C = State.Confirm;
+    State.Confirm.bOpen = false;
+    if (!bBuy) { Play(HUD, TEXT("S_ShopTab"), .35f); return; }
+    if (C.bDontShow) { HUD.UISettings.bConfirmOutOfTownBuy = false; if (!C.bDryRun) HUD.UISettings.Save(); }
+    ++State.ConfirmSent;
+    if (!C.bDryRun) SendPurchase(Hero, C.Kind, C.Id, C.From);
 }
 
 void AddToast(const FString& Title, const FString& Body, FName Icon, FLinearColor Accent, float Life = 4.f)
@@ -187,11 +273,11 @@ void RequestBuy(ACireHUD& HUD, ACireHero* Hero, ACireGameState* GameState, FName
     if (!Hero || !Hero->Inventory) return;
     const CI::ShopAccess Access = ClientAccess(Hero, GameState);
     if (Access != CI::ShopAccess::Allowed) { ShowError(HUD, Id, -1, false, Str(CI::ShopAccessMessage(Access))); return; }
-    const CI::PurchasePlan Plan = CI::PlanPurchase(CireItems::Get().Catalog, Hero->Inventory->ToRules(), Utf8(Id), Hero->Gold);
+    const CI::PurchasePlan Plan = CI::PlanPurchase(CireItems::Get().Catalog, Hero->Inventory->ToRules(), Utf8(Id), MAX_int32 / 2);
     if (!Plan.Ok) { ShowError(HUD, Id, -1, false, Str(Plan.Error)); return; }
-    State.PendingId = Id;
-    State.PendingFrom = From;
-    Hero->Inventory->ServerBuy(Id);
+    const FCirePriceQuote Quote = CireVendors::QuoteItem(Hero, Id, Plan.Cost); // shop-anywhere
+    if (Hero->Gold < Quote.Price) { ShowError(HUD, Id, -1, false, FString::Printf(TEXT("Not enough gold: %d more needed."), Quote.Price - Hero->Gold)); return; }
+    BeginPurchase(HUD, Hero, 0, Id, From, Quote);
 }
 
 void RequestSell(ACireHUD& HUD, ACireHero* Hero, ACireGameState* GameState, int32 Slot, bool bBelt)
@@ -236,6 +322,7 @@ void ProcessFeedback(ACireHUD& HUD, ACireHero* Hero)
             Fly.ToSkillSlot = FMath::Clamp(F.Slot, 0, 7);
             State.Flies.Add(Fly);
             AddToast(bLevel ? TEXT("Skill levelled up") : TEXT("Skill learned"), F.Message, F.ItemId, bLevel ? Teal : Purple, 3.5f);
+            if (F.GoldDelta != 0) { FFloater Spent; Spent.Text = FString::Printf(TEXT("%dg"), F.GoldDelta); Spent.Pos = State.GoldPos; Spent.Start = Now() + .3; Spent.Color = FLinearColor(1.f, .5f, .38f, 1); State.Floaters.Add(Spent); }
             Play(HUD, TEXT("S_SkillLearn")); // audio: Skill Shop buy (AudioCues.json shopLegacy -> ui_skill_buy)
             if (bLevel) Play(HUD, TEXT("S_LootPickup"), .5f);
             break;
@@ -250,8 +337,16 @@ void ProcessFeedback(ACireHUD& HUD, ACireHero* Hero)
                 Fly.To = SlotTarget(F.Slot, F.bBelt);
                 State.Flies.Add(Fly);
             }
-            AddToast(TEXT("Purchased"), FString::Printf(TEXT("%s   %dg"), *CireItems::DisplayName(F.ItemId), F.GoldDelta), F.ItemId, Accent, 3.f);
-            State.LastEvent = FString::Printf(TEXT("BOUGHT  %s   %dg"), *CireItems::DisplayName(F.ItemId), F.GoldDelta); State.LastEventColor = FLinearColor(.5f, 1.f, .55f, 1); State.LastEventAt = Now(); State.bLastEventError = false;
+            {
+                // shop-anywhere: the server message carries the price reason, "(-10% at the Weaponsmith)".
+                FString Why, Left;
+                if (F.Message.Split(TEXT("  ("), &Left, &Why, ESearchCase::CaseSensitive, ESearchDir::FromEnd)) Why.RemoveFromEnd(TEXT(")"));
+                AddToast(TEXT("Purchased"), FString::Printf(TEXT("%s   %dg%s"), *CireItems::DisplayName(F.ItemId), F.GoldDelta, Why.IsEmpty() ? TEXT("") : *(TEXT("   ·   ") + Why)), F.ItemId, Accent, 3.f);
+                State.LastEvent = FString::Printf(TEXT("BOUGHT  %s   %dg%s"), *CireItems::DisplayName(F.ItemId), F.GoldDelta, Why.IsEmpty() ? TEXT("") : *(TEXT("  ·  ") + Why.ToUpper()));
+                State.LastEventColor = FLinearColor(.5f, 1.f, .55f, 1); State.LastEventAt = Now(); State.bLastEventError = false;
+                FFloater Spent; Spent.Text = FString::Printf(TEXT("%dg"), F.GoldDelta); Spent.Pos = State.GoldPos; Spent.Start = Now(); Spent.Color = FLinearColor(1.f, .5f, .38f, 1);
+                State.Floaters.Add(Spent); // WoW: the coins leave your purse
+            }
             Play(HUD, TEXT("S_ShopBuy"));
             CireVendors::OnPurchased(HUD.GetWorld(), F.ItemId); // vendors: the merchant who sold it nods
             State.PendingId = NAME_None;
@@ -847,13 +942,23 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
     FString Why;
     const bool bOpen = CireSkillShop::IsOpen(Hero, &Why);
     FString Status;
+    FLinearColor StatusColor = Teal;
     if (!bOpen) Status = TEXT("CLOSED  ·  OPENS BETWEEN WAVES");
+    else if (CireSkillShop::Get().bAnytime && CireVendors::ShopAnywhere()) // shop-anywhere: where you stand sets the price
+    {
+        const FCirePriceQuote Here = CireVendors::QuoteSkill(Hero, 100);
+        const FCireVendorDef* V = CireVendors::Find(Here.Vendor);
+        Status = Here.Zone == ECirePriceZone::Vendor ? FString::Printf(TEXT("AT THE %s  ·  SKILLS -%d%%"), V ? *V->Name.ToUpper() : TEXT("MERCHANT"), -Here.Delta())
+            : Here.Zone == ECirePriceZone::Town ? FString(TEXT("IN TOWN  ·  LIST PRICES")) : FString::Printf(TEXT("OUT OF TOWN  ·  +%d%% SURCHARGE"), Here.Delta());
+        StatusColor = QuoteColor(Here);
+        if (Here.Zone == ECirePriceZone::Town) StatusColor = Teal;
+    }
     else if (CireSkillShop::IsBreather(HUD.GetWorld())) Status = FString::Printf(TEXT("BREATHER  ·  NEXT WAVE IN %.0fs"), GameState ? GameState->NextWaveSeconds : 0.f);
     else Status = GameState && GameState->Phase == 1 ? TEXT("PREP  ·  THE SHOP IS OPEN") : TEXT("RECOVERY  ·  THE SHOP IS OPEN");
     CompassStar(P, X + 40, Y + 46, 15, Filigree * FLinearColor(1, 1, 1, .8f));
     Spaced(P, TEXT("YOUR CHAMPION"), X + 66, Y + 28, 7.f, .38f, Filigree * .85f, ECireFont::Display, false, false);
     P.Text(P.Fit(Hero->HeroName, 12, 230, ECireFont::Bold), X + 66, Y + 39, 12, Parchment, ECireFont::Bold);
-    Spaced(P, Status, X + 66, Y + 57, 7.f, .3f, bOpen ? Teal : FLinearColor(1.f, .45f, .4f, 1), ECireFont::Display, false, false);
+    Spaced(P, Status, X + 66, Y + 57, 7.f, .3f, bOpen ? StatusColor : FLinearColor(1.f, .45f, .4f, 1), ECireFont::Display, false, false);
     CompassStar(P, X + W - 40, Y + 46, 15, Filigree * FLinearColor(1, 1, 1, .8f));
     {
         const float RX = X + W - 66;
@@ -1082,7 +1187,9 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
         P.Rect(CX + CW * .5f - PW * .5f - 8, PY - PS * .75f, PW + 16, PS * 1.5f, FLinearColor(.05f, .035f, .02f, .92f));
         P.Line(CX + CW * .5f - PW * .5f - 8, PY - PS * .75f, CX + CW * .5f + PW * .5f + 8, PY - PS * .75f, Filigree * .8f, .8f);
         P.Line(CX + CW * .5f - PW * .5f - 8, PY + PS * .75f, CX + CW * .5f + PW * .5f + 8, PY + PS * .75f, Filigree * .8f, .8f);
-        P.Text(PriceText, CX + CW * .5f - PW * .5f, PY - PS * .64f, PS, bBlocked ? FLinearColor(1.f, .55f, .47f, 1) : BrightGold, ECireFont::Numbers, false, false);
+        const FCirePriceQuote CardQuote = SkillQuote(Hero, Id, bOwned); // shop-anywhere
+        P.Text(PriceText, CX + CW * .5f - PW * .5f, PY - PS * .64f, PS, bBlocked ? FLinearColor(1.f, .55f, .47f, 1) : CardQuote.Delta() == 0 ? BrightGold : QuoteColor(CardQuote), ECireFont::Numbers, false, false);
+        DeltaPill(P, CX + CW - 6, CY + 6, CardQuote, 8.f);
         if (bBlocked && !Short.IsEmpty())
         {
             const float SS = 8.f;
@@ -1106,13 +1213,14 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
             Body += FString::Printf(TEXT("\n%s  |  %s  |  %s"), *FString(SkillSections[SectionOf(Id)].Label), *CireSkillShop::SchoolOf(Id), *CireSkillShop::RoleTags(Id));
             if (Def && Def->EffectTags.Num()) Body += TEXT("\nTags: ") + FString::Join(Def->EffectTags, TEXT(", "));
             Body += FString::Printf(TEXT("\n%s: %dg"), bOwned ? TEXT("Level up") : TEXT("Learn"), Price);
+            if (const FCirePriceQuote TQ = SkillQuote(Hero, Id, bOwned); TQ.Delta() != 0) // shop-anywhere
+                Body += FString::Printf(TEXT("  (list %dg, %s)"), TQ.Base, *CireVendors::QuoteLabel(TQ));
             if (bBlocked) Body += TEXT("\n") + Blocker;
             CireShopUI::Tip(HUD, ACireHero::SkillName(Id), Body);
             if (Click(Sc.X, Sc.Y, Sc.W, Sc.H) || bRightClick)
             {
                 if (bBlocked) ShowError(HUD, FName(*Id), -1, false, Blocker);
-                else if (bOwned) Hero->Inventory->ServerLevelSkill(Id);
-                else Hero->Inventory->ServerBuySkill(Id);
+                else BeginPurchase(HUD, Hero, bOwned ? 2 : 1, FName(*Id), FVector2D::ZeroVector, SkillQuote(Hero, Id, bOwned)); // shop-anywhere: out-of-town confirmation
                 State.SelectedSkill = Id;
             }
         }
@@ -1249,6 +1357,8 @@ FString CireShopUI::ItemTooltip(FName ItemId, int32 PriceForYou)
     FString Body = FString::Printf(TEXT("%s%s item  |  %dg"), IsPathUnique(*Item) ? TEXT("Path-defining ") : TEXT(""), UTF8_TO_TCHAR(CI::TierName(Item->Tier)), Item->TotalCost);
     if (const FString* Effect = D.EffectLine.Find(ItemId)) Body += TEXT("\n") + *Effect; // items-v2: one-line effect
     if (PriceForYou >= 0 && PriceForYou != Item->TotalCost) Body += FString::Printf(TEXT("  (your price %dg)"), PriceForYou);
+    if (const ACireHero* Viewer = GShopViewer.Get(); Viewer && PriceForYou >= 0) // shop-anywhere
+        if (const FString Why = CireVendors::QuoteLabel(QuoteFor(Viewer, ItemId)); !Why.IsEmpty()) Body += FString::Printf(TEXT("  [%s]"), *Why);
     if (!Item->Purchasable) Body += TEXT("  |  loot only");
     const FString Stats = StatLines(ItemId);
     if (!Stats.IsEmpty()) Body += TEXT("\n") + Stats.Replace(TEXT("\n"), TEXT("   "));
@@ -1279,6 +1389,11 @@ FCireTooltipSpec CireShopUI::ItemTooltipSpec(FName ItemId, int32 PriceForYou, co
     if (PriceForYou >= 0 && PriceForYou != Item->TotalCost && Item->Purchasable) Sub += FString::Printf(TEXT("  ·  your price %dg"), PriceForYou);
     if (!Item->Purchasable) Sub += TEXT("  ·  loot only");
     T.Subtitle = Sub; T.SubtitleColor = FLinearColor(1.f, .84f, .4f, 1);
+    if (const ACireHero* Viewer = GShopViewer.Get(); Viewer && PriceForYou >= 0 && Item->Purchasable)
+    {   // shop-anywhere: the location price, spelled out.
+        const FCirePriceQuote Q = QuoteFor(Viewer, ItemId);
+        if (Q.Delta() != 0) T.Pair(CireVendors::QuoteLabel(Q), FString::Printf(TEXT("%dg  >  %dg"), Q.Base, Q.Price), QuoteColor(Q), QuoteColor(Q));
+    }
     TArray<FString> Stats; StatLines(ItemId).ParseIntoArrayLines(Stats);
     for (const FString& Line : Stats) T.Stat(Line, CireUIStyle::StatColor(Line));
     if (const FString* Effect = D.EffectLine.Find(ItemId)) { if (Stats.Num()) T.Divider(); T.Text(*Effect, bPath ? FLinearColor(1.f, .72f, .35f, 1) : FLinearColor(1.f, .86f, .5f, 1)); }
@@ -1351,6 +1466,7 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
     if (bShopOpen != State.bWasShopOpen)
     {
         Hero->Inventory->ServerShopOpen(bShopOpen); State.bWasShopOpen = bShopOpen;
+        if (!bShopOpen) State.Confirm.bOpen = false; // shop-anywhere: closing the shop cancels a pending confirmation
         if (bShopOpen)
         {
             Play(HUD, TEXT("S_ShopOpen"), .6f); State.Tab = State.PendingTab >= 0 ? State.PendingTab : 0;
@@ -1494,6 +1610,85 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
 }
 
 // ------------------------------------------------------------------ the shop window
+namespace
+{
+// shop-anywhere: themed out-of-town purchase confirmation (the shop's gilded panel language).
+void DrawConfirm(ACireHUD& HUD, ACireHero* Hero, const FCireUIPainter& Base, FVector2D View, FVector2D M, bool bClick)
+{
+    auto& C = State.Confirm;
+    if (!C.bOpen || !Hero) return;
+    const bool bSkill = C.Kind != 0;
+    const FString SkillId = C.Id.ToString();
+    const bool bOwned = C.Kind == 2;
+    const FCirePriceQuote Q = bSkill ? SkillQuote(Hero, SkillId, bOwned) : QuoteFor(Hero, C.Id);
+    const FString Name = bSkill ? ACireHero::SkillName(SkillId) : CireItems::DisplayName(C.Id);
+    const float Age = static_cast<float>(Now() - C.Start);
+    const float In01 = FMath::Clamp(Age / .16f, 0.f, 1.f), Ease = 1.f - FMath::Pow(1.f - In01, 3.f);
+    FCireUIPainter P = Base; P.Alpha *= Ease;
+    P.Rect(0, 0, View.X, View.Y, FLinearColor(0, 0, 0, .55f));
+    const float W = FMath::Min(View.X - 40.f, 520.f), H = 300.f;
+    const float X = FMath::RoundToFloat((View.X - W) * .5f), Y = FMath::RoundToFloat((View.Y - H) * .5f + (1.f - Ease) * 14.f);
+    CireShopArt::Panel(P, X, Y, W, H, 250);
+    CireShopArt::Title(P, X + W * .5f, Y + 12, TEXT("OUT OF TOWN"), TEXT("A TRAVELLING MERCHANT'S PRICE"), 22);
+    // The ware: icon, name, what it is.
+    const float IX = X + 34, IY = Y + 74, IS = 64;
+    if (bSkill) DrawSkillIcon(P, SkillId, IX, IY, IS, false, false, CireSkillShop::Level(Hero, SkillId));
+    else CireShopUI::DrawItemIcon(P, C.Id, IX, IY, IS, false);
+    const float TX = IX + IS + 18, TW = X + W - 30 - TX;
+    P.Text(P.Fit(Name, 16, TW, ECireFont::Bold), TX, IY - 2, 16, Parchment, ECireFont::Bold, true, true);
+    const FString What = C.Kind == 0 ? TEXT("PURCHASE") : C.Kind == 1 ? TEXT("LEARN SKILL") : FString::Printf(TEXT("SKILL LEVEL %d  »  %d"), CireSkillShop::Level(Hero, SkillId), CireSkillShop::Level(Hero, SkillId) + 1);
+    CireShopArt::Spaced(P, What, TX, IY + 22, 7.5f, .3f, CireShopArt::Filigree, ECireFont::Display, false, false);
+    // Price breakdown: list, surcharge, total.
+    const auto& Pr = CireVendors::Pricing();
+    float RY = IY + 40;
+    auto Row = [&](const FString& L, const FString& R, FLinearColor LC, FLinearColor RC, float S, ECireFont Font)
+    {
+        P.Text(L, TX, RY, S, LC, ECireFont::Body, false, true);
+        P.Text(R, X + W - 30 - P.TextWidth(R, S, Font), RY, S, RC, Font, false, true);
+        RY += CireUIStyle::ReadableSize(S) * 1.35f + 2;
+    };
+    Row(TEXT("List price (in town)"), FString::Printf(TEXT("%dg"), Q.Base), Parchment, Parchment, 11.5f, ECireFont::Numbers);
+    Row(FString::Printf(TEXT("Out-of-town surcharge  +%d%%"), FMath::RoundToInt(Pr.FieldSurcharge * 100)), FString::Printf(TEXT("+%dg"), Q.Delta()), SurchargeOrange, SurchargeOrange, 11.5f, ECireFont::Numbers);
+    CireShopArt::Rule(P, TX, X + W - 30, RY + 1, CireShopArt::Filigree * FLinearColor(1, 1, 1, .7f));
+    RY += 6;
+    const bool bAfford = Hero->Gold >= Q.Price;
+    Row(TEXT("You pay"), FString::Printf(TEXT("%dg"), Q.Price), BrightGold, bAfford ? BrightGold : FLinearColor(1.f, .42f, .38f, 1), 14.f, ECireFont::Numbers);
+    const FName Match = bSkill ? CireVendors::VendorForStat(Hero) : CireVendors::VendorOf(C.Id);
+    const FCireVendorDef* MV = CireVendors::Find(Match);
+    const FString Hint = MV ? FString::Printf(TEXT("In town it costs %dg, and only %dg in person at the %s."), Q.Base, CireVendors::ApplyZone(Q.Base, ECirePriceZone::Vendor, Pr), *MV->Name)
+        : FString::Printf(TEXT("In town it costs %dg, and less in person at any merchant."), Q.Base);
+    P.Wrapped(Hint, X + 30, Y + H - 106, W - 60, 10.5f, Muted * 1.45f, 2, ECireFont::Body, 3.f);
+    // "Don't show this again" checkbox.
+    const float CX = X + 30, CY = Y + H - 66;
+    const bool bOverBox = In(M, CX, CY, 220, 20);
+    CireUIStyle::Frame(P, CX, CY, 17, 17, Gold, ECireFrame::Inset);
+    if (bOverBox) CireUIStyle::Glow(P, CX, CY, 17, 17, FLinearColor(1.f, .85f, .5f, .25f));
+    if (C.bDontShow)
+    {
+        CireUIStyle::Glow(P, CX, CY, 17, 17, FLinearColor(1.f, .8f, .3f, .35f));
+        P.Line(CX + 3.5f, CY + 9, CX + 7, CY + 13, FLinearColor(1.f, .84f, .35f, 1), 2.4f);
+        P.Line(CX + 7, CY + 13, CX + 14, CY + 3.5f, FLinearColor(1.f, .84f, .35f, 1), 2.4f);
+    }
+    P.Text(TEXT("Don't show this again"), CX + 26, CY, 11, bOverBox ? FLinearColor(1.f, .95f, .82f, 1) : Parchment, ECireFont::Body, false, true);
+    if (bOverBox) CireShopUI::Tip(HUD, TEXT("Don't show this again"), TEXT("Out-of-town purchases go through at once from now on. Options > Interface > Confirmation dialogs brings this back."));
+    // Buttons: BUY (gold, Enter) and CANCEL (Esc).
+    const float BW = (W - 72) * .5f, BH = 36, BY = Y + H - 44;
+    const float BX1 = X + 30, BX2 = BX1 + BW + 12;
+    const bool bOverBuy = In(M, BX1, BY, BW, BH), bOverCancel = In(M, BX2, BY, BW, BH);
+    ShopButton(P, BX1, BY, BW, BH, FString::Printf(TEXT("%s  %dg"), C.Kind == 2 ? TEXT("LEVEL UP") : C.Kind == 1 ? TEXT("LEARN") : TEXT("BUY"), Q.Price), bOverBuy, false, !bAfford, BrightGold, 13);
+    ShopButton(P, BX2, BY, BW, BH, TEXT("CANCEL"), bOverCancel, false, false, Muted * 1.6f, 13);
+    const APlayerController* PC = HUD.GetOwningPlayerController();
+    const bool bEnter = PC && Age > .15f && (PC->WasInputKeyJustPressed(EKeys::Enter) || PC->WasInputKeyJustPressed(EKeys::SpaceBar));
+    if (bClick && bOverBox) { C.bDontShow = !C.bDontShow; Play(HUD, TEXT("S_ShopTab"), .35f); }
+    else if ((bClick && bOverBuy) || bEnter)
+    {
+        if (!bAfford) ShowError(HUD, C.Id, -1, false, FString::Printf(TEXT("Not enough gold: %d more needed."), Q.Price - Hero->Gold));
+        else ResolveConfirm(HUD, Hero, true);
+    }
+    else if (bClick && (bOverCancel || !In(M, X, Y, W, H))) ResolveConfirm(HUD, Hero, false);
+}
+} // namespace
+
 void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller, ACireGameState* GameState)
 {
     if (!Hero || !Hero->Inventory) return;
@@ -1504,7 +1699,12 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     const FVector2D View = HUD.LogicalViewport();
     FCireUIPainter P = HUD.ScreenPainter();
     const FVector2D M = Pointer(HUD);
-    const bool bInteractive = HUD.IsInteractive();
+    // shop-anywhere: while the confirmation is up it owns the pointer; the shop underneath is inert.
+    const bool bModal = State.Confirm.bOpen && HUD.IsInteractive();
+    bool bModalClick = false;
+    if (bModal && HUD.HasClick()) { HUD.TakeClick(); bModalClick = true; }
+    ON_SCOPE_EXIT { if (bModal) DrawConfirm(HUD, Hero, P, View, M, bModalClick); };
+    const bool bInteractive = HUD.IsInteractive() && !bModal;
     const bool bRightClick = bInteractive && HUD.GetOwningPlayerController() && HUD.GetOwningPlayerController()->WasInputKeyJustPressed(EKeys::RightMouseButton);
     const bool bCtrl = HUD.GetOwningPlayerController() && (HUD.GetOwningPlayerController()->IsInputKeyDown(EKeys::LeftControl) || HUD.GetOwningPlayerController()->IsInputKeyDown(EKeys::RightControl));
     if (bInteractive && bCtrl && HUD.GetOwningPlayerController()->WasInputKeyJustPressed(EKeys::Z)) Hero->Inventory->ServerUndo();
@@ -1529,7 +1729,9 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     else CireShopArt::Title(P, X + W * .5f, Y + 13, TEXT("MERCHANTS' ROW"), TEXT("THREE MERCHANTS  ·  EVERY WARE"), 31);
     const CI::ShopAccess Access = ClientAccess(Hero, GameState);
     FString Status; bool bOpen = true;
-    if (Access == CI::ShopAccess::Allowed && GameState && GameState->Phase == 1)
+    FLinearColor StatusColor = Teal;
+    if (Access == CI::ShopAccess::Allowed && CireVendors::ShopAnywhere()) Status = ZoneCaption(Hero, StatusColor); // shop-anywhere: where you stand sets the price
+    else if (Access == CI::ShopAccess::Allowed && GameState && GameState->Phase == 1)
         Status = FString::Printf(TEXT("PREP  ·  BUY ANYWHERE  ·  %d:%02d"), FMath::FloorToInt(FMath::Max(0.f, GameState->SecondsLeft) / 60), FMath::FloorToInt(FMath::Max(0.f, GameState->SecondsLeft)) % 60);
     else if (Access == CI::ShopAccess::Allowed) Status = TEXT("IN TOWN  ·  TRADING OPEN");
     else { Status = Access == CI::ShopAccess::NotInTown ? TEXT("CLOSED  ·  RETURN TO TOWN") : TEXT("CLOSED  ·  OPENS IN PREP"); bOpen = false; }
@@ -1538,7 +1740,7 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
     CireShopArt::CompassStar(P, X + 40, Y + 46, 15, Filigree * FLinearColor(1, 1, 1, .8f));
     CireShopArt::Spaced(P, FString::Printf(TEXT("YOUR CHAMPION  ·  %s"), *RoleCaption), X + 66, Y + 28, 7.f, .34f, Filigree * .85f, ECireFont::Display, false, false);
     P.Text(P.Fit(Hero->HeroName, 12, 230, ECireFont::Bold), X + 66, Y + 39, 12, Parchment, ECireFont::Bold);
-    CireShopArt::Spaced(P, Status, X + 66, Y + 57, 7.f, .3f, bOpen ? Teal : FLinearColor(1.f, .45f, .4f, 1), ECireFont::Display, false, false);
+    CireShopArt::Spaced(P, Status, X + 66, Y + 57, 7.f, .3f, bOpen ? StatusColor : FLinearColor(1.f, .45f, .4f, 1), ECireFont::Display, false, false);
     CireShopArt::CompassStar(P, X + W - 40, Y + 46, 15, Filigree * FLinearColor(1, 1, 1, .8f));
     {
         const float RX = X + W - 66;
@@ -1713,8 +1915,10 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
             P.Text(TEXT("PATH"), CX0 + 7, CY0 + 2.5f, 7.5f, PathGold, ECireFont::Heading, true, false);
         }
         if (bNamed) { const int32 NameLines = FMath::Clamp(FMath::FloorToInt((CH - S - 11 - PlateH - 6) / (CireUIStyle::ReadableSize(9.5f) * 1.12f)), 1, 2); CentredWrap(P, CireItems::DisplayName(Id), CX0 + CW * .5f, CY0 + S + 10, CW - 10, 9.5f, FMath::Lerp(TC, FLinearColor::White, .2f), ECireFont::Bold, NameLines, 0.f); }
+        const FCirePriceQuote CardQuote = QuoteFor(Hero, Id); // shop-anywhere: -10% / +10% pill on the card
+        if (Item->Purchasable) DeltaPill(P, CX0 + CW - (bOwned ? 20.f : 4.f), CY0 + 4, CardQuote, bNamed ? 8.f : 7.f);
         const FString Cost = FString::Printf(TEXT("%dg"), Price);
-        const FLinearColor CostColor = bAffordable ? (Price < Item->TotalCost ? FLinearColor(.55f, 1.f, .5f, 1) : BrightGold) : FLinearColor(1.f, .42f, .38f, 1);
+        const FLinearColor CostColor = bAffordable ? (CardQuote.Delta() > 0 ? SurchargeOrange : Price < Item->TotalCost ? DiscountGreen : BrightGold) : FLinearColor(1.f, .42f, .38f, 1);
         CireUIStyle::Bevel(P, CX0 + 4, CY0 + CH - PlateH - 4, CW - 8, PlateH, 4.f, FLinearColor(0, 0, 0, .62f));
         P.Text(Cost, CX0 + (CW - P.TextWidth(Cost, PS, ECireFont::Numbers)) * .5f, CY0 + CH - PlateH - 3, PS, CostColor, ECireFont::Numbers, true, false);
         State.GridPos.Add(Id, FVector2D(CX0 + (CW - S) * .5f, CY0 + 7));
@@ -1931,7 +2135,19 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         if (Count > 0) CostLine += FString::Printf(TEXT("  ·  RECIPE %dg"), Item->RecipeCost);
         CireShopArt::Spaced(P, CostLine, DX + 10, TY, 7.5f, .2f, Filigree, ECireFont::Display, false, false);
         TY += Step(7.5f) + 2;
-        if (Price != Item->TotalCost && Item->Purchasable && Room(Step(11.5f))) { P.Text(FString::Printf(TEXT("Your price: %dg (owned parts count)"), Price), DX + 10, TY, 11.5f, FLinearColor(.55f, 1.f, .5f, 1), ECireFont::Bold, true, true); TY += Step(11.5f); }
+        if (Item->Purchasable && Room(Step(11.5f)))
+        {   // shop-anywhere: your price here, with the owned-parts and location reasons.
+            const FCirePriceQuote DQ = QuoteFor(Hero, Shown);
+            const FString Where = CireVendors::QuoteLabel(DQ);
+            TArray<FString> Why;
+            if (DQ.Base != Item->TotalCost) Why.Add(TEXT("owned parts count"));
+            if (!Where.IsEmpty()) Why.Add(Where);
+            if (Price != Item->TotalCost || !Where.IsEmpty())
+            {
+                const FString Line = P.Fit(FString::Printf(TEXT("Your price: %dg  (%s)"), Price, *FString::Join(Why, TEXT(", "))), 11.5f, DWd - 20, ECireFont::Bold);
+                P.Text(Line, DX + 10, TY, 11.5f, DQ.Delta() > 0 ? SurchargeOrange : DiscountGreen, ECireFont::Bold, true, true); TY += Step(11.5f);
+            }
+        }
         TArray<FString> Lines;
         StatLines(Shown).ParseIntoArrayLines(Lines);
         for (const FString& Line : Lines) { if (!Room(Step(12.5f))) break; P.Text(Line, DX + 10, TY, 12.5f, CireUIStyle::StatColor(Line), ECireFont::Bold, true, true); TY += Step(12.5f); }
@@ -1987,9 +2203,11 @@ void CireShopUI::DrawShop(ACireHUD& HUD, ACireHero* Hero, ACireController* Contr
         }
         else if (Item->Purchasable)
         {
-            const CI::PurchasePlan Plan = CI::PlanPurchase(D.Catalog, Rules, Item->Id, Hero->Gold);
-            const bool bOver = In(M, DX + 8, ButtonY, DWd - 16, 38);
-            const FString Label = Plan.Ok ? FString::Printf(TEXT("BUY  %dg"), Plan.Cost) : FString::Printf(TEXT("BUY  %dg  ·  %s"), Price, Plan.Error.find("gold") != std::string::npos ? TEXT("NEED GOLD") : TEXT("UNAVAILABLE"));
+            CI::PurchasePlan Plan = CI::PlanPurchase(D.Catalog, Rules, Item->Id, MAX_int32 / 2);
+            if (Plan.Ok && Hero->Gold < Price) { Plan.Ok = false; Plan.Error = "gold"; } // shop-anywhere: priced where you stand
+            const bool bOver = bInteractive && In(M, DX + 8, ButtonY, DWd - 16, 38);
+            const FString Tag = CireVendors::QuoteTag(QuoteFor(Hero, Shown));
+            const FString Label = Plan.Ok ? FString::Printf(TEXT("BUY  %dg%s"), Price, Tag.IsEmpty() ? TEXT("") : *(TEXT("  (") + Tag + TEXT(")"))) : FString::Printf(TEXT("BUY  %dg  ·  %s"), Price, Plan.Error.find("gold") != std::string::npos ? TEXT("NEED GOLD") : TEXT("UNAVAILABLE"));
             ShopButton(P, DX + 8 + ShakeOffset(Shown), ButtonY, DWd - 16, 38, Label, bOver, false, !Plan.Ok, BrightGold, 14);
             if (Click(DX + 8, ButtonY, DWd - 16, 38)) RequestBuy(HUD, Hero, GameState, Shown, State.DetailIconPos);
         }
@@ -2196,6 +2414,9 @@ void CireShopUI::OpenVendor(ACireController* Controller, FName VendorId)
     Controller->bShop = true; State.PendingTab = 0; State.PendingVendor = Index;
 }
 
+bool CireShopUI::IsConfirmOpen() { return State.Confirm.bOpen; }
+bool CireShopUI::CancelConfirm() { if (!State.Confirm.bOpen) return false; State.Confirm.bOpen = false; return true; }
+
 FName CireShopUI::CurrentVendor()
 {
     const auto& Vendors = CireVendors::Get().Vendors;
@@ -2280,5 +2501,46 @@ void CireShopUI::DebugFreezeAfterStamp(float Age) { if (State.StampStart > 0) St
 int32 CireShopUI::DebugTab() { return State.Tab; }
 void CireShopUI::DebugMouse(FVector2D Logical) { VirtualPointer = Logical; }
 FVector2D CireShopUI::DebugGridPos(FName ItemId) { const FVector2D* P = State.GridPos.Find(ItemId); return P ? *P + FVector2D(21, 21) : FVector2D(-1, -1); }
+bool CireShopUI::ProbeConfirmDialog(ACireHUD& HUD, ACireHero* Hero, FString& Detail)
+{
+    if (!Hero) { Detail = TEXT("no hero"); return false; }
+    auto& S = HUD.UISettings;
+    const bool bSavedMaster = S.bConfirmDialogs, bSavedBuy = S.bConfirmOutOfTownBuy;
+    const auto SavedConfirm = State.Confirm;
+    const int32 SentBefore = State.ConfirmSent;
+    FName ItemId;
+    for (const FName Id : CireItems::Get().Order) if (const CI::ItemDef* Item = CireItems::Find(Id); Item && Item->Purchasable) { ItemId = Id; break; }
+    // The real quote on this client (where the probe hero stands), then synthetic town / field quotes.
+    const FCirePriceQuote Live = QuoteFor(Hero, ItemId);
+    FCirePriceQuote Field; Field.Base = 100; Field.Zone = ECirePriceZone::Field; Field.Price = CireVendors::ApplyZone(100, ECirePriceZone::Field, CireVendors::Pricing());
+    FCirePriceQuote Town = Field; Town.Zone = ECirePriceZone::Town; Town.Price = 100;
+    FCirePriceQuote AtVendor = Field; AtVendor.Zone = ECirePriceZone::Vendor; AtVendor.Price = CireVendors::ApplyZone(100, ECirePriceZone::Vendor, CireVendors::Pricing());
+    S.bConfirmDialogs = true; S.bConfirmOutOfTownBuy = true;
+    State.Confirm = {};
+    const bool bAppears = !BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Field, true) && State.Confirm.bOpen && State.Confirm.Id == ItemId;
+    ResolveConfirm(HUD, Hero, false);
+    const bool bCancel = !State.Confirm.bOpen && State.ConfirmSent == SentBefore;
+    const bool bSkillAppears = !BeginPurchase(HUD, Hero, 1, FName(TEXT("war_cry")), FVector2D::ZeroVector, Field, true) && State.Confirm.bOpen && State.Confirm.Kind == 1;
+    ResolveConfirm(HUD, Hero, false);
+    const bool bTownSilent = BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Town, true) && !State.Confirm.bOpen;
+    const bool bVendorSilent = BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, AtVendor, true) && !State.Confirm.bOpen;
+    // "Don't show this again" + BUY: the purchase goes out and the next out-of-town buy skips the dialog.
+    BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Field, true);
+    State.Confirm.bDontShow = true;
+    ResolveConfirm(HUD, Hero, true);
+    const bool bDontShow = !S.bConfirmOutOfTownBuy && State.ConfirmSent == SentBefore + 1 && !State.Confirm.bOpen;
+    const bool bSuppressed = BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Field, true) && !State.Confirm.bOpen;
+    // Options > Confirmation dialogs off: suppressed even with the per-dialog switch back on.
+    S.bConfirmOutOfTownBuy = true; S.bConfirmDialogs = false;
+    const bool bMasterOff = BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Field, true) && !State.Confirm.bOpen;
+    S.bConfirmDialogs = bSavedMaster; S.bConfirmOutOfTownBuy = bSavedBuy;
+    State.Confirm = SavedConfirm;
+    const bool bMath = Field.Price == 110 && AtVendor.Price == 90;
+    Detail = FString::Printf(TEXT("appears=%d cancel=%d skill=%d town_silent=%d vendor_silent=%d dont_show=%d suppressed=%d options_off=%d math=%d live_zone=%d live_price=%d/%d item=%s"),
+        bAppears, bCancel, bSkillAppears, bTownSilent, bVendorSilent, bDontShow, bSuppressed, bMasterOff, bMath,
+        static_cast<int32>(Live.Zone), Live.Price, Live.Base, *ItemId.ToString());
+    return bAppears && bCancel && bSkillAppears && bTownSilent && bVendorSilent && bDontShow && bSuppressed && bMasterOff && bMath;
+}
+
 void CireShopUI::DebugReset() { const FName Keep = State.Selected; State = FShopState(); State.Selected = Keep; }
 #endif

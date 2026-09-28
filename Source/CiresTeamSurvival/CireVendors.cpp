@@ -21,6 +21,7 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Misc/ScopeExit.h" // shop-anywhere tests
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireVendors, Log, All);
 
@@ -131,6 +132,17 @@ bool CireVendors::ParseVendors(const FString& Json, FCireVendorData& Out, FStrin
     Out.NameplateRange = Num(Root, TEXT("nameplateRange"), 2600.f);
     Out.Fallback = FName(Str(Root, TEXT("fallback")));
     Root->TryGetStringArrayField(TEXT("shared"), Out.SharedTags);
+    // shop-anywhere: pricing by where the buyer stands (fractions; 0.10 = 10%).
+    const TSharedPtr<FJsonObject>* PricingObj = nullptr;
+    if (Root->TryGetObjectField(TEXT("pricing"), PricingObj) && PricingObj && PricingObj->IsValid())
+    {
+        FCireVendorPricing& Pr = Out.Pricing;
+        (*PricingObj)->TryGetBoolField(TEXT("shopAnywhere"), Pr.bShopAnywhere);
+        Pr.VendorDiscount = FMath::Clamp(Num(*PricingObj, TEXT("vendorDiscount"), Pr.VendorDiscount), 0.f, .9f);
+        Pr.FieldSurcharge = FMath::Clamp(Num(*PricingObj, TEXT("outOfTownSurcharge"), Pr.FieldSurcharge), 0.f, 5.f);
+        Pr.TownVendorRadius = FMath::Clamp(Num(*PricingObj, TEXT("townVendorRadius"), Pr.TownVendorRadius), 0.f, 50000.f);
+        Pr.VendorReachSlack = FMath::Clamp(Num(*PricingObj, TEXT("vendorReachSlack"), Pr.VendorReachSlack), 0.f, 2000.f);
+    }
     const TArray<TSharedPtr<FJsonValue>>* Rules = nullptr;
     if (Root->TryGetArrayField(TEXT("rules"), Rules))
         for (const auto& V : *Rules)
@@ -416,6 +428,118 @@ void CireVendors::OnPurchased(const UWorld* World, FName ItemId)
     if (Best) Best->Gesture(TEXT("agree"));
 }
 
+// ------------------------------------------------------------------ shop-anywhere pricing
+
+const FCireVendorPricing& CireVendors::Pricing() { return Get().Pricing; }
+FCireVendorPricing& CireVendors::MutablePricing() { Get(); return GData.Pricing; }
+bool CireVendors::ShopAnywhere() { return Get().Pricing.bShopAnywhere; }
+
+int32 CireVendors::ApplyZone(int32 Base, ECirePriceZone Zone, const FCireVendorPricing& Rules)
+{
+    if (Base <= 0) return FMath::Max(0, Base);
+    const double Factor = Zone == ECirePriceZone::Vendor ? 1.0 - FMath::Clamp(static_cast<double>(Rules.VendorDiscount), 0.0, .9)
+        : Zone == ECirePriceZone::Field ? 1.0 + FMath::Max(0.0, static_cast<double>(Rules.FieldSurcharge)) : 1.0;
+    // Nearest gold, halves up (450 -> 405 / 495; 5 -> 5 / 6).
+    return FMath::Max(0, static_cast<int32>(FMath::FloorToDouble(Base * Factor + .5 + 1e-9)));
+}
+
+bool CireVendors::InTown(const ACireHero* Hero)
+{
+    const UWorld* World = Hero ? Hero->GetWorld() : nullptr;
+    if (!World) return true;
+    const FVector Here = Hero->GetActorLocation();
+    // Same point as ACireGameMode::BasePosition, computed from the world so clients mirror the server.
+    if (FVector::Dist2D(Here, CireLanePath::BasePosition(World, Hero->TeamId, 110)) <= CireItems::Get().Shop.TownRadius) return true;
+    const auto& D = Get();
+    const float Radius = D.Pricing.TownVendorRadius;
+    if (Radius <= 0.f) return false;
+    for (const FCireVendorSpot& Spot : D.Spots)
+    {
+        if (Spot.Team >= 0 && Spot.Team != Hero->TeamId) continue;
+        if (FVector::Dist2D(SpotTransform(Spot, Hero->TeamId).GetLocation(), Here) <= Radius) return true;
+    }
+    return false;
+}
+
+FName CireVendors::VendorInReach(const ACireHero* Hero, FName Want)
+{
+    if (!Hero || !Hero->GetWorld()) return NAME_None;
+    const auto& D = Get();
+    const float Reach = D.InteractRange + D.Pricing.VendorReachSlack;
+    FName Best; float BestDist = Reach;
+    // The merchants exist on every peer (ACireWorld spawns them everywhere, dedicated servers without visuals),
+    // so the server and the client measure the same counter.
+    for (TCireActorIterator<ACireVendor> It(Hero->GetWorld()); It; ++It)
+    {
+        if (It->Team != Hero->TeamId || (!Want.IsNone() && It->VendorId != Want)) continue;
+        const float Dist = FVector::Dist2D(It->InteractPoint(), Hero->GetActorLocation());
+        if (Dist <= BestDist) { BestDist = Dist; Best = It->VendorId; }
+    }
+    return Best;
+}
+
+FName CireVendors::VendorForStat(const ACireHero* Hero)
+{
+    if (!Hero) return NAME_None;
+    const Cires::PrimaryStat Stat = Hero->PrimaryStat();
+    const TCHAR* Code = Stat == Cires::PrimaryStat::Intelligence ? TEXT("INT") : Stat == Cires::PrimaryStat::Agility ? TEXT("AGI") : TEXT("STR");
+    for (const FCireVendorDef& V : Get().Vendors) if (V.Stat.Equals(Code, ESearchCase::IgnoreCase)) return V.Id;
+    return NAME_None;
+}
+
+ECirePriceZone CireVendors::ZoneFor(const ACireHero* Hero, FName MatchVendor, FName* OutVendorHere)
+{
+    if (OutVendorHere) *OutVendorHere = NAME_None;
+    const FName Here = VendorInReach(Hero, MatchVendor);
+    if (!Here.IsNone()) { if (OutVendorHere) *OutVendorHere = Here; return ECirePriceZone::Vendor; }
+    return InTown(Hero) ? ECirePriceZone::Town : ECirePriceZone::Field;
+}
+
+FCirePriceQuote CireVendors::QuoteItem(const ACireHero* Hero, FName ItemId, int32 Base)
+{
+    FCirePriceQuote Q;
+    Q.Base = Q.Price = Base;
+    if (!ShopAnywhere()) return Q; // classic rules: list prices everywhere
+    // Shared wares (potions, tomes) are sold by every merchant: any counter gives the discount.
+    Q.Vendor = VendorOf(ItemId);
+    FName Here;
+    Q.Zone = ZoneFor(Hero, Q.Vendor, &Here);
+    if (Q.Zone == ECirePriceZone::Vendor) Q.Vendor = Here;
+    Q.Price = ApplyZone(Base, Q.Zone, Pricing());
+    return Q;
+}
+
+FCirePriceQuote CireVendors::QuoteSkill(const ACireHero* Hero, int32 Base)
+{
+    FCirePriceQuote Q;
+    Q.Base = Q.Price = Base;
+    if (!ShopAnywhere()) return Q; // classic rules: list prices everywhere
+    Q.Vendor = VendorForStat(Hero);
+    Q.Zone = ZoneFor(Hero, Q.Vendor.IsNone() ? FName(TEXT("__none__")) : Q.Vendor);
+    Q.Price = ApplyZone(Base, Q.Zone, Pricing());
+    return Q;
+}
+
+FString CireVendors::QuoteTag(const FCirePriceQuote& Quote)
+{
+    if (Quote.Zone == ECirePriceZone::Town) return FString();
+    const float Pct = Quote.Zone == ECirePriceZone::Vendor ? -Pricing().VendorDiscount : Pricing().FieldSurcharge;
+    if (FMath::IsNearlyZero(Pct)) return FString();
+    return FString::Printf(TEXT("%s%d%%"), Pct < 0 ? TEXT("-") : TEXT("+"), FMath::RoundToInt(FMath::Abs(Pct) * 100.f));
+}
+
+FString CireVendors::QuoteLabel(const FCirePriceQuote& Quote)
+{
+    const FString Tag = QuoteTag(Quote);
+    if (Tag.IsEmpty()) return FString();
+    if (Quote.Zone == ECirePriceZone::Vendor)
+    {
+        const FCireVendorDef* V = Find(Quote.Vendor);
+        return FString::Printf(TEXT("%s at the %s"), *Tag, V ? *V->Name : TEXT("merchant"));
+    }
+    return FString::Printf(TEXT("%s out-of-town surcharge"), *Tag);
+}
+
 // ------------------------------------------------------------------ ACireVendor
 
 ACireVendor::ACireVendor()
@@ -660,6 +784,86 @@ bool CireVendors::RunSmoke(ACireGameMode* Mode)
             Check(NearestInRange(Hero) != V, TEXT("the other realm's merchant is never in reach"));
             Hero->Destroy();
         }
+    }
+    // ---- shop-anywhere (playtest 6): pricing maths, zones, and the server charging the location price.
+    {
+        FCireVendorPricing R;
+        Check(ApplyZone(450, ECirePriceZone::Vendor, R) == 405 && ApplyZone(450, ECirePriceZone::Town, R) == 450 && ApplyZone(450, ECirePriceZone::Field, R) == 495,
+            TEXT("pricing: 450g is 405g at the merchant, 450g in town, 495g out of town"));
+        Check(ApplyZone(7, ECirePriceZone::Vendor, R) == 6 && ApplyZone(7, ECirePriceZone::Field, R) == 8 && ApplyZone(0, ECirePriceZone::Field, R) == 0 && ApplyZone(1, ECirePriceZone::Vendor, R) == 1,
+            TEXT("pricing: nearest gold, free stays free"));
+        R.VendorDiscount = .2f; R.FieldSurcharge = .25f;
+        Check(ApplyZone(200, ECirePriceZone::Vendor, R) == 160 && ApplyZone(200, ECirePriceZone::Field, R) == 250, TEXT("pricing: the percentages are data"));
+        FCireVendorData Parsed; FString Error;
+        const bool bOk = ParseVendors(TEXT("{\"fallback\":\"a\",\"pricing\":{\"shopAnywhere\":false,\"vendorDiscount\":0.15,\"outOfTownSurcharge\":0.3,\"townVendorRadius\":1000},\"vendors\":[{\"id\":\"a\",\"name\":\"A\"}]}"), Parsed, Error);
+        Check(bOk && !Parsed.Pricing.bShopAnywhere && FMath::IsNearlyEqual(Parsed.Pricing.VendorDiscount, .15f) && FMath::IsNearlyEqual(Parsed.Pricing.FieldSurcharge, .3f) && Parsed.Pricing.TownVendorRadius == 1000.f,
+            TEXT("pricing: the Vendors.json pricing block parses"));
+        Check(D.Pricing.bShopAnywhere && FMath::IsNearlyEqual(D.Pricing.VendorDiscount, .1f) && FMath::IsNearlyEqual(D.Pricing.FieldSurcharge, .1f),
+            TEXT("pricing: Vendors.json ships buy-anywhere, -10% at the merchant, +10% out of town"));
+        FCirePriceQuote Tagged; Tagged.Base = 100; Tagged.Price = 110; Tagged.Zone = ECirePriceZone::Field;
+        Check(QuoteTag(Tagged) == TEXT("+10%") && QuoteLabel(Tagged).Contains(TEXT("out-of-town")), TEXT("pricing: the surcharge is labelled"));
+    }
+    ACireVendor* Smith = nullptr;
+    for (ACireVendor* V : Vendors) if (V->VendorId == FName(TEXT("weaponsmith"))) { Smith = V; break; }
+    if (Smith)
+    {
+        const FCireVendorPricing SavedPricing = Pricing();
+        MutablePricing().bShopAnywhere = true;
+        FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        ACireHero* Hero = Mode->GetWorld()->SpawnActor<ACireHero>(Smith->InteractPoint() + FVector(0, 0, 100), FRotator::ZeroRotator, Params);
+        ON_SCOPE_EXIT { MutablePricing() = SavedPricing; if (IsValid(Hero)) Hero->Destroy(); };
+        if (Hero && Hero->Inventory)
+        {
+            Hero->SetActorTickEnabled(false); Hero->Inventory->SetComponentTickEnabled(false);
+            Hero->TeamId = Smith->Team; Hero->Draft(0); Hero->TeamId = Smith->Team;
+            auto Place = [&](const FVector& At) { Hero->SetActorLocation(At, false, nullptr, ETeleportType::TeleportPhysics); };
+            auto ListPrice = [&](const TCHAR* Id)
+            {
+                const auto Plan = Cires::Items::PlanPurchase(CireItems::Get().Catalog, Hero->Inventory->ToRules(), TCHAR_TO_UTF8(Id), MAX_int32 / 2);
+                return Plan.Ok ? Plan.Cost : -1;
+            };
+            Place(Smith->InteractPoint() + FVector(0, 0, 100));
+            const FName Own(TEXT("bone_dagger")), Other(TEXT("boiled_jerkin")), Shared(TEXT("vial_of_crimson"));
+            const FCirePriceQuote AtOwn = QuoteItem(Hero, Own, 450);
+            Check(AtOwn.Zone == ECirePriceZone::Vendor && AtOwn.Vendor == Smith->VendorId && AtOwn.Price == 405, TEXT("zones: at the Weaponsmith his wares are -10%"));
+            const FCirePriceQuote AtOther = QuoteItem(Hero, Other, 450);
+            Check(AtOther.Zone == ECirePriceZone::Town && AtOther.Price == 450, TEXT("zones: another merchant's ware is list price in town"));
+            Check(QuoteItem(Hero, Shared, 100).Price == 90, TEXT("zones: shared wares (potions) are -10% at any merchant"));
+            Check(QuoteSkill(Hero, 100).Price == (VendorForStat(Hero) == Smith->VendorId ? 90 : 100), TEXT("zones: skills are -10% at the merchant of your primary stat"));
+            Check(CireItems::ShopAccessFor(Hero) == Cires::Items::ShopAccess::Allowed, TEXT("access: shopping is open at the counter in any phase"));
+            // The server charges the location price.
+            Hero->Gold = 5000;
+            const int32 DaggerList = ListPrice(TEXT("bone_dagger"));
+            FString Message;
+            Check(DaggerList > 0 && Hero->Inventory->Buy(Own, Message) && Hero->Gold == 5000 - ApplyZone(DaggerList, ECirePriceZone::Vendor, Pricing()) && Message.Contains(TEXT("Weaponsmith")),
+                TEXT("server: buying at the Weaponsmith charges -10% and says why"));
+            Check(Hero->Inventory->UndoLast(Message) && Hero->Gold == 5000, TEXT("server: undo refunds the discounted price"));
+            // Out of town: the first probe point that is neither near the base nor near a merchant.
+            bool bField = false;
+            for (const FVector& Offset : {FVector(30000, 0, 0), FVector(-30000, 0, 0), FVector(0, 30000, 0), FVector(0, -30000, 0), FVector(60000, 0, 0), FVector(-60000, 0, 0)})
+            {
+                Place(Smith->GetActorLocation() + Offset + FVector(0, 0, 100));
+                if (!InTown(Hero)) { bField = true; break; }
+            }
+            Check(bField, TEXT("zones: a point far from town is out of town"));
+            if (bField)
+            {
+                const FCirePriceQuote Far = QuoteItem(Hero, Own, 450);
+                Check(Far.Zone == ECirePriceZone::Field && Far.Price == 495 && QuoteTag(Far) == TEXT("+10%"), TEXT("zones: out of town costs +10%"));
+                Check(CireItems::ShopAccessFor(Hero) == Cires::Items::ShopAccess::Allowed, TEXT("access: shopping is open out of town"));
+                const int32 JerkinList = ListPrice(TEXT("boiled_jerkin"));
+                Hero->Gold = 5000;
+                Check(JerkinList > 0 && Hero->Inventory->Buy(Other, Message) && Hero->Gold == 5000 - ApplyZone(JerkinList, ECirePriceZone::Field, Pricing()) && Message.Contains(TEXT("out-of-town")),
+                    TEXT("server: buying out of town charges +10% and says why"));
+                Hero->Gold = ApplyZone(JerkinList, ECirePriceZone::Field, Pricing()) - 1; // one short of the surcharged price, above the list price
+                const int32 Short = Hero->Gold;
+                Check(ListPrice(TEXT("boiled_jerkin")) > 0 && !Hero->Inventory->Buy(Other, Message) && Hero->Gold == Short && Message.Contains(TEXT("gold")), TEXT("server: the surcharge is part of the gold check"));
+                MutablePricing().bShopAnywhere = false;
+                Check(QuoteItem(Hero, Own, 450).Price == 450, TEXT("classic rules (shopAnywhere false): list price everywhere"));
+                MutablePricing().bShopAnywhere = true;
+            }
+        }
+        else Check(false, TEXT("shop-anywhere fixture hero"));
     }
     UE_LOG(LogCireVendors, Display, TEXT("CIRE_VENDORS_%s checks=%d source=%s"), bPass ? TEXT("PASS") : TEXT("FAIL"), Count, *D.SpotSource);
     return bPass;

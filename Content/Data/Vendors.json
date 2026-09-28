@@ -3,6 +3,14 @@
   "_comment": "vendors: the three town merchants (Eric 2026-09-26: shop NPCs split the item catalogue by stat). Every purchasable item belongs to exactly one merchant: 'overrides' first, then the first 'rules' entry whose tag the item carries, else 'fallback'. Items tagged with a 'shared' tag (potions, tomes) are sold by every merchant. The B key still opens every merchant at once (buy anywhere in prep); the Interact key or a click on a merchant opens the shop on that merchant's tab. Positions come from TownVendors.json (TownVendors.provisional.json until the town layout lands). Art: Art/Vendors (ChatGPT sheets + signs), Tripo bodies in /Game/Tripo/Vendors (Art/Vendors/TripoVendors.json).",
   "interactRange": 450,
   "nameplateRange": 2600,
+  "pricing": {
+    "_comment": "shop-anywhere (playtest 6): skills and items can be bought anytime, anywhere. In person at the matching merchant (items: the merchant who sells it, any merchant for shared wares; skills: the merchant of your primary stat) = -vendorDiscount; elsewhere in town = list price; out of town = +outOfTownSurcharge. Town = Items.json shopRules.townRadius around the base, or townVendorRadius (cm) around any of your realm's merchants. vendorReachSlack (cm) is added to interactRange for the in-person discount. shopAnywhere false restores the old phase/town shopping rules.",
+    "shopAnywhere": true,
+    "vendorDiscount": 0.10,
+    "outOfTownSurcharge": 0.10,
+    "townVendorRadius": 3200,
+    "vendorReachSlack": 120
+  },
   "shared": [
     "consumable"
   ],

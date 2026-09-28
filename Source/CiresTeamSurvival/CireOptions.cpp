@@ -295,6 +295,11 @@ void ACireHUD::DrawSettings()
             Toggle(TEXT("Warning sounds"),UISettings.bThreatSound,R,B+70,TEXT("Plays an alarm when you gain (or, as a tank, lose) aggro and a soft ping on the threat warning."));
             Slider(TEXT("Warn at threat (%)"),UISettings.ThreatWarningPercent,60,100,1,R,B+110,TEXT("Non-tanks get a warning when their threat on an enemy reaches this share of the current aggro holder's."));
             Wrapped(TEXT("Nameplates glow red when an enemy is on you (damage/healer) and orange when you are close to pulling it. As a tank, orange means an engaged enemy is attacking someone else."),R,B+170,286,12,Muted,6);
+            {   // shop-anywhere: confirmation dialogs (out-of-town purchases). Turning it back on also restores every "Don't show this again".
+                const bool bWas=UISettings.bConfirmDialogs;
+                Toggle(TEXT("Confirmation dialogs"),UISettings.bConfirmDialogs,R,B+315,TEXT("Ask before actions that cost extra, such as buying out of town (+10% surcharge). Turning this on again also brings back dialogs you hid with Don't show this again."));
+                if(UISettings.bConfirmDialogs&&!bWas){UISettings.bConfirmOutOfTownBuy=true;UISettings.Save();}
+            }
         }
     }
     else if(OptionsTab==2)

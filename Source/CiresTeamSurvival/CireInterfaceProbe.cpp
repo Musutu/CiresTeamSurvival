@@ -6,6 +6,8 @@
 #include "CireArenaPortal.h" // arena-portal
 #include "CireArenas.h" // arena-portal
 #include "CireChampionArt.h"
+#include "CireHUD.h" // shop-anywhere: confirmation dialog probe
+#include "CireShopUI.h" // shop-anywhere
 #include "Animation/AnimSequence.h"
 #include "Animation/AnimSingleNodeInstance.h"
 #include "Animation/BlendSpace.h"
@@ -456,6 +458,13 @@ bool CireInterfaceProbe::TickClient(ACireController* Controller) {
         if(State->Phase!=0||Own!=5||Opposing!=0){Abort(TEXT("next cycle realm state incorrect"));return true;}
         Controller->ServerSendChat(TEXT("CIRE_PROBE_ACK_DONE"),true);Client.Step=9;Client.StepStarted=Now;
     } else if(Client.Step==9&&Now-Client.StepStarted>1) {
+        {   // shop-anywhere: the out-of-town purchase confirmation appears, and is suppressed by "Don't show this again" and by Options.
+            ACireHUD* ProbeHUD=Cast<ACireHUD>(Controller->GetHUD());
+            FString Detail;
+            if(!ProbeHUD){Abort(TEXT("shop confirm dialog: no HUD on the client"));return true;}
+            if(!CireShopUI::ProbeConfirmDialog(*ProbeHUD,Hero,Detail)){UE_LOG(LogCireInterface,Error,TEXT("CIRE_INTERFACE_CLIENT_SHOP_CONFIRM_FAIL %s"),*Detail);Abort(TEXT("shop confirm dialog"));return true;}
+            UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_CLIENT_SHOP_CONFIRM_PASS team=%d %s"),Hero->TeamId,*Detail);
+        }
         UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_CLIENT_PASS team=%d phases=survival/prep/arena/recovery/survival"),Hero->TeamId);
         Client.bDone=true;FPlatformMisc::RequestExitWithStatus(false,0);
     }
