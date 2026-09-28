@@ -41,7 +41,8 @@ and `pack-formations.png`. Full design: `Docs/JunglePacks.md` (Tiers, Compositio
 5. **Facing** = toward the nearest monster path. No per-pack manual facing yet. Say if you want a FACING stepper on packs.
 6. **Formation spacing** = half the pack radius per unit (1.5-4 m), so a 4.5 m pack spaces monsters ~2.3 m apart.
 7. The drawing's pack of 4 is asymmetric (back row shifted left); kept as drawn.
-8. A race without casters fills caster slots with its other DPS (logged `KIND ... has no caster DPS`).
+8. **Caster DPS:** the roster's casters almost all heal (so they are healers). A CASTER DPS slot takes a race caster body and it fights without its heals, at 65 % HP. Every race fields one this way. Say if you would rather have dedicated new caster-DPS units.
+9. "Any DPS" slots (the default) draw melee / ranged / non-healing casters from the race, so default packs rarely show casters; choose CASTER DPS in the inspector to get them.
 
 ## Shared-file edits (keep small at merge)
 - `CireLoot.cpp` `SpawnBay`: formation offsets + facing yaw, `ApplyTier(..., bLeader)`, the leader HP line moved into ApplyTier, log `facing=`.
@@ -53,4 +54,12 @@ and `pack-formations.png`. Full design: `Docs/JunglePacks.md` (Tiers, Compositio
 - `Content/Data/JunglePacks.json`: schema 2 (stats, formations, unlocks 1/1, tier health).
 
 ## Gate logs
-(filled in below as they run)
+- Jungle probe (town, Eric's layout): PASS, `Saved/JungleProbe/20260928T043927212784Z/` (probe.txt):
+  - `ROOTCAUSE with the old unlocks cycle 1 wave 1 would spawn T1=37 T2=0 T3=0 T4=0 of realm 0`
+  - `LAYOUT_SPAWNED packs=128 realm0 T1..T4=37/13/4/10 realm1 T1..T4=37/13/4/10 sizes3-8=6/16/24/70/4/8 formed=126 faced=128`
+  - `SPAWNED packs=80 monsters=460 tiers=20/20/20/20 sizes3-8=10/16/6/14/20/14 casters=30 offnav=0`
+- Gates after merging main (a5e640e1), all PASS:
+  - native: `Saved/ExpansionChecks/20260928T045936084847Z/report.json` (CIRE_COMBAT_EXPANSION_PASS, ROUTE_TOOLS / PROGRESSION PASS)
+  - network: `Saved/NetworkSmoke/20260928T051520978118Z/report.json`
+  - interface: `Saved/InterfaceSmoke/20260928T051101354338Z/report.json`
+  - Earlier timeouts came from the Paragon asset scan and a shared Build.bat lock (built with a private TMP); both environmental.

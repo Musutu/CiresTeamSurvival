@@ -206,6 +206,7 @@ Its size grows with the tier, and its roles are the preset formation's for that 
 **Members.** For each slot, the unit is drawn from the type's pool of that role (a seeded shuffle, cycling).
 
 - A chosen DPS kind the race lacks (for example a race without casters) takes the race's other DPS; the audit logs `KIND <race> has no caster DPS`.
+- **Caster DPS come from caster bodies.** Nearly every caster in the roster owns a heal, so it counts as a healer. A CASTER DPS slot therefore also takes the race's healing casters (role `caster` / `support`) and they fight **without their heals** (their tier loadout drops `healAlly` abilities) at the caster share of tank health. `CireJunglePacks::PackRoleOf` records the role each spawned monster fills.
 - The spawn order is tanks, then healers, then DPS.
 - The **first tank is the Pack Leader**. It gets the boss frame, the pack-leader bounty and loot, and x1.5 health.
 - **Tier readability** (Docs/Zones.md): pack monsters do not glow. Their tier shows as `T1`..`T4` next to the name on
