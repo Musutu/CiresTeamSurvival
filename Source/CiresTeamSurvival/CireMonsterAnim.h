@@ -83,6 +83,17 @@ public:
     bool bLastPoseRejected = false;
     /** world-dressing: keep the root joint at its reference transform (glTF animals key their armature proxy root). */
     bool bLockRootToReference = false;
+    /** blender-rig: real tentacle bones (Tools/Blender/add_chain.py: tentacle_<chain>_<bone>) wave on top of every clip,
+     *  replacing the skin-material sway for that region. DegPerBone 0 = still. Speed/Wave as MonsterArt.json "sway". */
+    float TentacleSpeed = 0.f, TentacleWave = 0.f, TentacleDegPerBone = 0.f;
+    /** blender-rig: mesh bone index, chain, segment of each tentacle bone (filled by CireMonsterArt::ApplyBody). */
+    TArray<FIntVector> TentacleBones;
+    /** blender-rig: elbow hyperextension guard (CireGrip::GuardElbows), filled by CireMonsterArt::ApplyBody. */
+    int32 GuardArms[2][3] = {{INDEX_NONE, INDEX_NONE, INDEX_NONE}, {INDEX_NONE, INDEX_NONE, INDEX_NONE}};
+    FVector GuardAnterior[2] = {FVector::ZeroVector, FVector::ZeroVector};
+    bool bElbowGuard = false;
+    /** blender-rig: arms the guard corrected in the last evaluation (tests). */
+    int32 LastElbowGuardFixes = 0;
     /** movement-feel: visual heading and leg IK applied after the layers. */
     CireLocomotion::FPoseFeel Feel;
 protected:

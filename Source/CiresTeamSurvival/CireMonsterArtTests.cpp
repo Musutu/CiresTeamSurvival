@@ -12,6 +12,7 @@
 #include "CireNPCState.h"
 #include "CireThreat.h"
 #include "CireFootsteps.h"
+#include "CireRigAudit.h" // blender-rig
 #include "Materials/MaterialInterface.h"
 #include "Animation/AnimSequence.h"
 #include "Components/BoxComponent.h"
@@ -76,6 +77,17 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
     Check(Art.bValid, TEXT("NPCMeshes.tripo.json + MonsterArt.json load"));
     for (const auto& Pair : CireNPCArchetypes::Get().Archetypes)
         Check(Find(Pair.Key) != nullptr, TEXT("Tripo art for archetype ") + Pair.Key.ToString());
+    // blender-rig: MonsterFabClips "role:<role>" aliases resolve to the body's set clip (High Inquisitor war_cry ->
+    // set shout, ground_slam -> set heavy2; its own Tripo war_cry wins), never to the Gun & Sword coverage clips that bend its staff arm backwards.
+    if (const auto* Inquisitor = Find(TEXT("fallen_high_inquisitor")))
+        for (const auto& Body : Inquisitor->Bodies)
+            for (const auto& Alias : TArray<TPair<FString, FString>>{{TEXT("war_cry"), TEXT("shout")}, {TEXT("ground_slam"), TEXT("heavy2")}})
+            {
+                const FString* Clip = Body.Clips.Find(Alias.Key);
+                const FString* Role = Body.Roles.Find(Alias.Value);
+                if (Clip && Role && !Clip->StartsWith(TEXT("/Game/Tripo/"))) Check(*Clip == *Role, FString::Printf(TEXT("%s %s aliases set %s (%s)"), *Body.Variant, *Alias.Key, *Alias.Value, **Clip));
+                if (Clip) Check(!Clip->Contains(TEXT("_monster_")), Body.Variant + TEXT(" ") + Alias.Key + TEXT(" is not a Gun & Sword coverage clip"));
+            }
 
     UWorld* World = Mode->GetWorld();
     const auto Clock = Mode->Clock; const auto Heroes = Mode->Heroes; const auto Monsters = Mode->Monsters;
@@ -112,7 +124,7 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
     };
 
     TMap<FName, float> IdleHead;
-    int32 Bodies = 0, Poses = 0;
+    int32 Bodies = 0, Poses = 0, TentacleBodies = 0; // blender-rig
     float X = -2000.f;
     for (const auto& Pair : Art.Archetypes)
     {
@@ -147,7 +159,13 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
                 {
                     Check(Found != nullptr, Tag + TEXT(" keeps prop on ") + Prop.Bone.ToString());
                     const float Want = Prop.Scale * (Body.PropScale.Contains(Prop.Bone) ? Body.PropScale[Prop.Bone] : 1.f) * Scale;
-                    if (Found) Check(FMath::IsNearlyEqual(Found->GetComponentScale().X, Want, .05f * Want),
+                    // blender-rig: a sizeClasses prop (1H/mace 2x, capped at 3/4 of the body) grows along its handle only.
+                    bool bSized = false;
+                    if (Found) for (const FName& T : Found->ComponentTags) bSized |= T.ToString().StartsWith(TEXT("CireSizeClass_"));
+                    const float Long = Found ? static_cast<float>(Found->GetComponentScale().GetAbsMax()) : 0.f;
+                    if (Found && bSized) Check(Long >= Want * .999f && Long <= Want * 2.05f,
+                        FString::Printf(TEXT("%s sized prop %s scale %.2f within %.2f..%.2f"), *Tag, *Prop.Bone.ToString(), Long, Want, Want * 2.f));
+                    else if (Found) Check(FMath::IsNearlyEqual(Found->GetComponentScale().X, Want, .05f * Want),
                         FString::Printf(TEXT("%s prop %s world scale %.2f (want %.2f)"), *Tag, *Prop.Bone.ToString(), Found->GetComponentScale().X, Want));
                 }
             }
@@ -176,6 +194,21 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
             Check(Idle.HeadZ - Bottom > .62f * Height && Idle.HeadZ - Bottom < 1.02f * Height,
                 FString::Printf(TEXT("%s idle head %.1fcm for %.0fcm body"), *Tag, Idle.HeadZ - Bottom, Height));
             if (Variant == 0) IdleHead.Add(Pair.Key, (Idle.HeadZ - Bottom) / FMath::Max(1.f, Body.HeightCm));
+            // blender-rig: a body with added tentacle bones (Tools/Blender/add_chain.py) waves them; the region leaves the skin sway.
+            if (const auto* TentacleAnim = Presentation->GetMonsterAnim(); TentacleAnim && Body.Variant == TEXT("Tidecaller"))
+            {
+                ++TentacleBodies;
+                Check(TentacleAnim->TentacleBones.Num() == 12, FString::Printf(TEXT("%s has 12 tentacle bones (%d)"), *Tag, TentacleAnim->TentacleBones.Num()));
+                Check(TentacleAnim->TentacleDegPerBone > .5f && TentacleAnim->TentacleDegPerBone < 15.f, FString::Printf(TEXT("%s tentacle wave %.1f deg/bone"), *Tag, TentacleAnim->TentacleDegPerBone));
+                Check(Presentation->AppliedSway().Num() + 1 == Body.Sway.Num(), Tag + TEXT(" tentacle region left the skin sway"));
+                if (const int32 Tip = M->GetMesh()->GetBoneIndex(TEXT("tentacle_1_3")); Tip != INDEX_NONE)
+                {
+                    Presentation->PoseForTest(TEXT("idle"), .1f); const FVector A = M->GetMesh()->GetBoneLocation(TEXT("tentacle_1_3"));
+                    Presentation->PoseForTest(TEXT("idle"), .1f); M->GetMesh()->TickAnimation(.4f, false); M->GetMesh()->RefreshBoneTransforms(); M->GetMesh()->FinalizeBoneTransform();
+                    const FVector B = M->GetMesh()->GetBoneLocation(TEXT("tentacle_1_3"));
+                    Check(A.ContainsNaN() == false && B.ContainsNaN() == false && FVector::Dist(A, B) < 30.f, FString::Printf(TEXT("%s tentacle tip finite and near (%.1fcm)"), *Tag, FVector::Dist(A, B)));
+                }
+            }
             // Every clip stays finite, compact and grounded; locomotion stays in place over the capsule.
             for (const TCHAR* Role : {TEXT("walk"), TEXT("run"), TEXT("attack"), TEXT("hit"), TEXT("death")})
                 for (int32 Step = 0; Step <= 4; ++Step)
@@ -187,6 +220,13 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
                     const float Reach = FMath::Max(FMath::Max(1.6f * Height, 130.f), Body.ReachCm * Scale); // world-dressing: long-bodied animals; tripo-races: small swarm bodies sprawl ~125cm when they die
                     Check(bEvaluated && P.bFinite && P.MaxDistance < Reach, Where + FString::Printf(TEXT(" compact (max %.0fcm)"), P.MaxDistance));
                     Check(P.FeetZ - Bottom > -10.f * Scale, Where + FString::Printf(TEXT(" feet above ground (%.1f)"), P.FeetZ - Bottom));
+                    // blender-rig: the elbow guard leaves no hyperextended monster elbow in any clip (Fab sword_shield/spell sets).
+                    if (const auto* GuardAnim = Presentation->GetMonsterAnim(); GuardAnim && GuardAnim->bElbowGuard && bEvaluated && Body.Rig != TEXT("quadruped"))
+                        for (const bool bRight : {false, true})
+                        {
+                            const CireRigAudit::FArm Arm = CireRigAudit::Measure(*M->GetMesh(), bRight);
+                            if (Arm.bValid) Check(Arm.ElbowDeg >= CireRigAudit::HyperextensionLimitDeg, Where + FString::Printf(TEXT(" %s elbow not hyperextended (%.1f deg)"), bRight ? TEXT("right") : TEXT("left"), Arm.ElbowDeg));
+                        }
                     if (FCString::Strcmp(Role, TEXT("death")) != 0)
                     {
                         Check(P.FeetZ - Bottom < 40.f * Scale + (FCString::Strcmp(Role, TEXT("run")) == 0 ? Air : 0.f), Where + FString::Printf(TEXT(" one foot planted (%.1f)"), P.FeetZ - Bottom));
@@ -278,6 +318,7 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
         if (M && M->MonsterArt) M->MonsterArt->ForceVariant(0);
         Check(M && M->MonsterArt && M->MonsterArt->IsTripoApplied(), TEXT("Tripo body re-applies over the fallback"));
     }
+    Check(TentacleBodies > 0, TEXT("the Tidecaller tentacle pilot body was checked")); // blender-rig
     UE_LOG(LogCireMonsterArtTests, Display, TEXT("CIRE_MONSTER_ART_%s checks=%d bodies=%d poses=%d"), bPass ? TEXT("PASS") : TEXT("FAIL"), Checks, Bodies, Poses);
     bPass = CireChampionActions::RunSmoke(Mode) && bPass;
     bPass = CireGrip::RunSmoke(Mode) && bPass;
