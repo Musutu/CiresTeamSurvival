@@ -381,7 +381,9 @@ const FChampionArtDefinition* BaseProfileArt(const FString& Id)
         if(!bSummonsLoaded)
         {
             bSummonsLoaded=true;FString Json;TSharedPtr<FJsonObject> Root;const TArray<TSharedPtr<FJsonValue>>* Rows=nullptr;double Version=0;
-            if(FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/SummonArt.json")))&&
+            // ability-expansion: SummonArt.expansion.json rows (same shape) dress the expansion summons; SummonArt.json wins.
+            for(const TCHAR* SummonFile:{TEXT("Data/SummonArt.json"),TEXT("Data/SummonArt.expansion.json")}){Json.Reset();Root.Reset();Rows=nullptr;Version=0;
+            if(FFileHelper::LoadFileToString(Json,*FPaths::Combine(FPaths::ProjectContentDir(),SummonFile))&&
                FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),Root)&&Root&&Root->TryGetNumberField(TEXT("schemaVersion"),Version)&&Version==1&&
                Root->TryGetArrayField(TEXT("summons"),Rows))
                 for(const auto& Row:*Rows)
@@ -390,8 +392,9 @@ const FChampionArtDefinition* BaseProfileArt(const FString& Id)
                     if(!Row->TryGetObject(O)||!(*O)->TryGetStringField(TEXT("id"),Key)||!(*O)->TryGetStringField(TEXT("status"),Status)||Status!=TEXT("ready")||
                        !(*O)->TryGetStringField(TEXT("mesh"),D.MeshPath)||!(*O)->TryGetStringField(TEXT("locomotion"),D.LocomotionPath)||
                        !(*O)->TryGetStringField(TEXT("attack"),D.AttackPath)||!(*O)->TryGetNumberField(TEXT("heightCm"),Height)||Height<40||Height>500)continue;
-                    D.HeightCm=static_cast<float>(Height);D.Raw=*O;SummonBindings.Add(TEXT("summon:")+Key,MoveTemp(D));
+                    D.HeightCm=static_cast<float>(Height);D.Raw=*O;if(!SummonBindings.Contains(TEXT("summon:")+Key))SummonBindings.Add(TEXT("summon:")+Key,MoveTemp(D));
                 }
+            }
         }
         return SummonBindings.Find(Id);
     }
