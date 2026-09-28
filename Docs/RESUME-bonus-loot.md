@@ -90,4 +90,16 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bonus-loot`, ports 17540-17549. The sp
 - `Rules/CireItemRules.h/.cpp`: `LootKind::SkillPoint`, `LootBundle::SkillPoints`.
 
 ## Gate logs
-(filled in below after the runs)
+All three gates were run on 2026-09-28, after merging main (with feat/waves-modes, 13b101ed). Build: Result: Succeeded
+(`Saved/build7.log`).
+
+- **Native: PASS.** `Saved/ExpansionChecks/20260928T063337316835Z/report.json`.
+  - `CIRE_BONUS_LOOT_PASS checks=95 pvp_uniques=10`.
+  - `CIRE_MONSTER_EXPANSION_PASS checks=492`.
+  - `CIRE_COMBAT_EXPANSION_PASS`.
+- **Network: PASS.** `Saved/NetworkSmoke/20260928T063649850879Z/report.json`.
+- **Interface: PASS.** `Saved/InterfaceSmoke/20260928T063816118011Z/report.json`.
+
+Environmental notes:
+- Earlier "native probe timed out after 240 s", network and interface timeouts came from the cold asset-registry scan
+  (Paragon, then Polyphoria). A single native run with `--timeout 900` warmed the cache, and later runs finished in time.
