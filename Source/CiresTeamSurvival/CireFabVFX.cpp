@@ -19,6 +19,10 @@
 #include "CireAbilityDB.h" // kits-complete: display-name lookups
 #include "CireRaces.h" // pack-usage: monster-ability coverage test
 #include "CireNPCArchetypes.h"
+#include "Containers/Ticker.h" // vfx-loop-fix: bounded one-shots
+#include "GameFramework/Character.h"
+#include "Components/CapsuleComponent.h"
+#include "CollisionQueryParams.h"
 
 namespace
 {
@@ -35,6 +39,8 @@ struct FTable
     TSet<FString> Unresolvable;
     TMap<FString, FString> GroundExcluded; // telegraphs: object path -> why it never sits on a zone (square/diamond, does not scale)
     TMap<FString, float> GroundRadius; // telegraphs: measured XY footprint radius at scale 1 (FabVFX.json "groundRadius")
+    TMap<FString, FString> GroundAnchored; // vfx-loop-fix: object path -> why it rises from the floor (spawned at the feet)
+    float CastSeconds = 1.6f, ImpactSeconds = 2.f, LevelUpSeconds = 3.f, FadeSeconds = 2.5f; // vfx-loop-fix: FabVFX.json "lifetime"
 };
 FTable& Table() { static FTable T; return T; }
 
@@ -53,6 +59,8 @@ CireFabVFX::FEntry ParseEntry(const TSharedPtr<FJsonValue>& Value)
     if(O->TryGetArrayField(TEXT("tint"),Tint)&&Tint->Num()>=3)
         E.Tint=FLinearColor((*Tint)[0]->AsNumber(),(*Tint)[1]->AsNumber(),(*Tint)[2]->AsNumber(),1);
     double Strength=1;if(O->TryGetNumberField(TEXT("tintStrength"),Strength))E.TintStrength=FMath::Clamp(static_cast<float>(Strength),0.f,1.f); // pack-usage
+    FString Anchor;if(O->TryGetStringField(TEXT("anchor"),Anchor))E.Anchor=Anchor.Equals(TEXT("ground"),ESearchCase::IgnoreCase)?1:Anchor.Equals(TEXT("body"),ESearchCase::IgnoreCase)?0:-1; // vfx-loop-fix
+    double Life=0;if(O->TryGetNumberField(TEXT("lifetime"),Life))E.Lifetime=FMath::Clamp(static_cast<float>(Life),0.f,30.f);
     return E;
 }
 
@@ -104,6 +112,16 @@ void Load()
     const TSharedPtr<FJsonObject>* Excluded=nullptr;
     if(Root->TryGetObjectField(TEXT("groundExcluded"),Excluded))
         for(const auto& R:(*Excluded)->Values)T.GroundExcluded.Add(FString(R.Key.ToView()),R.Value->Type==EJson::String?R.Value->AsString():FString(TEXT("excluded")));
+    // vfx-loop-fix: systems authored to rise from the floor, and the one-shot lifetimes / release fade window.
+    const TSharedPtr<FJsonObject>* Anchored=nullptr;
+    if(Root->TryGetObjectField(TEXT("groundAnchored"),Anchored))
+        for(const auto& R:(*Anchored)->Values)T.GroundAnchored.Add(FString(R.Key.ToView()),R.Value->Type==EJson::String?R.Value->AsString():FString(TEXT("ground")));
+    const TSharedPtr<FJsonObject>* Life=nullptr;
+    if(Root->TryGetObjectField(TEXT("lifetime"),Life))
+    {
+        auto Read=[&](const TCHAR* Key,float& Out,float Min,float Max){double V=0;if((*Life)->TryGetNumberField(Key,V))Out=FMath::Clamp(static_cast<float>(V),Min,Max);};
+        Read(TEXT("cast"),T.CastSeconds,.2f,30.f);Read(TEXT("impact"),T.ImpactSeconds,.2f,30.f);Read(TEXT("levelUp"),T.LevelUpSeconds,.2f,30.f);Read(TEXT("releaseFade"),T.FadeSeconds,.2f,15.f);
+    }
     const TSharedPtr<FJsonObject>* Buffs=nullptr;
     if(Root->TryGetObjectField(TEXT("buffs"),Buffs))
         for(const auto& B:(*Buffs)->Values)
@@ -207,23 +225,29 @@ UFXSystemAsset* CireFabVFX::ResolveSchool(ECireSchool School, ERole Role, float*
 UFXSystemComponent* CireFabVFX::SpawnAttached(UFXSystemAsset* System, USceneComponent* Parent, FVector Offset, float Scale, bool bAutoDestroy)
 {
     if(!System||!Parent||!Enabled())return nullptr;
+    UFXSystemComponent* C=nullptr;
     if(UNiagaraSystem* Niagara=Cast<UNiagaraSystem>(System))
-        return UNiagaraFunctionLibrary::SpawnSystemAttached(Niagara,Parent,NAME_None,Offset,FRotator::ZeroRotator,
+        C=UNiagaraFunctionLibrary::SpawnSystemAttached(Niagara,Parent,NAME_None,Offset,FRotator::ZeroRotator,
             FVector(Scale),EAttachLocation::KeepRelativeOffset,bAutoDestroy,ENCPoolMethod::None,true,true);
-    if(UParticleSystem* Cascade=Cast<UParticleSystem>(System))
-        return UGameplayStatics::SpawnEmitterAttached(Cascade,Parent,NAME_None,Offset,FRotator::ZeroRotator,FVector(Scale),
+    else if(UParticleSystem* Cascade=Cast<UParticleSystem>(System))
+        C=UGameplayStatics::SpawnEmitterAttached(Cascade,Parent,NAME_None,Offset,FRotator::ZeroRotator,FVector(Scale),
             EAttachLocation::KeepRelativeOffset,bAutoDestroy,EPSCPoolMethod::None,true);
-    return nullptr;
+    // vfx-loop-fix: an auto-destroying spawn is a one-shot: bounded even when the vendor asset loops (callers that live
+    // longer, e.g. a channel's cast flare, extend it with Bound). Persistent overlays (bAutoDestroy false) end via Release.
+    if(C&&bAutoDestroy)Bound(C,OneShotSeconds(ERole::Cast));
+    return C;
 }
 
 UFXSystemComponent* CireFabVFX::SpawnAt(UWorld* World, UFXSystemAsset* System, FVector Location, FRotator Rotation, float Scale)
 {
     if(!System||!World||!Enabled())return nullptr;
+    UFXSystemComponent* C=nullptr;
     if(UNiagaraSystem* Niagara=Cast<UNiagaraSystem>(System))
-        return UNiagaraFunctionLibrary::SpawnSystemAtLocation(World,Niagara,Location,Rotation,FVector(Scale),true,true,ENCPoolMethod::AutoRelease,true);
-    if(UParticleSystem* Cascade=Cast<UParticleSystem>(System))
-        return UGameplayStatics::SpawnEmitterAtLocation(World,Cascade,FTransform(Rotation,Location,FVector(Scale)),true,EPSCPoolMethod::AutoRelease,true);
-    return nullptr;
+        C=UNiagaraFunctionLibrary::SpawnSystemAtLocation(World,Niagara,Location,Rotation,FVector(Scale),true,true,ENCPoolMethod::AutoRelease,true);
+    else if(UParticleSystem* Cascade=Cast<UParticleSystem>(System))
+        C=UGameplayStatics::SpawnEmitterAtLocation(World,Cascade,FTransform(Rotation,Location,FVector(Scale)),true,EPSCPoolMethod::AutoRelease,true);
+    if(C)Bound(C,OneShotSeconds(ERole::Impact)); // vfx-loop-fix: every world-placed spawn is a one-shot (impacts, bursts)
+    return C;
 }
 
 void CireFabVFX::ApplyTint(UFXSystemComponent* Component, FLinearColor Tint)
@@ -274,6 +298,115 @@ const CireFabVFX::FEntry* CireFabVFX::FindKey(const FString& Key, ERole Role)
     return Key.IsEmpty()?nullptr:Loaded().Abilities.Find(Key.ToLower()+TEXT(".")+RoleName(Role));
 }
 
+// ------------------------------------------------------------------ vfx-loop-fix: bounded one-shots
+namespace
+{
+struct FCireFabTracked { TWeakObjectPtr<UFXSystemComponent> C; double ReleaseAt=-1, KillAt=-1; FVector At=FVector::ZeroVector; bool bPooled=false, bReleased=false; };
+TArray<FCireFabTracked>& CireFabTrackedList(){static TArray<FCireFabTracked> L;return L;}
+double CireFabWorldNow(const UFXSystemComponent* C){const UWorld* W=C?C->GetWorld():nullptr;return W?W->GetTimeSeconds():0.0;}
+bool CireFabIsPooled(const UFXSystemComponent* C)
+{
+    if(const UNiagaraComponent* N=Cast<UNiagaraComponent>(C))return N->PoolingMethod!=ENCPoolMethod::None;
+    if(const UParticleSystemComponent* P=Cast<UParticleSystemComponent>(C))return P->PoolingMethod!=EPSCPoolMethod::None;
+    return false;
+}
+void CireFabHardStop(UFXSystemComponent* C)
+{
+    if(!IsValid(C))return;
+    const bool bPooled=CireFabIsPooled(C);
+    if(UNiagaraComponent* N=Cast<UNiagaraComponent>(C))N->DeactivateImmediate();
+    else if(UParticleSystemComponent* P=Cast<UParticleSystemComponent>(C)){P->DeactivateImmediate();P->KillParticlesForced();}
+    if(!bPooled&&IsValid(C)&&!C->IsBeingDestroyed())C->DestroyComponent(); // pooled ones went back to their pool on completion
+}
+void CireFabEnsureTicker()
+{
+    static bool bTicker=false;if(bTicker)return;bTicker=true;
+    FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([](float){CireFabVFX::TickTracked();return true;}));
+}
+// Registers (or updates) a component: ReleaseDelay >= 0 releases it that many seconds from now, KillDelay >= 0 hard-stops it
+// that many seconds from now (a later Release keeps the earliest pending kill).
+void CireFabTrack(UFXSystemComponent* C, double ReleaseDelay, double KillDelay)
+{
+    if(!IsValid(C))return;
+    CireFabEnsureTicker();
+    const double Now=CireFabWorldNow(C);
+    TArray<FCireFabTracked>& L=CireFabTrackedList();
+    FCireFabTracked* T=L.FindByPredicate([C](const FCireFabTracked& X){return X.C.Get()==C;});
+    if(!T){T=&L.AddDefaulted_GetRef();T->C=C;T->bPooled=CireFabIsPooled(C);T->At=C->GetComponentLocation();}
+    if(ReleaseDelay>=0&&!T->bReleased)T->ReleaseAt=Now+ReleaseDelay;
+    if(KillDelay>=0){const double Kill=Now+KillDelay;T->KillAt=T->KillAt<0?Kill:FMath::Min(T->KillAt,Kill);T->bReleased=true;}
+}
+}
+float CireFabVFX::OneShotSeconds(ERole Role, const FEntry* Entry)
+{
+    if(Entry&&Entry->Lifetime>0)return Entry->Lifetime;
+    const FTable& T=Loaded();
+    return Role==ERole::Impact?T.ImpactSeconds:T.CastSeconds;
+}
+float CireFabVFX::ReleaseFadeSeconds(){return Loaded().FadeSeconds;}
+float CireFabVFX::LevelUpSeconds(){return Loaded().LevelUpSeconds;}
+void CireFabVFX::Bound(UFXSystemComponent* Component, float Seconds)
+{
+    if(!IsValid(Component)||Seconds<=0)return;
+    CireFabTrack(Component,Seconds,-1.0); // (re)arms the release unless the component is already ending
+}
+int32 CireFabVFX::TrackedCount(){int32 N=0;for(const FCireFabTracked& T:CireFabTrackedList())N+=T.C.IsValid();return N;}
+void CireFabVFX::TickTracked(double ExtraSeconds)
+{
+    TArray<FCireFabTracked>& L=CireFabTrackedList();
+    for(int32 I=L.Num()-1;I>=0;--I)
+    {
+        FCireFabTracked& T=L[I];UFXSystemComponent* C=T.C.Get();
+        // Gone, or a pooled one that completed / moved (handed back to its pool, maybe reused elsewhere): stop tracking.
+        if(!IsValid(C)||C->IsBeingDestroyed()||(T.bPooled&&(!C->IsActive()||!C->GetComponentLocation().Equals(T.At,1.)))){L.RemoveAtSwap(I);continue;}
+        if(T.bReleased&&!C->IsActive()){L.RemoveAtSwap(I);continue;} // released and completed: its auto-destroy takes it
+        const double Now=CireFabWorldNow(C)+ExtraSeconds;
+        if(!T.bReleased&&T.ReleaseAt>=0&&Now>=T.ReleaseAt)
+        {
+            if(UNiagaraComponent* N=Cast<UNiagaraComponent>(C)){if(N->PoolingMethod==ENCPoolMethod::None)N->SetAutoDestroy(true);}
+            else if(UParticleSystemComponent* P=Cast<UParticleSystemComponent>(C)){if(P->PoolingMethod==EPSCPoolMethod::None)P->bAutoDestroy=true;}
+            C->Deactivate();T.bReleased=true;T.KillAt=Now+ReleaseFadeSeconds();
+            if(!IsValid(C)||!C->IsActive()){L.RemoveAtSwap(I);continue;}
+        }
+        if(T.bReleased&&T.KillAt>=0&&Now>=T.KillAt)
+        {
+            UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_HARD_STOP system=%s"),*GetNameSafe(C->GetFXSystemAsset()));
+            CireFabHardStop(C);L.RemoveAtSwap(I);
+        }
+    }
+}
+bool CireFabVFX::IsGroundAnchoredPath(const FString& ObjectPath){return Loaded().GroundAnchored.Contains(ObjectPath);}
+bool CireFabVFX::IsGroundAnchored(const UFXSystemAsset* System, const FEntry* Entry)
+{
+    if(Entry&&Entry->Anchor>=0)return Entry->Anchor==1;
+    return System&&IsGroundAnchoredPath(System->GetPathName());
+}
+FVector CireFabVFX::GroundUnder(UWorld* World, FVector At, const AActor* Unit)
+{
+    if(const ACharacter* Character=Cast<ACharacter>(Unit);Character&&Character->GetCapsuleComponent())
+    {
+        const FVector Root=Character->GetActorLocation();
+        return FVector(At.X,At.Y,Root.Z-Character->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()+2.f);
+    }
+    if(World)
+    {
+        FCollisionQueryParams Params(SCENE_QUERY_STAT(CireFabGround),false,Unit);
+        FHitResult Hit;
+        if(World->LineTraceSingleByObjectType(Hit,At+FVector(0,0,40),At-FVector(0,0,600),FCollisionObjectQueryParams(ECC_WorldStatic),Params))
+            return Hit.ImpactPoint+FVector(0,0,2.f);
+    }
+    return At;
+}
+FVector CireFabVFX::FeetOffset(const AActor* Unit)
+{
+    if(const ACharacter* Character=Cast<ACharacter>(Unit);Character&&Character->GetCapsuleComponent())
+    {
+        const float Scale=FMath::Max(.01f,static_cast<float>(Character->GetActorScale3D().Z));
+        return FVector(0,0,-Character->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()+2.f/Scale);
+    }
+    return FVector(0,0,-88.f);
+}
+
 void CireFabVFX::Release(UFXSystemComponent* Component)
 {
     if(!Component)return;
@@ -282,6 +415,7 @@ void CireFabVFX::Release(UFXSystemComponent* Component)
     if(UNiagaraComponent* Niagara=Cast<UNiagaraComponent>(Component)){if(Niagara->PoolingMethod==ENCPoolMethod::None)Niagara->SetAutoDestroy(true);}
     else if(UParticleSystemComponent* Cascade=Cast<UParticleSystemComponent>(Component)){if(Cascade->PoolingMethod==EPSCPoolMethod::None)Cascade->bAutoDestroy=true;}
     Component->Deactivate();
+    if(IsValid(Component))CireFabTrack(Component,-1.0,ReleaseFadeSeconds()); // vfx-loop-fix: hard stop if the vendor system ignores the deactivation
 }
 
 bool CireFabVFX::IsGroundOverlay(const UFXSystemAsset* System, FString* Why)
@@ -460,6 +594,7 @@ bool CireFabVFX::RunTests(UWorld* World)
     UE_LOG(LogTemp,Display,TEXT("CIRE_FAB_VFX coverage %d/%d slots resolve (packs present: %s); abilities %d with %d/%d own slots resolving; %d Cascade"),
         Cov.Resolved,Cov.Configured,Cov.Resolved>0?TEXT("yes"):TEXT("no"),Cov.Abilities,Cov.AbilitySlotsResolved,Cov.AbilitySlots,Cov.Cascade);
     UE_LOG(LogTemp,Display,TEXT("%s"),bOk?TEXT("CIRE_FAB_VFX_TESTS_PASS"):TEXT("CIRE_FAB_VFX_TESTS_FAIL"));
+    bOk=RunLoopTests(World)&&bOk; // vfx-loop-fix
     return bOk;
 }
 #endif

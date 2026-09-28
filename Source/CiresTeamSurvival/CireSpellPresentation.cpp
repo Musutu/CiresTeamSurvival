@@ -700,9 +700,22 @@ void ACireSpellVisual::UpdateFabVFX()
     if(bFabGround)Scale=FMath::Clamp(FabTargetRadius*CireFabVFX::GroundFitFraction/FMath::Max(1.f,CireFabVFX::NativeGroundRadius(System)),.02f,5.f);
     // kit-editor: a champion's saved effect placement (socket / offset / scale / tint) for its cast of this ability.
     UFXSystemComponent* C=FabRole==CireFabVFX::ERole::Cast&&bAttach&&!bLoop?CireKitEditor::SpawnPlacedCast(GetWorld(),Skill,Start,System,Scale,Entry):nullptr;
-    if(!C){C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,FVector::ZeroVector,Scale,!bLoop)
-        :CireFabVFX::SpawnAt(GetWorld(),System,GetActorLocation(),GetActorRotation(),Scale);
+    // vfx-loop-fix (Eric, playtest 2026-09-28): a ground-anchored system (eruption, flame pillar, rune ring) rises from the
+    // floor under the caster / target, never from the capsule centre (the midsection) where cues are anchored.
+    FVector FabAt=GetActorLocation();bFabAnchoredGround=false;
+    if(!C&&!bFabGround&&FabRole!=CireFabVFX::ERole::Projectile&&FabRole!=CireFabVFX::ERole::Area&&CireFabVFX::IsGroundAnchored(System,Entry))
+    {
+        FabAt=CireFabVFX::GroundUnder(GetWorld(),FabAt,CireSoundEvents::CharacterNear(GetWorld(),FabAt,160.f));
+        bFabAnchoredGround=true;
+    }
+    FabSpawnAt=FabAt;
+    if(!C){C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,Mesh->GetComponentTransform().InverseTransformPosition(FabAt),Scale,!bLoop&&FabRole!=CireFabVFX::ERole::Area)
+        :CireFabVFX::SpawnAt(GetWorld(),System,FabAt,GetActorRotation(),Scale);
     CireFabVFX::ApplyEntryTint(C,*Entry);} // pack-usage: recolour variants (a placed cast applies the entry tint, then its own)
+    // vfx-loop-fix: one-shot roles are bounded whatever the vendor asset does (a looping pillar used as a cast flare stops
+    // with its cast); a channel's flare lives as long as its cast bar. Trails and zones end with this visual (EndPlay).
+    if(C&&!bLoop&&FabRole!=CireFabVFX::ERole::Area)
+        CireFabVFX::Bound(C,FabRole==CireFabVFX::ERole::Impact?CireFabVFX::OneShotSeconds(FabRole,Entry):FMath::Max(CireFabVFX::OneShotSeconds(FabRole,Entry),Duration-Age+.1f));
     FabFX=C;FabScale=Scale;
     if(bFabGround&&C)CireFabVFX::DimColors(C,CireAbilityVFX::FabGroundBrightness(CireAbilityVFX::GroundIntensity(GetWorld()))); // ground overlays follow the slider
     UE_LOG(LogTemp,Verbose,TEXT("CIRE_FAB_VFX_SPAWN skill=%s role=%s school=%s system=%s ok=%d"),*Skill.ToString(),*CireFabVFX::RoleName(FabRole),

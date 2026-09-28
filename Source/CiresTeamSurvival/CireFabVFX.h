@@ -31,6 +31,8 @@ namespace CireFabVFX
         float Scale = 1.f;           // uniform scale applied on spawn
         FLinearColor Tint = FLinearColor(0, 0, 0, 0); // A>0: recolour (pack-usage: Recolor / ApplyEntryTint)
         float TintStrength = 1.f;    // pack-usage: 0..1, how far every exposed colour moves to the tint's hue / saturation
+        int8 Anchor = -1;            // vfx-loop-fix: "anchor": -1 by system (groundAnchored list), 0 body, 1 ground
+        float Lifetime = 0.f;        // vfx-loop-fix: "lifetime" seconds for this one-shot entry (0: the role's default)
     };
 
     CIRESTEAMSURVIVAL_API bool Enabled();
@@ -62,7 +64,34 @@ namespace CireFabVFX
     // The entry for a data key in the "abilities" table (hit.<layer>.<weapon>, kill.<class>, level_up...), or nullptr.
     CIRESTEAMSURVIVAL_API const FEntry* FindKey(const FString& Key, ERole Role);
     // Stops emitting and lets the live particles finish, then destroys the component (Niagara or Cascade).
+    // vfx-loop-fix: a vendor system that keeps looping after Deactivate (infinite emitters that ignore the inactive state)
+    // is hard-stopped ReleaseFadeSeconds() later, so no released effect (buff ended, cast visual gone) can outlive its owner.
     CIRESTEAMSURVIVAL_API void Release(UFXSystemComponent* Component);
+
+    // vfx-loop-fix (Eric, playtest 2026-09-28: "a constant loop of fire eruption around the mid section ... should appear
+    // from the ground"). Vendor systems are authored either to loop (auras, pillars, rings) or to burst once; the same asset
+    // is often reused as a one-shot (a cast flare, an impact). Every one-shot spawn is therefore BOUNDED: it is released after
+    // its role's lifetime (FabVFX.json "lifetime": cast / impact / levelUp seconds) and hard-stopped after the fade window,
+    // whatever the asset does. Looping roles (projectile trails, zones, buff auras) end with their owner through Release.
+    CIRESTEAMSURVIVAL_API float OneShotSeconds(ERole Role, const FEntry* Entry = nullptr);
+    CIRESTEAMSURVIVAL_API float ReleaseFadeSeconds();
+    CIRESTEAMSURVIVAL_API float LevelUpSeconds();
+    // Releases the component after Seconds (0 or less: never) and hard-stops it ReleaseFadeSeconds() after that.
+    CIRESTEAMSURVIVAL_API void Bound(UFXSystemComponent* Component, float Seconds);
+    // Live bounded / released components still being tracked (tests).
+    CIRESTEAMSURVIVAL_API int32 TrackedCount();
+    // Advances the tracker (normally a core ticker; tests call it with a fake clock offset).
+    CIRESTEAMSURVIVAL_API void TickTracked(double ExtraSeconds = 0);
+    // Ground-anchored systems (FabVFX.json "groundAnchored": object path -> why): eruptions, pillars, rings and circles authored
+    // to rise from the floor. On a unit they spawn at its feet (GroundUnder), never at the capsule centre (the midsection).
+    // An entry may force it with "anchor": "ground" / "body".
+    CIRESTEAMSURVIVAL_API bool IsGroundAnchored(const UFXSystemAsset* System, const FEntry* Entry = nullptr);
+    CIRESTEAMSURVIVAL_API bool IsGroundAnchoredPath(const FString& ObjectPath);
+    // The floor under a unit or point: a character's capsule bottom, else a downward trace (WorldStatic) from At, else At.
+    CIRESTEAMSURVIVAL_API FVector GroundUnder(UWorld* World, FVector At, const AActor* Unit = nullptr);
+    // Relative offset (in the root component's unscaled space) from a character's root to its feet (+ a 2 cm lift);
+    // (0,0,-88) for anything without a capsule. Used by every Fab effect attached to a unit's root (auras, level-up).
+    CIRESTEAMSURVIVAL_API FVector FeetOffset(const AActor* Unit);
 
     // telegraphs (2026-09-26): Fab ground-effect overlays (the "area" role under a live ACireAreaEffect).
     // Vendor area systems are authored at their own size and footprint (the holy set carries a diamond / square frame,
@@ -93,5 +122,8 @@ namespace CireFabVFX
     // Data validity + graceful fallback (missing packs resolve to nullptr without errors). Logs
     // CIRE_FAB_VFX_TESTS_PASS / CIRE_FAB_VFX_TESTS_FAIL.
     CIRESTEAMSURVIVAL_API bool RunTests(UWorld* World);
+    // vfx-loop-fix (CireVFXLoopTests.cpp): bounded one-shots, effects ending with their buff, ground-anchored placement.
+    // Logs CIRE_VFX_LOOP_TESTS_PASS / _FAIL.
+    CIRESTEAMSURVIVAL_API bool RunLoopTests(UWorld* World);
 #endif
 }
