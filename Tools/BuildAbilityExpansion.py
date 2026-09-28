@@ -230,9 +230,9 @@ SIGNATURES = [
 # ---- B. Healing and defence (support playstyles).
 SUPPORT = [
     A("mending_rain", "Mending Rain", "healZone", "tide", [HL], "A healing rain falls on the spot for 6s: allies inside heal {effect} per second.", l15="purge", glyph="drop", tags=["Heal"]),
-    A("radiant_mend", "Radiant Mend", "heal", "holy", [HL], "Heal an ally (or yourself) for {effect}.", over=dict(cast=1.5), l15="purge", glyph="restoring", tags=["Heal"]),
-    A("transfusion", "Transfusion", "heal", "physical", [HL, TK], "Heal an ally for {effect}; they also gain a barrier of 30% of it for 6s.", rec={"barrier": .3}, over=dict(cast=1.5, effect=95), l15="healCut", glyph="heart", tags=["Heal", "Shield"]),
-    A("verdant_renewal", "Verdant Renewal", "heal", "nature", [HL], "Heal an ally for {effect} and clear their slows and roots.", rec={"cleanse": True}, over=dict(cast=1.5, effect=100, cooldown=10), l15="purge", glyph="leaf", tags=["Heal", "Cleanse"]),
+    A("radiant_mend", "Radiant Mend", "heal", "holy", [HL], "Heal an ally (or yourself) for {effect}.", l15="purge", glyph="restoring", tags=["Heal"]),
+    A("transfusion", "Transfusion", "heal", "physical", [HL, TK], "Heal an ally for {effect}; they also gain a barrier of 30% of it for 6s.", rec={"barrier": .3}, over=dict(effect=95), l15="healCut", glyph="heart", tags=["Heal", "Shield"]),
+    A("verdant_renewal", "Verdant Renewal", "heal", "nature", [HL], "Heal an ally for {effect} and clear their slows and roots.", rec={"cleanse": True}, over=dict(effect=100, cooldown=10), l15="purge", glyph="leaf", tags=["Heal", "Cleanse"]),
     A("stoneguard", "Stoneguard", "barrier", "earth", [TK, HL], "Encase an ally (or yourself) in stone: a barrier absorbing {effect} damage for 6s.", l15="slow", glyph="stone_skin", tags=["Shield"]),
     A("adrenaline", "Adrenaline Surge", "selfBuff", "physical", [D, TK], "Move and attack {effect}% faster for 8s.", rec={"buff": "xp_hastened"}, over=dict(mana=0, energy=25), l15="slow", glyph="rhythm", tags=["Haste"]),
     A("iron_resolve", "Iron Resolve", "selfBuff", "earth", [TK], "Take {effect}% less damage for 8s; slows and roots are cleared.", rec={"buff": "xp_fortified", "cleanse": True}, over=dict(mana=0, energy=25), l15="stun", glyph="shield", tags=["Guard", "Cleanse"]),
@@ -479,7 +479,6 @@ def build_row(ab, base_db):
     else:
         trig = "hit" if d in HIT or (d == "summon") else "pulse"
         row["level15"] = dict(bonus=ab["l15"], label=label15(ab["l15"], labels), trigger=trig)
-    row["castWhileMoving"] = cast <= 0
     if d == "construct":
         row["category"] = "construct"
     if kind == "ultimate":

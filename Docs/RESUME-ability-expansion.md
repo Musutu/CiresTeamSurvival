@@ -37,12 +37,15 @@ Pillow lives in `F:/CiresTeamSurvival-agents/pylib` (installed for this branch).
 
 ## Status
 - Done: data builder, module, routing, loaders, tests, docs appendix (Docs/Abilities.md "Expansion pool"), icons painted.
-- Not done / next: see "Gate logs" below for what was verified; ChatGPT-painted icons for the 12 ultimates would be the
-  next polish step (procedural icons ship now).
+- Icons imported to `/Game/UI/Abilities/T_<id>` (111, committed via LFS).
+- Next (after feat/casting-rules merges): switch the expansion Construct / Wall / Summon placement from its own
+  ground + sight check to `CireSkillCasting::PlacementAim` (clip-free placement, section G) - a 3-line change in
+  `CireAbilityExpansion::Cast` (`NeedGround`). Optional polish: ChatGPT-painted icons for the 12 ultimates.
 
 ## Assumptions / questions for Eric
-- Cast times: all expansion rows are instant except the 3 direct heals (1.5 s, the low end of Eric's 1.5-3.5 s rule).
-  feat/casting-rules sets cast-time / heal rules as data and overrides these; nothing here hand-tunes AoE cast times.
+- Cast times: no expansion row authors a cast time or `castWhileMoving`. feat/casting-rules applies its data rules
+  (`CastRules.json`, `CireSkillTuning::ApplyCastRules`) inside `CireAbilityDB::ParseJson`, which also parses
+  `AbilitiesExpansion.json`, so every expansion row inherits AoE-damage / direct-heal / AoE-heal casts and the heal nerf.
 - C-rated systems are skipped (coordinator ruling). 14 unused systems that render nothing on the catalogue stage and are
   not projectiles / lines (Earth_Magic_Spike1/2/5, Earth/Ice/Blood_Magic_Target, Ice_Magic_Snowstorm2, Blood_Magic_Crystal3/6,
   Posion_Magic_Spike1/2, the two blank blood decals) are left unused: they likely need a target / spline parameter.
@@ -63,4 +66,11 @@ Pillow lives in `F:/CiresTeamSurvival-agents/pylib` (installed for this branch).
 - `Docs/Abilities.md`: AUTO:expansion appendix.
 
 ## Gate logs
-(filled in per batch below)
+- Build: Succeeded after merging main (a5e640e1).
+- Native: PASS (`CIRE_ABILITY_EXPANSION_PASS checks=2364 abilities=111`, `CIRE_COMBAT_EXPANSION_PASS`) -
+  `Saved/ExpansionChecks/20260928T044756381421Z/report.json` (passed=true). With `--timeout 240` every probe passes but the
+  process is still exiting (the asset registry scans the new Paragon junctions for ~60 s after the probe), so the runner reports
+  a timeout: `20260928T044342904592Z`. Environmental.
+- Network / Interface smoke: FAIL on startup timeouts only (server readiness / client never connects: the game thread is
+  blocked in the AssetRegistry scan of the Paragon packs junctioned into Content/, see `Saved/NetworkSmoke/*`,
+  `Saved/InterfaceSmoke/*`). No Cire error lines. Environmental; rerun when the machine is quieter.
