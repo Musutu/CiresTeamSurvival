@@ -131,6 +131,9 @@ bool CireMonsterExpansion::RunSmoke(ACireGameMode* Mode)
     // ------------------------------------------------------------ Rare Spawn in a live wave (+ race variants)
     {
         FCireWaveConfig C = D; C.WavesPerCycle = 1; C.Rare.Chance = 1.f; C.Rare.FromWave = 1;
+        // bonus-loot: a Bonus Loot Stage (bonusWave.replaceChance, rolled per match seed) must not replace the forced-rare wave
+        // (a stage never carries a rare) nor spend the cycle's bonus cap the Bonus Loot Wave block below relies on.
+        C.Bonus.ReplaceChance = 0.f;
         FCireWaveDef W = CireWaveDirector::Template(ECireWaveType::Normal); W.SpawnInterval = 0; W.Race = TEXT("hollow");
         C.Waves = {W};
         State->Wave = 4; Mode->CycleWavesSpawned = 0; State->CycleWavesDone = 0;
@@ -182,7 +185,7 @@ bool CireMonsterExpansion::RunSmoke(ACireGameMode* Mode)
 
     // ------------------------------------------------------------ Bonus Loot Wave
     {
-        FCireWaveConfig C = D; C.WavesPerCycle = 3; C.Bonus.Chance = 1.f; C.Bonus.FromWave = 1; C.Bonus.MaxPerCycle = 1;
+        FCireWaveConfig C = D; C.WavesPerCycle = 3; C.Bonus.Chance = 1.f; C.Bonus.FromWave = 1; C.Bonus.MaxPerCycle = 1; C.Bonus.ReplaceChance = 0.f; // bonus-loot: only the breather bonus wave here
         Check(CireWaveDirector::ApplyLive(Mode, C, &Error), TEXT("bonus config applies"));
         Mode->CycleWavesSpawned = 1; State->CycleWavesDone = 1; State->Wave = 4; State->WavesPerCycle = 3;
         Mode->bSmoke = true;
