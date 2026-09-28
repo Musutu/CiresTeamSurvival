@@ -312,6 +312,7 @@ bool CireGrip::RunSmoke(ACireGameMode* Mode)
         C.Check(Anim->AttackWeight > .9f, Tag + TEXT(" attack pose applied"));
     }
     // Monsters: the props they keep.
+    int32 SizedMonsterProps = 0; // blender-rig
     const TCHAR* Ids[] = {TEXT("hollow_infantry"), TEXT("ironbound_bruiser"), TEXT("hollow_shieldbearer"), TEXT("barbed_hunter")};
     for (const TCHAR* Id : Ids)
     {
@@ -331,7 +332,26 @@ bool CireGrip::RunSmoke(ACireGameMode* Mode)
             const auto* Anim = M->MonsterArt->GetMonsterAnim();
             if (Anim) MeasureBody(C, FString(Id) + TEXT(" ") + Role, M->GetMesh(), Parts, Anim->Hands, false);
         }
+        // blender-rig: monster one-handers and maces follow WeaponLoadouts.json sizeClasses (2x, capped at 3/4 of the body).
+        const float BodyHeight = M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.f;
+        for (UStaticMeshComponent* Part : Parts)
+        {
+            FString Class; float Base = 0.f;
+            for (const FName& Tag : Part->ComponentTags)
+            {
+                const FString T = Tag.ToString();
+                if (T.StartsWith(TEXT("CireSizeClass_"))) Class = T.Mid(14);
+                else if (T.StartsWith(TEXT("CireSizeBase_"))) Base = FCString::Atoi(*T.Mid(13)) / 1000.f;
+            }
+            if (Class.IsEmpty() || !Part->GetStaticMesh()) continue;
+            ++SizedMonsterProps;
+            const float Raw = static_cast<float>(Part->GetStaticMesh()->GetBounds().BoxExtent.GetMax() * 2);
+            const float Length = Raw * static_cast<float>(Part->GetComponentScale().GetAbsMax());
+            C.Check(Base > 0.f && Length > Raw * Base * 1.15f, FString::Printf(TEXT("%s %s (%s) grew from its authored size (%.0f cm, base %.2f)"), Id, *Part->GetStaticMesh()->GetName(), *Class, Length, Base));
+            C.Check(Length <= .75f * BodyHeight * 1.25f + 5.f, FString::Printf(TEXT("%s %s capped near 3/4 of the body (%.0f cm, body %.0f cm)"), Id, *Part->GetStaticMesh()->GetName(), Length, BodyHeight));
+        }
     }
+    C.Check(SizedMonsterProps > 0, TEXT("some monster one-hander or mace follows the sizeClasses rule"));
     UE_LOG(LogCireGripTests, Display, TEXT("CIRE_GRIP_%s checks=%d grips=%d"), C.bPass ? TEXT("PASS") : TEXT("FAIL"), C.Checks, C.Grips);
     return C.bPass;
 }
