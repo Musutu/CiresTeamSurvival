@@ -65,12 +65,11 @@ Pillow lives in `F:/CiresTeamSurvival-agents/pylib` (installed for this branch).
 - `Tools/BuildAbilityIcons.py`: paints the expansion icon rows.
 - `Docs/Abilities.md`: AUTO:expansion appendix.
 
-## Gate logs
+## Gate logs (after Paragon was unlinked, 2026-09-28)
 - Build: Succeeded after merging main (a5e640e1).
-- Native: PASS (`CIRE_ABILITY_EXPANSION_PASS checks=2364 abilities=111`, `CIRE_COMBAT_EXPANSION_PASS`) -
-  `Saved/ExpansionChecks/20260928T044756381421Z/report.json` (passed=true). With `--timeout 240` every probe passes but the
-  process is still exiting (the asset registry scans the new Paragon junctions for ~60 s after the probe), so the runner reports
-  a timeout: `20260928T044342904592Z`. Environmental.
-- Network / Interface smoke: FAIL on startup timeouts only (server readiness / client never connects: the game thread is
-  blocked in the AssetRegistry scan of the Paragon packs junctioned into Content/, see `Saved/NetworkSmoke/*`,
-  `Saved/InterfaceSmoke/*`). No Cire error lines. Environmental; rerun when the machine is quieter.
+- Network smoke: PASS - `Saved/NetworkSmoke/20260928T051510227981Z/report.json`.
+- Interface smoke: PASS - `Saved/InterfaceSmoke/20260928T051646704002Z/report.json`.
+- Native: PASS (`CIRE_ABILITY_EXPANSION_PASS checks=2364`, `CIRE_COMBAT_EXPANSION_PASS`) - `Saved/ExpansionChecks/20260928T052753560677Z/report.json`
+  (passed=true, `--timeout 600`). With `--timeout 240` all probes pass (~3 min under load) but the editor's shutdown
+  asset-registry scan (Polyphoria) pushes the exit past 240 s, so the runner reports a timeout (`20260928T052347934998Z`).
+- PlacementAim follow-up: deferred until feat/casting-rules merges (coordinator).
