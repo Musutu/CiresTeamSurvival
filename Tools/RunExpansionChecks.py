@@ -79,7 +79,8 @@ def main() -> int:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     output = args.project.resolve().parent / "Saved/ExpansionChecks" / stamp
     output.mkdir(parents=True, exist_ok=False)
-    common = ["-nullrhi", "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-nosplash", f"-ExecCmds=t.MaxFPS {args.fps}"]
+    # playtest-net: -AssetGatherAll=false skips the ~70 s full asset-registry gather (see RunNetworkSmoke.py).
+    common = ["-nullrhi", "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-nosplash", "-AssetGatherAll=false", f"-ExecCmds=t.MaxFPS {args.fps}"]
     creation = getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0
     reports: dict[str, dict] = {}
 

@@ -99,3 +99,23 @@ fire eruption around the mid section of the characters. This should appear from 
 - Gates WITH Paragon (62 installed): native Saved/ExpansionChecks/20260928T144224813719Z (PASS, initiation 85, paragon 947,
   vfx loop 23); network Saved/NetworkSmoke/20260928T145136159967Z (PASS; first try timed out while the client was still
   scanning the Paragon asset registry, rerun passed); interface Saved/InterfaceSmoke/20260928T144754605560Z (PASS).
+
+## Follow-up 2: network smoke failing on main (daddb063, Paragon installed)
+- Timeouts: every -game / -server probe process (editor binary) re-gathers the whole asset registry synchronously before its
+  first frame (AssetDataGatherer never WRITES the cache when !GIsEditor, and no editor-written cache exists), 102k packages
+  with the 39 Paragon packs = 66-80 s per process (client log: "AssetRegistryGather time 66s ... NumCachedFiles 0"). With the
+  harness cap of 90 s probe time, the client connected with seconds left (or never) on a loaded PC -> "probe/disconnect
+  timeout". Fix: RunNetworkSmoke / RunInterfaceSmoke / RunExpansionChecks pass -AssetGatherAll=false (engine switch,
+  ShouldSearchAllAssetsAtStart): no full gather at start; nothing in the probes needs the full registry (Paragon install
+  detection uses DoesPackageExist; only the rig audit tool queries the registry and scans on demand). Client boot 70 s -> 4 s,
+  a whole network smoke ~24 s; Paragon still installed (62) in every probe.
+- "server validation state mismatch" / "disconnect did not preserve": the probe's nine bots were only movement-frozen and
+  auto-attack-off; with the Paragon roster in the bot pool they still cast (Polymorph on the probe's monsters, main log
+  CIRE_POLYMORPH ... CireMonster_28) and their summons fought next to the probe hero, while the server validates that hero to
+  the exact gold / level / CDR. Fix (CireMatch.cpp TickServerProbe, probe only): bot pawns and their controllers stop ticking
+  and bot summons / pets are removed at join; both failure paths now log CIRE_NET_SERVER_STATE with every validated value.
+- Eric's local state (Saved/Config/CireUI.ini etc.) was ruled out: the server reads none of it (only its own
+  GameProfilesNetProbe fixture), and a copy of his CireUI.ini in the worktree still passed.
+- Gates (Paragon installed): native Saved/ExpansionChecks/20260928T152613675060Z PASS; interface
+  Saved/InterfaceSmoke/20260928T152808658264Z PASS; network 4/4 PASS (20260928T152537884655Z, 152846992780Z,
+  152910846431Z, 152934249398Z).

@@ -66,7 +66,8 @@ def main() -> int:
     output = args.project.resolve().parent / "Saved" / "InterfaceSmoke" / stamp
     output.mkdir(parents=True, exist_ok=False)
     logs = {name: output / f"{name}.log" for name in ("server", "client0", "client1")}
-    common = ["-nullrhi", "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-ExecCmds=t.MaxFPS 60"]
+    # playtest-net: -AssetGatherAll=false skips the ~70 s full asset-registry gather (see RunNetworkSmoke.py).
+    common = ["-nullrhi", "-nosound", "-unattended", "-nop4", "-NoLiveCoding", "-AssetGatherAll=false", "-ExecCmds=t.MaxFPS 60"]
     server_arena_flags = [f"-CireArena={args.arena}"] if args.arena else []
     client_art_flags = ["-CireTripoChampions"] if args.tripo_champions else []
     commands = {
