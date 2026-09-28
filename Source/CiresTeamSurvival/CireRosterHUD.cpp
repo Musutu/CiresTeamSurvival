@@ -660,7 +660,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     // Text never goes below 12 logical units (18 px at 1080p, 15 px at 900p); the gallery audits it.
     // =====================================================================
     const CireDraftAssets::FTunables& Tune=CireDraftAssets::Tunables();
-    if(Stage&&!S.Portraits.bActive)Stage->SetPoolCapacity(Tune.PreviewPoolSize);
+    if(Stage&&!S.Portraits.bActive){Stage->SetPoolCapacity(Tune.PreviewPoolSize);Stage->SetLitePreview(true);}
     const float M=FMath::Clamp(FMath::Min(VW,VH)*.022f,12.f,26.f);           // safe margin
     float LX=M,CW=VW-2*M;
     if(CW>VH*2.6f){CW=VH*2.6f;LX=(VW-CW)*.5f;}                               // super-wide: centre the content

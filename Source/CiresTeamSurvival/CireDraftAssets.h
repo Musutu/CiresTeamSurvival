@@ -51,7 +51,7 @@ namespace CireDraftAssets
     struct FTunables
     {
         double HoverDebounceSeconds = .15;   // hover must settle this long before the heavy body load starts
-        double ParagonHoverDebounceSeconds = .35; // Paragon bodies are much heavier (editor: mesh rebuild on first load)
+        double ParagonHoverDebounceSeconds = .9;  // Paragon bodies are much heavier (editor: mesh rebuild on first load)
         bool bPreloadParagonNeighbours = false;  // neighbour preload skips Paragon bodies (never load one nobody asked for)
         int32 BodyCacheSize = 6;              // completed bodies kept resident
         int32 BackgroundCacheSize = 10;       // backgrounds kept resident (pinned full resolution)

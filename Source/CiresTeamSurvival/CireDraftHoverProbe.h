@@ -7,7 +7,7 @@
 //   - game-thread milliseconds spent loading the background, portraits and the 3D body (spawn / bind / visuals),
 //   - time until the details (splash) show the hovered hero and until the live 3D figure is ready.
 // Phases: "browse" (dwell 700 ms per hero), "scrub" (60 ms per hero: a fast mouse sweep across the grid) and
-// "revisit" (the first browse heroes again: cache hits) and "linger" (4 s on unseen heroes: time to the live figure). Results: CIRE_DRAFT_HOVER_* log lines and
+// "revisit" (the first browse heroes again: cache hits) and "linger" (4 s, Paragon 10 s, on unseen heroes: time to the live figure). Results: CIRE_DRAFT_HOVER_* log lines and
 // Saved/DraftHoverProbe/<stamp>[_tag]/hover.json.
 #include "CoreMinimal.h"
 

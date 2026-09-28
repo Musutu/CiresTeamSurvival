@@ -2,6 +2,7 @@
 #include "HAL/IConsoleManager.h"
 #include "CireGame.h"
 #include "CireChampionArt.h"
+#include "CireCreatureArt.h" // champ-select-perf: lite preview binding
 #include "CireChampionRoster.h"
 #include "CireDraftAssets.h" // champ-select-perf: async loading budget
 #include "Components/CapsuleComponent.h"
@@ -355,7 +356,7 @@ void ACireDraftStage::ShowProfile(const FString& Id)
     Hero->Notice.Reset();
     Hero->GetMesh()->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
     const double T2=FPlatformTime::Seconds();LastShow.BindMs=(T2-T1)*1000.0;
-    Hero->ChampionArt->UpdateVisuals(*Hero,.016f);
+    {TGuardValue<bool> Lite(GCireCreatureArtPreviewLite,bLitePreview&&!PortraitTarget);Hero->ChampionArt->UpdateVisuals(*Hero,.016f);}
     ON_SCOPE_EXIT{LastShow.VisualsMs=(FPlatformTime::Seconds()-T2)*1000.0;};
     Preview=Hero;Capture->ShowOnlyActors.AddUnique(Hero);
     RefreshCutoutParts();
@@ -626,7 +627,7 @@ void ACireDraftStage::Tick(float DeltaSeconds)
         Preview->AttackStartedServerTime=static_cast<float>(ServerNow(GetWorld()));
         Preview->AttackAimLocation=Preview->GetActorLocation()+Preview->GetActorForwardVector()*600.f;
     }
-    Preview->ChampionArt->UpdateVisuals(*Preview,DeltaSeconds);
+    {TGuardValue<bool> Lite(GCireCreatureArtPreviewLite,bLitePreview&&!PortraitTarget);Preview->ChampionArt->UpdateVisuals(*Preview,DeltaSeconds);}
     if(bCutout&&!PortraitTarget)RefreshCutoutParts(); // weapons and gear attach after the body loads
     FrameCamera(DeltaSeconds,false);
     if(Now-LastPrestream>5.0){LastPrestream=Now;Preview->PrestreamTextures(15.f,true);ForceTopDetail(Preview);} // gear attaches after spawn
@@ -755,6 +756,6 @@ void ACireDraftStage::SetPreviewSkin(const FString& Skin)
 {
     if(!IsValid(Preview)||Preview->ChampionSkin==Skin)return;
     Preview->ChampionSkin=Skin;
-    if(Preview->ChampionArt)Preview->ChampionArt->UpdateVisuals(*Preview,.016f);
+    if(Preview->ChampionArt){TGuardValue<bool> Lite(GCireCreatureArtPreviewLite,bLitePreview&&!PortraitTarget);Preview->ChampionArt->UpdateVisuals(*Preview,.016f);}
     RefreshCutoutParts();
 }

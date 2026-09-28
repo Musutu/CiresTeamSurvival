@@ -18,6 +18,9 @@ class UCireMonsterAnimInstance;
 class USkeletalMesh;
 
 /** Imported custom quadruped rig, evaluated in local space without root motion. */
+/** champ-select-perf: while true, creature bodies bind only idle / gait / attack clips (the draft preview). */
+extern CIRESTEAMSURVIVAL_API bool GCireCreatureArtPreviewLite;
+
 UCLASS(Transient)
 class CIRESTEAMSURVIVAL_API UCireBearAnimInstance : public UAnimInstance
 {

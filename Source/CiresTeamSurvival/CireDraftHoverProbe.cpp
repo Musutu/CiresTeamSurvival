@@ -99,7 +99,7 @@ FString FCireDraftHoverProbe::Tick(double Now,double FrameMs,const FCireDraftHov
     const auto Start=[&](int32 Index)
     {
         FSwitch& S=Plan[Index];S.StartedAt=Now;S.Start=Sample;
-        S.EndsAt=Now+(S.Phase==TEXT("scrub")?ScrubDwell:S.Phase==TEXT("revisit")?RevisitDwell:S.Phase==TEXT("linger")?LingerDwell:S.Phase==TEXT("end")?1.0:BrowseDwell);
+        S.EndsAt=Now+(S.Phase==TEXT("scrub")?ScrubDwell:S.Phase==TEXT("revisit")?RevisitDwell:S.Phase==TEXT("linger")?(S.Id.StartsWith(TEXT("pg_"))?LingerDwell*2.5:LingerDwell):S.Phase==TEXT("end")?1.0:BrowseDwell);
     };
     if(Current<0){Current=0;Start(0);HardDeadline=Now+420.0;}
     else

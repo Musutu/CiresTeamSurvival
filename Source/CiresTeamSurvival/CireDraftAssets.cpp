@@ -113,7 +113,10 @@ void DraftCollectPaths(const TSharedPtr<FJsonValue>& V,TArray<FString>& Out,int3
     const TArray<TSharedPtr<FJsonValue>>* A=nullptr;
     if(V->TryGetArray(A)){for(const auto& X:*A)DraftCollectPaths(X,Out,Depth+1);return;}
     const TSharedPtr<FJsonObject>* O=nullptr;
-    if(V->TryGetObject(O)&&O->IsValid())for(const auto& Pair:(*O)->Values)DraftCollectPaths(Pair.Value,Out,Depth+1);
+    // The preview binds only idle / gait / attack clips (GCireCreatureArtPreviewLite): reaction, death and cast clips and
+    // the FX their notifies drag in are not preloaded.
+    static const TSet<FString> Skip={TEXT("casts"),TEXT("hit"),TEXT("death"),TEXT("attackAlt"),TEXT("contact"),TEXT("attacksExtra"),TEXT("attacksFolder")};
+    if(V->TryGetObject(O)&&O->IsValid())for(const auto& Pair:(*O)->Values)if(!Skip.Contains(FString(Pair.Key.ToView())))DraftCollectPaths(Pair.Value,Out,Depth+1);
 }
 FDraftPathIndex& DraftPaths()
 {

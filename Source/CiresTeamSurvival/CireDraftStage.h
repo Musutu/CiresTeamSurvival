@@ -32,6 +32,8 @@ public:
     // champ-select-perf: recently shown bodies stay spawned (hidden, not ticking) so a revisit is instant.
     // Capacity counts the visible preview too (1 = no pool: every switch destroys and respawns).
     void SetPoolCapacity(int32 Capacity);
+    /** Champion select: bind only idle / gait / attack clips (no cast, hit or death clips and their FX). */
+    void SetLitePreview(bool bLite) { bLitePreview = bLite; }
     bool IsPooled(const FString& Id) const { return Pool.Contains(Id); }
     int32 PooledCount() const { return Pool.Num(); }
     static int32& PoolReuses() { static int32 Count = 0; return Count; }
@@ -103,6 +105,7 @@ private:
     int32 PoolCapacity = 4;
     bool bReusedFromPool = false;
     bool bHoldsLoadingBudget = false;
+    bool bLitePreview = false;
     void BuildStage();
     void FitStage(float BodyHeight);
     void FrameCamera(float DeltaSeconds, bool bSnap);
