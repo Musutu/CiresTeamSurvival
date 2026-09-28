@@ -62,7 +62,7 @@ namespace CireArenaPortal
         FString MoteMaterial = TEXT("/Game/Arenas/Portal/M_ArenaPortalMote.M_ArenaPortalMote");
         TArray<FString> RingVFX, BaseVFX, OpenVFX, EnterVFX; // optional Shadow_Magic Niagara layers (local Fab pack)
         float RingScale = 1.f, BaseScale = 1.f, OpenScale = 1.f, EnterScale = 1.f;
-        bool bTintRing = false;                         // push the arena tint into the ring layer (else it stays shadow-dark)
+        bool bTintRing = true;                          // pack-usage-3: recolour ring / base / bursts to the arena hue ("ring": {"tint": false} opts out)
         FName OpenSound = TEXT("arena_portal_open"), LoopSound = TEXT("arena_portal_loop"), EnterSound = TEXT("arena_portal_enter");
         TMap<FName, FLook> Looks;                       // arena id -> look
         TArray<FString> Errors;

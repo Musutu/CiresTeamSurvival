@@ -414,6 +414,23 @@ bool CireFabVFX::RunTests(UWorld* World)
             TEXT("kill.humanoid"),TEXT("kill.creature"),TEXT("kill.golem"),TEXT("kill.ethereal"),TEXT("kill.boss")})
             Check(FindKey(Key,ERole::Impact)!=nullptr,*FString::Printf(TEXT("hit / kill signature %s in FabVFX.json"),Key));
         Check(FindKey(TEXT("level_up"),ERole::Cast)!=nullptr,TEXT("level_up flourish in FabVFX.json"));
+        // pack-usage-3 (playtest 6): the circular green / teal swirls never carry the common physical hits (flesh / armour),
+        // and plate / mail hits vary with the attacker's weapon instead of one system on every armoured target.
+        {
+            static const TCHAR* Swirls[]={TEXT("NS_Air_Magic_Hit3"),TEXT("NS_Air_Magic_Splash"),TEXT("NS_Shadow_Magic_Hit2")};
+            TSet<FString> ArmorLooks;
+            for(const TCHAR* Layer:{TEXT("hit.flesh"),TEXT("hit.armor")})
+                for(const TCHAR* Weapon:{TEXT(""),TEXT(".sword"),TEXT(".axe"),TEXT(".mace"),TEXT(".dagger"),TEXT(".spear"),TEXT(".bow"),TEXT(".pistol")})
+                    for(const TCHAR* Crit:{TEXT(""),TEXT(".crit")})
+                    {
+                        const FString Key=FString(Layer)+Weapon+Crit;
+                        const FEntry* E=FindKey(Key,ERole::Impact);
+                        if(!E||E->Candidates.IsEmpty())continue;
+                        for(const TCHAR* S:Swirls)Check(!E->Candidates[0].Contains(S),*FString::Printf(TEXT("%s does not use the %s swirl"),*Key,S));
+                        if(FString(Layer)==TEXT("hit.armor")&&!*Crit)ArmorLooks.Add(E->Candidates[0]);
+                    }
+            Check(ArmorLooks.Num()>=4,*FString::Printf(TEXT("armour hits vary with the weapon (%d distinct systems)"),ArmorLooks.Num()));
+        }
         // Every monster race ability owns a signature (at least one role), and within one unit no two abilities share the same
         // cast look (system + tint): "no two nearby spells look alike".
         int32 Monsters=0,Covered=0;TArray<FString> Missing,Twins;

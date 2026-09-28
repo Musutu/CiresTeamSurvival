@@ -1,9 +1,10 @@
 {
   "schemaVersion": 1,
   "profile": "CireVFXTuning",
-  "notes": "spellEffectScale (presentation only) multiplies every decorative spell / skill visual (projectile heads, impacts, cast flares, self pulses, empowered-attack strikes, Fab Niagara cast / projectile / impact systems). Ground telegraphs, lingering zones, void zones and every other true hit footprint keep their real size. Options > Video > Spell effect size shows the effective value (this value by default); a player's own choice is saved relative to it, so retuning here moves everyone. Clamped 0.5-2.0. Eric 2026-09-26: +30%. auraLayerScale (buff / aura layers and Fab auras, 1.1) and handGlowScale (hand / weapon glow layers, 1.2) follow the same Options multiplier. aoeRadiusScale is GAMEPLAY: every area-of-effect hit radius (ground circles, self / target circles, line-area and skillshot widths, teleport / portal rings, chain hops, splash) grows by it and the telegraphs grow with it, so the drawn footprint always equals the hit area; ranges, lane lengths and cone reach do not change; the Options slider never touches it.",
-  "spellEffectScale": 1.3,
-  "auraLayerScale": 1.1,
-  "handGlowScale": 1.2,
+  "notes": "spellEffectScale (presentation only) multiplies every decorative spell / skill visual (projectile heads, impacts, cast flares, self pulses, empowered-attack strikes, Fab Niagara cast / projectile / impact systems). Ground telegraphs, lingering zones, void zones and every other true hit footprint keep their real size. Options > Video > Spell effect size shows the effective value (this value by default); a player's own choice is saved relative to it, so retuning here moves everyone. Clamped 0.5-2.0. Eric 2026-09-26: +30%; playtest 6 (2026-09-27): every skill effect -10% (1.17, aura .99, hand 1.08) and hit effects -20%: hitEffectScale (0.89) multiplies impacts and criticals (procedural + Fab) on top, 0.89 x 1.17 = 0.8 x the former 1.3. auraLayerScale (buff / aura layers and Fab auras, 1.1) and handGlowScale (hand / weapon glow layers, 1.2) follow the same Options multiplier. aoeRadiusScale is GAMEPLAY: every area-of-effect hit radius (ground circles, self / target circles, line-area and skillshot widths, teleport / portal rings, chain hops, splash) grows by it and the telegraphs grow with it, so the drawn footprint always equals the hit area; ranges, lane lengths and cone reach do not change; the Options slider never touches it.",
+  "spellEffectScale": 1.17,
+  "auraLayerScale": 0.99,
+  "handGlowScale": 1.08,
+  "hitEffectScale": 0.89,
   "aoeRadiusScale": 1.3
 }

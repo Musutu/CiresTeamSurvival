@@ -291,11 +291,12 @@ namespace
 {
 float GDesignSpellEffectScale=-1.f,GDesignAuraLayerScale=CireAbilityVFX::DefaultAuraLayerScale,GDesignHandGlowScale=CireAbilityVFX::DefaultHandGlowScale;
 float GDesignAoERadiusScale=1.3f;
+float GDesignHitEffectScale=CireAbilityVFX::DefaultHitEffectScale;
 }
 void CireAbilityVFX::ReloadVFXTuning()
 {
     GDesignSpellEffectScale=DefaultSpellEffectScale;GDesignAuraLayerScale=DefaultAuraLayerScale;GDesignHandGlowScale=DefaultHandGlowScale;
-    GDesignAoERadiusScale=CireAbilityShapes::DefaultAoERadiusScale;
+    GDesignAoERadiusScale=CireAbilityShapes::DefaultAoERadiusScale;GDesignHitEffectScale=DefaultHitEffectScale;
     FString Text;TSharedPtr<FJsonObject> Root;
     if(!FFileHelper::LoadFileToString(Text,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/VFXTuning.json")))||
        !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Root)||!Root.IsValid())return;
@@ -303,11 +304,13 @@ void CireAbilityVFX::ReloadVFXTuning()
     Read(TEXT("spellEffectScale"),GDesignSpellEffectScale,MinSpellEffectScale,MaxSpellEffectScale);
     Read(TEXT("auraLayerScale"),GDesignAuraLayerScale,MinSpellEffectScale,MaxSpellEffectScale);
     Read(TEXT("handGlowScale"),GDesignHandGlowScale,MinSpellEffectScale,MaxSpellEffectScale);
+    Read(TEXT("hitEffectScale"),GDesignHitEffectScale,.25f,2.f);
     Read(TEXT("aoeRadiusScale"),GDesignAoERadiusScale,CireAbilityShapes::MinAoERadiusScale,CireAbilityShapes::MaxAoERadiusScale);
 }
 float CireAbilityShapes::AoERadiusScale(){CireAbilityVFX::DesignSpellEffectScale();return GDesignAoERadiusScale;} // aoe-scale
 float CireAbilityVFX::DesignAuraLayerScale(){DesignSpellEffectScale();return GDesignAuraLayerScale;}
 float CireAbilityVFX::DesignHandGlowScale(){DesignSpellEffectScale();return GDesignHandGlowScale;}
+float CireAbilityVFX::DesignHitEffectScale(){DesignSpellEffectScale();return GDesignHitEffectScale;} // pack-usage-3
 namespace
 {
 // The player's (or the console override's) choice relative to the design spell-effect scale.

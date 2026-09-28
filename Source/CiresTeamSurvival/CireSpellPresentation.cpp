@@ -262,8 +262,9 @@ void ACireSpellVisual::Rebuild()
     // vfx-scale: decorative geometry grows with the spell-effect scale. Casts on a unit grow from its feet (rings stay on the
     // ground, helices grow taller); impacts, criticals and launches grow about their point. Modes add marks for hand pivots
     // and for geometry that joins real positions (chain bolts, hop arcs), which never scales.
-    FxScale=CireAbilityVFX::SpellEffectScale(GetWorld());ScaleMarks.Reset();
     const bool bAtPoint=Cue==ECireSpellCue::Impact||Cue==ECireSpellCue::Critical||Cue==ECireSpellCue::Launch;
+    // pack-usage-3: hit visuals (impacts, criticals) take the hitEffectScale on top (playtest 6: hits -20%).
+    FxScale=CireAbilityVFX::SpellEffectScale(GetWorld())*((Cue==ECireSpellCue::Impact||Cue==ECireSpellCue::Critical)?CireAbilityVFX::DesignHitEffectScale():1.f);ScaleMarks.Reset();
     MarkScale(M,Soft,bAtPoint?FVector::ZeroVector:FVector(0,0,GroundZ),DecorScale());
     if(RebuildModes(M,Soft,T,Fade,Expand)) {} // ability-vfx: telegraphs, projectiles, impacts, flares
     else if(bFollowArea && FollowedArea.IsValid())

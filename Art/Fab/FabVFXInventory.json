@@ -41,7 +41,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage, likely projectile needing motion/target",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Sparks1",
     "Color_Sparks2",
@@ -60,8 +63,8 @@
    "role": "area",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint pale-green vertical wind streaks, weak wall",
    "colors": [
     "Color_Slash1",
     "Color_Sparks1",
@@ -80,8 +83,11 @@
    "role": "area",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint green swirling ground ring, barely visible",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Plane",
     "Color_Sparks1",
@@ -100,8 +106,11 @@
    "role": "area",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "green wind vortex, dark core, arcs and leaves, big AoE",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Core1",
     "Color_Core2",
@@ -122,8 +131,8 @@
    "role": "projectile",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny white arrow streak, projectile",
    "colors": [
     "Color_Arrow",
     "Color_Sparks1",
@@ -142,7 +151,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Arrow",
     "Color_Circle",
@@ -163,7 +175,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Arrow",
     "Color_Sparks1",
@@ -187,7 +202,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Arrow",
     "Color_Circle",
@@ -209,8 +227,11 @@
    "role": "aura",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pale-green swirling particle ring, character aura",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Sparks1",
     "Color_Sparks2",
@@ -228,8 +249,11 @@
    "role": "",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "bright pale-green spinning blade rings, ground whirl AoE",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Blade_L",
     "Color_Blade_R",
@@ -251,8 +275,8 @@
    "role": "aura",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint white wisps then green sparks, weak buff",
    "colors": [
     "Color_Plane",
     "Color_Ray",
@@ -273,7 +297,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Plane",
     "Color_Sparks1",
@@ -292,8 +319,8 @@
    "role": "impact",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "white-green starburst with ring, quick hit",
    "colors": [
     "Color_Flash",
     "Color_Sparks1",
@@ -310,8 +337,8 @@
    "role": "impact",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "green crossed slash burst, impact",
    "colors": [
     "Color_Flash",
     "Color_Mesh",
@@ -329,8 +356,8 @@
    "role": "impact",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "green crescent arc with leafy burst, hit",
    "colors": [
     "Color_Flash",
     "Color_Orb",
@@ -348,8 +375,8 @@
    "role": "impact",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "white arrow-spray burst with green core, hit",
    "colors": [
     "Color_Arrow",
     "Color_Flash",
@@ -369,7 +396,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Sparks1",
@@ -386,8 +416,8 @@
    "role": "cast",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small white curl flash, muzzle",
    "colors": [
     "Color_Flash",
     "Color_Sparks1",
@@ -404,8 +434,8 @@
    "role": "cast",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pale ripple arcs with green core, cast muzzle",
    "colors": [
     "Color_Ray",
     "Color_Sparks1",
@@ -422,8 +452,8 @@
    "role": "cast",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small faint green wisp, muzzle",
    "colors": [
     "Color_Flash",
     "Color_Sparks1",
@@ -441,8 +471,8 @@
    "role": "projectile",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny pale ring then green wisp, small orb",
    "colors": [
     "Color_Orb",
     "Color_Sparks1",
@@ -461,8 +491,8 @@
    "role": "projectile",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny pale ring, projectile, weak on stage",
    "colors": [
     "Color_Orb",
     "Color_Ray",
@@ -481,8 +511,8 @@
    "role": "projectile",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny green wisp, projectile, weak on stage",
    "colors": [
     "Color_Mesh",
     "Color_Spiral1",
@@ -499,8 +529,8 @@
    "role": "aura",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "large white-green wind sphere with base ripples, shield",
    "colors": [
     "Color_Plane",
     "Color_Shield",
@@ -520,7 +550,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Ray1",
     "Color_Ray2",
@@ -542,7 +575,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Slash1",
     "Color_Slash2",
@@ -563,8 +599,11 @@
    "role": "cast",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "big white rune ground ring with green swirl, AoE",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Cylinder",
@@ -587,8 +626,8 @@
    "role": "cast",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint scattered green leaves, weak",
    "colors": [
     "Color_Slash",
     "Color_Sparks1",
@@ -606,7 +645,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Slash",
     "Color_Sparks1",
@@ -623,8 +665,11 @@
    "role": "impact",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pale-green wind swirl burst, impact splash",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Slash",
     "Color_Spiral1"
@@ -641,7 +686,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Arrow",
     "Color_Flash",
@@ -661,7 +709,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Cylinder",
     "Color_Plane",
@@ -683,7 +734,10 @@
    "school": "arcane",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Plane",
@@ -706,8 +760,11 @@
    "role": "area",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pale-green wind swirl over white ground ring, tornado",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Plane",
@@ -725,8 +782,8 @@
    "role": "",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny white speck, projectile, weak on stage",
    "colors": [
     "Color_Mesh",
     "Color_Sparks1",
@@ -745,8 +802,8 @@
    "role": "aura",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "golden light streaks swirling low, aura",
    "colors": [
     "Color_Ray",
     "Color_Sparks1",
@@ -764,8 +821,8 @@
    "role": "aura",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "rock spike crown with golden light burst, buff",
    "colors": [
     "Color_Crack",
     "Color_Ray",
@@ -784,8 +841,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint golden scratches on ground, weak",
    "colors": [
     "Color_Circle",
     "Color_Crack",
@@ -806,7 +863,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Sparks1"
@@ -823,7 +883,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack"
    ],
@@ -839,7 +902,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack"
    ],
@@ -854,8 +920,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "scattered pebbles ring with dust, ground flow",
    "colors": [
     "Color_Plane",
     "Color_Sparks1",
@@ -872,8 +938,8 @@
    "role": "impact",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pebble cluster bursting outward, rock hit",
    "colors": [
     "Color_Flash",
     "Color_Mesh",
@@ -891,7 +957,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Crack",
@@ -912,7 +981,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Sparks1",
@@ -931,7 +1003,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Crack",
@@ -951,8 +1026,8 @@
    "role": "cast",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny faint dust puff, muzzle",
    "colors": [
     "Color_Flash",
     "Color_Sparks1"
@@ -968,8 +1043,8 @@
    "role": "projectile",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny brown rock blob, weak on stage",
    "colors": [
     "Color_Orb",
     "Color_Sparks1",
@@ -987,8 +1062,8 @@
    "role": "projectile",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small tan rock streak, projectile",
    "colors": [
     "Color_Mesh",
     "Color_Trail"
@@ -1004,8 +1079,8 @@
    "role": "aura",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "glassy sphere with orbiting rocks, earth shield",
    "colors": [
     "Color_Plane",
     "Color_Shield",
@@ -1022,8 +1097,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "brown ring shockwave into big rock slab field",
    "colors": [
     "Color_Wave"
    ],
@@ -1038,8 +1113,8 @@
    "role": "cast",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "few small pebbles, weak",
    "colors": [
     "Color_Slash",
     "Color_Sparks1"
@@ -1055,8 +1130,8 @@
    "role": "cast",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "few small pebbles in arc, weak",
    "colors": [
     "Color_Slash",
     "Color_Sparks2"
@@ -1073,7 +1148,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Sparks1"
@@ -1090,7 +1168,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Sparks1",
@@ -1107,8 +1188,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "brown rock spike eruption with dust",
    "colors": [
     "Color_Crack",
     "Color_Sparks1"
@@ -1125,7 +1206,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Crack",
@@ -1145,7 +1229,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Plane",
@@ -1163,8 +1250,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small rock spike cluster with debris",
    "colors": [
     "Color_Crack",
     "Color_Sparks1"
@@ -1180,8 +1267,8 @@
    "role": "impact",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "white wind arcs and pebble ring, ground splash",
    "colors": [
     "Color_Shield",
     "Color_Spiral1",
@@ -1198,8 +1285,8 @@
    "role": "",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "several floating boulders, levitating rocks",
    "colors": [
     "Color_Crack",
     "Color_Wave"
@@ -1215,8 +1302,8 @@
    "role": "",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint arc of pebbles, weak",
    "colors": [
     "Color_Sparks1",
     "Color_Spiral1"
@@ -1233,7 +1320,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Ray1",
@@ -1255,7 +1345,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Crack",
@@ -1275,7 +1368,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Sparks2",
@@ -1292,8 +1388,8 @@
    "role": "area",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "orange fire burst into swirling flame ribbons, AoE blast",
    "colors": [
     "Color_Slash",
     "Color_Sparks"
@@ -1309,8 +1405,8 @@
    "role": "area",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "large orange fire rune ring on ground, arena/zone marker",
    "colors": [
     "Color_Circle",
     "Color_Cylinder",
@@ -1329,8 +1425,8 @@
    "role": "aura",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small orange flame swirl at feet, aura/buff",
    "colors": [
     "Color_Sparks",
     "Color_Spiral"
@@ -1346,8 +1442,8 @@
    "role": "aura",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "orange flame pillar with ring, self-buff",
    "colors": [
     "Color_Sparks1",
     "Color_Sparks2",
@@ -1365,8 +1461,8 @@
    "role": "area",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint small orange ground ring, weak circle",
    "colors": [
     "Color_Circle",
     "Color_Cylinder",
@@ -1385,8 +1481,8 @@
    "role": "cast",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "orange fireball flare, dash burst",
    "colors": [
     "Color_Dash",
     "Color_Sparks1",
@@ -1404,7 +1500,10 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Sparks1",
@@ -1421,8 +1520,8 @@
    "role": "impact",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "orange spark burst leaving ember ring and smoke, explosion",
    "colors": [
     "Color_Crack",
     "Color_Flash",
@@ -1440,8 +1539,8 @@
    "role": "",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "orange arc rings rising to flame column, cast",
    "colors": [
     "Color_Circle",
     "Color_Flame",
@@ -1459,8 +1558,8 @@
    "role": "",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "orange flame patch leaving scorched cracks, ground burn",
    "colors": [
     "Color_Crack",
     "Color_Sparks1",
@@ -1477,8 +1576,8 @@
    "role": "",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "wide orange fire ring with cracked lava ground, big AoE",
    "colors": [
     "Color_Crack",
     "Color_Sparks1",
@@ -1495,8 +1594,8 @@
    "role": "",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small pinkish flame cone, weak flamethrower",
    "colors": [
     "Color_Sparks"
    ],
@@ -1512,7 +1611,10 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Plane",
@@ -1531,8 +1633,8 @@
    "role": "impact",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny orange puff, fades fast, minor hit",
    "colors": [
     "Color_Circle",
     "Color_Flash",
@@ -1549,8 +1651,8 @@
    "role": "cast",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny orange puff, muzzle flash",
    "colors": [
     "Color_Flash",
     "Color_Sparks"
@@ -1566,8 +1668,8 @@
    "role": "projectile",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny orange orb, barely visible",
    "colors": [
     "Color_Orb",
     "Color_Plasma",
@@ -1585,8 +1687,8 @@
    "role": "projectile",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny orange projectile, needs movement",
    "colors": [
     "Color_Projectile1",
     "Color_Projectile2",
@@ -1605,7 +1707,10 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Mesh",
@@ -1626,7 +1731,10 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Sparks1",
@@ -1647,7 +1755,10 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Flash",
@@ -1668,7 +1779,10 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Flash",
@@ -1689,8 +1803,8 @@
    "role": "",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "orange spiked fire ring into bubble shield, defensive",
    "colors": [
     "Color_Ring",
     "Color_Shield",
@@ -1708,8 +1822,8 @@
    "role": "area",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "orange fire donut ring scattering sparks, shockwave",
    "colors": [
     "Color_Crack",
     "Color_Cylinder",
@@ -1726,8 +1840,8 @@
    "role": "cast",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "orange fire arc sweep, melee slash",
    "colors": [
     "Color_Slash",
     "Color_Sparks1",
@@ -1745,8 +1859,8 @@
    "role": "cast",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "orange flame ring slash, spin attack",
    "colors": [
     "Color_Slash",
     "Color_Sparks1",
@@ -1764,8 +1878,8 @@
    "role": "impact",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "tall orange flame spike then sparks, impact",
    "colors": [
     "Color_Mesh",
     "Color_Sparks1",
@@ -1784,7 +1898,10 @@
    "school": "fire",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Sparks1",
@@ -1805,8 +1922,8 @@
    "role": "area",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "field of burning obsidian spikes, ground eruption AoE",
    "colors": [
     "Color_Crack",
     "Color_Sparks1",
@@ -1827,8 +1944,8 @@
    "role": "impact",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "bright orange feathered flame burst, big impact",
    "colors": [
     "Color_Ring",
     "Color_Slash",
@@ -1846,8 +1963,8 @@
    "role": "cast",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "flaming shards streaking to points, targeted strike",
    "colors": [
     "Color_Flash",
     "Color_Sparks1",
@@ -1866,8 +1983,8 @@
    "role": "area",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "row of burning dark spikes, fire wall",
    "colors": [
     "Color_Box",
     "Color_Crack",
@@ -1887,8 +2004,8 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "sparse white flecks in ring, nearly invisible",
    "colors": [
     "Color_Circle",
     "Color_Cylinder",
@@ -1907,8 +2024,8 @@
    "role": "aura",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small cyan frost burst with crystal, aura",
    "colors": [
     "Color_Plane",
     "Color_Sparks",
@@ -1925,8 +2042,8 @@
    "role": "aura",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan frost mist column, self-buff",
    "colors": [
     "Color_Plane",
     "Color_Sparks1",
@@ -1944,8 +2061,8 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cluster of ice crystals over frost field, big AoE",
    "colors": [
     "Color_Plane",
     "Color_Spiral",
@@ -1962,8 +2079,8 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "sparse white flecks, nearly invisible",
    "colors": [
     "Color_Circle",
     "Color_Plane",
@@ -1980,8 +2097,8 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "large faint white shard ring, weak",
    "colors": [
     "Color_Circle",
     "Color_Plane",
@@ -2000,8 +2117,8 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint small white-cyan ground ring",
    "colors": [
     "Color_Circle",
     "Color_Plane",
@@ -2019,7 +2136,10 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Plane",
     "Color_Slash",
@@ -2037,8 +2157,8 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "fan of cyan ice spikes erupting forward, cone attack",
    "colors": [
     "Color_Plane",
     "Color_Sparks",
@@ -2055,8 +2175,8 @@
    "role": "aura",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint ghost frost, nearly invisible",
    "colors": [
     "Color_Plane"
    ],
@@ -2071,8 +2191,8 @@
    "role": "impact",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small cyan ice-star shard burst, hit",
    "colors": [
     "Color_Flash",
     "Color_Sparks",
@@ -2089,8 +2209,8 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "single cyan ice spike cluster, ground stab",
    "colors": [
     "Color_Plane",
     "Color_Sparks",
@@ -2107,8 +2227,8 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "scattered cyan ice spike clusters, AoE eruption",
    "colors": [
     "Color_Plane",
     "Color_Sparks",
@@ -2125,8 +2245,8 @@
    "role": "cast",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny white puff, muzzle",
    "colors": [
     "Color_Cylinder",
     "Color_Flash",
@@ -2143,8 +2263,8 @@
    "role": "projectile",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small cyan dome, weak orb",
    "colors": [
     "Color_Orb",
     "Color_Plasma",
@@ -2163,8 +2283,8 @@
    "role": "projectile",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny cyan shard, needs movement",
    "colors": [
     "Color_Projectile1",
     "Color_Projectile2",
@@ -2182,8 +2302,8 @@
    "role": "",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny faint cyan ring",
    "colors": [
     "Color_Shield",
     "Color_Slash",
@@ -2200,8 +2320,8 @@
    "role": "",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan wireframe frost sphere, shield bubble",
    "colors": [
     "Color_Shield",
     "Color_Slash",
@@ -2218,8 +2338,11 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "white-cyan spiky radial ring on ground, shockwave/hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Slash",
@@ -2236,8 +2359,8 @@
    "role": "cast",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan frost arc of snow chunks, slash",
    "colors": [
     "Color_Slash",
     "Color_Sparks1",
@@ -2254,8 +2377,11 @@
    "role": "cast",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan frost circular swirl ring, spin slash/hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Slash",
     "Color_Sparks1",
@@ -2273,7 +2399,10 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Ray",
@@ -2292,8 +2421,8 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "scattered cyan snowflakes and shards, blizzard area",
    "colors": [
     "Color_Plane",
     "Color_Slash",
@@ -2311,7 +2440,10 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Ray",
     "Color_Slash",
@@ -2329,7 +2461,10 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Plane",
@@ -2349,8 +2484,8 @@
    "role": "impact",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan ice spear then frost splash arc, impact",
    "colors": [
     "Color_Sparks1",
     "Color_Sparks2",
@@ -2370,8 +2505,8 @@
    "role": "impact",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "large cyan frost dome with snowflakes, AoE/shield",
    "colors": [
     "Color_Shield",
     "Color_Slash",
@@ -2389,7 +2524,10 @@
    "school": "frost",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Sparks1",
@@ -2408,8 +2546,8 @@
    "role": "area",
    "school": "frost",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan ice block pillar, ice wall",
    "colors": [
     "Color_Plane",
     "Color_Sparks1",
@@ -2426,8 +2564,8 @@
    "role": "area",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dense red blood spike eruption with dark smoke, AoE",
    "colors": [
     "Color_Sparks1",
     "Color_Splash1",
@@ -2444,8 +2582,8 @@
    "role": "area",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "red pentagram circle with blood spike burst, AoE",
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -2463,8 +2601,8 @@
    "role": "area",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "large dark-red rune circle with spinning blades",
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -2483,8 +2621,8 @@
    "role": "aura",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "red-black smoky column over dark splats, aura",
    "colors": [
     "Color_Sparks1",
     "Color_Spiral1",
@@ -2502,7 +2640,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage, likely needs target",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -2523,8 +2664,8 @@
    "role": "area",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "red arching tendril cage with glowing core, beam end",
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -2544,8 +2685,8 @@
    "role": "aura",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "red pentagram rune circle with rising blood column, buff",
    "colors": [
     "Color_Circle",
     "Color_Sparks1",
@@ -2562,8 +2703,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small red crystal cluster, weak",
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -2582,8 +2723,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "red pentagram with blood cage and dripping crystals",
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -2604,7 +2745,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Mesh1",
@@ -2621,8 +2765,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small red crystal spike cluster, ground hit",
    "colors": [
     "Color_Crack1",
     "Color_Mesh1",
@@ -2640,8 +2784,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "multiple red crystal spike clusters, area eruption",
    "colors": [
     "Color_Crack1",
     "Color_Mesh1",
@@ -2660,7 +2804,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -2682,7 +2829,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Sparks1",
     "Color_Spiral1",
@@ -2700,8 +2850,8 @@
    "role": "aura",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "red pentagram with dark thorn spire, curse/debuff",
    "colors": [
     "Color_Circle",
     "Color_Marker",
@@ -2719,8 +2869,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "red rune circle forming, clean ground sigil",
    "colors": [
     "Color_Circle",
     "Color_Ray1",
@@ -2740,8 +2890,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "large red blood splash disc with sparks, explosion",
    "colors": [
     "Color_Mesh1",
     "Color_Sparks1",
@@ -2759,8 +2909,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small bright red burst, hit",
    "colors": [
     "Color_Flash1",
     "Color_Flash2",
@@ -2778,8 +2928,8 @@
    "role": "cast",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "red blood cluster with thorn mark overhead, marker",
    "colors": [
     "Color_Marker",
     "Color_Sparks1",
@@ -2796,8 +2946,8 @@
    "role": "cast",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small red flash then faint, muzzle",
    "colors": [
     "Color_Flash1",
     "Color_Ray1",
@@ -2815,8 +2965,8 @@
    "role": "projectile",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small dark-red orb, weak on stage",
    "colors": [
     "Color_Flash1",
     "Color_Mesh1",
@@ -2836,8 +2986,8 @@
    "role": "projectile",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small red blob, projectile",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -2857,7 +3007,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash1",
     "Color_Flash2",
@@ -2881,7 +3034,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash1",
     "Color_Mesh1",
@@ -2902,8 +3058,8 @@
    "role": "projectile",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "red swirling blade disc, spinning projectile",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -2922,7 +3078,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Sparks1",
@@ -2941,8 +3100,8 @@
    "role": "aura",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "red-black blood sphere with ground splash, shield",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -2961,8 +3120,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "big solid red veined blood sphere, shield/burst",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -2981,8 +3140,8 @@
    "role": "cast",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "red blood splatter arc, slash trail",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -3000,8 +3159,8 @@
    "role": "cast",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "red-orange spinning ring slash, whirl",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -3019,8 +3178,8 @@
    "role": "area",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "big red spike eruption with blood splash, AoE",
    "colors": [
     "Color_Crack1",
     "Color_Mesh1",
@@ -3039,8 +3198,8 @@
    "role": "area",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "near invisible faint specks",
    "colors": [
     "Color_Crack1",
     "Color_Mesh1",
@@ -3058,8 +3217,8 @@
    "role": "area",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "scattered small red splats, weak",
    "colors": [
     "Color_Crack1",
     "Color_Mesh1",
@@ -3078,7 +3237,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Mesh1",
@@ -3098,8 +3260,8 @@
    "role": "area",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "red pentagram with blood whirl rising, tornado",
    "colors": [
     "Color_Circle",
     "Color_Sparks1",
@@ -3118,8 +3280,8 @@
    "role": "area",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint scattered specks, nearly invisible",
    "colors": [
     "Color_Crack1",
     "Color_Mesh1",
@@ -3139,8 +3301,8 @@
    "role": "area",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "row of red crystal spikes, wall",
    "colors": [
     "Color_Crack1",
     "Color_Mesh1",
@@ -3159,8 +3321,8 @@
    "role": "area",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "lime toxic swirl-ring pool with bubbles, ground AoE",
    "colors": [
     "Color_Sparks1",
     "Color_Wave1"
@@ -3177,7 +3339,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Crack",
@@ -3198,7 +3363,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Flash",
@@ -3218,8 +3386,8 @@
    "role": "area",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "wide lime bubbling ring wave, ground AoE nova",
    "colors": [
     "Color_Sparks1",
     "Color_Wave1"
@@ -3235,8 +3403,8 @@
    "role": "aura",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small lime ring with dark cracks, ground aura",
    "colors": [
     "Color_Sparks1",
     "Color_Splash1",
@@ -3255,8 +3423,8 @@
    "role": "area",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "lime/black veined column, beam or pillar",
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -3276,8 +3444,8 @@
    "role": "aura",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "lime cracked dome then smoky wisp, self buff",
    "colors": [
     "Color_Ray",
     "Color_Sparks1",
@@ -3296,7 +3464,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Ray",
@@ -3314,8 +3485,8 @@
    "role": "aura",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny lime flicker, faint debuff marker",
    "colors": [
     "Color_Sparks1"
    ],
@@ -3331,7 +3502,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Plane",
     "Color_Sparks1",
@@ -3349,8 +3523,8 @@
    "role": "impact",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dark rune ring erupting lime burst, ground explosion",
    "colors": [
     "Color_Circle",
     "Color_Ray",
@@ -3368,8 +3542,8 @@
    "role": "impact",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "wide lime swirling splash ring, ground explosion",
    "colors": [
     "Color_Mesh1",
     "Color_Sparks1",
@@ -3386,8 +3560,8 @@
    "role": "impact",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "lime sparkle puff fading to smoke, hit",
    "colors": [
     "Color_Flash",
     "Color_Sparks1"
@@ -3403,8 +3577,8 @@
    "role": "projectile",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny lime blob, weak orb",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -3424,7 +3598,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Plane",
     "Color_Sparks1",
@@ -3442,7 +3619,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage (needs motion)",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Mesh1",
@@ -3463,7 +3643,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage (needs motion)",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Crack",
@@ -3485,7 +3668,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage (needs motion)",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Crack",
@@ -3506,7 +3692,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage (needs motion)",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Flash",
@@ -3527,8 +3716,8 @@
    "role": "projectile",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny lime/black blob, projectile",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -3546,8 +3735,8 @@
    "role": "projectile",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny lime spark, projectile",
    "colors": [
     "Color_Mesh1",
     "Color_Sparks1",
@@ -3564,8 +3753,8 @@
    "role": "area",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint grey ring outline, nearly invisible",
    "colors": [
     "Color_Circle",
     "Color_Plane",
@@ -3584,7 +3773,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -3602,8 +3794,8 @@
    "role": "impact",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "lime/black veined sphere, shield/bubble burst",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -3621,8 +3813,8 @@
    "role": "cast",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "lime bubble arc trail, melee slash",
    "colors": [
     "Color_Bubble",
     "Color_Mesh1",
@@ -3641,8 +3833,8 @@
    "role": "cast",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "lime/dark spiral ring, spin slash ground",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -3661,7 +3853,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -3679,7 +3874,10 @@
    "school": "poison",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -3697,8 +3895,8 @@
    "role": "area",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "wide ring of dark ground cracks lime glints, AoE",
    "colors": [
     "Color_Circle",
     "Color_Crack",
@@ -3716,8 +3914,8 @@
    "role": "impact",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dark thorn spikes with lime glow, ground impact",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -3736,8 +3934,8 @@
    "role": "cast",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint grey wisps, nearly invisible",
    "colors": [
     "Color_Flash",
     "Color_Mesh1",
@@ -3756,8 +3954,8 @@
    "role": "area",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "lime bubbling cloud, wave/breath",
    "colors": [
     "Color_Sparks1",
     "Color_Wave1"
@@ -3773,8 +3971,11 @@
    "role": "area",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cyan swirling water ring with bubbles, ground AoE",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Spiral",
@@ -3794,7 +3995,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Smoke1",
@@ -3814,7 +4018,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Circle",
@@ -3835,8 +4042,11 @@
    "role": "aura",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small cyan swirl ring of droplets, aura/hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Smoke1",
@@ -3855,8 +4065,8 @@
    "role": "aura",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cyan water ribbons swirling upward, self buff",
    "colors": [
     "Color_Bubble",
     "Color_Cylinder1",
@@ -3878,7 +4088,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Mesh1",
@@ -3898,8 +4111,8 @@
    "role": "impact",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small cyan droplet splash, hit",
    "colors": [
     "Color_Bubble",
     "Color_Flash",
@@ -3918,8 +4131,8 @@
    "role": "cast",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny cyan droplets, faint muzzle",
    "colors": [
     "Color_Bubble",
     "Color_Flash",
@@ -3937,8 +4150,8 @@
    "role": "projectile",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "nearly invisible speck",
    "colors": [
     "Color_Bubble",
     "Color_Orb",
@@ -3959,7 +4172,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage (needs motion)",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Cylinder",
@@ -3983,7 +4199,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage (needs motion)",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble1",
     "Color_Bubble2",
@@ -4005,7 +4224,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage (needs motion)",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Flash",
@@ -4028,8 +4250,8 @@
    "role": "projectile",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny cyan droplet, projectile",
    "colors": [
     "Color_Bubble",
     "Color_Cylinder",
@@ -4051,8 +4273,8 @@
    "role": "aura",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cyan water bubble sphere with splash ring, shield",
    "colors": [
     "Color_Bubble",
     "Color_Shield",
@@ -4071,8 +4293,8 @@
    "role": "impact",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan bubbles scattering, shield break",
    "colors": [
     "Color_Bubble",
     "Color_Shield",
@@ -4091,8 +4313,8 @@
    "role": "area",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan droplet radial spray, ground shockwave",
    "colors": [
     "Color_Smoke1",
     "Color_Sparks1",
@@ -4111,8 +4333,8 @@
    "role": "cast",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan water crescent arc, melee slash",
    "colors": [
     "Color_Bubble",
     "Color_Slash",
@@ -4130,8 +4352,11 @@
    "role": "cast",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cyan swirling water ring, spin slash/on-hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Slash",
@@ -4149,8 +4374,8 @@
    "role": "cast",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "nearly invisible speck",
    "colors": [
     "Color_Bubble",
     "Color_Slash",
@@ -4170,7 +4395,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Cylinder1",
     "Color_Splash1",
@@ -4187,8 +4415,8 @@
    "role": "impact",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan water geyser column with cap, splash",
    "colors": [
     "Color_Bubble",
     "Color_Circle",
@@ -4208,8 +4436,11 @@
    "role": "impact",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan ripple ring on ground, splash/hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Cylinder",
     "Color_Smoke1",
@@ -4228,7 +4459,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Cylinder",
@@ -4249,7 +4483,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble1",
     "Color_Bubble2",
@@ -4269,8 +4506,8 @@
    "role": "area",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint cyan wisp, nearly invisible",
    "colors": [
     "Color_Bubble",
     "Color_Smoke1",
@@ -4289,8 +4526,8 @@
    "role": "area",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "big cyan crashing water wall, barrier/tidal",
    "colors": [
     "Color_Bubble",
     "Color_Mesh",
@@ -4308,8 +4545,8 @@
    "role": "area",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan arc splash with bubbles, water burst",
    "colors": [
     "Color_Bubble",
     "Color_Circle",
@@ -4330,7 +4567,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Bubble2",
@@ -4352,7 +4592,10 @@
    "school": "tide",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Bubble",
     "Color_Splash1",
@@ -4369,8 +4612,8 @@
    "role": "area",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint cyan wisps, nearly invisible",
    "colors": [
     "Color_Bubble",
     "Color_Mesh1",
@@ -4389,8 +4632,8 @@
    "role": "impact",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "black-purple smoky flame burst, explosion",
    "colors": [
     "Color_Fragment1",
     "Color_Smoke1",
@@ -4409,8 +4652,8 @@
    "role": "area",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "glowing pink-purple rune circle with dark orb, AoE",
    "colors": [
     "Color_Circle1",
     "Color_Fragment1",
@@ -4430,8 +4673,8 @@
    "role": "area",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "purple swirling wisps with dark specks, small AoE",
    "colors": [
     "Color_Plane1",
     "Color_Smoke1",
@@ -4449,8 +4692,8 @@
    "role": "area",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint pink specks, weak",
    "colors": [
     "Color_Crack1",
     "Color_Crack2",
@@ -4472,8 +4715,8 @@
    "role": "impact",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "scattered pink sparks, sparse",
    "colors": [
     "Color_Circle1",
     "Color_Crack1",
@@ -4494,8 +4737,8 @@
    "role": "aura",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "purple flame column over dark pool, aura",
    "colors": [
     "Color_Plane1",
     "Color_Ray1",
@@ -4513,8 +4756,8 @@
    "role": "cast",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "purple particle puff, blink/teleport",
    "colors": [
     "Color_Fragment1",
     "Color_Smoke1",
@@ -4532,8 +4775,8 @@
    "role": "cast",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "purple burst with slash arc, blink",
    "colors": [
     "Color_Flash1",
     "Color_Fragment1",
@@ -4552,8 +4795,8 @@
    "role": "aura",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dense purple flame pillar on glowing base, buff",
    "colors": [
     "Color_Fragment1",
     "Color_Plane1",
@@ -4572,8 +4815,8 @@
    "role": "area",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "purple flame ring with white rune circle, ground AoE",
    "colors": [
     "Color_Circle1",
     "Color_Cylinder1",
@@ -4592,8 +4835,8 @@
    "role": "area",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "massive purple-black thorn flame eruption, cone",
    "colors": [
     "Color_Crack1",
     "Color_Crack2",
@@ -4615,8 +4858,8 @@
    "role": "",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pink-purple flame cluster, burning DoT",
    "colors": [
     "Color_Fragment1",
     "Color_Smoke1",
@@ -4636,7 +4879,10 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Fragment1",
@@ -4654,8 +4900,8 @@
    "role": "aura",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "purple flickering column, fades to specks, debuff",
    "colors": [
     "Color_Cylinder1",
     "Color_Fragment1",
@@ -4674,8 +4920,8 @@
    "role": "aura",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small purple flame wisp, DoT marker",
    "colors": [
     "Color_Fragment1",
     "Color_Plane1",
@@ -4694,8 +4940,8 @@
    "role": "impact",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "purple-pink petal shard burst, distinctive hit",
    "colors": [
     "Color_Flash1",
     "Color_Smoke1",
@@ -4713,8 +4959,8 @@
    "role": "impact",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pink-purple shard burst, orb impact",
    "colors": [
     "Color_Flash1",
     "Color_Fragment1",
@@ -4735,7 +4981,10 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Crack2",
@@ -4758,7 +5007,10 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Fragment1",
@@ -4779,8 +5031,8 @@
    "role": "projectile",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small pink swirl orb, weak on stage",
    "colors": [
     "Color_Fragment1",
     "Color_Orb1",
@@ -4800,7 +5052,10 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Fragment1",
     "Color_Orb1",
@@ -4821,7 +5076,10 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash1",
     "Color_Fragment1",
@@ -4855,7 +5113,10 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle1",
     "Color_Flash1",
@@ -4878,8 +5139,8 @@
    "role": "aura",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "near invisible faint streak",
    "colors": [
     "Color_Shield1",
     "Color_Smoke1",
@@ -4897,8 +5158,8 @@
    "role": "impact",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "purple-black sphere with glowing magenta ripple rings",
    "colors": [
     "Color_Shield1",
     "Color_Smoke1",
@@ -4918,8 +5179,8 @@
    "role": "cast",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "black-purple crescent slash with pink sparks",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -4938,8 +5199,8 @@
    "role": "cast",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "sparse purple wisps, weak",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -4958,8 +5219,8 @@
    "role": "impact",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pink ring then dark smoke over cracked glow",
    "colors": [
     "Color_Crack1",
     "Color_Fragment1",
@@ -4980,7 +5241,10 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Mesh1",
@@ -5003,7 +5267,10 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Flash1",
@@ -5027,7 +5294,10 @@
    "school": "void",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Flash1",
@@ -5050,8 +5320,8 @@
    "role": "area",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "purple flame column over cracked glow, wall segment",
    "colors": [
     "Color_Crack1",
     "Color_Fragment1",
@@ -5070,8 +5340,8 @@
    "role": "area",
    "school": "void",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "ring of purple flame pillars on cracked ground",
    "colors": [
     "Color_Crack1",
     "Color_Fragment1",
@@ -5091,8 +5361,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "gold rune circle with light bolts erupting, holy AoE",
    "colors": [
     "Color_Circle1",
     "Color_Flash1",
@@ -5113,8 +5383,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "gold rune circle with light pillar, holy strike",
    "colors": [
     "Color_Circle1",
     "Color_Ray1",
@@ -5132,8 +5402,8 @@
    "role": "aura",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "gold flame pillar over ground swirl, aura",
    "colors": [
     "Color_Fragment1",
     "Color_Plane1",
@@ -5152,8 +5422,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "gold light beam with halo, then sparkles, smite",
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -5172,8 +5442,8 @@
    "role": "cast",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "gold and smoke swirl burst, teleport",
    "colors": [
     "Color_Glow1",
     "Color_Smoke1",
@@ -5191,8 +5461,8 @@
    "role": "cast",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "gold sparkle cluster with smoke arc, blink arrive",
    "colors": [
     "Color_Glow1",
     "Color_Smoke1",
@@ -5210,8 +5480,8 @@
    "role": "aura",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "gold swirl rising over smoky ring, buff",
    "colors": [
     "Color_Fragment1",
     "Color_Plane1",
@@ -5230,8 +5500,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dense gold rune ring with flames, holy zone",
    "colors": [
     "Color_Circle1",
     "Color_Cylinder1",
@@ -5252,7 +5522,10 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Fragment1",
     "Color_Ray",
@@ -5270,8 +5543,8 @@
    "role": "impact",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "gold rune sigil into bright light blast, explosion",
    "colors": [
     "Color_Circle",
     "Color_Ray",
@@ -5290,8 +5563,8 @@
    "role": "",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "gold rune circle with rising light pillar, heal",
    "colors": [
     "Color_Circle1",
     "Color_Fragment2",
@@ -5310,8 +5583,8 @@
    "role": "impact",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small gold dome sparkle, heal-on-hit",
    "colors": [
     "Color_Flash1",
     "Color_Fragment2",
@@ -5330,8 +5603,8 @@
    "role": "impact",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small gold sparkle burst, hit",
    "colors": [
     "Color_Flash1",
     "Color_Fragment1",
@@ -5349,8 +5622,8 @@
    "role": "impact",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small gold sparkle burst, hit",
    "colors": [
     "Color_Flash1",
     "Color_Smoke1",
@@ -5367,8 +5640,8 @@
    "role": "impact",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "gold starburst flash, hit",
    "colors": [
     "Color_Flash1",
     "Color_Fragment1",
@@ -5386,8 +5659,8 @@
    "role": "projectile",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "gold orbiting sphere ring, orb/buff",
    "colors": [
     "Color_Fragment1",
     "Color_Glow1",
@@ -5420,7 +5693,10 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Core1",
     "Color_Flash1",
@@ -5457,7 +5733,10 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle1",
     "Color_Core1",
@@ -5484,7 +5763,10 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash1",
     "Color_Fragment1",
@@ -5522,7 +5804,10 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle1",
     "Color_Flash1",
@@ -5548,8 +5833,8 @@
    "role": "projectile",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small gold starburst late, weak impact",
    "colors": [
     "Color_Core1",
     "Color_Core2",
@@ -5582,8 +5867,8 @@
    "role": "projectile",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny faint gold flash",
    "colors": [
     "Color_Core1",
     "Color_Core2",
@@ -5615,8 +5900,8 @@
    "role": "aura",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "gold light sphere shield with shards",
    "colors": [
     "Color_Fragment1",
     "Color_Glow1",
@@ -5635,8 +5920,8 @@
    "role": "impact",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "huge gold dome shatter with scattered shards, shield break",
    "colors": [
     "Color_Fragment1",
     "Color_Glow1",
@@ -5656,8 +5941,8 @@
    "role": "cast",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "gold feather arc slash",
    "colors": [
     "Color_Fragment1",
     "Color_Mesh1",
@@ -5676,8 +5961,8 @@
    "role": "cast",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint grey smoke ring, muddy",
    "colors": [
     "Color_Fragment1",
     "Color_Mesh1",
@@ -5697,7 +5982,10 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle1",
     "Color_Crack1",
@@ -5717,8 +6005,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint thin line, nearly invisible",
    "colors": [
     "Color_Fragment1",
     "Color_Plane1",
@@ -5738,8 +6026,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "ring of gold light blades erupting, holy AoE",
    "colors": [
     "Color_Crack1",
     "Color_Ray1",
@@ -5758,8 +6046,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny faint speck, nearly invisible",
    "colors": [
     "Color_Crack1",
     "Color_Ray1",
@@ -5779,7 +6067,10 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Ray1",
@@ -5798,8 +6089,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "scattered gold blade clusters, area strike",
    "colors": [
     "Color_Crack1",
     "Color_Ray1",
@@ -5819,7 +6110,10 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Ray1",
@@ -5838,8 +6132,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "row of gold light blades, wall",
    "colors": [
     "Color_Crack1",
     "Color_Ray1",
@@ -5859,7 +6153,10 @@
    "school": "holy",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Fragment1",
@@ -5879,8 +6176,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "falling gold bolt into sparkle pool, sky strike",
    "colors": [
     "Color_Crack1",
     "Color_Flash1",
@@ -5902,8 +6199,8 @@
    "role": "area",
    "school": "holy",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "gold lightning strikes with ground flash, sky strike",
    "colors": [
     "Color_Crack1",
     "Color_Flash1",
@@ -5925,8 +6222,8 @@
    "role": "area",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan electric crackle patch on ground, area",
    "colors": [
     "Color_Smoke1",
     "Color_Sparks1",
@@ -5945,8 +6242,8 @@
    "role": "aura",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small cyan electric cluster, aura",
    "colors": [
     "Color_Smoke1",
     "Color_Sparks1",
@@ -5963,8 +6260,11 @@
    "role": "aura",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dark vortex swirl with cyan sparks, aura",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Mesh1",
     "Color_Smoke1",
@@ -5984,7 +6284,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle1",
     "Color_Mesh1",
@@ -6005,8 +6308,8 @@
    "role": "cast",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan-dark electric ball burst, blink",
    "colors": [
     "Color_Mesh1",
     "Color_Smoke1",
@@ -6023,8 +6326,8 @@
    "role": "cast",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "bright cyan lightning starburst, blink/impact",
    "colors": [
     "Color_Mesh1",
     "Color_Smoke1",
@@ -6042,8 +6345,8 @@
    "role": "aura",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan electric ground crackle, buff",
    "colors": [
     "Color_Smoke1",
     "Color_Sparks1",
@@ -6062,8 +6365,8 @@
    "role": "aura",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cyan lightning column into smoky swirl rings, buff",
    "colors": [
     "Color_Mesh1",
     "Color_Smoke1",
@@ -6084,7 +6387,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Flash1",
@@ -6107,8 +6413,8 @@
    "role": "area",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan branching lightning arc, cone attack",
    "colors": [
     "Color_Sparks1",
     "Color_Sparks2",
@@ -6125,8 +6431,8 @@
    "role": "cast",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny cyan spark, weak",
    "colors": [
     "Color_Crack1",
     "Color_Smoke1",
@@ -6146,7 +6452,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash1",
     "Color_Sparks1",
@@ -6165,8 +6474,8 @@
    "role": "",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "thin faint cyan bolt, weak",
    "colors": [
     "Color_Sparks1",
     "Color_Sparks2",
@@ -6184,7 +6493,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle1",
     "Color_Smoke1",
@@ -6203,8 +6515,8 @@
    "role": "area",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "vertical cyan lightning bolt, strike",
    "colors": [
     "Color_Smoke1",
     "Color_Sparks1",
@@ -6224,7 +6536,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Flash1",
@@ -6246,8 +6561,11 @@
    "role": "projectile",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small cyan electric ring swirl, orb/hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Flash1",
     "Color_Mesh1",
@@ -6266,8 +6584,8 @@
    "role": "projectile",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan electric streaks orbiting, orb",
    "colors": [
     "Color_Flash1",
     "Color_Mesh1",
@@ -6289,8 +6607,8 @@
    "role": "projectile",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny cyan specks, nearly invisible",
    "colors": [
     "Color_Circle1",
     "Color_Flash1",
@@ -6313,7 +6631,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Core",
     "Color_Flash1",
@@ -6337,8 +6658,8 @@
    "role": "projectile",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan spark starburst, projectile impact",
    "colors": [
     "Color_Flash1",
     "Color_Sparks1",
@@ -6358,7 +6679,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash1",
     "Color_Mesh1",
@@ -6379,8 +6703,8 @@
    "role": "aura",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan sparks over dark debris, shield",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -6398,8 +6722,8 @@
    "role": "impact",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cyan lightning cage sphere shattering, shield break",
    "colors": [
     "Color_Flash1",
     "Color_Mesh1",
@@ -6419,8 +6743,11 @@
    "role": "area",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cyan-dark electric ring on ground, shockwave/hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Smoke1",
     "Color_Sparks1",
@@ -6438,8 +6765,8 @@
    "role": "cast",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dark smoke arc with cyan crackle, slash",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -6457,8 +6784,11 @@
    "role": "cast",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dark/cyan electric circular ring, spin slash/hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -6476,8 +6806,11 @@
    "role": "aura",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan swirl arcs with dark debris, slash aura",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Mesh1",
     "Color_Smoke1",
@@ -6495,7 +6828,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Mesh1",
@@ -6517,7 +6853,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle1",
     "Color_Mesh1",
@@ -6540,7 +6879,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Mesh1",
@@ -6564,7 +6906,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Mesh1",
@@ -6588,8 +6933,8 @@
    "role": "",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cyan lightning strikes from dark cloud, thunder call",
    "colors": [
     "Color_Crack1",
     "Color_Flash1",
@@ -6611,7 +6956,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle1",
     "Color_Crack1",
@@ -6634,7 +6982,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Flash1",
@@ -6654,8 +7005,8 @@
    "role": "area",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "wide cyan-dark electric storm ring, big AoE",
    "colors": [
     "Color_Smoke1",
     "Color_Sparks1",
@@ -6674,7 +7025,10 @@
    "school": "storm",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack1",
     "Color_Flash1",
@@ -6695,8 +7049,11 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "teal rings into huge dark tendril field, big AoE",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -6716,8 +7073,8 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dark spike/ink field raining shards, large AoE",
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -6736,8 +7093,11 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "teal shard ring on ground, circular AoE/nova",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Mesh1",
     "Color_Ray",
@@ -6758,8 +7118,8 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dark spire forest with teal motes, ground AoE",
    "colors": [
     "Color_Mesh1",
     "Color_Smoke",
@@ -6780,8 +7140,11 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "looping teal ribbon arcs, line AoE",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -6800,8 +7163,8 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "scattered small grey wisps, line AoE puffs",
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -6820,7 +7183,10 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage; likely needs target/spline",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Mesh1",
     "Color_Ray",
@@ -6841,7 +7207,10 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage; likely needs target/spline",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Mesh1",
     "Color_Smoke",
@@ -6862,8 +7231,8 @@
    "role": "cast",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "teal-grey spike eruption with ink pool, ground attack",
    "colors": [
     "Color_Mesh1",
     "Color_Ray",
@@ -6883,8 +7252,8 @@
    "role": "cast",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dark tendril cone eruption, ink pool, heavy attack",
    "colors": [
     "Color_Mesh1",
     "Color_Ray",
@@ -6904,8 +7273,8 @@
    "role": "cast",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "teal spike burst from ground, attack",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -6926,8 +7295,11 @@
    "role": "cast",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "teal ribbon vortex coil, spiral attack/hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Cone",
     "Color_Ray",
@@ -6948,8 +7320,8 @@
    "role": "cast",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "white rune magic circle with shards, ground attack",
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -6971,8 +7343,8 @@
    "role": "aura",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small dark flame tendril aura",
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -6990,8 +7362,11 @@
    "role": "aura",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dark tendril aura with swirling ground ring",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -7011,8 +7386,11 @@
    "role": "cast",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "teal ribbon swirl then dark motes, blink",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -7029,8 +7407,11 @@
    "role": "cast",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "glassy dome of swirling teal ribbons, blink/shield",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Orb1",
     "Color_Orb2",
@@ -7050,8 +7431,8 @@
    "role": "aura",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dark smoky tendril cluster, buff",
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -7069,8 +7450,11 @@
    "role": "aura",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dark ribbon swirl mound with ground smoke, buff",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -7090,8 +7474,11 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "large swirling ribbon sphere over ground ring, circle",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Cylinder",
@@ -7110,8 +7497,11 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "teal ribbon ring over glowing ground circle",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Smoke",
@@ -7130,8 +7520,11 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dense coiled teal ribbon mass, cone blast",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -7151,8 +7544,8 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dark upward ink spray, cone blast",
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -7171,8 +7564,8 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "teal spike cluster eruption, cone",
    "colors": [
     "Color_Mesh1",
     "Color_Ray",
@@ -7194,7 +7587,10 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Mesh1",
     "Color_Smoke",
@@ -7215,7 +7611,10 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage; likely needs movement/target",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -7234,8 +7633,8 @@
    "role": "cast",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny teal puff, barely readable",
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -7252,8 +7651,11 @@
    "role": "impact",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "teal ribbon ball bursting into ink splash, explosion",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Orb1",
@@ -7275,8 +7677,11 @@
    "role": "impact",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "bright swirl ribbon burst into ink splash, explosion",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Orb1",
@@ -7299,8 +7704,8 @@
    "role": "impact",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small dark spiky burst then motes, hit",
    "colors": [
     "Color_Flash",
     "Color_Smoke",
@@ -7318,8 +7723,11 @@
    "role": "impact",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small teal ribbon spiky burst, hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Smoke",
@@ -7337,8 +7745,8 @@
    "role": "impact",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dark glossy orb with spikes, punchy hit",
    "colors": [
     "Color_Flash",
     "Color_Orb1",
@@ -7359,8 +7767,11 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "teal ring into large dark swirling vortex, attack",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -7379,8 +7790,8 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dark upward tendril column with motes",
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -7398,8 +7809,8 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "faint small teal wisp column, light attack",
    "colors": [
     "Color_Mesh1",
     "Color_Ray",
@@ -7420,7 +7831,10 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage; likely needs target/spline",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Mesh1",
     "Color_Smoke",
@@ -7441,8 +7855,11 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "bright teal ribbon sphere swirl, attack impact",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -7460,8 +7877,8 @@
    "role": "projectile",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "nearly blank, few specks; needs target",
    "colors": [
     "Color_Circle",
     "Color_Flash",
@@ -7482,8 +7899,11 @@
    "role": "projectile",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small teal ring orb, projectile/hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Orb1",
@@ -7516,8 +7936,8 @@
    "role": "projectile",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small bright teal orb, projectile head",
    "colors": [
     "Color_Flash",
     "Color_Orb1",
@@ -7551,7 +7971,10 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage; needs target/movement",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_REF",
@@ -7584,7 +8007,10 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage; needs target/movement",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Mesh1",
@@ -7618,7 +8044,10 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage; needs target/movement",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Orb1",
@@ -7655,8 +8084,8 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small teal splash burst, ray impact",
    "colors": [
     "Color_Circle",
     "Color_Cone",
@@ -7679,8 +8108,11 @@
    "role": "aura",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "swirling teal ribbon dome, shield",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Shield",
     "Color_Smoke",
@@ -7711,8 +8143,11 @@
    "role": "aura",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "ribbon sphere over dark smoke base, shield",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Shield",
     "Color_Smoke",
@@ -7743,8 +8178,11 @@
    "role": "impact",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "large dark ribbon vortex ring, shield break",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Shield",
     "Color_Smoke",
@@ -7763,8 +8201,11 @@
    "role": "impact",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "big glassy teal swirl sphere into smoke, shield pop",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Shield",
     "Color_Smoke",
@@ -7784,7 +8225,10 @@
    "school": "shadow",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -7803,8 +8247,11 @@
    "role": "cast",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint thin ring outline, weak slash",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -7822,8 +8269,11 @@
    "role": "cast",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "teal slash disc ring on ground, slash/hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -7841,8 +8291,8 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "ring of teal crystal spikes, wall/arena",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -7863,8 +8313,8 @@
    "role": "area",
    "school": "shadow",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dense dark spike wall with ink, wall",
    "colors": [
     "Color_Mesh1",
     "Color_Mesh2",
@@ -7885,8 +8335,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "scattered dust puffs and pebbles, sparse",
    "colors": [
     "Color_Circle",
     "Color_Mesh1",
@@ -7906,8 +8356,8 @@
    "role": "cast",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "bone-white rock spike crown with amber glow, ground eruption",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -7931,7 +8381,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -7955,7 +8408,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Flash",
@@ -7979,7 +8435,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Flash",
@@ -8002,8 +8461,8 @@
    "role": "aura",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "amber flame burst with dust, earth aura/buff",
    "colors": [
     "Color_Glow",
     "Color_Ray",
@@ -8023,8 +8482,8 @@
    "role": "aura",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "amber ring puff then golden sparks, buff",
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -8043,8 +8502,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "golden rune circle with dust swirl, ground cast",
    "colors": [
     "Color_Circle",
     "Color_Sparks1",
@@ -8062,8 +8521,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "amber burst then rock debris arc, cone",
    "colors": [
     "Color_Cylinder",
     "Color_Mesh1",
@@ -8084,7 +8543,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Flash",
@@ -8106,8 +8568,8 @@
    "role": "impact",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small amber star burst, hit",
    "colors": [
     "Color_Flash",
     "Color_Smoke",
@@ -8125,8 +8587,8 @@
    "role": "impact",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "amber burst with rock shards, hit",
    "colors": [
     "Color_Flash",
     "Color_Mesh1",
@@ -8145,8 +8607,8 @@
    "role": "impact",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "amber star dome burst, hit",
    "colors": [
     "Color_Flash",
     "Color_Orb",
@@ -8166,7 +8628,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Flash",
@@ -8190,7 +8655,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Flash",
@@ -8212,8 +8680,8 @@
    "role": "projectile",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint glassy amber bubble, weak orb",
    "colors": [
     "Color_Glow",
     "Color_Mesh1",
@@ -8234,7 +8702,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage (needs motion)",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Mesh1",
@@ -8268,8 +8739,8 @@
    "role": "projectile",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny amber flicker, projectile",
    "colors": [
     "Color_Flash",
     "Color_Mesh1",
@@ -8292,7 +8763,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage (needs motion)",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Mesh1",
@@ -8329,7 +8803,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage (needs motion)",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Flash",
@@ -8352,8 +8829,8 @@
    "role": "aura",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "amber rock and dust shell, shield",
    "colors": [
     "Color_Mesh1",
     "Color_Shield",
@@ -8373,8 +8850,8 @@
    "role": "impact",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "amber glass sphere bursting into rock ring, shield break",
    "colors": [
     "Color_Mesh1",
     "Color_Shield",
@@ -8396,7 +8873,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8417,8 +8897,8 @@
    "role": "cast",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint amber dust smear, weak slash",
    "colors": [
     "Color_Slash",
     "Color_Smoke",
@@ -8437,7 +8917,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Slash",
     "Color_Smoke",
@@ -8456,7 +8939,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Mesh1",
     "Color_Slash",
@@ -8475,8 +8961,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "single rock spike cluster, ground spike",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8499,7 +8985,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Circle",
     "Color_Crack",
@@ -8521,8 +9010,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "amber ring erupting into huge rock spike field, AoE",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8543,8 +9032,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "rock spikes erupting forward with amber, cone",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8564,8 +9053,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "rock rubble with amber, line (off-stage)",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8586,7 +9075,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8608,7 +9100,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8630,7 +9125,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8653,7 +9151,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8674,8 +9175,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "rock ring erupting spikes and amber fire, AoE",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8694,8 +9195,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "scattered rock chunks with amber, ground AoE",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8714,8 +9215,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dense rock spikes amber lava cracks, AoE",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8735,7 +9236,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8756,8 +9260,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "amber flame then massive boulder eruption, cone",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8778,8 +9282,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "rocks then amber dust burst, cone",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8799,7 +9303,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8818,8 +9325,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pebbles rising into boulder spikes, line",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8838,8 +9345,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "rocks into amber spike burst, line",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8859,7 +9366,10 @@
    "school": "earth",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8880,8 +9390,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "few scattered pebbles, weak",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8902,8 +9412,8 @@
    "role": "area",
    "school": "earth",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "ring of stone pillars amber glow, circular wall",
    "colors": [
     "Color_Crack",
     "Color_Mesh1",
@@ -8923,8 +9433,8 @@
    "role": "aura",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "green beacon into huge yellow root web, ground buff",
    "colors": [
     "Color_Floor",
     "Color_Leaf",
@@ -8942,8 +9452,11 @@
    "role": "aura",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "cyan glowing ring then dark puff, buff applied",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Butterfly",
     "Color_Leaf",
@@ -8962,7 +9475,10 @@
    "school": "nature",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [
     "Color",
     "Color_Leaf"
@@ -8978,8 +9494,8 @@
    "role": "aura",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small green leaf scatter, weak",
    "colors": [
     "Color"
    ],
@@ -8994,8 +9510,8 @@
    "role": "area",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny green dot, needs target",
    "colors": [
     "Color",
     "Color001",
@@ -9013,8 +9529,8 @@
    "role": "impact",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "red blob (broken-looking material) then leaves",
    "colors": [
     "Color",
     "Color001"
@@ -9030,8 +9546,8 @@
    "role": "impact",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "black missing-material mesh with debug text",
    "colors": [
     "Color",
     "Color001",
@@ -9051,8 +9567,8 @@
    "role": "impact",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "giant red untextured blob, looks broken",
    "colors": [
     "Color",
     "Color001",
@@ -9070,8 +9586,8 @@
    "role": "impact",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "yellow-green spark burst, small hit",
    "colors": [
     "Color",
     "Color2",
@@ -9088,8 +9604,8 @@
    "role": "projectile",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny green seed, projectile",
    "colors": [
     "Color",
     "Color001",
@@ -9106,8 +9622,8 @@
    "role": "projectile",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny warm spark, projectile",
    "colors": [
     "Color",
     "Color001",
@@ -9126,8 +9642,8 @@
    "role": "projectile",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny green speck, needs motion",
    "colors": [
     "Color",
     "Maximum_Color",
@@ -9144,8 +9660,8 @@
    "role": "",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "yellow sparkle cluster, ambient/pickup",
    "colors": [
     "Color"
    ],
@@ -9160,8 +9676,8 @@
    "role": "cast",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "golden thorn vines erupting from dirt with embers",
    "colors": [
     "Color_Floor",
     "Color_flower",
@@ -9178,8 +9694,8 @@
    "role": "cast",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "yellow vine coil with leaves, vine strike",
    "colors": [
     "Color_Leaf",
     "Color_Vine"
@@ -9195,8 +9711,8 @@
    "role": "",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "row of golden glowing vines, barrier wall",
    "colors": [
     "FlowerColor",
     "Vine_Color"
@@ -9212,8 +9728,8 @@
    "role": "",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "golden vine ring sweeping around, ground AoE",
    "colors": [
     "Color",
     "Color001",
@@ -9231,8 +9747,8 @@
    "role": "aura",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "brown twisted root thicket, root/entangle",
    "colors": [
     "Color_Floor",
     "Color_Flower",
@@ -9250,8 +9766,8 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "dark red flat blob, bleed status",
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -9268,8 +9784,8 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny purple icon, barely readable",
    "colors": [
     "Color_Flash",
     "Color_Marker",
@@ -9287,8 +9803,8 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "orange flame column, burn status",
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -9306,8 +9822,8 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pink heart burst, charm status",
    "colors": [
     "Color_Flash",
     "Color_Smoke",
@@ -9325,8 +9841,8 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "red swirl ring with skull, curse status",
    "colors": [
     "Color_Flash",
     "Color_Marker",
@@ -9346,8 +9862,8 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny white puff, weak freeze",
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -9364,8 +9880,8 @@
    "role": "aura",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "green rising rings and sparkles, heal",
    "colors": [
     "Color_Flash",
     "Color_Ray",
@@ -9384,8 +9900,11 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cyan rising swirl rings with sparkles, mana/restore",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Ray",
     "Color_Smoke",
@@ -9404,8 +9923,8 @@
    "role": "aura",
    "school": "poison",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small yellow-green bubbles, poison status",
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -9422,8 +9941,8 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "brown vine curl with sparks, root status",
    "colors": [
     "Color_Mesh1",
     "Color_Smoke",
@@ -9441,8 +9960,8 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "yellow spark burst, shock status",
    "colors": [
     "Color_Sparks1",
     "Color_Sparks2",
@@ -9459,8 +9978,8 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "teal X icon over puff, silence status",
    "colors": [
     "Color_Marker",
     "Color_Smoke",
@@ -9478,8 +9997,8 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint tiny grey specks, weak sleep",
    "colors": [
     "Color_Smoke",
     "Color_Sparks1",
@@ -9496,8 +10015,11 @@
    "role": "aura",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pale white spiral rings, slow status",
+   "tags": [
+    "swirl"
+   ],
    "colors": [
     "Color_Flash",
     "Color_Ray",
@@ -9515,8 +10037,8 @@
    "role": "",
    "school": "state",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small yellow stars, stun status",
    "colors": [
     "Color_Sparks1",
     "Color_Spiral1",
@@ -9534,8 +10056,11 @@
    "role": "area",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "cyan swirling water tornado with ground vortex",
+   "tags": [
+    "swirl"
+   ],
    "colors": [],
    "reach": 466
   },
@@ -9548,8 +10073,8 @@
    "role": "area",
    "school": "",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "purple twisting tornado with vortex base",
    "colors": [],
    "reach": 529
   },
@@ -9562,8 +10087,8 @@
    "role": "impact",
    "school": "",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "soft orange fiery puff, explosion",
    "colors": [],
    "reach": 1055
   },
@@ -9576,8 +10101,8 @@
    "role": "projectile",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny orange flame, projectile",
    "colors": [],
    "reach": 600
   },
@@ -9590,8 +10115,8 @@
    "role": "area",
    "school": "fire",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "orange-red fire tornado with swirl base",
    "colors": [],
    "reach": 566
   },
@@ -9604,8 +10129,11 @@
    "role": "aura",
    "school": "nature",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "teal spiralling ring column, heal aura/on-hit",
+   "tags": [
+    "swirl"
+   ],
    "colors": [],
    "reach": 381
   },
@@ -9619,7 +10147,10 @@
    "school": "",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [],
    "reach": 783
   },
@@ -9633,7 +10164,10 @@
    "school": "",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [],
    "reach": 477
   },
@@ -9646,8 +10180,8 @@
    "role": "area",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "thin pale blue vertical line, weak laser",
    "colors": [],
    "reach": 314
   },
@@ -9660,8 +10194,8 @@
    "role": "",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pale yellow electric flash, lightning strike",
    "colors": [],
    "reach": 1056
   },
@@ -9674,8 +10208,8 @@
    "role": "",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "white-yellow lightning burst, strike/hit",
    "colors": [],
    "reach": 1064
   },
@@ -9688,8 +10222,8 @@
    "role": "",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pale yellow crackling ground burst, lightning",
    "colors": [],
    "reach": 1496
   },
@@ -9702,8 +10236,8 @@
    "role": "area",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint pink glow puff, weak",
    "colors": [],
    "reach": 483
   },
@@ -9716,8 +10250,8 @@
    "role": "",
    "school": "arcane",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint lilac glow, weak",
    "colors": [],
    "reach": 491
   },
@@ -9730,8 +10264,8 @@
    "role": "projectile",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint pale specks, nearly invisible",
    "colors": [],
    "reach": 600
   },
@@ -9744,8 +10278,8 @@
    "role": "area",
    "school": "",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "lime-green tornado with debris, wind storm",
    "colors": [],
    "reach": 527
   },
@@ -9758,8 +10292,8 @@
    "role": "projectile",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "small purple spark ball, projectile",
    "colors": [],
    "reach": 600
   },
@@ -9772,8 +10306,8 @@
    "role": "impact",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pale yellow electric splatter, hit",
    "colors": [],
    "reach": 1254
   },
@@ -9786,8 +10320,8 @@
    "role": "area",
    "school": "storm",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "yellow-gold twisting tornado, lightning storm",
    "colors": [],
    "reach": 873
   },
@@ -9800,8 +10334,8 @@
    "role": "projectile",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny pale blue blob, projectile",
    "colors": [],
    "reach": 600
   },
@@ -9814,8 +10348,8 @@
    "role": "impact",
    "school": "tide",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "pale cyan splash sparkle, water hit",
    "colors": [],
    "reach": 2254
   },
@@ -9828,8 +10362,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny dark speck only, gore burst; nearly invisible on stage",
    "colors": [],
    "reach": 200
   },
@@ -9842,8 +10376,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny dark speck only, limb gore; nearly invisible",
    "colors": [],
    "reach": 145
   },
@@ -9856,8 +10390,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny speck, arterial spurt likely needs attach; nearly invisible",
    "colors": [],
    "reach": 194
   },
@@ -9870,8 +10404,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "near-invisible speck, arterial spurt",
    "colors": [],
    "reach": 76
   },
@@ -9884,8 +10418,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "near-invisible speck, arterial spurt",
    "colors": [],
    "reach": 90
   },
@@ -9898,8 +10432,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "dark red spray fan with droplets, headshot gore burst",
    "colors": [],
    "reach": 247
   },
@@ -9913,7 +10447,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage; decal needs surface to project",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [],
    "reach": 1
   },
@@ -9926,8 +10463,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "bright red blotchy splat decals on ground, gore pool",
    "colors": [],
    "reach": 354
   },
@@ -9940,8 +10477,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "A",
+   "look": "big dark red radial spray with droplets, heavy kill burst",
    "colors": [],
    "reach": 382
   },
@@ -9954,8 +10491,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "faint scattered dark droplets, light blood hit",
    "colors": [],
    "reach": 331
   },
@@ -9968,8 +10505,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "near-invisible droplets, weak hit",
    "colors": [],
    "reach": 200
   },
@@ -9982,8 +10519,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small clean dark red spurt, melee blood hit",
    "colors": [],
    "reach": 220
   },
@@ -9996,8 +10533,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small dark drip, bleeding wound ambient",
    "colors": [],
    "reach": 500
   },
@@ -10010,8 +10547,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "nearly invisible drip",
    "colors": [],
    "reach": 500
   },
@@ -10024,8 +10561,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "nearly invisible drip",
    "colors": [],
    "reach": 500
   },
@@ -10038,8 +10575,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small dark drip splash, bleed tick",
    "colors": [],
    "reach": 63
   },
@@ -10052,8 +10589,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "nearly invisible drip splash",
    "colors": [],
    "reach": 24
   },
@@ -10066,8 +10603,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "nearly invisible drip splash",
    "colors": [],
    "reach": 37
   },
@@ -10080,8 +10617,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "nearly invisible speck, dynamic drip",
    "colors": [],
    "reach": 35
   },
@@ -10094,8 +10631,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "thin red streak spray, directional ranged hit",
    "colors": [],
    "reach": 319
   },
@@ -10109,7 +10646,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [],
    "reach": 69
   },
@@ -10122,8 +10662,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small dark red puff, ranged hit",
    "colors": [],
    "reach": 144
   },
@@ -10136,8 +10676,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small dark red fleck, ranged hit sample",
    "colors": [],
    "reach": 318
   },
@@ -10150,8 +10690,8 @@
    "role": "cast",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small dark red spurt with drips, melee slash hit",
    "colors": [],
    "reach": 421
   },
@@ -10164,8 +10704,8 @@
    "role": "cast",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "faint small red spurt, light slash hit",
    "colors": [],
    "reach": 200
   },
@@ -10178,8 +10718,8 @@
    "role": "cast",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small red spurt, melee slash hit",
    "colors": [],
    "reach": 253
   },
@@ -10192,8 +10732,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "scattered dark droplets falling, splash hit",
    "colors": [],
    "reach": 394
   },
@@ -10207,7 +10747,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [],
    "reach": 200
   },
@@ -10220,8 +10763,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint few dots, nearly invisible",
    "colors": [],
    "reach": 347
   },
@@ -10235,7 +10778,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage; decal needs surface",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [],
    "reach": 1
   },
@@ -10248,8 +10794,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "two small bright red splat decals, ground blood",
    "colors": [],
    "reach": 275
   },
@@ -10262,8 +10808,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "faint dots, nearly invisible decal",
    "colors": [],
    "reach": 37
   },
@@ -10276,8 +10822,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "bright red splat decal pair, ground blood",
    "colors": [],
    "reach": 157
   },
@@ -10290,8 +10836,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small red splat cluster decal, ground blood",
    "colors": [],
    "reach": 130
   },
@@ -10304,8 +10850,8 @@
    "role": "impact",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "scattered small dark drops, floor spatter",
    "colors": [],
    "reach": 183
   },
@@ -10319,7 +10865,10 @@
    "school": "blood",
    "base": false,
    "quality": "",
-   "look": "",
+   "look": "blank on stage",
+   "tags": [
+    "stage-blank"
+   ],
    "colors": [],
    "reach": 321
   },
@@ -10332,8 +10881,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "B",
+   "look": "small dark red spurt, stab hit",
    "colors": [],
    "reach": 276
   },
@@ -10346,8 +10895,8 @@
    "role": "",
    "school": "blood",
    "base": false,
-   "quality": "",
-   "look": "",
+   "quality": "C",
+   "look": "tiny speck, nearly invisible",
    "colors": [],
    "reach": 302
   }

@@ -108,10 +108,10 @@ namespace CireAbilityVFX
     // spell / skill visual (projectile heads, impacts, cast flares, self pulses, buff and aura layers, empowered-attack strikes,
     // Fab cast / projectile / impact / aura systems). True hit footprints never scale: ground telegraphs, lingering zones, the
     // shockwave to a self circle's true radius, void zones, lanes and fitted Fab ground overlays keep their real size.
-    //   design value : Content/Data/VFXTuning.json "spellEffectScale" (default 1.3)
+    //   design value : Content/Data/VFXTuning.json "spellEffectScale" (default 1.17: Eric 2026-09-26 +30%, playtest 6 -10%)
     //   player value : Options > Video > Spell effect size (FCireUISettings::SpellEffectSize, saved relative to the design value)
     //   override     : cire.SpellEffectScale <x> (0 = off), for A/B captures
-    constexpr float DefaultSpellEffectScale = 1.3f, MinSpellEffectScale = .5f, MaxSpellEffectScale = 2.f;
+    constexpr float DefaultSpellEffectScale = 1.17f, MinSpellEffectScale = .5f, MaxSpellEffectScale = 2.f;
     CIRESTEAMSURVIVAL_API float DesignSpellEffectScale();
     CIRESTEAMSURVIVAL_API void ReloadVFXTuning();
     // Effective scale for a player multiplier (1 = the design value), clamped to Min..MaxSpellEffectScale.
@@ -121,7 +121,12 @@ namespace CireAbilityVFX
     // Eric 2026-09-26 follow-up: buff / aura layers grow less (VFXTuning.json "auraLayerScale", 1.1) and hand / weapon glow
     // layers a little (VFXTuning.json "handGlowScale", 1.2). Both follow the player's Spell effect size relative to the design
     // value (and the console override the same way).
-    constexpr float DefaultAuraLayerScale = 1.1f, DefaultHandGlowScale = 1.2f;
+    // pack-usage-3 (playtest 6: skill effects -10%): aura .99, hand glow 1.08.
+    constexpr float DefaultAuraLayerScale = .99f, DefaultHandGlowScale = 1.08f;
+    // pack-usage-3 (playtest 6: hit effects -20%): impacts and criticals (procedural + Fab) take VFXTuning.json "hitEffectScale"
+    // on top of the spell-effect scale; .89 x 1.17 = .8 x the former 1.3.
+    constexpr float DefaultHitEffectScale = .89f;
+    CIRESTEAMSURVIVAL_API float DesignHitEffectScale();
     CIRESTEAMSURVIVAL_API float DesignAuraLayerScale();
     CIRESTEAMSURVIVAL_API float DesignHandGlowScale();
     CIRESTEAMSURVIVAL_API float AuraLayerScale(const UWorld* World);
