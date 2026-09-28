@@ -1,95 +1,150 @@
-# Skill Assignment editor (kit editor)
+# Hero Creator (kit editor)
 
-Playtest 6, section I. This is a dev/editor mode inside Champion Select: **KIT EDITOR** sits in the top-right nav, beside CHAMPIONS / LOADOUTS / SETTINGS.
+Playtest 6, sections I and M. The Hero Creator is a dev/editor mode inside Champion Select. To open it, use **HERO CREATOR** in the top-right nav, beside SETTINGS / LOADOUTS / CHAMPIONS.
 It's available in every non-shipping build. A shipping build needs `-CireKitEditor`.
 
-## What it does
+In the Hero Creator you:
 
-1. **Pick a champion.** The strip across the top lists every roster row (`Content/Data/ChampionRoster.json`), with its portrait and role ring.
-   A green dot marks a champion that already has a saved template. The mouse wheel scrolls the strip.
-2. **Browse the whole ability pool.** This is every row of the Ability Database (`Content/Data/Abilities.json`), grouped in the Skill Shop's
-   periodic-table sections, with the same colours and order: Spell damage, Attack damage, Defensive, Crowd Control, Summons,
-   Constructs, Passives, Ultimates.
-   - **Search:** matches name, id, school, role types, effect tags, section, kind and learner champions. Every word must match.
-   - **Filters:** kind (actives / passives / ultimates), role (DPS / TANK / HEAL), and section chips with counts. The first click isolates a section.
-   - **Only this champion's list:** shows only what the champion can already buy.
-   - **Tiles:** hover shows the full ability tooltip. Click adds the ability to the kit and selects it. Right-click removes it.
-3. **Assign the base kit.** The kit has 6 active slots, 1 ultimate and 1 passive, the same capacity as the Skill Shop and draft.
-   A full kind refuses the add with a message.
-   - **START MATCHES WITH THIS KIT** (on by default): the champion is drafted with the whole kit learned at level 1.
-     The skills level up in the Skill Shop, and there's no opening pick.
-   - With the toggle off, the kit is only added to the champion's Skill Shop list.
-   - A red **!** on a slot means this body can't use the skill (a shield skill on a shieldless champion, or a ranged-only skill on melee).
-     That skill is not granted.
-4. **Place the effects, per ability, for this champion.** Select a kit ability, then set:
-   - **Attach to:** DEFAULT, FEET, PELVIS, CHEST, HEAD, R HAND, L HAND, R FOOT. Each anchor resolves on this body's skeleton
-     (UE5 / Paragon, Mixamo-style Tripo and Biped names). Anchors the body lacks are greyed.
-   - **BONE < >:** steps through every bone and socket of the body.
-   - **Forward / right / up offset:** ±150 cm, in champion space.
-   - **Size:** 0.2–3×.
-   - **Tint:** 10 swatches or none, plus a strength slider.
+1. Pick a champion.
+2. Take spells from **every** ability in the game, the same way you buy them in the Skill Shop. Any champion may take any skill.
+3. Put them on the champion's real skill buttons.
+4. Save them as **named loadout presets** inside a **kit profile**. Game modes choose which profile they use.
 
-   Right-click a slider to reset it; the mouse wheel nudges it.
+## Screen
 
-   The preview loops the ability's cast effect live at the placement. **CAST PREVIEW** plays the champion's real cast clip and releases
-   the effect on the clip's contact frame. Drag the model to turn it, or use `<` / `>`.
-5. **SAVE TEMPLATE** writes `Content/Data/ChampionKitTemplates.json` and reloads the Ability Database, so the change is live at once.
-   - **REVERT** returns to the saved copy.
-   - **CLEAR KIT** plus save removes the kit, and the champion goes back to the default opening pick and Skill Shop list.
-   - Unsaved changes ask for a second click before you switch champion or leave.
+- **Header:** the title and the **KIT PROFILE** picker (NEW, COPY, RENAME, DELETE; Standard can't be deleted), plus BACK TO CHAMPION SELECT.
+- **Champion strip:** every roster row (`Content/Data/ChampionRoster.json`) with its portrait and role ring. A dot marks a champion
+  that has a loadout in the current profile. The mouse wheel scrolls the strip.
+- **SPELLS & BUTTONS tab**
+  - **Left panel:** every row of the Ability Database, drawn as the Skill Shop's own scroll cards (golden active, plain passive,
+    prismatic ultimate). The cards sit in the Skill Shop's periodic-table sections, with the same colours and order.
+    - **Search:** matches name, id, school, section, kind, role types, effect tags and categories. Every word must match.
+    - **Filter chips:** kind, section, role, and the champion's own class list. The role and class-list chips are off by default.
+    - **Adding a card:** click a card to put it on the next free button (or the selected one), or drag it onto a button.
+    - **Tooltip:** hovering a card shows the Skill Shop tooltip.
+  - **Right panel, LOADOUT PRESETS:** the champion's presets in this profile. SAVE, SAVE AS, NEW, RENAME, DELETE, SET DEFAULT,
+    and **START MATCHES WITH THE DEFAULT**.
+- **EFFECT PLACEMENT tab:** the champion's real body on the draft stage. Drag the model to turn it, or use `<` / `>`. The page
+  switches between two pages:
+  - **CAST EFFECT:** the selected ability's cast effect, looping live at its placement:
+    - attach point (DEFAULT, FEET, PELVIS, CHEST, HEAD, R HAND, L HAND, R FOOT), resolved on this skeleton's naming scheme
+      (UE5 / Paragon, Mixamo, Biped);
+    - **BONE < >** to step through every bone and socket;
+    - forward / right / up offset (±150 cm);
+    - size (0.2–3×);
+    - tint (10 swatches, plus strength).
 
-While the host (standalone or listen server) is in the editor, the pick timer is held so it can't auto-lock a champion. A client's timer keeps running, and the header says so.
+    **CAST PREVIEW** plays the champion's cast clip and releases the effect on its contact frame.
+  - **PROJECTILE MUZZLE:** where the champion's projectiles leave from. There are two scope chips:
+    - **ALL PROJECTILES:** every skillshot plus the ranged basic attack.
+    - **ONLY \<spell\>:** an override for the selected ability.
 
-## Data: `Content/Data/ChampionKitTemplates.json`
+    Set the attach point, bone and offset. A cyan marker sits on the muzzle, and a test projectile (the spell's own projectile art,
+    or an orange test ball when no art is installed) loops forward from it. The page prints the muzzle's position in champion space.
+  - **Sliders:** right-click a slider to reset it; the mouse wheel nudges it.
+- **Action bar (bottom):** the champion's skill buttons with **your own keybind labels**: keys 1–6, the ultimate R, and the passive.
+  - Click a button to select it (the next card replaces it).
+  - Right-click it, or use its x, to clear it.
+  - A kind that doesn't fit the button gets a warning "!".
+- **Leaving with unsaved changes** asks for a second click.
+
+While the host (standalone or listen server) is in the Hero Creator, the pick timer is held. A client's timer keeps running, and the header says so.
+
+## Ability Tuner link
+
+- **Live refresh:** cards, names, numbers and tooltips read the live (tuned) rows every frame. The Hero Creator also subscribes to
+  `CireAbilityTuner::OnChanged()`, and polls `Version()`, so each change respawns the preview effect and test projectile with the tuned
+  VFX scale / tint.
+- **Disabled abilities:** they stay in the pool, dimmed, with a red DISABLED BY TUNER caption. They can still be assigned, because
+  templates outlive one match.
+- **EDIT badge:** a small bevelled pencil in the top-right corner of the hovered ability card or button. Clicking it opens the
+  Ability Tuner on that ability (`CireAbilityTunerUI::Select`). Its tooltip reads "Edit in Ability Tuner (F7)", with your own key.
+  - It's shared code (`CireTunerLink`), so it has the same look and placement on Hero Creator cards, Hero Creator buttons and Skill
+    Shop cards.
+  - **Action bar:** tooltips can't hold clicks, so you **Alt+click** a slot instead. The ability tooltip's footer says so.
+  - It's shown only when `CireAbilityTuner::CanTune` passes: the host or single player, while "Allow ability tuning" is on. It's never
+    shown to a remote client, or in a shipping build without the tuning flag.
+- **Clicks under the Tuner window:** while the Tuner window is open, the Skill Shop and Hero Creator ignore the pointer inside it, so
+  clicks there reach the Tuner.
+
+## Data: `Content/Data/ChampionKitTemplates.json` (schemaVersion 2)
 
 ```json
 {
-  "schemaVersion": 1,
-  "champions": {
-    "knight": {
-      "baseKit": ["shield_slam", "iron_guard", "war_cry", "cleaving_strike", "second_wind", "protection_dome", "bastion_of_dawn", "stone_skin"],
-      "grantOnDraft": true,
-      "updated": "2026-09-27T12:00:00.000Z",
-      "effects": {
-        "shield_slam": { "attach": "hand_r", "offset": [20, 0, 10], "scale": 1.3, "tint": [0.18, 0.92, 0.88, 1], "tintStrength": 0.8 }
+  "schemaVersion": 2,
+  "profiles": {
+    "Standard": {
+      "champions": {
+        "knight": {
+          "default": "Bulwark",
+          "grantOnDraft": true,
+          "updated": "2026-09-28T08:00:00.000Z",
+          "presets": [
+            { "name": "Bulwark", "slots": { "1": "shield_slam", "2": "iron_guard", "3": "war_cry", "R": "bastion_of_dawn", "P": "stone_skin" } }
+          ]
+        }
       }
+    },
+    "Hero TD": { "champions": { } }
+  },
+  "effects": {
+    "knight": { "shield_slam": { "attach": "hand_r", "offset": [20, 0, 10], "scale": 1.3, "tint": [0.18, 0.92, 0.88, 1], "tintStrength": 0.8 } }
+  },
+  "muzzles": {
+    "ranger": {
+      "*":          { "attach": "hand_l", "offset": [12, 0, 4], "point": [38.5, -21, 52] },
+      "piercing_arrow": { "attach": "hand_r", "point": [40, 18, 60] }
     }
   }
 }
 ```
 
-- **baseKit:** ability ids. When the file loads, unknown ids, duplicates and over-capacity entries are dropped. The order is actives → ultimate → passive.
-- **attach:** an anchor key (`root`, `pelvis`, `chest`, `head`, `hand_r`, `hand_l`, `foot_r`, `foot_l`) or a literal bone or socket name.
-- **offset:** cm, champion space (+X forward, +Y right, +Z up).
-- **scale:** multiplies the effect's normal size.
-- **tint:** RGBA; A > 0 recolours the effect through `CireFabVFX::Recolor`.
+- **Profiles:** `Standard` always exists and comes first.
+  - A game mode names its profile in `Content/Data/WavePresets.json` as `"kitProfile"`.
+  - `-CireKitProfile=<name>` overrides the profile.
+  - A champion missing from the active profile falls back to its Standard loadout, then to its built-in kit.
+- **presets / slots:** slot keys are `"1"`–`"6"` (the key buttons), `"R"` (ultimate) and `"P"` (passive).
+  - Unknown ids and duplicates are dropped.
+  - The key buttons are packed from 1.
+  - `default` is the preset the game uses.
+- **effects:** per champion, not per profile, because they're about the body.
+  - **attach:** an anchor key (`root`, `pelvis`, `chest`, `head`, `hand_r`, `hand_l`, `foot_r`, `foot_l`) or a literal bone or
+    socket name.
+  - **offset:** cm, in champion space (+X forward, +Y right, +Z up).
+  - **scale:** multiplies the effect's normal size.
+  - **tint:** RGBA; A > 0 recolours the effect.
+- **muzzles:** per champion. `"*"` is every projectile; an ability id overrides `"*"` for that ability.
+  - `attach` and `offset` are what you author.
+  - `point` is the muzzle **baked** into champion space (cm, unscaled actor-local) from the preview body when you save.
+  - Points are clamped to a box around the body: ±200 cm horizontally, −90 to +160 cm vertically.
+- **Schema 1 files still load:** the old single `baseKit` per champion becomes a "Default" preset in Standard.
 
-Values are clamped when the file is read. A malformed file keeps the previous templates and logs `CIRE_KIT_TEMPLATES_REJECTED`.
+Values are clamped when the file is read. A malformed file keeps the previous data and logs `CIRE_KIT_TEMPLATES_REJECTED`.
 
-## How the game uses a template
+## How the game uses the data
 
 | Where | What |
 |---|---|
-| `CireAbilityDB::Reload` → `CireKitEditor::MergeIntoKits` | Template skills join the champion's `purchasable` / `purchasableImplemented` lists, so the Skill Shop sells and levels them. A champion without an Ability DB kit, such as a new roster row, gets one from the template. `signature` is untouched. |
-| `ACireHero::DraftProfile` → `CireKitEditor::GrantOnDraft` | Runs on the server when `grantOnDraft` is set. It learns the kit (Skills, cooldowns, progression, Skill Shop level 1) and clears the opening offer. |
-| `ACireSpellVisual::UpdateFabVFX` → `CireKitEditor::SpawnPlacedCast` | Runs on the client. The caster-attached **cast** overlay of an ability is spawned on the casting champion's body at the saved socket, offset, scale and tint. This covers the Fab "cast" role: caster flares, self shocks and channels. Projectiles, impacts and ground zones keep their normal placement. |
+| `CireAbilityDB::Reload` → `CireKitEditor::MergeIntoKits` | Loadout skills join the champion's purchasable Skill Shop lists. |
+| `ACireHero::DraftProfile` → `CireKitEditor::GrantOnDraft` | Runs on the server. With `grantOnDraft` on, the active profile's default loadout is learned at level 1, in button order. |
+| `ACireSpellVisual::UpdateFabVFX` → `CireKitEditor::SpawnPlacedCast` | Runs on the client. The caster-attached cast effect sits at the saved placement. |
+| `ACireSkillshot::Spawn` and `ACireTargetProjectile::Launch` → `CireKitEditor::ProjectileStart` | Runs on the **server**. The projectile spawns at `ActorTransform × point` of the ability's muzzle (else `"*"`), so the replicated start is the same on every machine. A skillshot aims from the muzzle unless the aim point is beside or behind it. The old spawn point is kept when no muzzle is set, when the muzzle is behind a wall (world-static trace from the body), or when it's outside the realm. |
+
+A dedicated server doesn't animate bodies, which is why the muzzle is baked from the editor's posed preview body, not read from a live
+socket at runtime. A hand-edited muzzle without `point` uses the old spawn point plus its offset.
 
 ## Data-driven
 
-The pool is `CireAbilityDB::All()`, and the champions are `CireChampionRoster::All()`. New abilities (feat/ability-expansion) and new champions
-(feat/paragon-champions) show up with no code change. An unknown `section` value gets its own block after the eight known ones.
-
-Ability Tuner (F7, feat/ability-tuner): cards, names, numbers and tooltips read the live (tuned) rows every frame. The Hero Creator also
-subscribes to `CireAbilityTuner::OnChanged()` (and polls `Version()`): on each change it respawns the looping preview effect (tuned VFX
-scale / tint), drops a selection that no longer exists and shows a status line. Tuner-disabled abilities stay in the pool, dimmed with a
-red "DISABLED BY TUNER" caption; they can still be assigned (templates outlive one match) but cannot be cast while disabled.
+The pool is `CireAbilityDB::All()`, and the champions are `CireChampionRoster::All()`. New abilities and new champions (Paragon
+included) show up with no code change. An unknown `section` value gets its own block after the eight known ones.
 
 ## Code
 
 | File | Contents |
 |---|---|
-| `Source/CiresTeamSurvival/CireKitEditor.h/.cpp` | Data, rules, game integration, placement, pool browser |
+| `Source/CiresTeamSurvival/CireKitEditor.h/.cpp` | Data (profiles, presets, effects, muzzles), rules, game integration, placement, muzzle hook, pool |
 | `Source/CiresTeamSurvival/CireKitEditorUI.cpp` | The screen |
-| `Source/CiresTeamSurvival/CireKitEditorTests.cpp` | Native suite (`CIRE_KIT_EDITOR_TESTS_PASS`), run by the combat expansion probe (`RunExpansionChecks.py --only native`) |
+| `Source/CiresTeamSurvival/CireTunerLink.h/.cpp` | The EDIT badge and Alt+click link to the Ability Tuner |
+| `Source/CiresTeamSurvival/CireKitEditorTests.cpp` | Native suite (`CIRE_KIT_EDITOR_TESTS_PASS`, plus `CIRE_TUNER_LINK_TESTS_PASS`), run by the combat expansion probe (`RunExpansionChecks.py --only native`) |
 
-- **Screenshot capture:** `-CireKitEditorGallery[=<champion>]` opens the editor with a sample kit and a placed effect, writes `Saved/KitEditorGallery/kit_editor_*.png`, then quits.
+- **Screenshot capture:** `-CireKitEditorGallery[=<champion>]` opens the editor, writes `Saved/KitEditorGallery/kit_editor_*.png`, then quits.

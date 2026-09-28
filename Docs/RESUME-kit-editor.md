@@ -22,20 +22,35 @@ Design + data format: Docs/KitEditor.md.
   tuner set restored.
 - Merged main 8b323888 (ability-tuner, initiation, pack-usage-3, paragon-champions) — a97af919; 3 conflicts, all additive
   (includes in CireAbilityDB.cpp, probe calls in CireCombatExpansionProbe.cpp, accessors in CireDraftStage.h; both sides kept).
-- CireKitEditorTests.cpp (242 checks), Docs/KitEditor.md.
+- Follow-up 1 (fb51a8e7): per-champion PROJECTILE MUZZLE (Eric: yes). Hero Creator > EFFECT PLACEMENT > PROJECTILE MUZZLE page:
+  ALL PROJECTILES / ONLY <spell> scope, attach chips + bone picker + offset sliders, cyan muzzle marker + looping test projectile
+  (spell's projectile art, else an orange test ball). Data `muzzles` (champion -> "*" | ability id -> attach/offset/baked point).
+  Runtime (server): `CireKitEditor::ProjectileStart` in ACireSkillshot::Spawn and ACireTargetProjectile::Launch; unset -> old point.
+- Follow-up 2 (9d7703ea): EDIT badge -> Ability Tuner (CireTunerLink): pencil badge top-right of the hovered Hero Creator card /
+  loadout button and Skill Shop card, tooltip "Edit in Ability Tuner (<F7 key>)"; action bar: Alt+click a slot (hint in the
+  tooltip footer). Only when CireAbilityTuner::CanTune. CireShopUI::Pointer ignores the pointer inside the open Tuner window so
+  the shop / Hero Creator underneath no longer eat its clicks.
+- Merged main aed99919 (bosses-spacing, bonus-loot, shop-anywhere, ...) cleanly — 236bcb9a.
+- CireKitEditorTests.cpp (258 checks incl. muzzle + CireTunerLink 6), Docs/KitEditor.md rewritten (profiles, presets, muzzle, EDIT).
 
 ## Not done / next
-- Nothing blocking. Possible follow-ups: per-champion projectile muzzle sockets (see assumptions); Paragon champions were
-  not installed in this worktree (packs absent), so the Hero Creator strip was not eyeballed with Paragon bodies.
+- Nothing blocking. Not eyeballed in a rendered run: the muzzle page / test projectile and the EDIT badge (native tests run
+  -nullrhi; no gallery shot taken to save disk). Paragon packs are absent in this worktree, so Paragon bodies were not checked.
 
 ## Assumptions / questions for Eric
 - "Base kit" = the skills the champion STARTS the match with (grantOnDraft default ON, toggle per champion). This overrides the
   "1 skill point / opening role pick" rule for templated champions only; turn the toggle off to only add the kit to the Skill Shop list.
-- Effect placement applies to the caster-attached CAST effect. Projectiles, impacts and ground zones keep their normal placement.
-  Ask Eric if he wants per-champion projectile muzzle sockets too.
+- Effect placement applies to the caster-attached CAST effect; projectile start points use the MUZZLE page (Eric said yes);
+  impacts and ground zones keep their normal placement.
 - Skills whose requirement the body fails (shield / ranged-only) are shown with a red "!" and not granted.
 - The editor is on in all dev/editor builds; shipping needs -CireKitEditor.
 - While the host edits, the pick timer is held (standalone / listen server). Clients see a warning instead.
+- Muzzle is BAKED into champion space from the editor's posed preview body at SAVE (a dedicated server does not animate, so a
+  live socket there would be the ref pose). A skillshot aims from the muzzle unless the aim point is beside/behind it (dot < .5).
+  Muzzle rejected (old point used) when a world-static wall is between body centre and muzzle or it leaves the realm.
+  Points clamped to +-200 cm horizontally, -90..+160 cm vertically so sweeps still hit capsules.
+- Action-bar modifier is Alt+click, not Ctrl+click: Ctrl is bound to Dodge roll by default.
+- EDIT badge shows only on hover (keeps cards clean); on a loadout button it temporarily hides the "!" kind warning in that corner.
 - Tuner-disabled abilities remain assignable in the Hero Creator (templates are saved across matches; the tuner is per match),
   but are flagged on the card and in the status line and cannot be cast while disabled.
 
@@ -48,9 +63,15 @@ Design + data format: Docs/KitEditor.md.
 - CireRosterHUD.cpp: include, HERO CREATOR nav item, early-out that draws the editor while open.
 - CireShopUI.cpp/.h: shared skill-card / section helpers used by the Hero Creator (DrawSkillCard, SkillSectionInfo, TipSkill, Pointer).
 - CireWaveData.cpp / CireWaves.h / Content/Data/WavePresets.json: `kitProfile` on wave presets.
+- CireSkillshot.cpp: include + origin = `CireKitEditor::ProjectileStart(...)` (muzzle) in Spawn.
+- CireAttackSystem.cpp: include + Start = `CireKitEditor::ProjectileStart(...)` in ACireTargetProjectile::Launch.
+- CireShopUI.cpp: includes, EDIT badge on the hovered Skill Shop card, Pointer() masks the open Ability Tuner window.
+- CireHUDActionBars.cpp: include, Alt+click slot -> tuner, tooltip footer hint.
 
-## Gate logs (2026-09-28, after merging main 8b323888; build Result: Succeeded)
-- native PASS (CIRE_KIT_EDITOR_TESTS_PASS checks=242, CIRE_COMBAT_EXPANSION_PASS):
-  Saved/ExpansionChecks/20260928T074752875630Z/report.json
-- network PASS: Saved/NetworkSmoke/20260928T075105199237Z/report.json
-- interface PASS: Saved/InterfaceSmoke/20260928T075236990047Z/report.json
+## Gate logs (2026-09-28 08:3x, after merging main aed99919; build Result: Succeeded)
+- native PASS (CIRE_KIT_EDITOR_TESTS_PASS checks=258, CIRE_TUNER_LINK_TESTS_PASS checks=6, CIRE_COMBAT_EXPANSION_PASS):
+  Saved/ExpansionChecks/20260928T082855895399Z/report.json
+- network PASS: Saved/NetworkSmoke/20260928T083125032478Z/report.json
+- interface PASS: Saved/InterfaceSmoke/20260928T083217139551Z/report.json
+- Probe note: the network / interface smokes do not exercise champion projectiles with a muzzle (only the expansion net probe
+  spawns skillshots, from heroes without muzzle data), so no probe check was added; native covers the server spawn position.
