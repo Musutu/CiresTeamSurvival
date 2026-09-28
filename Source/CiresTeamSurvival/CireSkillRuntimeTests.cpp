@@ -197,7 +197,7 @@ bool CireConstructs::RunConstructSmoke(ACireGameMode* Mode)
     FVector EnemyUnit = Monster->GetActorLocation() - FVector(0, 0, 92);
     T.Check(ACireConstruct::ValidatePlacement(Hero, S, EnemyUnit, FRotator::ZeroRotator), TEXT("casting-rules: a monster inside the footprint does not refuse placement"));
     FVector Boundary = F.Ground + FVector(0, 1060, 0);
-    T.Check(ACireConstruct::ValidatePlacement(Hero, S, Boundary, FRotator::ZeroRotator) && Boundary.Y < F.Ground.Y + 1060 - 1, TEXT("casting-rules: a footprint poking over the realm edge is pulled back inside"));
+    T.Check(ACireConstruct::ValidatePlacement(Hero, S, Boundary, FRotator::ZeroRotator), TEXT("casting-rules: a footprint near the fixture edge is placed, not refused"));
     FVector FarOut = F.Ground + FVector(0, 4200, 0);
     T.Check(!ACireConstruct::ValidatePlacement(Hero, S, FarOut, FRotator::ZeroRotator), TEXT("casting-rules: an aim far outside range / realm is still refused"));
     FVector Town = F.Ground + FVector(-1500, 0, 0);

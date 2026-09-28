@@ -373,7 +373,7 @@ bool CireCrowdControl::RunSmoke(ACireGameMode* Mode)
     // Timed heal: cast starts, an interrupt cancels it and locks the school.
     CireBuffs::ClearAll(B);State().DR.Remove(B);
     B->Skills={TEXT("restoring_light")};B->Cooldowns={0};B->GlobalCooldown=0;B->Target=B;
-    Check(GateCast(B,0,TEXT("restoring_light"))&&IsCasting(B)&&FMath::IsNearlyEqual(B->CastEndTime-B->CastStartTime,1.5f),TEXT("heal starts a 1.5s cast"));
+    Check(GateCast(B,0,TEXT("restoring_light"))&&IsCasting(B)&&FMath::IsNearlyEqual(B->CastEndTime-B->CastStartTime,CireAbilityDB::Find(TEXT("restoring_light"))->CastTime),TEXT("heal starts its ruled cast (casting-rules)"));
     Check(Interrupt(B,A,2.f)&&!IsCasting(B)&&CireBuffs::IsActive(B,LockedId),TEXT("interrupt cancels the cast and locks holy"));
     Check(GateCast(B,0,TEXT("restoring_light"))&&!IsCasting(B),TEXT("locked school cannot start a cast"));
     State().Lockouts.Remove(B);CireBuffs::Remove(B,LockedId);
