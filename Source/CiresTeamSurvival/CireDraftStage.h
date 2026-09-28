@@ -27,6 +27,8 @@ public:
     // Empty id clears the preview. Re-showing the same id keeps the pose/turntable.
     void ShowProfile(const FString& ProfileId);
     const FString& GetProfileId() const { return ProfileId; }
+    /** kit-editor: the local preview champion (effect placement preview); null while none is shown. */
+    ACireHero* GetPreviewHero() const { return Preview; }
     UTextureRenderTarget2D* GetRenderTarget() const { return Target; }
     // True once the body is bound, bounded, framed and metered (exposure converged or timed out).
     bool IsPreviewReady() const;

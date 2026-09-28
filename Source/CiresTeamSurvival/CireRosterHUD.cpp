@@ -22,6 +22,7 @@
 #include "CireItems.h"    // rules-conformance: game-mode picker (host RPC on the hero's inventory)
 #include "CireShopArt.h"  // rules-conformance: scroll / crest icons for the mode picker
 #include "CireSkillShop.h"
+#include "CireKitEditor.h" // kit-editor: Champion Select > KIT EDITOR
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "EngineFontServices.h"
@@ -476,6 +477,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
 {
     if(!Hero)return;
     ResetTransform();
+    // kit-editor: the Skill Assignment editor (dev/editor mode) replaces the select screen while it is open.
+    if(CireKitEditor::IsOpen(this)){if(!Hero->bDrafted){CireKitEditor::Draw(*this,Hero,Controller);return;}CireKitEditor::Open(this,false);}
     auto& S=StateFor(this);
     UWorld* World=GetWorld();
     const double Now=FPlatformTime::Seconds();
@@ -909,9 +912,10 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         }
         // Nav (right): CHAMPIONS (here), LOADOUTS (explains the opening ability), SETTINGS (options).
         {
-            static const TCHAR* Items[]={TEXT("SETTINGS"),TEXT("LOADOUTS"),TEXT("CHAMPIONS")};
+            static const TCHAR* Items[]={TEXT("SETTINGS"),TEXT("LOADOUTS"),TEXT("CHAMPIONS"),TEXT("KIT EDITOR")};
             float X=LX+CW;const float NS2=11.5f,NY=M+2;
-            for(int32 I=0;I<3;++I)
+            const int32 NavCount=CireKitEditor::IsAvailable()&&!bLockedView?4:3; // kit-editor: dev/editor mode entry
+            for(int32 I=0;I<NavCount;++I)
             {
                 const float W=TW(Items[I],NS2,ECireFont::Heading)+22;X-=W;
                 const FRect R{X,NY-2,W,LH(NS2,ECireFont::Heading)+8};
@@ -921,7 +925,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 Txt(Items[I],R.X+16,R.Y+4,NS2,bHere?Gold:bOver?Text:Muted,R,ECireFont::Heading);
                 if(bHere)Panel(R.X+16,R.B(),R.W-22,1.5f,Gold);
                 if(I==0&&bOver&&Clicked){ToggleSettings();Clicked=false;}
-                Tip(Items[I],I==0?TEXT("Open the options."):I==1?TEXT("Loadouts start after lock-in: choose your opening ability, then buy more skills in the Skill Shop as you level."):TEXT("Choose the champion you will play this match."),R.X,R.Y,R.W,R.H);
+                if(I==3&&bOver&&Clicked){Clicked=false;CireKitEditor::Open(this,true,S.SelectedId);} // kit-editor
+                Tip(Items[I],I==3?TEXT("Skill Assignment editor (dev): build each champion's base kit from the whole ability pool and place its effects. Saved per champion."):I==0?TEXT("Open the options."):I==1?TEXT("Loadouts start after lock-in: choose your opening ability, then buy more skills in the Skill Shop as you level."):TEXT("Choose the champion you will play this match."),R.X,R.Y,R.W,R.H);
                 X-=14;
             }
         }

@@ -2,6 +2,7 @@
 #include "CireAbilityShapes.h" // aoe-scale
 #include "CireChampionProfiles.h"
 #include "CireChampionRoster.h"
+#include "CireKitEditor.h" // kit-editor: champion kit templates join the purchasable lists
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -168,6 +169,7 @@ bool CireAbilityDB::Reload()
     {UE_LOG(LogCireAbilityDB,Error,TEXT("Ability database rejected; keeping previous: %s"),*Error);return false;}
     GAbilities=MoveTemp(A);GKits=MoveTemp(K);GModifiers=MoveTemp(M);GIndex.Reset();GNameIndex.Reset();
     for(int32 I=0;I<GAbilities.Num();++I){GIndex.Add(GAbilities[I].Id,I);GNameIndex.Add(GAbilities[I].Name,I);}
+    CireKitEditor::MergeIntoKits(GKits); // kit-editor: saved base kits are purchasable (Content/Data/ChampionKitTemplates.json)
     UE_LOG(LogCireAbilityDB,Display,TEXT("CIRE_ABILITY_DB_LOADED abilities=%d champions=%d"),GAbilities.Num(),GKits.Num());
     return true;
 }
