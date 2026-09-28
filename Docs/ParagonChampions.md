@@ -80,8 +80,10 @@ IsPassive, Cast, DescribeShape and the damage/speed hooks.
 
 ## Champion select
 
-- Heroes appear after the authored roster, in the same grid, filters and pages.
-- The live 3D preview uses the real Paragon body.
+- Heroes appear in the same paged browser as the authored roster. The PARAGON chip (or the keyword "paragon") filters them.
+- The live 3D preview uses the real Paragon body. It streams after 0.9 s of hover (`paragonHoverDebounceSeconds`,
+  Content/Data/DraftSelect.json) because each Paragon mesh rebuilds its render data for 5-7 s on its first editor load.
+  Run `python Tools/ResaveParagonMeshes.py` once, with all editors closed, to stop the rebuild.
 - **Portrait:** `/Game/UI/Draft/Portraits` first, then the local `/Game/ParagonDerived/Portraits` capture.
 - **Background:** the hero's closest-theme existing painting (`heroes[].background`) until a dedicated painting exists.
 
