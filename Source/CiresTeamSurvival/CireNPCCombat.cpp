@@ -364,8 +364,9 @@ void ReleaseCast(ACireMonster* M,ACireGameMode* Mode)
     ClearCast(M);
 }
 float BaseScale(const ACireMonster* M);
-// bosses-spacing: bosses are drawn UnitSpacing.json boss.sizeMultiplier x their normal size (capsule capped, CireUnitSpacing).
-float DesiredScale(const ACireMonster* M){return BaseScale(M)*(CireUnitSpacing::IsBossBody(M)?CireUnitSpacing::Get().BossSizeMultiplier:1.f);}
+// bosses-spacing: bosses are drawn their category's UnitSpacing.json size (outdoorBoss x marker size / waveBoss / packLeaderBoss)
+// x their normal size (capsule capped, CireUnitSpacing).
+float DesiredScale(const ACireMonster* M){return BaseScale(M)*CireUnitSpacing::BossSize(M);}
 float BaseScale(const ACireMonster* M)
 {
     const auto* A=Arch(M);const auto* S=St(M);

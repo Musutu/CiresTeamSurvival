@@ -1,7 +1,8 @@
 #pragma once
 // bosses-spacing: body size and personal space of NPC units (Docs/RESUME-bosses-spacing.md).
-//  - Bosses (wave/lane bosses, outdoor world bosses, boss-classified pack leaders) are drawn
-//    BossSizeMultiplier x bigger. Their collision capsule is capped to the "Large" nav agent
+//  - Bosses are drawn bigger per category (Eric 2026-09-28): outdoor world bosses OutdoorBossSize (5) x the
+//    Boss Spawn marker's "size", wave/lane bosses WaveBossSize (1: they were already big), boss-classified pack
+//    leaders PackLeaderBossSize (2). Their collision capsule is capped to the "Large" nav agent
 //    (radius 72, height 300, Config/DefaultEngine.ini) so they path on the Large navmesh and fit
 //    through the town's streets and gates; the huge body is visual. Their melee reach and the reach
 //    of attacks against them are measured to the visual body's edge (BodyReachBonus).
@@ -16,7 +17,11 @@ class ACireGameMode;
 
 struct FCireUnitSpacing
 {
-    float BossSizeMultiplier = 5.f;         // x the boss's normal (archetype / rank / wave) size
+    // x the boss's normal (archetype / rank / wave) size, per category (JSON boss.outdoorBoss / waveBoss / packLeaderBoss;
+    // the older boss.sizeMultiplier is read as outdoorBoss when outdoorBoss is absent).
+    float OutdoorBossSize = 5.f;            // outdoor world bosses (x the Boss Spawn marker's "size")
+    float WaveBossSize = 1.f;               // wave/lane bosses: the size they had before bosses-spacing
+    float PackLeaderBossSize = 2.f;         // boss-classified pack leaders
     float BossCapsuleRadiusMax = 72.f;      // scaled cm: the Large nav agent radius
     float BossCapsuleHalfHeightMax = 150.f; // scaled cm: the Large nav agent height / 2 (fits under gates)
     float MonsterCapsuleRadius = 46.f;      // unscaled cm (legacy 38, the mannequin proportion)
@@ -27,7 +32,7 @@ struct FCireUnitSpacing
     /** The pre-bosses-spacing values (the probe's "before"). */
     static FCireUnitSpacing Legacy()
     {
-        FCireUnitSpacing S; S.BossSizeMultiplier = 1.f; S.MonsterCapsuleRadius = 38.f; S.MeleeReachBonus = 0.f; S.bSeparation = false;
+        FCireUnitSpacing S; S.OutdoorBossSize = S.WaveBossSize = S.PackLeaderBossSize = 1.f; S.MonsterCapsuleRadius = 38.f; S.MeleeReachBonus = 0.f; S.bSeparation = false;
         S.BossCapsuleRadiusMax = 1000.f; S.BossCapsuleHalfHeightMax = 10000.f; return S;
     }
 };
@@ -45,6 +50,11 @@ namespace CireUnitSpacing
 
     /** Wave/lane bosses, outdoor world bosses and boss-classified pack leaders. */
     CIRESTEAMSURVIVAL_API bool IsBossBody(const ACireMonster* Monster);
+    enum class EBossBody : uint8 { None, Wave, Outdoor, PackLeader };
+    CIRESTEAMSURVIVAL_API EBossBody BossBodyOf(const ACireMonster* Monster);
+    /** The size multiplier of a monster's body: its category's multiplier (x the marker size for outdoor bosses); 1 for non-bosses. */
+    CIRESTEAMSURVIVAL_API float BossSize(const ACireMonster* Monster);
+    CIRESTEAMSURVIVAL_API float CategorySize(EBossBody Kind, const FCireUnitSpacing& Spacing);
     /** Sets the actor scale (Scale already includes the boss multiplier) and the capsule for it; moves the
      *  body so its feet stay on the capsule bottom. Cheap no-op when nothing changed. Runs on every machine. */
     CIRESTEAMSURVIVAL_API void ApplyBody(ACireMonster* Monster, float Scale);

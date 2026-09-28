@@ -1,7 +1,9 @@
 {
-  "_comment": "bosses-spacing (Docs/RESUME-bosses-spacing.md). Live: console `cire.Spacing reload`, or `cire.Spacing <bossSize|bossRadius|bossHalfHeight|radius|meleeBonus|pad|strength|separation> <value>`. Boss collision stays the Large nav agent (radius 72, height 300) so giants path the town streets; the body is drawn sizeMultiplier x.",
+  "_comment": "bosses-spacing (Docs/RESUME-bosses-spacing.md). Live: console `cire.Spacing reload`, or `cire.Spacing <outdoorBoss|waveBoss|packLeaderBoss|bossRadius|bossHalfHeight|radius|meleeBonus|pad|strength|separation> <value>`. Boss collision stays the Large nav agent (radius 72, height 300) so giants path the town streets; the body is drawn bigger per category: outdoor world bosses outdoorBoss x their Boss Spawn marker's size (route editor SIZE x, JSON \"size\"), wave/lane bosses waveBoss, boss-classified pack leaders packLeaderBoss. The older single sizeMultiplier is still read as outdoorBoss.",
   "boss": {
-    "sizeMultiplier": 5.0,
+    "outdoorBoss": 5.0,
+    "waveBoss": 1.0,
+    "packLeaderBoss": 2.0,
     "capsuleRadiusMax": 72,
     "capsuleHalfHeightMax": 150
   },

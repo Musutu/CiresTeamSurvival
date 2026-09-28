@@ -252,7 +252,7 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
     if (const auto* Leader = CireNPCArchetypes::Find(TEXT("gravemaw_pack_leader")); Leader && IdleHead.Contains(TEXT("gravemaw_pack_leader")) && IdleHead.Contains(TEXT("hollow_infantry")))
     {
         const float Ratio = IdleHead[TEXT("gravemaw_pack_leader")] / FMath::Max(.01f, IdleHead[TEXT("hollow_infantry")]);
-        const float Want = Leader->Scale * CireUnitSpacing::Get().BossSizeMultiplier; // bosses-spacing: boss bodies are drawn 5x
+        const float Want = Leader->Scale * CireUnitSpacing::Get().PackLeaderBossSize; // bosses-spacing: boss pack leaders are drawn boss.packLeaderBoss x
         Check(FMath::IsNearlyEqual(Ratio, Want, .12f * Want), FString::Printf(TEXT("pack leader height ratio %.2f (archetype scale %.2f x boss size)"), Ratio, Leader->Scale));
     }
 

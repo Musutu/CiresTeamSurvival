@@ -198,6 +198,18 @@ bool CireLayoutWiring::RunTests(ACireGameMode* Mode)
                 ML::CompileRoutes(H, Base, HC, HNotes) && HC.Bosses[0][0].HealthScale == 2.5f && HC.Bosses[1][0].HealthScale == 2.5f,
                 TEXT("a Boss marker's HP x mirrors, round-trips and compiles into both realms"));
         }
+        {   // bosses-spacing: model SIZE x per marker, mirrored, saved (JSON "size"), clamped, compiled into both realms.
+            FCireMapLayout Z = B; ML::SetBossSize(Z, BossId, .6f);
+            FCireMapLayout ZRound; FString ZError; FCireBattlefieldRoutes ZC; TArray<FString> ZNotes;
+            bool bZValid = true; for (const FCireLayoutIssue& I : ML::Validate(Z)) bZValid &= !(I.bError && I.MarkerId == BossId);
+            Check(FMath::IsNearlyEqual(ML::Find(Z, ML::Find(Z, BossId)->Pair)->SizeScale, .6f) && ML::ToJson(Z).Contains(TEXT("\"size\"")) && ML::ParseJson(ML::ToJson(Z), ZRound, ZError) &&
+                FMath::IsNearlyEqual(ML::Find(ZRound, BossId)->SizeScale, .6f) && ML::CompileRoutes(Z, Base, ZC, ZNotes) &&
+                FMath::IsNearlyEqual(ZC.Bosses[0][0].SizeScale, .6f) && FMath::IsNearlyEqual(ZC.Bosses[1][0].SizeScale, .6f) && bZValid,
+                TEXT("a Boss marker's model size x mirrors, round-trips and compiles into both realms"));
+            ML::SetBossSize(Z, BossId, 9.f); const bool bHigh = FMath::IsNearlyEqual(ML::Find(Z, BossId)->SizeScale, 3.f);
+            ML::SetBossSize(Z, BossId, .01f);
+            Check(bHigh && FMath::IsNearlyEqual(ML::Find(Z, BossId)->SizeScale, .2f) && !ML::ToJson(B).Contains(TEXT("\"size\"")), TEXT("boss model size clamps to 0.2-3 and a default marker writes no size"));
+        }
         ML::SetKind(B, BossId, TEXT("not_a_boss"));
         bool bUnknown = false; for (const FCireLayoutIssue& I : ML::Validate(B)) bUnknown |= I.bError && I.MarkerId == BossId && I.Message.Contains(TEXT("unknown boss"));
         Check(bUnknown, TEXT("Validate flags a Boss marker holding an unknown boss"));

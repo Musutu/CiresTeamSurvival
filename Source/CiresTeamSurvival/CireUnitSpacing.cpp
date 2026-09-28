@@ -3,6 +3,7 @@
 #include "CireGame.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCState.h"
+#include "CireOutdoorBosses.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -23,7 +24,7 @@ bool SpacingNum(const TSharedPtr<FJsonObject>& O, const TCHAR* Key, float& Value
 {
     double V = 0;
     if (!O->HasField(Key)) return true;
-    if (!O->TryGetNumberField(Key, V) || !FMath::IsFinite(V) || V < Min || V > Max) { Error = FString::Printf(TEXT("UnitSpacing.json: %s must be %.0f..%.0f"), Key, Min, Max); return false; }
+    if (!O->TryGetNumberField(Key, V) || !FMath::IsFinite(V) || V < Min || V > Max) { Error = FString::Printf(TEXT("UnitSpacing.json: %s must be %g..%g"), Key, Min, Max); return false; }
     Value = static_cast<float>(V); return true;
 }
 void EnsureLoaded() { if (!GSpacingLoaded) { GSpacingLoaded = true; FString Error; CireUnitSpacing::Reload(&Error); } }
@@ -37,7 +38,9 @@ bool CireUnitSpacing::Parse(const FString& Json, FCireUnitSpacing& Out, FString&
     const TSharedPtr<FJsonObject>* Boss = nullptr; const TSharedPtr<FJsonObject>* Units = nullptr;
     if (Root->TryGetObjectField(TEXT("boss"), Boss) && Boss)
     {
-        if (!SpacingNum(*Boss, TEXT("sizeMultiplier"), S.BossSizeMultiplier, 1, 10, Error) || !SpacingNum(*Boss, TEXT("capsuleRadiusMax"), S.BossCapsuleRadiusMax, 30, 400, Error) ||
+        // bosses-spacing (Eric 2026-09-28): per-category sizes; the older single sizeMultiplier is the outdoor fallback.
+        if (!SpacingNum(*Boss, TEXT("sizeMultiplier"), S.OutdoorBossSize, .2f, 10, Error) || !SpacingNum(*Boss, TEXT("outdoorBoss"), S.OutdoorBossSize, .2f, 10, Error) ||
+            !SpacingNum(*Boss, TEXT("waveBoss"), S.WaveBossSize, .2f, 10, Error) || !SpacingNum(*Boss, TEXT("packLeaderBoss"), S.PackLeaderBossSize, .2f, 10, Error) || !SpacingNum(*Boss, TEXT("capsuleRadiusMax"), S.BossCapsuleRadiusMax, 30, 400, Error) ||
             !SpacingNum(*Boss, TEXT("capsuleHalfHeightMax"), S.BossCapsuleHalfHeightMax, 60, 2000, Error)) return false;
     }
     if (Root->TryGetObjectField(TEXT("units"), Units) && Units)
@@ -59,7 +62,7 @@ bool CireUnitSpacing::Reload(FString* Error)
     FCireUnitSpacing S;
     if (!Parse(Json, S, Why)) { GSpacing = FCireUnitSpacing(); if (Error) *Error = Why; UE_LOG(LogCireUnitSpacing, Warning, TEXT("%s (built-in defaults)"), *Why); return false; }
     GSpacing = S;
-    UE_LOG(LogCireUnitSpacing, Display, TEXT("CIRE_UNIT_SPACING boss_size=%.2f boss_capsule=%.0f/%.0f radius=%.0f melee_bonus=%.0f separation=%d pad=%.0f"), S.BossSizeMultiplier,
+    UE_LOG(LogCireUnitSpacing, Display, TEXT("CIRE_UNIT_SPACING boss_size=%.2f/%.2f/%.2f boss_capsule=%.0f/%.0f radius=%.0f melee_bonus=%.0f separation=%d pad=%.0f"), S.OutdoorBossSize, S.WaveBossSize, S.PackLeaderBossSize,
         S.BossCapsuleRadiusMax, S.BossCapsuleHalfHeightMax, S.MonsterCapsuleRadius, S.MeleeReachBonus, S.bSeparation ? 1 : 0, S.SeparationPadding);
     return true;
 }
@@ -67,6 +70,28 @@ bool CireUnitSpacing::Reload(FString* Error)
 bool CireUnitSpacing::IsBossBody(const ACireMonster* M)
 {
     return IsValid(M) && (M->IsLaneBoss() || M->GetNPCClassification() == ECireNPCClass::Boss);
+}
+CireUnitSpacing::EBossBody CireUnitSpacing::BossBodyOf(const ACireMonster* M)
+{
+    if (!IsBossBody(M)) return EBossBody::None;
+    if (CireOutdoorBosses::IsOutdoorBoss(M)) return EBossBody::Outdoor; // PackId replicates: valid on every peer
+    return M->IsLaneBoss() ? EBossBody::Wave : EBossBody::PackLeader;
+}
+float CireUnitSpacing::CategorySize(EBossBody Kind, const FCireUnitSpacing& S)
+{
+    switch (Kind)
+    {
+    case EBossBody::Outdoor: return S.OutdoorBossSize;
+    case EBossBody::Wave: return S.WaveBossSize;
+    case EBossBody::PackLeader: return S.PackLeaderBossSize;
+    default: return 1.f;
+    }
+}
+float CireUnitSpacing::BossSize(const ACireMonster* M)
+{
+    const EBossBody Kind = BossBodyOf(M);
+    const float Marker = Kind == EBossBody::Outdoor && M->NPCState ? FMath::Clamp(M->NPCState->BodySize, .2f, 3.f) : 1.f;
+    return CategorySize(Kind, Get()) * Marker;
 }
 
 void CireUnitSpacing::ApplyBody(ACireMonster* M, float Scale)
@@ -185,7 +210,7 @@ CireUnitSpacing::FCrowd CireUnitSpacing::Measure(const TArray<ACireMonster*>& Un
 
 #if !UE_BUILD_SHIPPING
 static FAutoConsoleCommand UnitSpacingCommand(TEXT("cire.Spacing"),
-    TEXT("cire.Spacing reload | legacy | <bossSize|bossRadius|bossHalfHeight|radius|meleeBonus|pad|strength|separation> <value>: live unit spacing (Content/Data/UnitSpacing.json)."),
+    TEXT("cire.Spacing reload | legacy | <outdoorBoss|waveBoss|packLeaderBoss|bossRadius|bossHalfHeight|radius|meleeBonus|pad|strength|separation> <value>: live unit spacing (Content/Data/UnitSpacing.json)."),
     FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args)
     {
         if (Args.Num() == 0 || Args[0] == TEXT("reload")) { FString Error; CireUnitSpacing::Reload(&Error); if (!Error.IsEmpty()) UE_LOG(LogCireUnitSpacing, Warning, TEXT("%s"), *Error); return; }
@@ -193,7 +218,9 @@ static FAutoConsoleCommand UnitSpacingCommand(TEXT("cire.Spacing"),
         if (Args.Num() < 2) return;
         FCireUnitSpacing S = CireUnitSpacing::Get(); const float V = FCString::Atof(*Args[1]);
         const FString& K = Args[0];
-        if (K == TEXT("bossSize")) S.BossSizeMultiplier = FMath::Clamp(V, 1.f, 10.f);
+        if (K == TEXT("outdoorBoss") || K == TEXT("bossSize")) S.OutdoorBossSize = FMath::Clamp(V, .2f, 10.f);
+        else if (K == TEXT("waveBoss")) S.WaveBossSize = FMath::Clamp(V, .2f, 10.f);
+        else if (K == TEXT("packLeaderBoss")) S.PackLeaderBossSize = FMath::Clamp(V, .2f, 10.f);
         else if (K == TEXT("bossRadius")) S.BossCapsuleRadiusMax = FMath::Clamp(V, 30.f, 400.f);
         else if (K == TEXT("bossHalfHeight")) S.BossCapsuleHalfHeightMax = FMath::Clamp(V, 60.f, 2000.f);
         else if (K == TEXT("radius")) S.MonsterCapsuleRadius = FMath::Clamp(V, 20.f, 80.f);

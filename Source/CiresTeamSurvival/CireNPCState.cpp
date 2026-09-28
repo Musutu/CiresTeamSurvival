@@ -41,6 +41,7 @@ void UCireNPCState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
     DOREPLIFETIME(UCireNPCState,ThreatTable);DOREPLIFETIME(UCireNPCState,Aggro);
     DOREPLIFETIME(UCireNPCState,Rank);DOREPLIFETIME(UCireNPCState,PaletteIndex);DOREPLIFETIME(UCireNPCState,SkillTier); // monster-races
     DOREPLIFETIME(UCireNPCState,bLoadoutSet);DOREPLIFETIME(UCireNPCState,Loadout);
+    DOREPLIFETIME(UCireNPCState,BodySize); // bosses-spacing
 }
 
 FCireAggroChanged& UCireNPCState::OnAggroChanged(){static FCireAggroChanged Delegate;return Delegate;}

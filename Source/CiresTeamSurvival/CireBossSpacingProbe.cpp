@@ -147,10 +147,13 @@ void CheckGiants(ACireGameMode* Mode)
         const FVector Home = OnNav(World, CireLanePath::PlayerSpawnTransform(World, Realm, 0).GetLocation(), CireNav::AgentRadius(M));
         const FCireNavPath Path = CireNav::FindPath(World, bNav ? Nav : M->GetActorLocation(), Home, CireNav::AgentRadius(M), false);
         const bool bPath = Path.bValid && !Path.bPartial;
-        SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_GIANT realm=%d boss=%s scale=%.2f capsule=%.0f/%.0f drawn_height=%.0fm on_nav=%d path_to_spawn=%d length=%.0fm"), Realm,
-            *(M->NPCState ? M->NPCState->ArchetypeId.ToString() : FString()), M->GetActorScale3D().X, Cap->GetScaledCapsuleRadius(), Cap->GetScaledCapsuleHalfHeight(),
+        SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_GIANT realm=%d boss=%s marker_size=%.2f boss_size=%.2f scale=%.2f capsule=%.0f/%.0f drawn_height=%.0fm on_nav=%d path_to_spawn=%d length=%.0fm"), Realm,
+            *(M->NPCState ? M->NPCState->ArchetypeId.ToString() : FString()), M->NPCState ? M->NPCState->BodySize : 1.f, CireUnitSpacing::BossSize(M), M->GetActorScale3D().X, Cap->GetScaledCapsuleRadius(), Cap->GetScaledCapsuleHalfHeight(),
             CireUnitSpacing::BaseHalfHeight * 2.f * M->GetActorScale3D().Z / 100.f, bNav ? 1 : 0, bPath ? 1 : 0, Path.Length / 100.f));
-        if (!CireUnitSpacing::IsBossBody(M) || M->GetActorScale3D().X < 4.f) SPFail(TEXT("an outdoor boss is not drawn 5x"));
+        // bosses-spacing: outdoor bosses are drawn boss.outdoorBoss x their marker's size x their normal size.
+        const float Want = CireUnitSpacing::Get().OutdoorBossSize * (M->NPCState ? M->NPCState->BodySize : 1.f);
+        if (CireUnitSpacing::BossBodyOf(M) != CireUnitSpacing::EBossBody::Outdoor || !FMath::IsNearlyEqual(CireUnitSpacing::BossSize(M), Want, .01f) || M->GetActorScale3D().X < .9f * Want)
+            SPFail(TEXT("an outdoor boss is not drawn outdoorBoss x its marker size"));
         if (Cap->GetScaledCapsuleRadius() > 72.5f || Cap->GetScaledCapsuleHalfHeight() > 150.5f) SPFail(TEXT("an outdoor boss capsule exceeds the Large nav agent"));
         if (!bNav) SPFail(TEXT("an outdoor boss stands off the navmesh"));
         if (!bPath) SPFail(TEXT("an outdoor boss has no Large-agent path to the player spawn"));
@@ -279,8 +282,8 @@ bool CireUnitSpacing::TickProbe(ACireGameMode* Mode, float Delta)
         if (!SP.Victim) { SPFail(TEXT("no probe hero")); SPFinish(); return true; }
         SP.Victim->TeamId = SP.Team; SP.Victim->Draft(0); SP.Victim->HeroName = TEXT("Spacing probe tank"); SP.Victim->bAutoAttack = false;
         Mode->Heroes.Add(SP.Victim);
-        SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_SETUP team=%d centre=(%.0f,%.0f,%.0f) after: radius=%.0f melee_bonus=%.0f pad=%.0f boss=%.1fx"), SP.Team, SP.Centre.X, SP.Centre.Y, SP.Centre.Z,
-            SP.Saved.MonsterCapsuleRadius, SP.Saved.MeleeReachBonus, SP.Saved.SeparationPadding, SP.Saved.BossSizeMultiplier));
+        SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_SETUP team=%d centre=(%.0f,%.0f,%.0f) after: radius=%.0f melee_bonus=%.0f pad=%.0f boss outdoor=%.1fx wave=%.1fx leader=%.1fx"), SP.Team, SP.Centre.X, SP.Centre.Y, SP.Centre.Z,
+            SP.Saved.MonsterCapsuleRadius, SP.Saved.MeleeReachBonus, SP.Saved.SeparationPadding, SP.Saved.OutdoorBossSize, SP.Saved.WaveBossSize, SP.Saved.PackLeaderBossSize));
         StartCrowd(Mode, true);
         SP.Stage = EStage::CrowdBefore;
         return true;
@@ -308,6 +311,8 @@ bool CireUnitSpacing::TickProbe(ACireGameMode* Mode, float Delta)
         SP.LastPos = SP.Boss->GetActorLocation(); SP.LastMoveAt = SP.Clock; SP.LongestStall = 0;
         SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_MARCH_START boss=%s scale=%.2f capsule=%.0f/%.0f nav_agent_radius=%.0f"), *WaveBoss.ToString(), SP.Boss->GetActorScale3D().X,
             SP.Boss->GetCapsuleComponent()->GetScaledCapsuleRadius(), SP.Boss->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), CireNav::AgentRadius(SP.Boss)));
+        if (CireUnitSpacing::BossBodyOf(SP.Boss) != CireUnitSpacing::EBossBody::Wave || !FMath::IsNearlyEqual(CireUnitSpacing::BossSize(SP.Boss), CireUnitSpacing::Get().WaveBossSize, .01f))
+            SPFail(TEXT("the wave boss is not drawn boss.waveBoss x its normal size"));
         SP.Stage = EStage::March; SP.StageAt = SP.Clock;
         return true;
     }

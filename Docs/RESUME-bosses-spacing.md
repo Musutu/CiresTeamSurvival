@@ -1,8 +1,21 @@
 # RESUME — feat/bosses-spacing (Playtest 6, section H)
 
-Worktree `F:\CiresTeamSurvival-agents\cts-bosses-spacing`, ports 17570-17579.
+Worktree `F:\CiresTeamSurvival-agents\cts-bosses-spacing`, ports 17570-17579 (re-gate 2026-09-28: 17925-17949).
 
 ## Done
+- **Boss size per category + per marker (Eric 2026-09-28, "5x is too big for some bosses; wave bosses were already big"):**
+  `Content/Data/UnitSpacing.json` `boss.sizeMultiplier` is split into `boss.outdoorBoss` (default **5**), `boss.waveBoss`
+  (lane/wave bosses, default **1.0** = the size they had before this branch) and `boss.packLeaderBoss` (boss-classified pack
+  leaders, default **2**). The old `sizeMultiplier` key is still read as the outdoor-boss size when `outdoorBoss` is absent.
+  Live: `cire.Spacing outdoorBoss|waveBoss|packLeaderBoss <v>` (`bossSize` = alias of outdoorBoss) or `cire.Spacing reload`;
+  range 0.2-10. Category = `CireUnitSpacing::BossBodyOf` (outdoor pack-id block first, then lane boss, else pack leader).
+- **Per-marker boss model SIZE** on Boss Spawn markers in the route/layout editor, under the per-marker "HP x" stepper:
+  "SIZE x" stepper (steps 0.1, also Shift+[ / Shift+] with a Boss marker selected), JSON key `"size"` (default 1, clamp
+  0.2-3, written only when not 1), mirrored twins follow, compiled into both realms' `FCireRouteSpot::SizeScale`, twin-sync
+  validation covers it. The outdoor boss spawn copies it into the replicated `UCireNPCState::BodySize` so every peer draws the
+  same size. **Final outdoor scale = previous size x outdoorBoss x marker size**; wave boss = previous x waveBoss; boss pack
+  leader = previous x packLeaderBoss. Capsule cap (Large agent) and the body reach bonus are computed from the final scale,
+  so they work for any size (a native test retunes a wave boss to 8x and 0.3x live).
 - **Bosses 5x** (`CireUnitSpacing.*`, hooked in `CireNPCCombat` DesiredScale/ApplyBody): wave/lane bosses, outdoor world
   bosses and boss-classified pack leaders (`IsBossBody` = lane boss or classification Boss) are drawn
   `boss.sizeMultiplier` (5) x their previous size.
@@ -28,6 +41,11 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bosses-spacing`, ports 17570-17579.
   reach sidestep crowding lane-mates (separation padding 30, strength 0.7) instead of freezing in a clump.
 - **Data/live tuning:** `Content/Data/UnitSpacing.json`; console `cire.Spacing reload | legacy | <key> <value>` (applies
   live: scale/capsule are re-evaluated every tick).
+- **Tests (updated for the split):** wave boss at default = unchanged legacy scale, boss pack leader = 2x legacy, outdoor boss
+  with marker size 0.6 = 3x legacy, outdoor boss marker 1 = 5x (giant-body checks run on it), old-key fallback, per-key
+  parsing, live resize keeps the capsule cap/reach bonus; `CireLayoutWiringTests` round-trips/mirrors/clamps/compiles the
+  marker `"size"`; `CireMonsterArtTests` pack-leader height ratio uses packLeaderBoss; the probe checks each outdoor boss =
+  outdoorBoss x its marker size and the marching wave boss = waveBoss.
 - **Tests:** `CireUnitSpacingTests.cpp` (native, runs in `CireNPCCombat::RunSmoke` → RunExpansionChecks native).
   `RunOptionsGallery` default-panel overlap list now includes `RaidBoss`.
 - **Probe:** `-CireBossSpacingProbe` (`CireBossSpacingProbe.cpp`, `Tools/RunBossSpacingProbe.py [--shots] [--citadel]`):
@@ -50,12 +68,18 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bosses-spacing`, ports 17570-17579.
   isolated (use `cire.Spacing <key> <value>` live to try variants).
 
 ## Not done / Next
-- F8 page for the spacing values (JSON + console only for now).
+- F8 page for the spacing values (JSON + console + the route editor's per-marker SIZE x for now; an F8 row was not cheap:
+  the developer page edits a draft struct that does not own UnitSpacing).
+- The Results numbers below were measured with every boss at 5x (before the 2026-09-28 split); the re-gate probe run is logged
+  under "Gate logs".
 - Hero capsules unchanged (40): only monsters clump; a hero radius change also touches CireHero/CireMobility tests.
 - Boss walk speed unchanged: a 5x body at the same speed strides slowly (lumbering). Tune per boss if Eric wants.
 - Click-selecting the upper body of a giant: the capsule is only 3 m tall; the raid bar and Tab targeting cover it.
 
 ## Assumptions / questions for Eric
+- 2026-09-28 split: waveBoss default 1.0 (their pre-branch size), packLeaderBoss 2, outdoorBoss 5 x marker size. The marker
+  SIZE only affects outdoor (Boss Spawn) bosses; wave/pack-leader bosses have no marker. Marker size clamp 0.2-3; the category
+  multipliers accept 0.2-10 (the old key allowed 1-10). Eric's MapLayout files were not edited: markers without "size" = 1.
 - "5x bigger" = 5x the boss's previous drawn size (archetype/rank/wave size already applied), height and width.
 - Collision stays Large-agent sized (see decision) — the giant visually overlaps walls/houses while pathing streets.
 - Raid bar position: top centre under the match plate (movable in F10); up to 3 bosses (1 big + 2 slim).
@@ -67,6 +91,10 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bosses-spacing`, ports 17570-17579.
 - `CireHUDWow.cpp` (nameplate lift for monsters), `CireHero.cpp` (InRange + body bonus)
 - `CireNPCCombat.cpp` (scale/capsule, melee reach, separation, giant area radius, smoke hook)
 - `CireOutdoorBossProbe.cpp` (probe hook)
+- 2026-09-28 boss size split: `CireMapLayout.h/.cpp` (marker SizeScale, SetBossSize, "size" save/load, twin sync + validation,
+  compile), `CireLanePath.h` (FCireRouteSpot::SizeScale), `CireLayoutEditorHUD.cpp` (SIZE x stepper, Shift+[ ]),
+  `CireNPCState.h/.cpp` (replicated BodySize), `CireOutdoorBosses.cpp` (copies the marker size), `CireLayoutWiringTests.cpp`,
+  `CireMonsterArtTests.cpp` (pack leader ratio)
 
 ## Gate logs (after merging main a8f83d78)
 - Build: Result: Succeeded (`Saved/build7.log`)
