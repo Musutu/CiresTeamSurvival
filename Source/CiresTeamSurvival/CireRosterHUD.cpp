@@ -22,7 +22,7 @@
 #include "CireItems.h"    // rules-conformance: game-mode picker (host RPC on the hero's inventory)
 #include "CireShopArt.h"  // rules-conformance: scroll / crest icons for the mode picker
 #include "CireSkillShop.h"
-#include "CireKitEditor.h" // kit-editor: Champion Select > KIT EDITOR
+#include "CireKitEditor.h" // kit-editor: Champion Select > HERO CREATOR
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "EngineFontServices.h"
@@ -914,7 +914,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         }
         // Nav (right): CHAMPIONS (here), LOADOUTS (explains the opening ability), SETTINGS (options).
         {
-            static const TCHAR* Items[]={TEXT("SETTINGS"),TEXT("LOADOUTS"),TEXT("CHAMPIONS"),TEXT("KIT EDITOR")};
+            static const TCHAR* Items[]={TEXT("SETTINGS"),TEXT("LOADOUTS"),TEXT("CHAMPIONS"),TEXT("HERO CREATOR")};
             float X=LX+CW;const float NS2=11.5f,NY=M+2;
             const int32 NavCount=CireKitEditor::IsAvailable()&&!bLockedView?4:3; // kit-editor: dev/editor mode entry
             for(int32 I=0;I<NavCount;++I)
@@ -928,7 +928,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 if(bHere)Panel(R.X+16,R.B(),R.W-22,1.5f,Gold);
                 if(I==0&&bOver&&Clicked){ToggleSettings();Clicked=false;}
                 if(I==3&&bOver&&Clicked){Clicked=false;CireKitEditor::Open(this,true,S.SelectedId);} // kit-editor
-                Tip(Items[I],I==3?TEXT("Skill Assignment editor (dev): build each champion's base kit from the whole ability pool and place its effects. Saved per champion."):I==0?TEXT("Open the options."):I==1?TEXT("Loadouts start after lock-in: choose your opening ability, then buy more skills in the Skill Shop as you level."):TEXT("Choose the champion you will play this match."),R.X,R.Y,R.W,R.H);
+                Tip(Items[I],I==3?TEXT("Hero Creator (dev): pick any spells for a champion like in the Skill Shop, put them on its skill buttons and save loadout presets per kit profile. Also places the spell effects on the body."):I==0?TEXT("Open the options."):I==1?TEXT("Loadouts start after lock-in: choose your opening ability, then buy more skills in the Skill Shop as you level."):TEXT("Choose the champion you will play this match."),R.X,R.Y,R.W,R.H);
                 X-=14;
             }
         }
@@ -1015,6 +1015,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                     if(bOver&&Clicked&&bCan){S.bTypeDropdown=!S.bTypeDropdown;PlayWowSound(4,.35f);Clicked=false;}
                     const FString Why=!bHost?FString(TEXT("Only the host picks the game type; everyone sees the choice here.")):bModeLocked?FString(TEXT("Locked: the game type is fixed once the first wave starts.")):
                         FString(TEXT("Click to choose the game type. New types are saved from F8 > Waves > Modes & Scale."));
+                    // kit-editor: the Hero Creator kit profile this game type starts the heroes with.
+                    Line(FString::Printf(TEXT("KITS: %s"),*CireKitEditor::ActiveProfile(World).ToUpper()),R.X,R.B()+2,R.W,9.f,Gold,FRect{R.X,R.B()+2,R.W,LH(9.f,ECireFont::Heading)},ECireFont::Heading,2);
                     Tip(FString(TEXT("Game type: "))+(Type?Type->Label:TypeId.ToString()),(Type?Type->Description+TEXT("\n"):FString())+Why,R.X,R.Y,R.W,R.H);
                 }
                 else S.bTypeDropdown=false;
@@ -1230,7 +1232,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             if(bOn)Panel(R.X,R.Y,3,R.H,BrightGold);
             Line(P.Label+(P.bBuiltIn?FString():FString(TEXT("  (custom)"))),R.X+10,R.Y+3,R.W-20,11.5f,bOn?Gold:Text,R,ECireFont::Heading);
             Line(P.Description,R.X+10,R.Y+21,R.W-20,9.f,Muted,R,ECireFont::Body);
-            Tip(P.Label,P.Description,R.X,R.Y,R.W,R.H);
+            Tip(P.Label,P.Description+FString::Printf(TEXT("\nHero kits: %s profile."),*CireKitEditor::ProfileForMode(P.KitProfile)),R.X,R.Y,R.W,R.H); // kit-editor
             if(bOver&&Clicked){if(Controller)Controller->ServerAction(11,I,nullptr);S.bTypeDropdown=false;PlayWowSound(4,.45f);Clicked=false;}
         }
         if(Clicked&&!Hit(L.X,L.Y,L.W,L.H)&&!Hit(S.TypeR.X,S.TypeR.Y,S.TypeR.W,S.TypeR.H)){S.bTypeDropdown=false;}

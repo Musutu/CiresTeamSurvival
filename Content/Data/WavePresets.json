@@ -15,7 +15,8 @@
         "damage": 1,
         "speed": 1
       },
-      "packSizeBonus": 0
+      "packSizeBonus": 0,
+      "kitProfile": "Standard"
     },
     {
       "id": "hero_td",
@@ -30,7 +31,8 @@
         "damage": 1,
         "speed": 1
       },
-      "packSizeBonus": 0
+      "packSizeBonus": 0,
+      "kitProfile": "Hero TD"
     },
     {
       "id": "hybrid",
@@ -70,7 +72,8 @@
         "damage": 1,
         "speed": 1
       },
-      "packSizeBonus": 0
+      "packSizeBonus": 0,
+      "kitProfile": "Standard"
     }
   ]
 }

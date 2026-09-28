@@ -1,19 +1,25 @@
 #pragma once
-// kit-editor (Playtest 6, section I): the Skill Assignment editor and the per-champion kit templates it saves.
+// kit-editor (Playtest 6, section I): the HERO CREATOR and the kit data it saves.
 //
-// Champion Select > KIT EDITOR (dev/editor mode). Pick a champion, browse the WHOLE ability pool (every row of the
-// Ability Database, grouped like the Skill Shop "periodic table", with search and filters), assign a base kit and save it
-// as a static template per champion in Content/Data/ChampionKitTemplates.json. The game then uses that template as the
-// hero's base kit:
-//   - the kit's skills join the champion's purchasable list (CireAbilityDB::Reload merges the templates), and
-//   - with "grantOnDraft" (default on) the champion starts the match with the whole kit learned at level 1.
-// Per ability, the template also stores the effect placement for THAT champion: the attach socket / bone, an offset, a
-// scale and a tint. The spell presentation uses it for the caster-attached cast effect (the Fab "cast" overlay), so the
-// flare sits in the right hand, on the head, at the chest... of that body. Previewed live on the 3D model in the editor.
+// Champion Select > HERO CREATOR (dev/editor mode). Pick a champion, pick spells from EVERY ability in the game (any
+// champion may take any skill) with the Skill Shop's own scroll cards / periodic-table sections / tooltips, and assign them
+// to the champion's real skill buttons (action-bar keys 1-6, the ultimate R and the passive) as a base loadout. Loadouts
+// are named presets; several per champion, one marked as the default the game uses.
 //
-// Everything is data-driven: the pool is CireAbilityDB::All() and the champions are CireChampionRoster::All(), so new
-// abilities (feat/ability-expansion) and new champions (feat/paragon-champions) appear with no code change.
-// Docs/KitEditor.md.
+// KIT PROFILES span all champions ("Standard", "Hero TD", "Arena PvP", custom...). Each champion can have its presets in
+// each profile. A game mode names the profile it uses (WavePresets.json "kitProfile", feat/waves-modes); a champion
+// missing from that profile falls back to its "Standard" loadout, then to its built-in kit (no template).
+//
+// Per champion (profile-independent: it is about the body) the data also stores each ability's EFFECT PLACEMENT: attach
+// socket / bone, offset, scale and tint of the caster-attached cast effect, previewed live on the 3D model.
+//
+// The game uses the data:
+//   - CireAbilityDB::Reload -> MergeIntoKits: every loadout skill joins its champion's purchasable Skill Shop list;
+//   - ACireHero::DraftProfile -> GrantOnDraft (server): the active profile's default loadout is learned at draft
+//     (level 1, in button order) when that champion's "grantOnDraft" is on;
+//   - the spell presentation -> SpawnPlacedCast: the cast effect sits where the placement says.
+// Everything is data-driven (CireAbilityDB::All, CireChampionRoster::All, read live every frame): new or renamed abilities
+// and new champions appear on their own. Content/Data/ChampionKitTemplates.json. Docs/KitEditor.md.
 #include "CoreMinimal.h"
 
 class ACireHUD;
@@ -23,6 +29,7 @@ class ACireGameMode;
 class UFXSystemAsset;
 class UFXSystemComponent;
 class USkeletalMeshComponent;
+class UWorld;
 struct FCireAbilityDef;
 struct FCireChampionKit;
 namespace CireFabVFX { struct FEntry; }
@@ -41,91 +48,125 @@ struct CIRESTEAMSURVIVAL_API FCireKitEffectPlacement
     bool operator==(const FCireKitEffectPlacement& O) const;
 };
 
-struct CIRESTEAMSURVIVAL_API FCireKitTemplate
+/** One named loadout: the ability on each skill button. Slots 0-5 = keys 1-6, 6 = ultimate (R), 7 = passive. */
+struct FCireKitLoadout
 {
-    FString ChampionId;
-    TArray<FString> BaseKit;                // ability ids, actives first, then the ultimate and the passive
-    bool bGrantOnDraft = true;              // start the match with the kit learned (false: sold in the Skill Shop only)
-    TMap<FString, FCireKitEffectPlacement> Effects; // ability id -> placement
+    static constexpr int32 SlotCount = 8, UltimateSlot = 6, PassiveSlot = 7, ActiveSlots = 6;
+    FString Name;
+    TArray<FString> Slots;                  // SlotCount entries ("" = empty)
+    FCireKitLoadout() { Slots.SetNum(SlotCount); }
+    /** Skills in grant order: keys 1-6, then R, then the passive button. */
+    TArray<FString> Skills() const;
+    int32 Count() const;
+    bool operator==(const FCireKitLoadout& O) const { return Name == O.Name && Slots == O.Slots; }
+};
+
+/** A champion's presets inside one profile. */
+struct CIRESTEAMSURVIVAL_API FCireKitChampion
+{
+    FString DefaultLoadout;                 // name of the preset the game uses
+    bool bGrantOnDraft = true;              // start matches with the default loadout (false: its skills are only sold)
+    TArray<FCireKitLoadout> Loadouts;
     FString Updated;                        // ISO time of the last save (display only)
-    bool operator==(const FCireKitTemplate& O) const;
+    const FCireKitLoadout* Default() const;
+    const FCireKitLoadout* Find(const FString& Name) const;
+    FCireKitLoadout* Find(const FString& Name);
+};
+
+struct CIRESTEAMSURVIVAL_API FCireKitProfile
+{
+    FString Name;
+    TMap<FString, FCireKitChampion> Champions;
+};
+
+struct CIRESTEAMSURVIVAL_API FCireKitData
+{
+    TArray<FCireKitProfile> Profiles;       // "Standard" is always present (first)
+    TMap<FString, TMap<FString, FCireKitEffectPlacement>> Effects; // champion -> ability -> placement
+    const FCireKitProfile* FindProfile(const FString& Name) const;
+    FCireKitProfile* FindProfile(const FString& Name);
 };
 
 namespace CireKitEditor
 {
-    // ---- data (Content/Data/ChampionKitTemplates.json) ----
-    CIRESTEAMSURVIVAL_API const TMap<FString, FCireKitTemplate>& Templates();
-    CIRESTEAMSURVIVAL_API const FCireKitTemplate* Find(const FString& ChampionId);
-    CIRESTEAMSURVIVAL_API FString DataPath();
-    /** Transactional: a malformed file keeps the previous templates. */
-    CIRESTEAMSURVIVAL_API bool Reload();
-    CIRESTEAMSURVIVAL_API bool ParseJson(const FString& Json, TMap<FString, FCireKitTemplate>& Out, FString& Error);
-    CIRESTEAMSURVIVAL_API FString ToJson(const TMap<FString, FCireKitTemplate>& Templates);
-    /** Writes one champion's template (Template.BaseKit empty and no effects = remove it), then reloads the Ability DB so
-     *  the game uses it at once. */
-    CIRESTEAMSURVIVAL_API bool SaveTemplate(const FCireKitTemplate& Template, FString* Error = nullptr);
-    /** Tests: use these templates in memory (no file). bOn=false returns to the file. */
-    CIRESTEAMSURVIVAL_API void DebugOverride(const TMap<FString, FCireKitTemplate>* Templates);
+    inline const TCHAR* StandardProfile = TEXT("Standard");
 
-    // ---- kit rules (the Skill Shop / draft capacity: 6 actives, 1 passive, 1 ultimate) ----
+    // ---- data (Content/Data/ChampionKitTemplates.json) ----
+    CIRESTEAMSURVIVAL_API const FCireKitData& Data();
+    CIRESTEAMSURVIVAL_API FString DataPath();
+    /** Transactional: a malformed file keeps the previous data. */
+    CIRESTEAMSURVIVAL_API bool Reload();
+    CIRESTEAMSURVIVAL_API bool ParseJson(const FString& Json, FCireKitData& Out, FString& Error);
+    CIRESTEAMSURVIVAL_API FString ToJson(const FCireKitData& Data);
+    /** Writes the whole file, then reloads the Ability DB so the game uses it at once. */
+    CIRESTEAMSURVIVAL_API bool Save(const FCireKitData& Data, FString* Error = nullptr);
+    /** Tests: use this data in memory (nullptr returns to the file). */
+    CIRESTEAMSURVIVAL_API void DebugOverride(const FCireKitData* Data);
+
+    // ---- profiles and game modes ----
+    /** A game mode's "kitProfile" -> the profile to use (empty / unknown -> Standard). */
+    CIRESTEAMSURVIVAL_API FString ProfileForMode(const FString& ModeKitProfile);
+    /** The profile this match uses: -CireKitProfile=<name>, else the game mode's kitProfile (ModeKitProfile), else Standard. */
+    CIRESTEAMSURVIVAL_API FString ActiveProfile(const UWorld* World);
+    /** The host's game type (ACireGameState::WavePreset) -> its WavePresets.json "kitProfile" (empty = Standard). */
+    CIRESTEAMSURVIVAL_API FString ModeKitProfile(const UWorld* World);
+    /** Tests: force the active profile ("" clears). */
+    CIRESTEAMSURVIVAL_API void DebugForceProfile(const FString& Profile);
+    /** The champion's entry in Profile, falling back to Standard. OutProfile = the profile it came from. */
+    CIRESTEAMSURVIVAL_API const FCireKitChampion* ResolveChampion(const FString& Profile, const FString& ChampionId, FString* OutProfile = nullptr);
+    /** The default loadout the game uses for this champion in Profile (Standard fallback); nullptr = the built-in kit. */
+    CIRESTEAMSURVIVAL_API const FCireKitLoadout* ResolveLoadout(const FString& Profile, const FString& ChampionId, FString* OutProfile = nullptr);
+
+    // ---- skill buttons ----
     enum class EKind : uint8 { Active, Passive, Ultimate };
     CIRESTEAMSURVIVAL_API EKind KindOf(const FString& AbilityId);
-    CIRESTEAMSURVIVAL_API int32 Capacity(EKind Kind);
-    /** Why Id cannot join Kit (empty when it can): unknown id, duplicate, slot kind full. */
-    CIRESTEAMSURVIVAL_API FString AddBlocker(const TArray<FString>& Kit, const FString& Id);
-    /** Known, unique ids within capacity, ordered actives -> ultimate -> passive (stable within a kind). */
-    CIRESTEAMSURVIVAL_API TArray<FString> Normalize(const TArray<FString>& Kit, TArray<FString>* Dropped = nullptr);
+    /** Key buttons take actives; R and the passive button take anything (a non-matching kind gets a warning, see
+     *  SlotWarning). False only for an ultimate / passive on a key button (they route to their own button). */
+    CIRESTEAMSURVIVAL_API bool SlotAccepts(int32 Slot, const FString& AbilityId);
+    /** A short warning for a skill on a button of another kind (empty when it matches). */
+    CIRESTEAMSURVIVAL_API FString SlotWarning(int32 Slot, const FString& AbilityId);
+    /** The button a click on a card fills: Preferred when it accepts the skill, else the kind's first empty button, else
+     *  (ultimate / passive) their only button; INDEX_NONE when all six key buttons are taken. */
+    CIRESTEAMSURVIVAL_API int32 TargetSlot(const FCireKitLoadout& Loadout, const FString& AbilityId, int32 Preferred = INDEX_NONE);
+    /** Puts the ability on the button (moving it if it sat on another one). */
+    CIRESTEAMSURVIVAL_API bool Assign(FCireKitLoadout& Loadout, int32 Slot, const FString& AbilityId, FString* Why = nullptr);
+    /** Unknown ids and duplicates removed, SlotCount entries, key buttons packed from 1 (the action bar binds actives in
+     *  order, so a gap would shift later buttons anyway). */
+    CIRESTEAMSURVIVAL_API void Compact(FCireKitLoadout& Loadout);
 
     // ---- game integration ----
-    /** CireAbilityDB::Reload: template skills join the champion's purchasable lists (kits are created for champions
-     *  without one, e.g. new roster rows). */
     CIRESTEAMSURVIVAL_API void MergeIntoKits(TMap<FString, FCireChampionKit>& Kits);
-    /** ACireHero::DraftProfile (server): learns the template kit when grantOnDraft is set. Returns skills granted. */
     CIRESTEAMSURVIVAL_API int32 GrantOnDraft(ACireHero* Hero);
     CIRESTEAMSURVIVAL_API const FCireKitEffectPlacement* Placement(const FString& ChampionId, const FString& AbilityId);
-    /** Resolves an anchor key or literal name to a socket / bone of this body (NAME_None: the component origin). */
     CIRESTEAMSURVIVAL_API FName ResolveAttach(const USkeletalMeshComponent* Mesh, const FString& Attach);
-    /** Spawns System on the champion per the placement (attached to the resolved socket, offset in champion space,
-     *  absolute scale BaseScale x placement scale, recoloured). */
     CIRESTEAMSURVIVAL_API UFXSystemComponent* SpawnPlaced(ACireHero* Hero, UFXSystemAsset* System, const FCireKitEffectPlacement& Placement,
         float BaseScale, bool bAutoDestroy, const CireFabVFX::FEntry* Entry = nullptr);
-    /** Re-applies offset / scale / tint to a live component (the editor's live preview). */
     CIRESTEAMSURVIVAL_API void ApplyPlacement(UFXSystemComponent* Component, ACireHero* Hero, const FCireKitEffectPlacement& Placement, float BaseScale, bool bTint);
-    /** Spell presentation hook (client): the caster-attached cast effect of Skill released near CasterAt. When a champion
-     *  there owns a placement for Skill, spawns the effect on it and returns the component; nullptr = default presentation. */
+    /** Spell presentation hook (client): the cast effect of Skill released near CasterAt, on a champion with a placement. */
     CIRESTEAMSURVIVAL_API UFXSystemComponent* SpawnPlacedCast(UWorld* World, FName Skill, FVector CasterAt, UFXSystemAsset* System, float Scale,
         const CireFabVFX::FEntry* Entry = nullptr);
-    /** The Fab system a champion's cast of this ability uses (ability entry, then the school set), and its data scale. */
     CIRESTEAMSURVIVAL_API UFXSystemAsset* CastSystem(const FString& AbilityId, float* OutScale = nullptr, const CireFabVFX::FEntry** OutEntry = nullptr);
 
-    // ---- pool browser ----
-    struct FPoolSection { FString Id; FString Label; FLinearColor Color; };
-    /** Periodic-table sections in Skill Shop order (Abilities.json "section"); unknown sections are appended. */
-    CIRESTEAMSURVIVAL_API TArray<FPoolSection> Sections();
-    CIRESTEAMSURVIVAL_API FString SectionOf(const FCireAbilityDef& Def);
-    /** Case-insensitive search over name, id, school, types, effect tags and section. Empty matches everything. */
+    // ---- pool (every ability, the Skill Shop's sections) ----
     CIRESTEAMSURVIVAL_API bool MatchesSearch(const FCireAbilityDef& Def, const FString& Search);
     struct FPoolFilter
     {
         FString Search;
         int32 Kind = -1;               // -1 all, else EKind
-        TSet<FString> HiddenSections;
-        FString OnlyChampion;          // non-empty: only abilities this champion may learn today
-        FString Role;                  // "", "DPS", "TANK", "HEAL"
+        uint32 HiddenSections = 0;     // bit per Skill Shop section
+        FString Role;                  // "", "DPS", "TANK", "HEAL" (optional chip, off by default)
+        FString OnlyChampion;          // optional: only abilities this champion's class list has (off by default)
     };
-    /** Pool grouped by section (each list sorted by name); sections without a match are omitted. */
-    CIRESTEAMSURVIVAL_API TArray<TPair<FPoolSection, TArray<const FCireAbilityDef*>>> Pool(const FPoolFilter& Filter);
+    /** Ability DB rows grouped by Skill Shop section index (sorted by name); empty sections omitted. */
+    CIRESTEAMSURVIVAL_API TArray<TPair<int32, TArray<const FCireAbilityDef*>>> Pool(const FPoolFilter& Filter);
 
     // ---- editor UI (CireKitEditorUI.cpp) ----
-    /** Dev/editor builds, or -CireKitEditor in a shipping build. */
     CIRESTEAMSURVIVAL_API bool IsAvailable();
     CIRESTEAMSURVIVAL_API bool IsOpen(const ACireHUD* HUD);
     CIRESTEAMSURVIVAL_API void Open(ACireHUD* HUD, bool bOpen, const FString& ChampionId = FString());
-    /** Full-screen editor, drawn by the champion-select screen while open. */
     CIRESTEAMSURVIVAL_API void Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller);
 
 #if !UE_BUILD_SHIPPING
-    /** Native suite (CireKitEditorTests.cpp). Logs CIRE_KIT_EDITOR_TESTS_PASS/FAIL. */
     CIRESTEAMSURVIVAL_API bool RunTests(ACireGameMode* Mode);
 #endif
 }
