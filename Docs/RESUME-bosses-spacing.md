@@ -35,7 +35,19 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bosses-spacing`, ports 17570-17579.
   captures per theme into `Saved/BossSpacing/<stamp>/`.
 
 ## Results
-(see "Gate logs" / probe section below; filled at the end of the run)
+- Native: `CIRE_UNIT_SPACING_TESTS_PASS checks=21 boss_scale=6.75 capsule=72/150 reach_bonus=184` (wave boss).
+- Probe, Citadel (`Saved/BossSpacing/20260928T054408Z/`): 16 melee units on one hero —
+  **before (legacy) 11 overlapping pairs, mean overlap 15 cm, nearest 86 cm; after 4 pairs, 5 cm, 107 cm (64% fewer overlaps)**.
+  5x Siege Host (scale 6.75, capsule 72/150, Large agent) marched 68 m in 45 s, longest stall 0.4 s.
+- Probe, town with Eric's MapLayout (`Saved/BossSpacing/20260928T065815Z/`, PASS): crowd **before 7 overlapping pairs
+  (16 cm), nearest 106 cm → after 2 pairs (2 cm), nearest 119 cm (71% fewer)**; all 12 outdoor bosses (both realms) drawn
+  7.5-8x archetype scale (13-14 m tall), capsule 72/150, on the navmesh, Large-agent path to the player spawn; 5x Siege
+  Host marched 103 m through the town in 45 s, longest stall 0.7 s.
+- Captures (4 themes each): `Saved/BossSpacing/20260928T065815Z/siege_boss_<Theme>.png` (giant in a town street, raid bar
+  with the Siege Host big + a slim second bar) and `world_boss_<Theme>.png` (Ursoth the Elder Bear at its lair, three
+  stacked raid bars). Themes: GildedCitadel, Ironbound, ArcaneVeil, VerdantBloom.
+- Tuning: capsule 46 + reach +20 + separation (pad 30, strength .7) measured together; the individual shares were not
+  isolated (use `cire.Spacing <key> <value>` live to try variants).
 
 ## Not done / Next
 - F8 page for the spacing values (JSON + console only for now).
@@ -56,5 +68,12 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bosses-spacing`, ports 17570-17579.
 - `CireNPCCombat.cpp` (scale/capsule, melee reach, separation, giant area radius, smoke hook)
 - `CireOutdoorBossProbe.cpp` (probe hook)
 
-## Gate logs
-(pending)
+## Gate logs (after merging main a8f83d78)
+- Build: Result: Succeeded (`Saved/build7.log`)
+- Native: PASS `Saved/ExpansionChecks/20260928T065100216529Z/report.json` (earlier runs under load hit the 240 s exit
+  timeout after printing CIRE_COMBAT_EXPANSION_PASS — environmental)
+- Network: PASS `Saved/NetworkSmoke/20260928T065426024177Z/report.json`
+- Interface: PASS `Saved/InterfaceSmoke/20260928T065540161611Z/report.json`
+- Boss spacing probe (town + shots): PASS `Saved/BossSpacing/20260928T065815Z/report.json`
+- WowUI gallery (not a required gate): RaidBoss passes the default-panel overlap and centre checks; the only failure is
+  "action bar stays centred" (Skills panel, untouched by this branch) — `Saved/WowUIGalleryChecks/20260928T070357170189Z/`
