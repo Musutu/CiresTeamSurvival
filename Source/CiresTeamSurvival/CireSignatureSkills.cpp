@@ -568,7 +568,8 @@ void CireSignatureSkills::OnAbilityHit(AActor* Source, AActor* Target, const FSt
     if (!IsValid(Source) || !Source->HasAuthority() || !IsValid(Target) || Applied <= 0) return;
     CireAbilityExpansion::OnAbilityHit(Source, Target, AbilityName, Applied); // ability-expansion: riders and on-hit passives (any skill)
     CireParagonChampions::OnAbilityHit(Source, Target, AbilityName, Applied); // paragon-champions: lifesteal passives
-    const FCireAbilityDef* D = CireAbilityDB::FindByName(AbilityName);
+    const auto* Caster = Cast<ACireHero>(Source); // paragon-names: a shared display name resolves to the caster's own row
+    const FCireAbilityDef* D = CireAbilityDB::FindByNameFor(AbilityName, Caster ? &Caster->Skills : nullptr);
     if (!D || !Knows(D->Id)) return;
     CireKitSkills::OnAbilityHit(Source, Target, AbilityName, Applied); // kits-complete: taunt, root, weaken, knockback, burns, blooms
     for (const FCireAbilityEffect& E : D->Effects)
