@@ -119,7 +119,7 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
             for (int32 Team = 0; Team < 2; ++Team)
             {
                 FCireChallengeBay B; B.Position = FVector2D(-20000 + I * 37.3, (Team ? 1 : -1) * (I % 700) * 10.1); B.Radius = 200.f + (I % 27) * 50.f;
-                B.Tier = 1 + I % 4; B.PackType = CireJunglePacks::TypeAt(I + Team); if (I % 3 == 0) B.Comp = {1 + I % 2, 1, 1 + I % 3};
+                B.Tier = 1 + I % 4; B.PackType = CireJunglePacks::TypeAt(I + Team); if (I % 3 == 0) B.Comp = {1 + I % 3, 1 + I % 2, I % 3, I % 2, (I / 3) % 2, 1 + I % 4};
                 Huge.Bays[Team].Add(B);
             }
         TArray<TArray<int32>> Chunks; CireLanePath::PackBays(Huge, 77u, Chunks);
@@ -135,7 +135,7 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
         Check(bBudget && bSame, FString::Printf(TEXT("3000 packs replicate in %d chunks inside the array budget and unpack exactly"), Chunks.Num()));
         Huge.Bays[1] = Huge.Bays[0]; CireLanePath::PackBays(Huge, 78u, Chunks);
         int32 Ints = 0; for (const TArray<int32>& C : Chunks) Ints += C.Num();
-        Check(Ints == 4 + 3 * 1500 && CireLanePath::UnpackBays(Chunks, Revision, Got) && Got[1] == Got[0], TEXT("identical realms send their packs once"));
+        Check(Ints == 4 + 4 * 1500 && CireLanePath::UnpackBays(Chunks, Revision, Got) && Got[1] == Got[0], TEXT("identical realms send their packs once"));
     }
     Check(!CireLanePath::ParseJson(WithBays(Shipped, TEXT("[]")), Doc, Error), TEXT("an empty bays list is rejected (omit it for automatic bays)"));
     Check(!CireLanePath::ParseJson(WithBays(Shipped, TEXT("[{ \"x\": 20000, \"y\": 0, \"radius\": 150 }]")), Doc, Error), TEXT("a radius under 2 m is rejected"));
@@ -228,7 +228,7 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
                 ByPack.FindOrAdd(M->PackId).Add(M);
                 bPlaced &= FVector::Dist2D(M->SpawnPosition, CireLanePath::ChallengePosition(World, M->Lane, Bay, 0)) <= CireLanePath::ChallengeRadius(World, M->Lane, Bay) + 300.f;
             }
-            // jungle-packs: every pack spawns its composition (3-6: tanks, healers, DPS) with its tier's ability count.
+            // jungle-packs: every pack spawns its composition (3-8: tanks, healers, DPS) with its tier's ability count.
             for (const auto& Pair : ByPack)
             {
                 FCirePackComposition Got{0, 0, 0}; int32 Leaders = 0;
@@ -237,7 +237,7 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
                     const FCireNPCArchetype* A = M->NPCState ? M->NPCState->Archetype() : nullptr;
                     if (!A) { bComposed = false; continue; }
                     const ECirePackRole Role = CireJunglePacks::RoleOf(*A);
-                    (Role == ECirePackRole::Tank ? Got.Tanks : Role == ECirePackRole::Healer ? Got.Healers : Got.Dps) += 1;
+                    Got.CountRef(CireJunglePacks::IsDps(Role) ? ECirePackRole::Dps : Role) += 1;
                     Leaders += M->GetNPCClassification() == ECireNPCClass::Boss ? 1 : 0;
                     bComposed &= M->NPCState->Loadout.Num() == CireJunglePacks::AbilityCount(M->Tier, CireJunglePacks::KitSize(*A));
                     // tier-readability: the tier reads as "T#" next to the name, and the body carries no rank glow.

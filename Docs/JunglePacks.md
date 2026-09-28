@@ -40,15 +40,18 @@ Data: `Content/Data/JunglePacks.json`, with a built-in fallback of the same valu
 
    Stats and rewards grow with the tier too.
 3. **Pack type = monster race**, or Mixed. The pool is built from every monster the wave system can spawn, grouped by race.
-4. **Composition:** 3–6 monsters per pack.
-   - Tanks: 1–2.
-   - Healers: 1–2.
-   - DPS: 1–3.
+4. **Composition:** 3–8 monsters per pack (pack-formations, playtest 6; was 3–6).
+   - Tanks: 1–3.
+   - Healers: 1–3.
+   - DPS: 1–6, of any kind or a chosen kind: melee, physical ranged, or **ranged caster**.
+   - At least 1 tank, 1 healer and 1 DPS, always.
+   - The pack stands in one of six **preset formations** (sizes 3–8, Eric's drawing), facing the path.
    - The default composition is deterministic. Eric can override it per pack in the panel, and the override is clamped to the rules.
 5. **Right panel** for a Challenge Pack:
    - tier
    - pack type
-   - composition with +/-
+   - composition with +/- (tanks, healers, any DPS, melee, ranged, caster)
+   - PACK STATS: global and per-tier health / damage, live, with SAVE
    - a summary line
    - radius, owner and mirror
 6. **Recall:** every champion has a Recall to a Recall Point that Eric places. It has a 2-minute cooldown and a channel, and it shows on the action bar.
@@ -76,36 +79,52 @@ Data: `Content/Data/JunglePacks.json`, with a built-in fallback of the same valu
 - **Replication.** Packs no longer ride in the float `LaneLayout`, which was capped near 2,048 values.
   - They go in `ACireGameState::LanePacks`: chunks of at most 1,020 ints.
   - The first chunk opens with a header: magic, route revision, pack count of realm 0, then the pack count of realm 1, or -1 when the realms are identical. Identical realms are sent once.
-  - Each pack is 3 ints:
+  - Each pack is 4 ints (pack-formations; the header magic changed to 0x4A51):
     - `x/10 | y/10` (int16 each)
-    - `radius/10 | tier | type | tanks | healers | DPS`
+    - `radius/10 | tier | type | tanks | healers`
     - `seed`
-  - 3,000 packs are about 9,000 ints in 9 chunks, each far inside the engine's array budget.
+    - `any DPS | melee | ranged | caster` (4 bits each)
+  - 3,000 packs are about 12,000 ints in 12 chunks, each far inside the engine's array budget.
   - Clients apply the packs only when their revision matches `LaneRouteVersion`, so the two halves of an update never mix.
   - "Layout too large to send" no longer counts packs.
 - **Fix found on the way:** `LaneLayout` (goal zone, base, extras) was never registered for replication. It is now, together with `LanePacks`.
 
 ## Tiers
 
-| Tier | Abilities per monster | Health | Damage | Gold per kill | First appears |
+| Tier | Abilities per monster | Health x | Damage x | Gold per kill | First appears |
 | --- | --- | --- | --- | --- | --- |
 | T1 | 2 | x1.00 | x1.00 | x1.0 | round 1, wave 1 |
-| T2 | 3 | x1.65 | x1.10 | x1.5 | round 1, wave 3 |
-| T3 | 5 | x2.30 | x1.25 | x2.25 | round 2, wave 1 |
-| T4 | complete kit (6 or more) | x2.95 | x1.40 | x3.0 | round 3, wave 1 |
+| T2 | 3 | x1.65 | x1.10 | x1.5 | round 1, wave 1 |
+| T3 | 5 | x2.30 | x1.25 | x2.25 | round 1, wave 1 |
+| T4 | complete kit (6 or more) | x2.95 | x1.40 | x3.0 | round 1, wave 1 |
 
 How to read the table:
 
-- **Health** is the engine's challenge curve, `1 + 0.65 x (tier - 1)` (`Cires::ChallengeHealthMultiplier`, times `+12 %` per round).
-  - `JunglePacks.json` `health` multiplies on top of it. It is 1.0 by default.
-  - The pack's **leader** (its first tank) gets x1.5 more (`leader.healthMultiplier`).
-- **Damage** is `JunglePacks.json` `damage`, on top of the challenge damage.
+- **Stats** (pack-formations, playtest 6). Every challenge mob's numbers come from `JunglePacks.json` `stats`:
+
+  | Role | Health (T1, x1 multipliers) | Damage |
+  | --- | --- | --- |
+  | Tank | 1,500 (`tankHealth`) | 200 (`baseDamage`) |
+  | Healer (support caster) | 750 (`healerShare` 0.50) | 200 |
+  | Melee DPS | 1,125 (`meleeShare` 0.75) | 200 |
+  | Physical ranged DPS | 975 (`rangedShare` 0.65) | 200 |
+  | Ranged caster DPS | 975 (`casterShare` 0.65) | 200 |
+
+  - Health = `tankHealth` x the role's share x the tier's **Health x** x `globalHealth`; the **leader** (first tank) x1.5 more (`leader.healthMultiplier`).
+  - Damage = `baseDamage` x the tier's **Damage x** x `globalDamage`.
+  - The old challenge curve (`challengeHealthBase` x `1 + 0.65 x (tier - 1)` x +12 % per round) no longer applies to packs. The per-tier health defaults keep its tier growth (1.00 / 1.65 / 2.30 / 2.95). There is no per-round growth; promotions raise tiers instead.
+  - F8's Spawn/stats "Monster health / damage multiplier" still applies on top when dev overrides are enabled.
+- **Live tuning.** Eric scales packs up or down while playing:
+  - **F8 > Packs**: global health / damage, base damage, tank health, the four role shares, and each tier's health / damage.
+  - **Map layout editor**: select a Challenge Pack; **PACK STATS** has global HP x / DMG x and the selected pack's tier HP x / DMG x.
+  - Every change applies at once: every living pack monster rescales and keeps its health fraction. **SAVE** writes `stats` and the tiers' `health` / `damage` into `JunglePacks.json`.
 - **Gold** is `JunglePacks.json` `gold`. It multiplies every pack kill's bounty:
   - a pack unit is worth 10x the wave value
   - the leader is worth 100x the wave value
   - loot tables already grow +25 % per tier.
-- **First appears** is `unlockRound` / `unlockWave`, where a round is one match cycle.
+- **First appears** is `unlockRound` / `unlockWave`, where a round is one match cycle. All tiers are now 1 / 1: every authored pack spawns from the start.
   - Promotions (`LootTables.json` `packSchedule`) can raise a pack's tier as rounds pass, capped at 4.
+  - **Playtest 6 bug (fixed):** T3 / T4 packs placed in the editor never spawned. The unlocks gated T3 to cycle 2 and T4 to cycle 3 (T2 to wave 3), and a layout restart (Alt+F5) starts over at cycle 1. So a playtest never reached them. The probe logs `CIRE_JUNGLE_PROBE_ROOTCAUSE` with what the old unlocks would spawn.
 - The **ability tier numeral** (I–III on the ability names) is the pack tier. T4 shows III with the full kit.
 - **Abilities** are the non-basic abilities. The basic attack is always there.
   - A monster uses its own kit first: the core skills, then its own pool in the match's seeded order.
@@ -139,7 +158,9 @@ How to read the table:
 | --- | --- |
 | Tank | the archetype's role is `tank` |
 | Healer | it owns a `healAlly` ability |
-| DPS | everything else: bruiser, ranged, caster without a heal, swarm, support without a heal |
+| Caster DPS (ranged caster) | role `caster` or `support`, without a heal |
+| Ranged DPS (physical) | role `ranged` |
+| Melee DPS | everything else: bruiser, swarm |
 
 - Bosses are never pack members.
 - The non-combat bonus creatures (`exclude`) are never pack members.
@@ -147,7 +168,7 @@ How to read the table:
 
 ## Composition rules
 
-A pack has **3–6 monsters**: **1–2 tanks, 1–2 healers, 1–3 DPS**. There is always at least one of each role.
+A pack has **3–8 monsters**: **1–3 tanks, 1–3 healers, 1–6 DPS**. There is always at least one of each role.
 
 **Default (automatic).** The default composition is deterministic from:
 
@@ -155,36 +176,55 @@ A pack has **3–6 monsters**: **1–2 tanks, 1–2 healers, 1–3 DPS**. There 
 - its **type**
 - its **tier**
 
-Its size grows with the tier:
+Its size grows with the tier, and its roles are the preset formation's for that size:
 
 | Tier | Monsters |
 | --- | --- |
 | T1 | 3–4 |
-| T2 | 4–5 |
-| T3 | 5–6 |
-| T4 | 6 |
+| T2 | 4–6 |
+| T3 | 5–7 |
+| T4 | 6–8 |
 
-The extra slots go to DPS twice as often as to tanks or healers. A role at its maximum is skipped.
+| Size | Tanks | Healers | DPS |
+| --- | --- | --- | --- |
+| 3 | 1 | 1 | 1 |
+| 4 | 2 | 1 | 1 |
+| 5 | 1 | 2 | 2 |
+| 6 | 2 | 2 | 2 |
+| 7 | 2 | 2 | 3 |
+| 8 | 3 | 2 | 3 |
 
-**Override.** The inspector's +/- buttons store `"comp": [tanks, healers, dps]` on the marker.
+**Override.** The inspector's +/- rows store `"comp"` on the marker:
 
+- `[tanks, healers, dps]`: DPS of any kind, drawn from the race (older layouts use this form and keep working).
+- `[tanks, healers, any dps, melee, ranged, caster]` once a DPS kind is chosen (rows MELEE DPS, RANGED DPS, CASTER DPS).
 - A step that would break the rules is refused, and the panel says why.
-- Overrides from files are clamped: each count to its range, then the total down to 6 (DPS first, then healers, then tanks).
+- Overrides from files are clamped: each count to its range, then the total down to 8 (DPS first, then healers, then tanks).
 - **AUTO** clears the override.
 - Validate flags any invalid composition in a file.
 
-**Members.** For each role slot, the unit is drawn from the type's pool of that role (a seeded shuffle, cycling).
+**Members.** For each slot, the unit is drawn from the type's pool of that role (a seeded shuffle, cycling).
 
+- A chosen DPS kind the race lacks (for example a race without casters) takes the race's other DPS; the audit logs `KIND <race> has no caster DPS`.
 - The spawn order is tanks, then healers, then DPS.
 - The **first tank is the Pack Leader**. It gets the boss frame, the pack-leader bounty and loot, and x1.5 health.
 - **Tier readability** (Docs/Zones.md): pack monsters do not glow. Their tier shows as `T1`..`T4` next to the name on
   the nameplate, the frames and the tooltip, with a tier-coloured border (silver, green, blue, gold).
 
-**Formation** (inside the pack radius, turned by the seed):
+**Formations** (pack-formations, `JunglePacks.json` `formations`, Eric's `Docs/EricFeedback/2026-09-27/pack-formations.png`).
+Blue = tank, green = healer, red = DPS. The front (toward the facing) is where the tanks stand:
 
-- tanks in a front row
-- DPS in the middle
-- healers behind
+```
+     8              7              6              5             4          3
+  H  D  H        H  D  H        H     H        H     H        H  D       H  D
+D  T   T  D    D  T   T  D    D  T   T  D       D   D           T  T       T
+     T                                            T
+(the bottom of each drawing is the front: the pack faces the path that way)
+```
+
+- Each slot is `role`, `forward`, `right` in formation units. One unit is `clamp(radius x 0.5, 150, 400)` cm, so a default 4.5 m pack spaces monsters about 2.3–2.5 m apart.
+- Members take a slot of their class (tank / healer / DPS) first, front first; a member without a matching slot (an override that differs from the preset) takes the most forward free slot.
+- **Facing:** the pack faces the nearest point of its realm's monster paths (the path players and waves come along). A pack sitting on the path (within 1.5 m) faces the hero base. Every member spawns turned to the pack's facing. `CIRE_PACK_SPAWN ... facing=<yaw>` logs it.
 
 Each spot is projected onto the navmesh, falling back to the pack centre's navmesh point. `CIRE_PACK_SPAWN ... offnav=N` counts the fallbacks.
 

@@ -396,12 +396,12 @@ FString CireLanePath::ActiveSource() { return GActiveSource; }
 
 // ------------------------------------------------------------------------------------------------ jungle-packs: packs on the wire
 // GameState::LanePacks: a header (magic, route revision, pack count of realm 0, of realm 1 or -1 when identical), then
-// three ints per pack: [x/10 | y/10] (int16 each), [radius/10 | tier | type | tanks | healers | dps], seed. Split into
+// four ints per pack: [x/10 | y/10] (int16 each), [radius/10 | tier | type | tanks | healers], seed, [dps | melee | ranged | caster]. Split into
 // chunks of ChunkInts values, so every replicated array stays far inside the engine's 2048-element budget however
 // many packs a layout places.
 namespace
 {
-constexpr int32 PackMagic = 0x4A50, ChunkInts = 1020;
+constexpr int32 PackMagic = 0x4A51, ChunkInts = 1020, PackInts = 4; // pack-formations: 4 ints per pack (magic bumped)
 int32 Clamp16(double V) { return FMath::Clamp(FMath::RoundToInt32(V / 10.), -32767, 32767); }
 }
 void CireLanePath::PackBays(const FCireBattlefieldRoutes& R, uint32 Revision, TArray<TArray<int32>>& OutChunks)
@@ -418,8 +418,10 @@ void CireLanePath::PackBays(const FCireBattlefieldRoutes& R, uint32 Revision, TA
             const uint32 Tier = static_cast<uint32>(FMath::Clamp(B.Tier, 1, 7));
             const uint32 Type = static_cast<uint32>(FMath::Clamp(Types.IndexOfByKey(B.PackType), 0, 63)); // unknown -> 0 is never written: types are normalised
             const FCirePackComposition C = B.HasCompOverride() ? B.Comp : FCirePackComposition{0, 0, 0};
-            All.Add(static_cast<int32>(Radius | Tier << 8 | Type << 11 | static_cast<uint32>(C.Tanks & 3) << 17 | static_cast<uint32>(C.Healers & 3) << 19 | static_cast<uint32>(C.Dps & 3) << 21));
+            All.Add(static_cast<int32>(Radius | Tier << 8 | Type << 11 | static_cast<uint32>(C.Tanks & 7) << 17 | static_cast<uint32>(C.Healers & 7) << 20));
             All.Add(static_cast<int32>(B.EffectiveSeed()));
+            // pack-formations: the DPS counts (any, melee, ranged, caster), 4 bits each.
+            All.Add(static_cast<int32>(static_cast<uint32>(C.Dps & 15) | static_cast<uint32>(C.Melee & 15) << 4 | static_cast<uint32>(C.Ranged & 15) << 8 | static_cast<uint32>(C.Casters & 15) << 12));
         }
     OutChunks.Reset();
     for (int32 At = 0; At < All.Num(); At += ChunkInts)
@@ -435,14 +437,14 @@ bool CireLanePath::UnpackBays(const TArray<TArray<int32>>& Chunks, uint32& OutRe
     if (All.Num() < 4 || All[0] != PackMagic || All[2] < 0 || All[3] < -1) return false;
     const bool bSame = All[3] == -1;
     const int32 Counts[2] = {All[2], bSame ? 0 : All[3]};
-    if (All.Num() != 4 + 3 * (Counts[0] + Counts[1])) return false;
+    if (All.Num() != 4 + PackInts * (Counts[0] + Counts[1])) return false;
     OutRevision = static_cast<uint32>(All[1]);
     const TArray<FName> Types = CireJunglePacks::PackTypes();
     int32 At = 4;
     for (int32 Team = 0; Team < (bSame ? 1 : 2); ++Team)
     {
         OutBays[Team].Reset(Counts[Team]);
-        for (int32 I = 0; I < Counts[Team]; ++I, At += 3)
+        for (int32 I = 0; I < Counts[Team]; ++I, At += PackInts)
         {
             const uint32 W0 = static_cast<uint32>(All[At]), W1 = static_cast<uint32>(All[At + 1]);
             FCireChallengeBay B;
@@ -451,7 +453,9 @@ bool CireLanePath::UnpackBays(const TArray<TArray<int32>>& Chunks, uint32& OutRe
             B.Tier = FMath::Clamp(static_cast<int32>((W1 >> 8) & 7u), 1, FCireChallengeBay::MaxTier);
             const int32 Type = static_cast<int32>((W1 >> 11) & 63u);
             B.PackType = Types.IsValidIndex(Type) ? Types[Type] : CireJunglePacks::Mixed;
-            B.Comp = {static_cast<int32>((W1 >> 17) & 3u), static_cast<int32>((W1 >> 19) & 3u), static_cast<int32>((W1 >> 21) & 3u)};
+            const uint32 W3 = static_cast<uint32>(All[At + 3]);
+            B.Comp = FCirePackComposition(static_cast<int32>((W1 >> 17) & 7u), static_cast<int32>((W1 >> 20) & 7u), static_cast<int32>(W3 & 15u),
+                static_cast<int32>((W3 >> 4) & 15u), static_cast<int32>((W3 >> 8) & 15u), static_cast<int32>((W3 >> 12) & 15u));
             B.Seed = static_cast<uint32>(All[At + 2]);
             OutBays[Team].Add(B);
         }
