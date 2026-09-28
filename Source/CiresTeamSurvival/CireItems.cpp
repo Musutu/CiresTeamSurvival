@@ -3,6 +3,7 @@
 #include "CireScalingKits.h" // scaling-kits
 #include "CireInitiation.h" // initiation: Blink Dagger
 #include "CireSkillShop.h" // progression-shop: Skill Shop
+#include "CireVendors.h" // shop-anywhere: buy anywhere, vendor discount / out-of-town surcharge
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireBuffs.h" // aura-vfx
 // progression-shop: see CireItems.h, Docs/Items.md.
@@ -530,6 +531,7 @@ ShopAccess CireItems::ShopAccessFor(const ACireHero* Hero)
 {
     const auto* Mode = ModeOf(Hero);
     if (!Hero || !Mode || !Hero->bDrafted) return ShopAccess::WrongPhase;
+    if (CireVendors::ShopAnywhere()) return Mode->Clock.Phase() == Cires::MatchPhase::Finished ? ShopAccess::WrongPhase : ShopAccess::Allowed; // shop-anywhere (playtest 6)
     const double Distance = FVector::Dist2D(Hero->GetActorLocation(), Mode->BasePosition(Hero->TeamId));
     return CheckShopAccess(Get().Shop, static_cast<int>(Mode->Clock.Phase()), Distance, Hero->bDead);
 }
@@ -809,7 +811,12 @@ bool UCireInventory::Buy(FName ItemId, FString& Message)
     }
     Inventory Rules = ToRules();
     int32 Gold = Owner->Gold;
-    const PurchasePlan Plan = PlanPurchase(D.Catalog, Rules, Utf8(ItemId.ToString()), Gold);
+    // shop-anywhere: plan the recipe without a gold limit, then charge the price for where the buyer stands
+    // (vendor -10% / town list / out of town +10%, CireVendors::QuoteItem).
+    constexpr int32 PlanGold = MAX_int32 / 2;
+    PurchasePlan Plan = PlanPurchase(D.Catalog, Rules, Utf8(ItemId.ToString()), PlanGold);
+    const FCirePriceQuote Quote = CireVendors::QuoteItem(Owner, ItemId, Plan.Cost);
+    if (Plan.Ok && Gold < Quote.Price) { Plan.Ok = false; Plan.Error = "Not enough gold: " + std::to_string(Quote.Price - Gold) + " more needed."; }
     if (!Plan.Ok)
     {
         Message = UTF8_TO_TCHAR(Plan.Error.c_str());
@@ -820,9 +827,9 @@ bool UCireInventory::Buy(FName ItemId, FString& Message)
     if (!Session.Open) BeginShopVisit(false);
     if (Plan.Instant) Session.Clear(); // tomes are read on purchase and cannot be undone
     else Session.Record(Rules, Gold, "Buy " + Item->Name);
-    int Remaining = Gold;
+    int Remaining = PlanGold;
     if (!ApplyPurchase(D.Catalog, Rules, Remaining, Utf8(ItemId.ToString()), Plan)) { Message = TEXT("Purchase rejected."); return false; }
-    Owner->Gold = Remaining;
+    Owner->Gold = Gold - Quote.Price;
     if (Plan.Instant)
     {
         FString EffectMessage;
@@ -830,9 +837,10 @@ bool UCireInventory::Buy(FName ItemId, FString& Message)
     }
     else FromRules(Rules);
     AfterChange();
-    Message = FString::Printf(TEXT("Purchased %s  -%dg"), UTF8_TO_TCHAR(Item->Name.c_str()), Plan.Cost);
+    Message = FString::Printf(TEXT("Purchased %s  -%dg"), UTF8_TO_TCHAR(Item->Name.c_str()), Quote.Price);
+    if (const FString Why = CireVendors::QuoteLabel(Quote); !Why.IsEmpty()) Message += FString::Printf(TEXT("  (%s)"), *Why);
     Owner->Notice = Message;
-    SendFeedback(ECireShopAction::Buy, true, ItemId, Plan.TargetSlot, Plan.ToBelt, -Plan.Cost, Message);
+    SendFeedback(ECireShopAction::Buy, true, ItemId, Plan.TargetSlot, Plan.ToBelt, -Quote.Price, Message);
     return true;
 }
 

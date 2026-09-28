@@ -108,6 +108,10 @@ public:
     bool bShowStats = true;
     /** progression-shop: show the personal loot log (toggle: L). */
     bool bShowLootLog = false;
+    /** shop-anywhere: master switch for confirmation dialogs (Options > Interface). */
+    bool bConfirmDialogs = true;
+    /** shop-anywhere: the out-of-town purchase confirmation ("Don't show this again" clears it). */
+    bool bConfirmOutOfTownBuy = true;
     // --- end WoW camera / targeting preferences ---
     /** feat/camera-movement: keybindings + action-bar placements, section [CireUI.Keybindings]. */
     FCireKeybindings Keybindings;

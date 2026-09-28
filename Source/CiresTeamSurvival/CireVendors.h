@@ -66,8 +66,32 @@ struct CIRESTEAMSURVIVAL_API FCireVendorSpot
     FVector StallSize = FVector::ZeroVector; // depth, width, height (0 = the vendor default)
 };
 
+// shop-anywhere (playtest 6): skills and items are bought anytime, anywhere. Price by where you stand:
+// in person at the matching merchant -10%, elsewhere in town list price, out of town +10% (Vendors.json "pricing").
+enum class ECirePriceZone : uint8 { Vendor, Town, Field };
+
+struct CIRESTEAMSURVIVAL_API FCireVendorPricing
+{
+    bool bShopAnywhere = true;          // false = the old phase/town access rules (Items.json shopRules)
+    float VendorDiscount = .10f;        // in person at the merchant who sells it
+    float FieldSurcharge = .10f;        // outside town
+    float TownVendorRadius = 3200.f;    // cm around any of your realm's merchants that still counts as town
+    float VendorReachSlack = 120.f;     // cm added to interactRange for the in-person discount
+};
+
+/** One price for one buyer: the list (base) price, what he pays here, and why. */
+struct CIRESTEAMSURVIVAL_API FCirePriceQuote
+{
+    int32 Base = 0;
+    int32 Price = 0;
+    ECirePriceZone Zone = ECirePriceZone::Town;
+    FName Vendor;                         // the matching merchant (NAME_None = any merchant, e.g. potions)
+    int32 Delta() const { return Price - Base; }
+};
+
 struct CIRESTEAMSURVIVAL_API FCireVendorData
 {
+    FCireVendorPricing Pricing;           // shop-anywhere
     TArray<FCireVendorDef> Vendors;
     TArray<FCireVendorSpot> Spots;
     FString SpotSource;                   // "TownVendors.json" or "TownVendors.provisional.json"
@@ -108,6 +132,26 @@ namespace CireVendors
     CIRESTEAMSURVIVAL_API bool Interact(ACireController* Controller, class ACireVendor* Vendor = nullptr);
     /** The shop reports a purchase so the merchant who sold it nods (client cosmetic). */
     CIRESTEAMSURVIVAL_API void OnPurchased(const UWorld* World, FName ItemId);
+
+    // ---- shop-anywhere pricing (server-authoritative; clients mirror it for display) ----
+    CIRESTEAMSURVIVAL_API const FCireVendorPricing& Pricing();
+    CIRESTEAMSURVIVAL_API FCireVendorPricing& MutablePricing(); // tests / live tuning (reset by Reload)
+    CIRESTEAMSURVIVAL_API bool ShopAnywhere();
+    /** Pure price maths: vendor -discount, town list price, field +surcharge (rounded to the nearest gold, never below 0). */
+    CIRESTEAMSURVIVAL_API int32 ApplyZone(int32 Base, ECirePriceZone Zone, const FCireVendorPricing& Rules);
+    /** Town = within Items.json townRadius of the base, or within pricing.townVendorRadius of one of your realm's merchants. */
+    CIRESTEAMSURVIVAL_API bool InTown(const ACireHero* Hero);
+    /** The merchant of this id (NAME_None = any) the hero is standing at in person, or NAME_None. */
+    CIRESTEAMSURVIVAL_API FName VendorInReach(const ACireHero* Hero, FName Want);
+    /** Skills: the merchant of the champion's primary stat (Arcane INT, Armory STR, Weaponsmith AGI). */
+    CIRESTEAMSURVIVAL_API FName VendorForStat(const ACireHero* Hero);
+    CIRESTEAMSURVIVAL_API ECirePriceZone ZoneFor(const ACireHero* Hero, FName MatchVendor, FName* OutVendorHere = nullptr);
+    CIRESTEAMSURVIVAL_API FCirePriceQuote QuoteItem(const ACireHero* Hero, FName ItemId, int32 Base);
+    CIRESTEAMSURVIVAL_API FCirePriceQuote QuoteSkill(const ACireHero* Hero, int32 Base);
+    /** "-10% at the Weaponsmith" / "+10% out-of-town surcharge" / "" for list price. */
+    CIRESTEAMSURVIVAL_API FString QuoteLabel(const FCirePriceQuote& Quote);
+    /** Short card tag: "-10%" / "+10%" / "". */
+    CIRESTEAMSURVIVAL_API FString QuoteTag(const FCirePriceQuote& Quote);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSmoke(ACireGameMode* Mode);
 #endif

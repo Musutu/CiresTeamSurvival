@@ -69,7 +69,7 @@ TArray<FCireActionInfo> BuildActions()
     // Active items also land automatically on action bar 1 slots 9..12 (keys 7, 8, 9, 0).
     Add(TEXT("ToggleStats"),LOCTEXT("ToggleStats","Character stats window"),C::Interface,EKeys::C);
     Add(TEXT("ToggleLootLog"),LOCTEXT("ToggleLootLog","Loot log"),C::Interface,EKeys::L);
-    Add(TEXT("ToggleSkillShop"),LOCTEXT("ToggleSkillShop","Skill Shop (between waves, prep, recovery)"),C::Interface,EKeys::K);
+    Add(TEXT("ToggleSkillShop"),LOCTEXT("ToggleSkillShop","Skill Shop (anytime, anywhere)"),C::Interface,EKeys::K);
     Add(TEXT("UseBelt1"),LOCTEXT("UseBelt1","Use consumable belt slot 1"),C::Combat,EKeys::Z);
     Add(TEXT("UseBelt2"),LOCTEXT("UseBelt2","Use consumable belt slot 2"),C::Combat,EKeys::X);
     Add(TEXT("UseBelt3"),LOCTEXT("UseBelt3","Use consumable belt slot 3"),C::Combat,EKeys::V);

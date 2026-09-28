@@ -207,7 +207,7 @@ void ACireHUD::ToggleDeveloperTools()
     if(bEditLayout)ToggleLayoutEditor();
     RevertVideoPreview();bSettings=true;OptionsTab=5;DeveloperPage=5;bVideoLoaded=false;
 }
-bool ACireHUD::HandleEscape() { if(!bSettings&&CireAbilityTunerUI::HandleEscape())return true;/* ability-tuner */if(bQuickKeybind){ToggleQuickKeybind();return true;}if(bLayoutEditor&&!bSettings&&LayoutEditorEscape())return true;/* dev-route-tools */if(bRouteEditor&&!bSettings){OpenRouteEditor(false);return true;}/* nav-paths */if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
+bool ACireHUD::HandleEscape() { if(!bSettings&&CireAbilityTunerUI::HandleEscape())return true;/* ability-tuner */if(bQuickKeybind){ToggleQuickKeybind();return true;}if(!bSettings&&CireShopUI::CancelConfirm())return true;/* shop-anywhere: Esc cancels the purchase confirmation first */if(bLayoutEditor&&!bSettings&&LayoutEditorEscape())return true;/* dev-route-tools */if(bRouteEditor&&!bSettings){OpenRouteEditor(false);return true;}/* nav-paths */if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
 void ACireHUD::HandleMouseWheel(float Delta)
 {
     if(bSettings&&OptionsTab==0&&ControlsPage==1){KeybindScroll=FMath::Max(0,KeybindScroll+(Delta>0?-2:2));return;}

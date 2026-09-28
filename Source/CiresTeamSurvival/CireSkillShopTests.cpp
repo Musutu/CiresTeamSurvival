@@ -11,6 +11,7 @@
 #include "CireWaves.h"
 #include "CireGame.h"
 #include "CireItems.h"
+#include "CireVendors.h" // shop-anywhere
 #include "CireLoot.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
@@ -47,6 +48,12 @@ bool CireSkillShop::RunSmoke(ACireGameMode* Mode)
     };
     Mode->Heroes.Reset();
     Mode->Monsters.Reset();
+    // shop-anywhere: list prices and the classic windows for the checks below (anytime is checked on its own).
+    const FCireVendorPricing SavedPricing = CireVendors::Pricing();
+    const bool bSavedAnytime = Mutable().bAnytime;
+    CireVendors::MutablePricing().bShopAnywhere = false;
+    Mutable().bAnytime = false;
+    ON_SCOPE_EXIT { CireVendors::MutablePricing() = SavedPricing; Mutable().bAnytime = bSavedAnytime; };
     auto Hero = [&](int32 Team, int32 Archetype, FVector Offset)
     {
         FActorSpawnParameters Params;
@@ -217,6 +224,23 @@ bool CireSkillShop::RunSmoke(ACireGameMode* Mode)
     Check(IsOpen(T), TEXT("open during recovery"));
     Prep(7);
     Check(IsOpen(T), TEXT("open during prep"));
+    // shop-anywhere (playtest 6): with "anytime" the shop is open mid-wave too; bots still wait for the windows.
+    {
+        const int32 SavedPhase2 = S->Phase; const float SavedNext2 = S->NextWaveSeconds;
+        Mutable().bAnytime = true;
+        S->Phase = 0; S->NextWaveSeconds = 0;
+        Check(IsOpen(T) && !InShopWindow(T), TEXT("anytime: open while a wave is running (outside the bot windows)"));
+        const int32 GoldAny = T->Gold = FMath::Max(T->Gold, 5000);
+        const int32 LevelBefore = Level(T, T->Skills[0]);
+        const int32 ListPrice = LevelQuote(T, T->Skills[0]).Base;
+        CireVendors::MutablePricing().bShopAnywhere = true;
+        const FCirePriceQuote Q = LevelQuote(T, T->Skills[0]);
+        Check(Q.Price == CireVendors::ApplyZone(ListPrice, Q.Zone, CireVendors::Pricing()), TEXT("anytime: the level-up quote is the list price for where the hero stands"));
+        Check(LevelUp(T, T->Skills[0], Message) && Level(T, T->Skills[0]) == LevelBefore + 1 && T->Gold == GoldAny - Q.Price, TEXT("anytime: mid-wave level-up charges the location price"));
+        CireVendors::MutablePricing().bShopAnywhere = false;
+        Mutable().bAnytime = false;
+        S->Phase = SavedPhase2; S->NextWaveSeconds = SavedNext2;
+    }
     // Non-authority callers never mutate (clients go through the Server RPCs).
     Check(!Buy(nullptr, TEXT("war_cry"), Message) && !LevelUp(nullptr, TEXT("war_cry"), Message), TEXT("invalid buyer rejected"));
 
