@@ -261,7 +261,7 @@ bool CireMonsterExpansion::RunSmoke(ACireGameMode* Mode)
         if (Hoard.Num() >= 2)
         {
             ACireMonster* G = Hoard[0];
-            Check(G->SpecialEscapeAt <= 0.f && EscapeSecondsLeft(G) < 0.f, TEXT("no escape clock before the first hit"));
+            Check(EscapeSecondsLeft(G) < 0.f, TEXT("no escape clock before the first hit"));
             G->ConsumeMovementInputVector();
             Check(TickSpecial(G, Mode, .1f) && Mode->Monsters.Contains(G), TEXT("an untouched stage creature keeps running for the castle"));
             Check(G->Victim == nullptr && G->CastingAbility.IsEmpty(), TEXT("stage creatures never attack"));

@@ -115,7 +115,7 @@ bool CireItemsPvP::MergeJson(const FString& Json, FCireItemData& Data, FString& 
         Ids.Add(Id);
         Effects.Add(Id, Def);
     }
-    // Merge: catalog entries, shop order (they stay out of the shop: purchasable false), texts.
+    // Merge: catalog entries and texts. They stay out of Order (the shop's 45-60 item list): the shop never lists them.
     // Work on a copy so a bad file leaves the shop catalog untouched.
     Cires::Items::Catalog Catalog = Data.Catalog;
     for (const Cires::Items::ItemDef& Item : Parsed.Catalog.Items) Catalog.Items.push_back(Item);
@@ -124,7 +124,6 @@ bool CireItemsPvP::MergeJson(const FString& Json, FCireItemData& Data, FString& 
     const std::string PolicyError = Cires::Items::ValidateStatPolicy(Catalog);
     if (!PolicyError.empty()) { Error = TEXT("PvPUniques.json: ") + FString(UTF8_TO_TCHAR(PolicyError.c_str())); return false; }
     Data.Catalog = MoveTemp(Catalog);
-    Data.Order.Append(Parsed.Order);
     Data.EffectLine.Append(Parsed.EffectLine);
     Data.UseText.Append(Parsed.UseText);
     Data.PassiveText.Append(Parsed.PassiveText);

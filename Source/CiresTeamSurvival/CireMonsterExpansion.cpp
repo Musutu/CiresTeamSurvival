@@ -141,8 +141,8 @@ float CireMonsterExpansion::ApplyBonus(ACireMonster* M, const FCireBonusWaveRule
     M->SpecialSpawn = 2;
     const FCireNPCArchetype* A = ArchetypeOf(M);
     M->MonsterName = A ? A->DisplayName : M->MonsterName;
-    // bonus-loot: the escape clock waits for the first hit (0 = not started) unless escapeTimerOnHit is off.
-    M->SpecialEscapeAt = Rules.bEscapeTimerOnHit ? 0.f : NowOf(M) + Rules.EscapeSeconds;
+    // bonus-loot: the escape clock waits for the first hit (FLT_MAX = not started) unless escapeTimerOnHit is off.
+    M->SpecialEscapeAt = Rules.bEscapeTimerOnHit ? TNumericLimits<float>::Max() : NowOf(M) + Rules.EscapeSeconds;
     M->LeakCostOverride = 0; M->bEngaged = false;
     CireBonusStage::Register(M);
     CireNPCCombat::Interrupt(M); CireThreat::Clear(M);
@@ -159,14 +159,14 @@ float CireMonsterExpansion::BountyMobValues(const ACireMonster* M)
 
 void CireMonsterExpansion::OnBonusCreatureAttacked(ACireMonster* M)
 {
-    if (!IsValid(M) || M->SpecialSpawn != 2 || M->SpecialEscapeAt > 0 || M->Health <= 0) return;
+    if (!IsValid(M) || M->SpecialSpawn != 2 || M->SpecialEscapeAt < TNumericLimits<float>::Max() || M->Health <= 0) return;
     M->SpecialEscapeAt = NowOf(M) + CireWaveDirector::Config(M->GetWorld()).Bonus.EscapeSeconds;
     UE_LOG(LogCireExpansion, Display, TEXT("CIRE_BONUS_CLOCK_START %s lane=%d escape_in=%.0f"), *M->GetNPCDisplayName(), M->Lane, M->SpecialEscapeAt - NowOf(M));
 }
 
 float CireMonsterExpansion::EscapeSecondsLeft(const ACireMonster* M)
 {
-    if (!IsValid(M) || M->SpecialSpawn != 2 || M->SpecialEscapeAt <= 0) return -1.f;
+    if (!IsValid(M) || M->SpecialSpawn != 2 || M->SpecialEscapeAt >= TNumericLimits<float>::Max()) return -1.f;
     return FMath::Max(0.f, M->SpecialEscapeAt - NowOf(M));
 }
 
@@ -197,7 +197,7 @@ bool CireMonsterExpansion::TickSpecial(ACireMonster* M, ACireGameMode* Mode, flo
     if (!M->CastingAbility.IsEmpty()) CireNPCCombat::Interrupt(M);
     if (!M->Threat.IsEmpty() || M->Victim) CireThreat::Clear(M);
     M->bEngaged = false;
-    if ((M->SpecialEscapeAt > 0 && NowOf(M) >= M->SpecialEscapeAt) || CireNPCCombat::ReachedGoal(M)) { Escape(M, Mode); return true; }
+    if (NowOf(M) >= M->SpecialEscapeAt || CireNPCCombat::ReachedGoal(M)) { Escape(M, Mode); return true; }
     // Greedy creatures bolt from the closest champion of their lane; otherwise they trot down the road toward the castle.
     // bonus-loot (playtest 6): they always path to the castle, so a bolt runs AHEAD along the route (away from the
     // champion) instead of back toward the rift.

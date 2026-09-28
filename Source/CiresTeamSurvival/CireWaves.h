@@ -110,8 +110,8 @@ struct CIRESTEAMSURVIVAL_API FCireBonusWaveRules
     float EscapeSeconds = 52.f;
     /** A bonus creature bolts away from a champion closer than this. */
     float FleeRadius = 950.f;
-    /** Kill bounty in mob values. */
-    float Bounty = 4.f;
+    /** Kill bounty in mob values. bonus-loot: 4 -> 1 (the stage's tier chest is the reward). */
+    float Bounty = 1.f;
     FCireWaveDef Wave;
     FCireBonusWaveRules(); // Wave = the goblin hoard template (CireWaveDirector::BonusTemplate)
     bool operator==(const FCireBonusWaveRules& O) const;
