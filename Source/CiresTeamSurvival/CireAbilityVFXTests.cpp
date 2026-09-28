@@ -102,7 +102,7 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             Check(SameBoundary(D.Footprint,Shape.AsArea()),Name+TEXT(" aim preview boundary equals the hit boundary"));
             Check(D.bDirectional==(Shape.bFromCaster&&(Shape.Kind==ECireHitShape::Line||Shape.Kind==ECireHitShape::Cone)),Name+TEXT(" lines/cones anchor at the caster, circles at the cursor"));
         }
-        if(const auto* A=CireAbilityLibrary::Find(Name))Check(SameBoundary(A->Area,Shape.AsArea())&&Near(A->Area.WarningSeconds,Shape.WarningSeconds,.001f),Name+TEXT(" telegraph matches the authored area and warning"));
+        if(const auto* A=CireAbilityLibrary::Find(Name))Check(SameBoundary([&]{FCireAreaSpec N=A->Area;ACireAreaEffect::NormalizeShape(N);return N;}(),Shape.AsArea()) /* casting-rules: Line/Barrier/Cone/Circle */&&Near(A->Area.WarningSeconds,Shape.WarningSeconds,.001f),Name+TEXT(" telegraph matches the authored area and warning"));
         if(const auto* P=Name.StartsWith(TEXT("basic_"))?nullptr:CireSkillTuning::FindSkillshot(Name))
             Check(Shape.Kind==ECireHitShape::Line&&Shape.bProjectile&&Near(Shape.Width,P->Radius*2)&&Near(Shape.Length,FMath::Min(P->MaxRange,P->Speed*P->LifetimeSeconds)),
                 Name+TEXT(" skillshot telegraph is a line of the collision diameter and true travel"));
@@ -219,7 +219,7 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             auto* Out=MakeMonster(Center+FVector(0,-(Radius+25.f),0),TEXT("hollow_infantry"));
             if(!In||!Out)return;
             Ready(Hero,Id);Hero->Target=Target?Target:In;const float InBefore=In->Health,OutBefore=Out->Health;
-            Hero->Cast(0);
+            Hero->Cast(0);CireCrowdControl::CompleteCastNow(Hero); // casting-rules: AoE damage spells have cast times
             const FString Name(Id);
             if(FString(Id)==TEXT("war_cry"))Check(In->ForcedVictim==Hero&&Out->ForcedVictim!=Hero,Name+TEXT(" taunts inside its drawn radius only"));
             else Check(In->Health<InBefore&&Out->Health==OutBefore,Name+FString::Printf(TEXT(" hits inside its drawn %.0f cm radius only"),Radius));

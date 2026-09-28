@@ -1024,6 +1024,11 @@ def main() -> int:
             if s['id'] not in jobs:
                 pal = s['vfxFamily'] if s['vfxFamily'] in PALETTES else 'arcane'
                 jobs[s['id']] = (planned_glyph(s['id'], s['delivery']), pal, VARIANTS.get(s['id']))
+    # ability-expansion: the expansion pool's icon rows (Tools/BuildAbilityExpansion.py -> AbilityIcons.expansion.json).
+    expansion = ROOT / 'Content/Data/AbilityIcons.expansion.json'
+    if expansion.is_file():
+        for sid, row in json.loads(expansion.read_text(encoding='utf-8'))['icons'].items():
+            jobs.setdefault(sid, (row['glyph'], row['school'], None))
     combos = {}
     for sid in POOL:
         combos.setdefault(POOL[sid], []).append(sid)

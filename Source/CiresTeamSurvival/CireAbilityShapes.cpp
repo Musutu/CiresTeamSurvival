@@ -96,8 +96,9 @@ ECireSchool MonsterSchool(const FString& Id,const FCireNPCArchetype* A,const FCi
     if(Id.Contains(TEXT("guard"))||Id.Contains(TEXT("provoke"))||Id.Contains(TEXT("wall")))return ECireSchool::Holy;
     return ECireSchool::Steel;
 }
-void FromArea(FCireHitShape& S,const FCireAreaSpec& A)
+void FromArea(FCireHitShape& S,const FCireAreaSpec& In)
 {
+    FCireAreaSpec A=In;ACireAreaEffect::NormalizeShape(A); // casting-rules: the telegraph shows the shape Spawn will hit with
     S.Radius=A.Radius;S.Length=A.Length;S.Width=A.Width;S.Angle=A.ConeAngleDegrees;S.Polygon=A.CustomPolygon;
     switch(A.Shape)
     {
@@ -188,7 +189,7 @@ FLinearColor CireAbilityShapes::SchoolColor(ECireSchool School)
 
 FString CireAbilityShapes::ShapeName(ECireHitShape Kind)
 {
-    static const TCHAR* Names[]={TEXT("none"),TEXT("self"),TEXT("unit"),TEXT("circle"),TEXT("cone"),TEXT("line"),TEXT("square"),TEXT("custom"),TEXT("chain")};
+    static const TCHAR* Names[]={TEXT("none"),TEXT("self"),TEXT("unit"),TEXT("circle"),TEXT("cone"),TEXT("line"),TEXT("circle"),TEXT("barrier"),TEXT("chain")}; // casting-rules: Square never survives Finish; Custom is only a Barrier footprint
     const int32 I=static_cast<int32>(Kind);return I>=0&&I<UE_ARRAY_COUNT(Names)?Names[I]:TEXT("none");
 }
 bool CireAbilityShapes::ParseSchool(const FString& In,ECireSchool& Out)
@@ -293,6 +294,10 @@ namespace
 {
 void Finish(FCireHitShape& S)
 {
+    // casting-rules (Playtest 6): ground shapes are exactly Line / Barrier / Cone / Circle.
+    if(S.Kind==ECireHitShape::Square){S.Kind=ECireHitShape::Circle;S.Radius=FMath::Max(1.f,S.Width*.5f);}
+    else if(S.Kind==ECireHitShape::Custom&&!ACireAreaEffect::IsBarrierPolygon(S.Polygon))
+    {float Reach=0;for(const FVector2D& V:S.Polygon)Reach=FMath::Max(Reach,static_cast<float>(V.Size()));S.Kind=ECireHitShape::Circle;S.Radius=S.Radius>1.f?S.Radius:FMath::Max(1.f,Reach);S.Polygon.Reset();}
     static const TSet<FName> Heals={TEXT("restoring_light"),TEXT("purify"),TEXT("renewal"),TEXT("sanctuary"),TEXT("wellspring"),
         TEXT("second_wind"),TEXT("last_stand"),TEXT("bastion_of_dawn")};
     if(Heals.Contains(S.Id))S.bHeal=true;
