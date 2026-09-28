@@ -706,6 +706,10 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
     const FRect SearchR{ToolsR.X,ToolsR.Y,SortR.X-8.f-ToolsR.X,RowH};
     const FRect DropR=SortR; // the sort list opens under the sort button
 
+    // Layout audit: the main regions must never overlap each other (Kind 4).
+    if(S.bAudit)for(const auto& Region:{TPair<const TCHAR*,FRect>(TEXT("panel:roster"),LeftR),TPair<const TCHAR*,FRect>(TEXT("panel:details"),FRect{RightR.X-14,RightR.Y-10,RightR.W+28,RightR.H+10}),
+        TPair<const TCHAR*,FRect>(TEXT("panel:figure"),FigureR),TPair<const TCHAR*,FRect>(TEXT("panel:skins"),SkinR),TPair<const TCHAR*,FRect>(TEXT("panel:lockin"),BtnR)})
+        S.Audit.Add({Region.Key,Region.Value,Safe.Inset(-M+1.f),0,4});
     // ---------- Search (controller-owned text) ----------
     FString Search=Controller?Controller->DraftSearch.TrimStartAndEnd():FString();
     if(bLockedView)Search.Reset();
@@ -1859,7 +1863,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                 if(!bInBox)Issues.Add(FString::Printf(TEXT("%s '%s' [%.1f,%.1f %.1fx%.1f] outside box [%.1f,%.1f %.1fx%.1f]"),A.Kind==2?TEXT("card"):TEXT("text"),*A.What,A.Rect.X,A.Rect.Y,A.Rect.W,A.Rect.H,A.Box.X,A.Box.Y,A.Box.W,A.Box.H));
                 if(!bOnScreen)Issues.Add(FString::Printf(TEXT("'%s' off screen"),*A.What));
                 if(A.Kind==3&&!Safe.Contains(A.Rect))Issues.Add(TEXT("title outside the safe area"));
-                if(A.Kind!=2)
+                if(A.Kind!=2&&A.Kind!=4)
                 {
                     MinText=FMath::Min(MinText,A.Size);
                     if(A.Size<11.95f)Issues.Add(FString::Printf(TEXT("text '%s' too small (%.1f)"),*A.What,A.Size)); // champ-select: 12 = 18 px at 1080p, 15 px at 900p
@@ -1874,7 +1878,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             for(int32 I=0;I<S.Audit.Num();++I)for(int32 J=I+1;J<S.Audit.Num();++J)
             {
                 const FAuditItem& A=S.Audit[I];const FAuditItem& B=S.Audit[J];
-                if((A.Kind==2)!=(B.Kind==2))continue;
+                if((A.Kind==2)!=(B.Kind==2)||(A.Kind==4)!=(B.Kind==4))continue;
+                if(A.Kind==4){const float OW=FMath::Min(A.Rect.R(),B.Rect.R())-FMath::Max(A.Rect.X,B.Rect.X),OH=FMath::Min(A.Rect.B(),B.Rect.B())-FMath::Max(A.Rect.Y,B.Rect.Y);if(OW>1.f&&OH>1.f)Issues.Add(FString::Printf(TEXT("regions overlap '%s' / '%s'"),*A.What,*B.What));continue;}
                 const float IW=FMath::Min(A.Rect.R(),B.Rect.R())-FMath::Max(A.Rect.X,B.Rect.X),IH=FMath::Min(A.Rect.B(),B.Rect.B())-FMath::Max(A.Rect.Y,B.Rect.Y);
                 if(IW<=1.f||IH<=1.f)continue;
                 const float Smaller=FMath::Max(1.f,FMath::Min(A.Rect.W*A.Rect.H,B.Rect.W*B.Rect.H));
