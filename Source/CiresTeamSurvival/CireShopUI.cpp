@@ -1536,11 +1536,25 @@ void CireShopUI::DrawHUDElements(ACireHUD& HUD, ACireHero* Hero, ACireController
     for (int32 Index = 0; Index < 3; ++Index) SlotLogic(Index, true, 44 + Index * 34, 66, 30, KeyLabel(HUD, CireItems::BeltAction(Index)));
     // Gold.
     DrawGoldCounter(P, Hero, 150, 72, 15, false);
-    P.Text(FString::Printf(TEXT("[%s] SHOP"), *KeyLabel(HUD, TEXT("ToggleShop"))), 150, 57, 8, Muted, ECireFont::Heading);
-    if (bInteractive && In(M, 146, 56, 90, 36))
+    // shop-anywhere: both shops open from here at any time, anywhere ([B] items, [K] skills).
+    const FString ShopLabel = FString::Printf(TEXT("[%s] SHOP"), *KeyLabel(HUD, TEXT("ToggleShop")));
+    const FString SkillLabel = FString::Printf(TEXT("[%s] SKILLS"), *KeyLabel(HUD, TEXT("ToggleSkillShop")));
+    const float ShopW = P.TextWidth(ShopLabel, 8, ECireFont::Heading), SkillX = 150 + ShopW + 7, SkillW = P.TextWidth(SkillLabel, 8, ECireFont::Heading);
+    const bool bOverSkills = bInteractive && In(M, SkillX - 3, 55, SkillW + 6, 14);
+    P.Text(ShopLabel, 150, 57, 8, Muted, ECireFont::Heading);
+    P.Text(SkillLabel, SkillX, 57, 8, bOverSkills ? BrightGold : Muted, ECireFont::Heading);
+    const FString PriceRule = FString::Printf(TEXT("Buy anytime, anywhere: -%d%% in person at the matching merchant, list price in town, +%d%% out of town."),
+        FMath::RoundToInt(CireVendors::Pricing().VendorDiscount * 100), FMath::RoundToInt(CireVendors::Pricing().FieldSurcharge * 100));
+    if (bOverSkills)
+    {
+        HoverTitle = TEXT("Skill Shop");
+        HoverBody = FString::Printf(TEXT("Learn and level skills (%s). %s Skills match the merchant of your primary stat (INT Arcane Emporium, STR Armory, AGI Weaponsmith)."), *KeyLabel(HUD, TEXT("ToggleSkillShop")), *PriceRule);
+        if (HUD.HasClick() && Controller) { HUD.TakeClick(); if (!(Controller->bShop && State.Tab == 1)) ToggleSkillShop(Controller); }
+    }
+    else if (bInteractive && In(M, 146, 56, 90, 36))
     {
         HoverTitle = TEXT("Gold");
-        HoverBody = FString::Printf(TEXT("Spend it in the shop (%s). During the prep intermission you can buy anywhere; in recovery, buy in town. Kills, challenge chests and arena wins pay gold."), *KeyLabel(HUD, TEXT("ToggleShop")));
+        HoverBody = FString::Printf(TEXT("Spend it in the shop (%s). %s Kills, challenge chests and arena wins pay gold."), *KeyLabel(HUD, TEXT("ToggleShop")), *PriceRule);
         if (HUD.HasClick() && Controller) { HUD.TakeClick(); Controller->bShop = true; }
     }
     // Teleport to Base (merged town recall).
@@ -2520,26 +2534,35 @@ bool CireShopUI::ProbeConfirmDialog(ACireHUD& HUD, ACireHero* Hero, FString& Det
     const bool bAppears = !BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Field, true) && State.Confirm.bOpen && State.Confirm.Id == ItemId;
     ResolveConfirm(HUD, Hero, false);
     const bool bCancel = !State.Confirm.bOpen && State.ConfirmSent == SentBefore;
+    // Skills follow the item-shop rules: learn and level-up both ask out of town; BUY goes through.
+    const int32 SentSkill = State.ConfirmSent;
+    const FString ProbeSkill = Hero->Skills.Num() > 0 ? Hero->Skills[0] : FString(TEXT("war_cry"));
+    const FCirePriceQuote LiveSkill = CireSkillShop::LevelQuote(Hero, ProbeSkill);
     const bool bSkillAppears = !BeginPurchase(HUD, Hero, 1, FName(TEXT("war_cry")), FVector2D::ZeroVector, Field, true) && State.Confirm.bOpen && State.Confirm.Kind == 1;
     ResolveConfirm(HUD, Hero, false);
+    const bool bLevelAppears = !BeginPurchase(HUD, Hero, 2, FName(*ProbeSkill), FVector2D::ZeroVector, Field, true) && State.Confirm.bOpen && State.Confirm.Kind == 2;
+    ResolveConfirm(HUD, Hero, true);
+    const bool bSkillBuyGoes = !State.Confirm.bOpen && State.ConfirmSent == SentSkill + 1 && S.bConfirmOutOfTownBuy;
+    const bool bSkillPrice = LiveSkill.Price == CireVendors::ApplyZone(LiveSkill.Base, LiveSkill.Zone, CireVendors::Pricing());
     const bool bTownSilent = BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Town, true) && !State.Confirm.bOpen;
     const bool bVendorSilent = BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, AtVendor, true) && !State.Confirm.bOpen;
     // "Don't show this again" + BUY: the purchase goes out and the next out-of-town buy skips the dialog.
     BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Field, true);
     State.Confirm.bDontShow = true;
     ResolveConfirm(HUD, Hero, true);
-    const bool bDontShow = !S.bConfirmOutOfTownBuy && State.ConfirmSent == SentBefore + 1 && !State.Confirm.bOpen;
-    const bool bSuppressed = BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Field, true) && !State.Confirm.bOpen;
+    const bool bDontShow = !S.bConfirmOutOfTownBuy && State.ConfirmSent == SentBefore + 2 && !State.Confirm.bOpen;
+    const bool bSuppressed = BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Field, true) && !State.Confirm.bOpen
+        && BeginPurchase(HUD, Hero, 1, FName(TEXT("war_cry")), FVector2D::ZeroVector, Field, true) && !State.Confirm.bOpen;
     // Options > Confirmation dialogs off: suppressed even with the per-dialog switch back on.
     S.bConfirmOutOfTownBuy = true; S.bConfirmDialogs = false;
     const bool bMasterOff = BeginPurchase(HUD, Hero, 0, ItemId, FVector2D::ZeroVector, Field, true) && !State.Confirm.bOpen;
     S.bConfirmDialogs = bSavedMaster; S.bConfirmOutOfTownBuy = bSavedBuy;
     State.Confirm = SavedConfirm;
     const bool bMath = Field.Price == 110 && AtVendor.Price == 90;
-    Detail = FString::Printf(TEXT("appears=%d cancel=%d skill=%d town_silent=%d vendor_silent=%d dont_show=%d suppressed=%d options_off=%d math=%d live_zone=%d live_price=%d/%d item=%s"),
+    Detail = FString::Printf(TEXT("skill_level=%d skill_buy_sent=%d skill_price=%d skill_live=%d/%d zone=%d "), bLevelAppears, bSkillBuyGoes, bSkillPrice, LiveSkill.Price, LiveSkill.Base, static_cast<int32>(LiveSkill.Zone)) + FString::Printf(TEXT("appears=%d cancel=%d skill=%d town_silent=%d vendor_silent=%d dont_show=%d suppressed=%d options_off=%d math=%d live_zone=%d live_price=%d/%d item=%s"),
         bAppears, bCancel, bSkillAppears, bTownSilent, bVendorSilent, bDontShow, bSuppressed, bMasterOff, bMath,
         static_cast<int32>(Live.Zone), Live.Price, Live.Base, *ItemId.ToString());
-    return bAppears && bCancel && bSkillAppears && bTownSilent && bVendorSilent && bDontShow && bSuppressed && bMasterOff && bMath;
+    return bLevelAppears && bSkillBuyGoes && bSkillPrice && bAppears && bCancel && bSkillAppears && bTownSilent && bVendorSilent && bDontShow && bSuppressed && bMasterOff && bMath;
 }
 
 void CireShopUI::DebugReset() { const FName Keep = State.Selected; State = FShopState(); State.Selected = Keep; }

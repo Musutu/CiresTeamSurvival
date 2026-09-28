@@ -22,6 +22,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Misc/ScopeExit.h" // shop-anywhere tests
+#include "CireSkillShop.h" // shop-anywhere: skill prices follow the item-shop rules
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireVendors, Log, All);
 
@@ -826,11 +827,48 @@ bool CireVendors::RunSmoke(ACireGameMode* Mode)
             const FName Own(TEXT("bone_dagger")), Other(TEXT("boiled_jerkin")), Shared(TEXT("vial_of_crimson"));
             const FCirePriceQuote AtOwn = QuoteItem(Hero, Own, 450);
             Check(AtOwn.Zone == ECirePriceZone::Vendor && AtOwn.Vendor == Smith->VendorId && AtOwn.Price == 405, TEXT("zones: at the Weaponsmith his wares are -10%"));
+            // Another merchant's ware: discounted only if his counter is also in reach (stalls can stand side by side).
             const FCirePriceQuote AtOther = QuoteItem(Hero, Other, 450);
-            Check(AtOther.Zone == ECirePriceZone::Town && AtOther.Price == 450, TEXT("zones: another merchant's ware is list price in town"));
+            const bool bArmoryNear = !VendorInReach(Hero, FName(TEXT("armory"))).IsNone();
+            Check(AtOther.Price == (bArmoryNear ? 405 : 450) && AtOther.Zone == (bArmoryNear ? ECirePriceZone::Vendor : ECirePriceZone::Town), TEXT("zones: another merchant's ware is not discounted at this counter"));
             Check(QuoteItem(Hero, Shared, 100).Price == 90, TEXT("zones: shared wares (potions) are -10% at any merchant"));
-            Check(QuoteSkill(Hero, 100).Price == (VendorForStat(Hero) == Smith->VendorId ? 90 : 100), TEXT("zones: skills are -10% at the merchant of your primary stat"));
             Check(CireItems::ShopAccessFor(Hero) == Cires::Items::ShopAccess::Allowed, TEXT("access: shopping is open at the counter in any phase"));
+            // Skills: at the counter of the primary-stat merchant.
+            {
+                const FName StatVendor = VendorForStat(Hero);
+                ACireVendor* SV = nullptr;
+                for (ACireVendor* V : Vendors) if (V->VendorId == StatVendor && V->Team == Hero->TeamId) { SV = V; break; }
+                if (SV) Place(SV->InteractPoint() + FVector(0, 0, 100));
+                Check(SV && QuoteSkill(Hero, 100).Price == 90 && QuoteSkill(Hero, 100).Vendor == StatVendor, TEXT("zones: skills are -10% at the merchant of your primary stat"));
+                Check(!SV || Smith == SV || QuoteSkill(Hero, 100).Vendor != Smith->VendorId, TEXT("zones: another merchant gives skills no discount"));
+                // Server: a skill level-up at that counter charges -10% (Skill Shop mode, open anytime).
+                if (SV && Hero->Skills.Num() > 0 && CireSkillShop::IsOpen(Hero))
+                {
+                    const FString SkillId = Hero->Skills[0];
+                    Hero->Gold = 5000;
+                    const FCirePriceQuote LQ = CireSkillShop::LevelQuote(Hero, SkillId);
+                    FString SkillMessage;
+                    Check(LQ.Zone == ECirePriceZone::Vendor && CireSkillShop::LevelUp(Hero, SkillId, SkillMessage) && Hero->Gold == 5000 - ApplyZone(LQ.Base, ECirePriceZone::Vendor, Pricing()),
+                        TEXT("server: a skill level-up at the primary-stat merchant charges -10%"));
+                }
+                else UE_LOG(LogCireVendors, Display, TEXT("CIRE_VENDORS_NOTE skill server check skipped (no skill or Skill Shop closed)"));
+            }
+            // In town but at no counter: list price for everything.
+            {
+                bool bTown = false;
+                for (float Dist : {900.f, 1400.f, 2000.f, 2600.f})
+                {
+                    for (int32 Dir = 0; Dir < 8 && !bTown; ++Dir)
+                    {
+                        Place(Smith->GetActorLocation() + FRotator(0, Dir * 45.f, 0).RotateVector(FVector(Dist, 0, 0)) + FVector(0, 0, 100));
+                        bTown = ZoneFor(Hero, NAME_None) == ECirePriceZone::Town;
+                    }
+                    if (bTown) break;
+                }
+                Check(bTown && QuoteItem(Hero, Own, 450).Price == 450 && QuoteItem(Hero, Other, 450).Price == 450 && QuoteSkill(Hero, 100).Price == 100,
+                    TEXT("zones: in town away from the counters everything is list price"));
+            }
+            Place(Smith->InteractPoint() + FVector(0, 0, 100));
             // The server charges the location price.
             Hero->Gold = 5000;
             const int32 DaggerList = ListPrice(TEXT("bone_dagger"));
@@ -861,6 +899,22 @@ bool CireVendors::RunSmoke(ACireGameMode* Mode)
                 MutablePricing().bShopAnywhere = false;
                 Check(QuoteItem(Hero, Own, 450).Price == 450, TEXT("classic rules (shopAnywhere false): list price everywhere"));
                 MutablePricing().bShopAnywhere = true;
+                // Skills out of town: +10%, open anytime, and the server charges it.
+                const FCirePriceQuote SkillFar = QuoteSkill(Hero, 100);
+                Check(SkillFar.Zone == ECirePriceZone::Field && SkillFar.Price == 110, TEXT("zones: skills cost +10% out of town"));
+                if (Hero->Skills.Num() > 0 && CireSkillShop::IsOpen(Hero))
+                {
+                    const FString SkillId = Hero->Skills[0];
+                    Hero->Gold = 5000;
+                    const FCirePriceQuote LQ = CireSkillShop::LevelQuote(Hero, SkillId);
+                    FString SkillMessage;
+                    Check(LQ.Zone == ECirePriceZone::Field && LQ.Price == ApplyZone(LQ.Base, ECirePriceZone::Field, Pricing()) && CireSkillShop::LevelUp(Hero, SkillId, SkillMessage) &&
+                        Hero->Gold == 5000 - LQ.Price && SkillMessage.Contains(TEXT("out-of-town")), TEXT("server: a skill level-up out of town charges +10% and says why"));
+                    const FCirePriceQuote LQ2 = CireSkillShop::LevelQuote(Hero, SkillId);
+                    Hero->Gold = LQ2.Price - 1;
+                    Check(LQ2.Price > LQ2.Base && Hero->Gold >= LQ2.Base && !CireSkillShop::LevelUp(Hero, SkillId, SkillMessage) && Hero->Gold == LQ2.Price - 1,
+                        TEXT("server: the skill surcharge is part of the gold check"));
+                }
             }
         }
         else Check(false, TEXT("shop-anywhere fixture hero"));
