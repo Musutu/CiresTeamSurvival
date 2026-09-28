@@ -26,6 +26,12 @@ Worktree `F:\CiresTeamSurvival-agents\cts-shop-anywhere`, ports 17550-17559.
   - While it is open the shop underneath is inert. Closing the shop cancels it.
   - It covers item buys, skill learns and skill level-ups.
 - **Options > Interface > "Confirmation dialogs"** toggle (`bConfirmDialogs`), persisted. The per-dialog switch `bConfirmOutOfTownBuy` is also persisted. Turning the master switch back on re-enables every hidden dialog.
+- **Skills follow the item-shop rules (Eric via coordinator, 2026-09-28):**
+  - Skills and skill level-ups can be bought anytime, anywhere.
+  - They get -10% at the merchant of the champion's primary stat (INT Arcane Emporium, STR/tank Armory, AGI/DPS Weaponsmith) and +10% out of town.
+  - They use the same confirmation dialog, "Don't show this again" checkbox and Options toggle as items.
+  - The Skill Shop is reachable anywhere with [K], or from a new clickable "[K] SKILLS" entry on the HUD bag bar next to "[B] SHOP".
+  - The keybinding label now reads "Skill Shop (anytime, anywhere)".
 - **Buy/sell feedback polish:**
   - A red "-Ng" coin floater rises from the gold counter on item and skill purchases.
   - Purchase toasts and the event strip carry the price reason.
@@ -55,15 +61,29 @@ Worktree `F:\CiresTeamSurvival-agents\cts-shop-anywhere`, ports 17550-17559.
 - Selling has no location modifier (still 60% everywhere).
 - "Don't show this again" hides only the out-of-town purchase dialog. The Options toggle is the master switch, and turning it back on restores hidden dialogs.
 - Bots keep shopping only between waves (they don't pay surcharges mid-wave).
+- The between-wave READY TO CONTINUE pause and the Skill Shop auto-open after a wave clear are kept as a strategy break. They don't block anytime buying.
+- The skill-to-merchant match uses the champion's primary stat, not per-skill role tags, because every skill scales off the primary stat. INT maps to Arcane, STR (tanks) to Armory, AGI (DPS) to Weaponsmith.
 
 ## Shared-file edits (small, additive)
 - `CireItems.cpp`: include; one line in `ShopAccessFor`; location price in `UCireInventory::Buy` (plan without a gold cap, quote, charge the quote, message reason).
 - `CireUISettings.h/.cpp`: `bConfirmDialogs`, `bConfirmOutOfTownBuy` (defaults, load, save).
 - `CireOptions.cpp`: the "Confirmation dialogs" toggle (Interface page 0, right column).
 - `CireHUD.cpp`: `HandleEscape` cancels the confirmation first.
-- `CireInterfaceProbe.cpp`: the client step-9 shop-confirm check.
+- `CireInterfaceProbe.cpp`: the client step-9 shop-confirm check (item plus skill learn/level-up out of town).
+- `CireKeybindings.cpp`: the ToggleSkillShop label text only.
 - `CireProgressionTests.cpp`: pins the classic rules for `CireItems::RunSmoke`.
 - Data: `Content/Data/Vendors.json` (`pricing` block), `Content/Data/SkillShop.json` (`access.anytime`).
 
-## Gate logs
-(see below)
+## Gate logs (branch = main 25ad73dc + this work; main has not moved)
+- Build: Succeeded (`Saved/shopany-build.log`).
+- Native: **PASS**, `Saved/ExpansionChecks/20260928T043320959136Z/report.json`.
+  - VENDORS 49 checks, SKILLSHOP 72, ITEMS 49, OPTIONS_SETTINGS 53, COMBAT_EXPANSION_PASS.
+  - The earlier run printed every PASS but its editor hung on exit (timeout at 240 s). The rerun at 480 s passed.
+- Interface: **PASS**, `Saved/InterfaceSmoke/20260928T044709173208Z/report.json`.
+  - Both clients logged `CIRE_INTERFACE_CLIENT_SHOP_CONFIRM_PASS` (item and skill learn/level dialogs, cancel, town/vendor silent, don't-show, options-off, live skill quote).
+  - Two earlier attempts failed with a server readiness timeout and a client-ack timeout; the clients were still booting.
+- Network: **NOT PASSED (environmental)**, 7 attempts, e.g. `Saved/NetworkSmoke/20260928T050523952170Z/`.
+  - Each time the client stalls after Browse, inside the first-boot AssetRegistry gather. There's no discovery cache because the NTFS journal is off on F:, and CPU load is about 90% with about 13 agents.
+  - `RunNetworkSmoke.py` caps the probe at 90 s, so the client never connects. The client log never reaches game code.
+  - Rerun when the machine is quieter: `python Tools/RunNetworkSmoke.py --port 1755x --startup-timeout 120 --probe-timeout 90`.
+- Note: F: ran out of disk (0 GB free) during one build around 04:25. It recovered on its own (179 GB free at 05:05).
