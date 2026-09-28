@@ -8,6 +8,9 @@
 #include "CireNPCCombat.h"
 #include "CireNPCState.h"
 #include "CireThreat.h"
+#include "CireCrowdControl.h" // waves-modes: armored stun / slow
+#include "Misc/Paths.h"
+#include "HAL/FileManager.h"
 #include "Components/BoxComponent.h"
 #include "Engine/World.h"
 #include "Misc/ScopeExit.h"
@@ -28,7 +31,7 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
     {
         FCireWaveConfig D = Defaults(); FString Error;
         Check(Validate(D, &Error, false), TEXT("built-in defaults are valid without clamping"));
-        Check(D.Waves.Num() == 15 && D.WavesPerCycle == 5 && D.bCampaignOrder && D.Waves[0].Type == ECireWaveType::Normal && D.Waves[1].Type == ECireWaveType::Normal &&
+        Check(D.Waves.Num() == 25 && D.Cycles == 5 && D.WavesPerCycle == 5 && D.bCampaignOrder && D.Waves[0].Type == ECireWaveType::Normal && D.Waves[1].Type == ECireWaveType::Normal &&
             D.Waves[2].Type == ECireWaveType::Armored && D.Waves[3].Type == ECireWaveType::ArmoredEscort && D.Waves[4].Type == ECireWaveType::Boss,
             TEXT("default cycle 1 is normal, normal, armored, armored escort, boss"));
         // rules-conformance: the default match plays every wave type, with an Armored Escort and a boss in every cycle.
@@ -73,11 +76,86 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
             C.Waves[0].Units[0].Count == 20 && C.Waves[0].Units[0].HealthScale == 1 && C.Waves[0].SpawnInterval == 5,
             TEXT("clamping pulls every value into its sane limit"));
         FCireWaveConfig Scaled = D; Scaled.CycleHealthGrowth = .5f; Scaled.CycleExtraUnits = 1;
+        for (auto& X : Scaled.Waves) X.Packs = 0; // legacy rows: extra units per cycle apply
         const FCireWaveDef Late = ResolveWave(Scaled, 0, 2);
         Check(FMath::IsNearlyEqual(Late.Units[0].HealthScale, D.Waves[WaveIndex(D, 0, 2)].Units[0].HealthScale * 2.f) && Late.Units[0].Count == D.Waves[WaveIndex(D, 0, 2)].Units[0].Count + 2 &&
-            ResolveWave(Scaled, 7, 0).Label == D.Waves[7].Label && ResolveWave(Scaled, 1, 3).Label == D.Waves[1].Label, TEXT("cycle scaling and wave wrap-around resolve deterministically"));
-        FCireWaveConfig Huge = D; Huge.CycleExtraUnits = 5;
+            ResolveWave(Scaled, 7, 0).Label == D.Waves[7].Label && ResolveWave(Scaled, 1, 3).Label == D.Waves[16].Label, TEXT("cycle scaling and campaign order resolve deterministically"));
+        FCireWaveConfig Huge = D; Huge.CycleExtraUnits = 5; for (auto& X : Huge.Waves) X.Packs = 0;
         Check(ResolveWave(Huge, 1, 60).UnitsPerLane() <= 30, TEXT("looping growth never exceeds the per-lane spawn budget"));
+        // ------------------------------------------------------------ waves-modes: packs, schedule, Sudden Death
+        auto PackStats = [](const FCireWaveDef& W, int32& Packs, int32& MinSize, int32& MaxSize, int32& Total)
+        {
+            TMap<int32, int32> Size; Total = 0;
+            for (const auto& U : W.Units) if (U.Pack > 0) { Size.FindOrAdd(U.Pack) += U.Count; Total += U.Count; }
+            Packs = Size.Num(); MinSize = 99; MaxSize = 0;
+            for (const auto& P : Size) { MinSize = FMath::Min(MinSize, P.Value); MaxSize = FMath::Max(MaxSize, P.Value); }
+        };
+        {
+            bool bEarly = true, bLate = true; int32 P, Lo, Hi, Total;
+            for (int32 G = 1; G <= 25; ++G)
+            {
+                PackStats(ResolveWave(D, (G - 1) % 5, (G - 1) / 5), P, Lo, Hi, Total);
+                if (G <= 5) bEarly &= P == 5 && Lo == 5 && Hi == 5 && Total == 25;
+                else bLate &= P == 7 && Lo >= 5 && Hi <= 7 && Total >= 35 && Total <= 49;
+            }
+            Check(bEarly, TEXT("waves 1-5 are 5 packs of 5 (25 monsters per lane)"));
+            Check(bLate, TEXT("waves 6-25 are 7 packs of 5-7 (35-49 monsters per lane)"));
+            FCireWaveConfig Bigger = D; Bigger.PackSizeBonus = 1;
+            PackStats(ResolveWave(Bigger, 0, 0), P, Lo, Hi, Total);
+            Check(P == 5 && Lo == 6 && Hi == 6 && Total == 30, TEXT("the pack-size modifier grows every pack"));
+            const FCireWaveDef Boss = ResolveWave(D, 4, 0), Escort = ResolveWave(D, 3, 0);
+            int32 Bosses = 0; for (const auto& U : Boss.Units) Bosses += U.bBoss ? U.Count : 0;
+            Check(Bosses == 1 && Boss.Units.Last().bBoss && Escort.Units[0].bEscortee && Escort.Units[0].Count == 1, TEXT("pack waves keep their boss (last) and escortee (first) as authored"));
+            bool bArmoredPacks = true; for (const auto& U : ResolveWave(D, 2, 0).Units) bArmoredPacks &= U.bNonAttacking && U.Pack > 0;
+            Check(bArmoredPacks, TEXT("armored waves come in packs of armored marchers"));
+            const FCireWaveDef Again = ResolveWave(D, 1, 2);
+            Check(Again == ResolveWave(D, 1, 2), TEXT("pack sizes are deterministic per wave"));
+        }
+        {
+            Check(D.Match.TotalWaves == 25 && D.Match.PvpAfterWaves == TArray<int32>({5, 10, 15, 20}) && FMath::IsNearlyEqual(D.Match.SuddenDeathHealth, 2.f) &&
+                FMath::IsNearlyEqual(D.Match.SuddenDeathDamage, 2.f), TEXT("match schedule: 25 waves, PvP after 5/10/15/20, Sudden Death x2"));
+            Check(GlobalWaveOf(D, 0, 5) == 26 && !IsSuddenDeath(D, 25) && IsSuddenDeath(D, 26), TEXT("waves after 25 are Sudden Death"));
+            FCireWaveConfig Plain = D; for (auto& X : Plain.Waves) X.Packs = 0;
+            const FCireWaveDef W21 = ResolveWave(Plain, 0, 4), SD = ResolveWave(Plain, 0, 5), SD6 = ResolveWave(Plain, 0, 6);
+            const float Ratio = 2.f * (1.f + Plain.CycleHealthGrowth * 5) / (1.f + Plain.CycleHealthGrowth * 4);
+            Check(SD.Label.StartsWith(TEXT("Sudden Death")) && SD.Label.Contains(D.Waves[20].Label) && SD6.Label.Contains(D.Waves[20].Label) &&
+                FMath::IsNearlyEqual(SD.Units[0].HealthScale, W21.Units[0].HealthScale * Ratio, .01f), TEXT("Sudden Death replays waves 21-25 with health x2"));
+            const float DRatio = 2.f * (1.f + Plain.CycleDamageGrowth * 5) / (1.f + Plain.CycleDamageGrowth * 4);
+            Check(FMath::IsNearlyEqual(SD.Units[0].DamageScale, W21.Units[0].DamageScale * DRatio, .01f), TEXT("Sudden Death doubles damage"));
+            FCireWaveConfig Bad = D; Bad.Match.PvpAfterWaves = {20, 5, 5, -1, 10}; Validate(Bad, nullptr, true);
+            Check(Bad.Match.PvpAfterWaves == TArray<int32>({5, 10, 20}), TEXT("the PvP schedule is sorted, unique and positive"));
+            Check(RollWaveType(D, D.Waves[0], 1, 7) == D.Waves[0], TEXT("the default wave-type roll keeps the planned wave (bonus-loot hook)"));
+        }
+        {
+            // Presets: shipped game types, JSON round trip, apply / capture.
+            const TArray<FCireWavePreset> Built = BuiltInPresets();
+            Check(Built.Num() == 3 && Built[0].Id == TEXT("standard") && Built[1].Id == TEXT("hero_td") && Built[2].Id == TEXT("hybrid"), TEXT("Standard, Hero TD / PvP and Hybrid ship as presets"));
+            TArray<FCireWavePreset> Round2; FString PErr;
+            Check(ParsePresets(PresetsToJson(Built), Round2, PErr) && Round2 == Built, TEXT("presets round-trip through WavePresets.json"));
+            TArray<FCireWavePreset> FromFile; FString Json;
+            Check(FFileHelper::LoadFileToString(Json, *PresetsPath()) && ParsePresets(Json, FromFile, PErr) && FromFile.Num() >= 3, TEXT("Content/Data/WavePresets.json parses"));
+            FCireWaveConfig Td = D; ApplyPreset(Td, Built[1]);
+            bool bNone = true; for (const auto& X : Td.Waves) bNone &= !X.bDealsDamage && X.FightBackPacks.IsEmpty();
+            Check(bNone && Td.Preset == TEXT("hero_td"), TEXT("Hero TD: no wave attacks"));
+            FCireWaveConfig Hy = D; ApplyPreset(Hy, Built[2]);
+            Check(Hy.Waves[4].bDealsDamage && !Hy.Waves[5].bDealsDamage && Hy.Waves[5].FightBackPacks == TArray<int32>({1, 4, 7}), TEXT("Hybrid: boss waves fight, other waves only packs 1, 4, 7"));
+            FCireWaveConfig Std = Hy; ApplyPreset(Std, Built[0]);
+            bool bAll = true; for (const auto& X : Std.Waves) bAll &= X.bDealsDamage;
+            Check(bAll, TEXT("Standard: every wave attacks (armored units never do)"));
+            FCireWaveConfig Mixed = D; Mixed.Waves[3].bDealsDamage = false; Mixed.Waves[3].FightBackPacks = {2}; Mixed.Live.Health = 1.5f; Mixed.PackSizeBonus = -1;
+            const FCireWavePreset Cap = CapturePreset(Mixed, TEXT("My Mode!"), TEXT("My mode"));
+            FCireWaveConfig Back = D; ApplyPreset(Back, Cap);
+            Check(Cap.Id == TEXT("my_mode_") && Back.Waves == Mixed.Waves && Back.Live == Mixed.Live && Back.PackSizeBonus == -1, TEXT("a captured preset re-applies the same per-wave damage, scale and pack modifier"));
+            const FString Temp = FPaths::ProjectSavedDir() / TEXT("WavePresetsTest.json");
+            IFileManager::Get().Delete(*Temp);
+            TArray<FCireWavePreset> Saved;
+            Check(SavePreset(Cap, &PErr, Temp) && FFileHelper::LoadFileToString(Json, *Temp) && ParsePresets(Json, Saved, PErr) && Saved.Num() == 1 && Saved[0] == Cap,
+                TEXT("SavePreset writes a preset file that loads back"));
+            FCireWavePreset Cap2 = Cap; Cap2.Label = TEXT("Renamed");
+            Check(SavePreset(Cap2, &PErr, Temp) && FFileHelper::LoadFileToString(Json, *Temp) && ParsePresets(Json, Saved, PErr) && Saved.Num() == 1 && Saved[0].Label == TEXT("Renamed"),
+                TEXT("saving the same id replaces the preset"));
+            IFileManager::Get().Delete(*Temp);
+        }
     }
     // ---------------------------------------------------------------- templates
     {
@@ -102,6 +180,7 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
     const int32 SavedLives[2] = {State->EmberLives, State->DuskLives};
     const float SavedBreather = Mode->WaveBreatherSeconds, SavedTimer = Mode->WaveTimer;
     const FString SavedAnnouncement = State->Announcement;
+    const FName SavedPreset = State->WavePreset; // waves-modes
     TArray<AActor*> Actors;
     ON_SCOPE_EXIT
     {
@@ -109,6 +188,7 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
         for (int32 I = Actors.Num() - 1; I >= 0; --I) if (IsValid(Actors[I])) Actors[I]->Destroy();
         Mode->Clock = SavedClock; Mode->Monsters = SavedMonsters; Mode->Heroes = SavedHeroes; Mode->CycleWavesSpawned = SavedSpawned;
         State->CycleWavesDone = SavedDone; State->Wave = SavedWave; State->EmberLives = SavedLives[0]; State->DuskLives = SavedLives[1]; State->Announcement = SavedAnnouncement;
+        State->WavePreset = SavedPreset;
         Initialize(Mode);
         State->WavesPerCycle = SavedPerCycle; Mode->WaveBreatherSeconds = SavedBreather; Mode->WaveTimer = SavedTimer;
     };
@@ -175,7 +255,7 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
             Check(FMath::Abs(Progress - C.SpawnAlongRoute) < .06f, TEXT("waves spawn SpawnAlongRoute of the way down the road"));
             const float Cruise = FMath::Max(C.MarchSpeedMultiplier, C.RallySpeed); // world-scale: no defender near yet
             const float Marcher = FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed);
-            Check(Cruise >= C.MarchSpeedMultiplier && Guard && FMath::IsNearlyEqual(MarchSpeed(Guard), Marcher) && FMath::IsNearlyEqual(MarchSpeed(Escortee), Marcher),
+            Check(Cruise >= C.MarchSpeedMultiplier && Guard && FMath::IsNearlyEqual(MarchSpeed(Guard), Marcher * SpeedFactor(Guard)) && FMath::IsNearlyEqual(MarchSpeed(Escortee), Marcher * SpeedFactor(Escortee)),
                 TEXT("escorts march faster while not fighting (the escortee and its guards keep the marcher pace)"));
         }
         FActorSpawnParameters HeroParams; HeroParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -185,8 +265,8 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
         {
             ACireMonster* Near = nullptr; for (auto* M : Lane0(0)) if (!M->bArmoredEscort) { Near = M; break; }
             if (Near) Hero->SetActorLocation(Near->GetActorLocation() + FVector(-150, 0, 0));
-            Check(Near && FMath::IsNearlyEqual(MarchSpeed(Near), FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed)) &&
-                FMath::IsNearlyEqual(MarchSpeed(Escortee), FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed)),
+            Check(Near && FMath::IsNearlyEqual(MarchSpeed(Near), FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed) * SpeedFactor(Near)) &&
+                FMath::IsNearlyEqual(MarchSpeed(Escortee), FMath::Max(C.MarchSpeedMultiplier, C.MarcherSpeed) * SpeedFactor(Escortee)),
                 TEXT("world-scale: the escort keeps its formation pace near a defender"));
             Hero->SetActorLocation(Escortee->GetActorLocation() + FVector(-150, 0, 0));
         }
@@ -219,7 +299,7 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
         SpawnAll();
         ACireMonster* Boss = nullptr; for (auto* M : Lane0(0)) if (M->bBoss) Boss = M;
         const FCireWaveUnitInfo BI = UnitFlags(Boss);
-        Check(Boss && BI.bValid && BI.bBoss && !BI.bArmored && BI.Type == ECireWaveType::Boss && FMath::IsNearlyEqual(MarchSpeed(Boss), FMath::Max(C.MarchSpeedMultiplier, C.RallySpeed)), TEXT("boss flag reported; the boss marches at the pacing speed too"));
+        Check(Boss && BI.bValid && BI.bBoss && !BI.bArmored && BI.Type == ECireWaveType::Boss && FMath::IsNearlyEqual(MarchSpeed(Boss), FMath::Max(C.MarchSpeedMultiplier, C.RallySpeed) * SpeedFactor(Boss)), TEXT("boss flag reported; the boss marches at the pacing speed too"));
         if (Boss)
         {
             // world-scale: with a defender within rallyRadius the column drops from the rally pace to the normal march.
@@ -227,7 +307,7 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
             if (auto* Defender = Mode->GetWorld()->SpawnActor<ACireHero>(Boss->GetActorLocation() + FVector(-300, 0, 0), FRotator::ZeroRotator, NearParams))
             {
                 Defender->SetActorTickEnabled(false); Defender->TeamId = 0; Defender->Draft(2); Mode->Heroes.Add(Defender);
-                Check(FMath::IsNearlyEqual(MarchSpeed(Boss), C.MarchSpeedMultiplier), TEXT("world-scale: a marching column slows to the march pace near a defender"));
+                Check(FMath::IsNearlyEqual(MarchSpeed(Boss), C.MarchSpeedMultiplier * SpeedFactor(Boss)), TEXT("world-scale: a marching column slows to the march pace near a defender"));
                 Mode->Heroes.Remove(Defender); Defender->Destroy();
             }
         }
@@ -255,6 +335,72 @@ bool CireWaveDirector::RunTests(ACireGameMode* Mode)
         if (Human) Human->Destroy();
         if (Bot) Bot->Destroy();
         Mode->Heroes.Reset();
+    }
+    // ---------------------------------------------------------------- waves-modes: packs, armored traits, damage toggle, live scale, schedule
+    {
+        const bool SavedSmoke = Mode->bSmoke; Mode->bSmoke = false; // live pack expansion (smoke runs keep authored rows)
+        ON_SCOPE_EXIT { Mode->bSmoke = SavedSmoke; };
+        FCireWaveConfig C = Defaults(); C.WavesPerCycle = 3;
+        FCireWaveDef P; P.Label = TEXT("Pack probe"); P.Type = ECireWaveType::Custom; P.SpawnInterval = 0; P.Units = {Unit(TEXT("hollow_infantry"), 1)};
+        P.Packs = 3; P.PackSizeMin = P.PackSizeMax = 2;
+        FCireWaveDef A = Template(ECireWaveType::Armored); A.SpawnInterval = 0;
+        FCireWaveDef Off = P; Off.Label = TEXT("Damage-off probe"); Off.Packs = 2; Off.PackSizeMin = Off.PackSizeMax = 1; Off.bDealsDamage = false; Off.FightBackPacks = {2};
+        C.Waves = {P, A, Off};
+        Mode->CycleWavesSpawned = 0; State->CycleWavesDone = 0;
+        FString Error;
+        Check(ApplyLive(Mode, C, &Error) && StartWave(Mode), *(TEXT("pack probe wave starts: ") + Error));
+        SpawnAll();
+        TArray<ACireMonster*> Units = Lane0(0);
+        TMap<int32, TSet<int32>> Paths; int32 Normal = 0;
+        for (auto* M : Units) { Paths.FindOrAdd(UnitFlags(M).Pack).Add(M->LanePath); Normal += FMath::IsNearlyEqual(SpeedFactor(M), C.Monsters.Speed) && !IsSlowImmune(M); }
+        bool bOnePath = Paths.Num() == 3; for (const auto& Pair : Paths) bOnePath &= Pair.Key > 0 && Pair.Value.Num() == 1;
+        Check(Units.Num() == 6 && bOnePath, *FString::Printf(TEXT("3 packs of 2 spawn, each pack on one path (%d units, %d packs)"), Units.Num(), Paths.Num()));
+        Check(Normal == Units.Num() && FMath::IsNearlyEqual(C.Monsters.Speed, .8f), TEXT("every wave monster moves at -20% and can be slowed"));
+        // Live scale: living units rescale at once, later spawns carry it.
+        ACireMonster* U0 = Units.Num() ? Units[0] : nullptr;
+        const float Hp = U0 ? U0->MaxHealth : 0, Dmg = U0 ? U0->Damage : 0;
+        FCireWaveScale Scale; Scale.Health = 2; Scale.Damage = .5f; Scale.Speed = 1.5f;
+        Check(SetLiveScale(Mode, Scale, &Error) && U0 && FMath::IsNearlyEqual(U0->MaxHealth, Hp * 2, 1.f) && FMath::IsNearlyEqual(U0->Damage, Dmg * .5f, 1.f) &&
+            FMath::IsNearlyEqual(SpeedFactor(U0), C.Monsters.Speed * 1.5f), TEXT("the live wave scale reaches the monsters already on the road"));
+        Check(SetLiveScale(Mode, FCireWaveScale()) && U0 && FMath::IsNearlyEqual(U0->MaxHealth, Hp, 1.f), TEXT("the live scale returns to 1"));
+        KillWaves();
+        // Armored: -50% on top of -20%, slow immune, stunned twice as long.
+        Check(StartWave(Mode), TEXT("armored probe wave starts"));
+        SpawnAll();
+        ACireMonster* Arm = Lane0(0).Num() ? Lane0(0)[0] : nullptr;
+        Check(Arm && UnitFlags(Arm).bArmored && FMath::IsNearlyEqual(SpeedFactor(Arm), C.Monsters.Speed * C.Monsters.ArmoredSpeed) && FMath::IsNearlyEqual(SpeedFactor(Arm), .4f),
+            TEXT("armored marchers move at 0.8 x 0.5 of their pace"));
+        if (Arm)
+        {
+            Arm->SlowUntil = 0;
+            Check(IsSlowImmune(Arm) && CireCrowdControl::Slow(Arm, 3.f, nullptr) == 0.f && Arm->SlowUntil <= 0.f, TEXT("armored marchers cannot be slowed"));
+            Check(FMath::IsNearlyEqual(StunMultiplier(Arm), 2.f) && FMath::IsNearlyEqual(CireCrowdControl::Stun(Arm, 1.f, nullptr), 2.f, .01f), TEXT("armored marchers stay stunned twice as long"));
+            Check(FMath::IsNearlyEqual(StunMultiplier(U0), 1.f), TEXT("other units keep the normal stun"));
+        }
+        KillWaves();
+        // Damage off: pack 1 is passive (marches, never aggroes), pack 2 fights back (Hybrid).
+        Check(StartWave(Mode), TEXT("damage-off probe wave starts"));
+        SpawnAll();
+        ACireMonster* Passive = nullptr; ACireMonster* Fighter = nullptr;
+        for (auto* M : Lane0(0)) (UnitFlags(M).Pack == 1 ? Passive : Fighter) = M;
+        Check(Passive && Fighter && IsPassive(Passive) && UnitFlags(Passive).bPassive && AggroSuppressed(Passive) && !UnitFlags(Passive).bArmored &&
+            !IsPassive(Fighter) && !AggroSuppressed(Fighter), TEXT("damage off: pack 1 only marches, fight-back pack 2 still fights"));
+        Check(Passive && !IsSlowImmune(Passive) && FMath::IsNearlyEqual(SpeedFactor(Passive), C.Monsters.Speed), TEXT("passive units are not armored: normal pace, slowable"));
+        KillWaves();
+        // Schedule (arena-flow interface) on the live config.
+        UWorld* World = Mode->GetWorld();
+        Check(IsPvpAfterWave(World, 5) && !IsPvpAfterWave(World, 6) && PvpRoundAfterWave(World, 20) == 4 && NextPvpWave(World, 6) == 10 && NextPvpWave(World, 21) == 0 &&
+            Schedule(World).TotalWaves == 25, TEXT("the PvP schedule answers after which waves the arena runs"));
+        // Game type: host picks before the first wave; the preset reaches the live config and the replicated state.
+        const int32 WaveNow = State->Wave; State->Wave = 0;
+        bool bOff = true;
+        Check(SelectPreset(Mode, TEXT("hero_td"), &Error) && State->WavePreset == TEXT("hero_td"), *(TEXT("the host selects the Hero TD game type: ") + Error));
+        for (const auto& X : Config(World).Waves) bOff &= !X.bDealsDamage;
+        Check(bOff && Config(World).Preset == TEXT("hero_td"), TEXT("Hero TD turns every wave's damage off"));
+        State->Wave = 1;
+        Check(!SelectPreset(Mode, TEXT("standard"), &Error), TEXT("the game type is locked once the first wave starts"));
+        Check(!SelectPreset(Mode, TEXT("no_such_mode"), &Error), TEXT("unknown game types are rejected"));
+        State->Wave = WaveNow; State->WavePreset = SavedPreset;
     }
     // ---------------------------------------------------------------- stuck nudge and stall failsafe
     {

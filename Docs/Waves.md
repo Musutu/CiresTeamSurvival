@@ -19,6 +19,62 @@ and nothing is still queued to spawn. A wave with `mustClear: false` lets the ne
 timer start once it has fully spawned; the cycle still waits for all wave units before prep.
 Challenge packs never count toward a clear.
 
+## Playtest 6: packs, Sudden Death, game types (waves-modes, September 27)
+
+**The match.** 25 regular waves (five cycles of 5, `cycles: 5`, campaign order), a PvP arena round after waves
+**5, 10, 15 and 20**, then **Sudden Death** waves: the last 5 waves (21-25) replayed in a loop with monster health
+and damage **x2** (on top of the normal per-cycle growth), until a team runs out of lives. While `match.totalWaves`
+is above 0 the cycle limit no longer ends the match.
+
+```jsonc
+"match": { "totalWaves": 25, "pvpAfterWaves": [5, 10, 15, 20],
+           "suddenDeath": { "health": 2, "damage": 2, "loopLastWaves": 5 } },
+"monsters": { "speed": 0.8, "armoredSpeed": 0.5, "armoredSlowImmune": true, "armoredStunMultiplier": 2, "packGapSeconds": 1.5 },
+"liveScale": { "health": 1, "damage": 1, "speed": 1 },
+"packSizeBonus": 0,          // difficulty modifier: added to every pack (-3..+3)
+"preset": "standard",        // the game type these settings came from
+"waves": [ { "label": "Breach Vanguard", "packs": 5, "packSize": [5, 5],
+             "damage": true,         // false = the wave only marches to the castle
+             "fightBack": [1, 4, 7], // with damage off, these packs still fight (Hybrid)
+             "units": [ ...the pack recipe... ] } ]
+```
+
+The PvP schedule is read by the arena flow through `CireWaveDirector::Schedule / IsPvpAfterWave /
+PvpRoundAfterWave / NextPvpWave` (see `Docs/RESUME-waves-modes.md`); a game type can override `pvpAfterWaves`.
+
+**Packs.** Waves 1-5 are **5 packs of 5** (25 monsters per lane); waves 6-25 are **7 packs of 5-7** (35-49).
+A pack wave's non-boss rows are the recipe of every pack (their counts are weights, split by largest remainder);
+the escortee still leads and the boss still closes the column. Each pack keeps to one path, spawns as a group, and
+waits `packGapSeconds` before the next pack. Pack sizes are deterministic per wave number. `packSizeBonus` (or a
+game type) grows or shrinks every pack. Smoke runs (`-CireSmoke`) keep the authored rows so their leak maths stays small.
+
+**Monster movement.** Every wave monster moves at **0.8x** (-20%). Armored marchers move a further **0.5x**, are
+**immune to slows** (`CireCrowdControl::Slow` and the movement slow factor) and stay **stunned 2x** longer. Walls and
+constructs still block their path. Armored leak cost is 1 per unit now that an armored wave has 25-49 of them.
+
+**Live scale.** F8 > Waves > **MODES & SCALE**: LIVE HEALTH / DAMAGE / SPEED x and APPLY SCALE NOW (or the console:
+`cire.WaveScale <health> [damage] [speed]`). It multiplies every wave monster, including the ones already on the road
+(health keeps its fraction). SAVE JSON keeps it in Waves.json.
+
+**Damage toggle and game types.** Each wave has DAMAGE ON / OFF; with damage off its monsters march to the castle and
+never attack (like an armored round, but at the normal pace, slowable, normal gold), except the fight-back packs.
+Game types are presets in `Content/Data/WavePresets.json` (per-wave damage and fight-back packs, live scale, pack
+modifier, optional PvP schedule). Shipped:
+
+| Game type | Waves |
+|---|---|
+| **Standard** | every wave attacks the heroes (armored never do) |
+| **Hero TD / PvP** | no wave attacks; they only path to the castle |
+| **Hybrid** | waves march, packs 1, 4 and 7 fight back; boss waves (5/10/15/20/25) fight in full |
+
+The host picks the game type in champion select (**GAME TYPE** next to GAME MODE; locked once the first wave starts),
+replicated on `ACireGameState::WavePreset`. Also `-CireWavePreset=<id>` on the command line and `cire.WavePreset <id>`.
+F8 > Waves > MODES & SCALE loads a preset into the draft, SAVE OVER <preset>, SAVE AS NEW (Custom N, listed under
+GAME TYPE) and PLAY THIS TYPE.
+
+**Bonus-loot hook.** `CireWaveDirector::RollWaveType(Config, Planned, GlobalWave, Seed)` runs for every live wave
+before it is queued; it returns the planned wave by default (feat/bonus-loot swaps in its stages; never on boss waves).
+
 ## Waves.json
 
 ```jsonc
@@ -26,7 +82,7 @@ Challenge packs never count toward a clear.
   "schemaVersion": 1,
   "breatherSeconds": 12,         // cleared wave -> next spawn: the Skill Shop window (0..120)
   "wavesPerCycle": 5,            //                                      (1..10)
-  "cycles": 3,                   // 0 = loop forever with scaling; N = match ends after cycle N, most lives wins (0..50)
+  "cycles": 5,                   // 0 = loop forever with scaling; N = match ends after cycle N, most lives wins (0..50)
   "waveOrder": "campaign",       // "campaign": waves[] is played straight through the match (cycle 2 starts at
                                  // waves[wavesPerCycle]) and wraps; "cycle": every cycle replays waves[] from the start
   "cycleScaling": { "healthGrowth": 0.08, "damageGrowth": 0.10, "extraUnits": 0 },  // per completed cycle

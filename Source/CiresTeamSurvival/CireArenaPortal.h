@@ -15,6 +15,7 @@
 #include "CireArenaPortal.generated.h"
 
 class ACireGameMode;
+class ACireGameState;
 class ACireHero;
 class UBoxComponent;
 class UStaticMeshComponent;
@@ -50,7 +51,13 @@ namespace CireArenaPortal
         float Radius = 150.f, Height = 175.f;           // ring radius and centre height above the ground (cm)
         float Offset = 330.f;                           // distance from the champion when it opens
         float ArrivalSeconds = 4.f, ReturnSeconds = 6.f;
-        float CountdownSeconds = 5.f;                   // once every human is through, prep ends this many seconds later
+        float CountdownSeconds = 7.f;                   // arena-flow: once everyone is loaded, the fight starts this many seconds later
+        // arena-flow (Arenas.json "flow"): the PvP prep, rewards and the PvP schedule (Docs/Arenas.md "Arena flow").
+        float PrepSeconds = 30.f;                       // prep before stragglers are pulled through (the countdown follows)
+        int32 KillGold = 50;                            // per killing blow on a champion in the arena, win or lose
+        int32 WinGold = 250;                            // split across the winning team
+        float PvEBuffPercent = 15.f, PvEDebuffPercent = 15.f; // per stack: winners' / losers' damage to monsters
+        bool bLegacyPowerLoot = false;                  // also grant the old +3% power / +8% loot per win (applies to PvP too)
         FString DiscMaterial = TEXT("/Game/Arenas/Portal/M_ArenaPortal.M_ArenaPortal");
         FString MoteMaterial = TEXT("/Game/Arenas/Portal/M_ArenaPortalMote.M_ArenaPortalMote");
         TArray<FString> RingVFX, BaseVFX, OpenVFX, EnterVFX; // optional Shadow_Magic Niagara layers (local Fab pack)
@@ -88,12 +95,42 @@ namespace CireArenaPortal
     /** True when this peer's own champion stands inside the picked arena during prep (it stepped through early). */
     CIRESTEAMSURVIVAL_API bool LocalViewInArena(const UWorld* World);
 
+    /** Pulls every drafted champion still in town through (prep timer end) and starts the countdown. Returns the count moved. */
+    CIRESTEAMSURVIVAL_API int32 ServerPullAll(ACireGameMode* Mode);
+
 #if !UE_BUILD_SHIPPING
     /** Native checks: data (every themed arena has a look, a view texture and a motes style), placement and the visuals. */
     CIRESTEAMSURVIVAL_API bool RunTests(UWorld* World);
     /** -CirePortalGallery: renders every arena's portal in town (Tools/RunArenaGallery.py --portals). */
     bool GalleryInitialize(ACireGameMode* Mode);
     bool GalleryTick(ACireGameMode* Mode);
+#endif
+}
+
+// arena-flow: the PvP schedule adapter, the rewards and the team PvE buff (Docs/Arenas.md "Arena flow").
+namespace CireArenaFlow
+{
+    inline const FName VictorId = TEXT("arena_victor");         // stacking team buff: +PvE damage per arena win
+    inline const FName VanquishedId = TEXT("arena_vanquished"); // stacking team debuff: -PvE damage per arena loss
+    /** The PvP schedule (owned by feat/waves-modes: Waves.json "match.pvpAfterWaves"); Sudden Death waves never lead to an arena. */
+    CIRESTEAMSURVIVAL_API TArray<int32> PvPAfterWaves(const UWorld* World);
+    CIRESTEAMSURVIVAL_API bool IsPvPAfterWave(const UWorld* World, int32 WavesCleared);
+    /** A cycle ended on a wave that is not in the schedule: advance the clock to the next cycle with no arena. */
+    CIRESTEAMSURVIVAL_API void SkipArena(ACireGameMode* Mode);
+    /** Server: a champion died. A killing blow by an enemy champion (or its pet/summon/construct) in the arena pays gold. */
+    CIRESTEAMSURVIVAL_API void OnHeroKilled(ACireGameMode* Mode, ACireHero* Victim, AActor* Causer);
+    /** Server: the arena resolved (Winner 0/1, -1 draw). Gold split + stacking team buff/debuff. Returns the announcement. */
+    CIRESTEAMSURVIVAL_API FString AwardResult(ACireGameMode* Mode, int32 Winner, bool bGrantExperience = true);
+    CIRESTEAMSURVIVAL_API int32 BuffStacks(const UWorld* World, int32 Team);
+    CIRESTEAMSURVIVAL_API int32 DebuffStacks(const UWorld* World, int32 Team);
+    /** Multiplier on a team's damage to monsters (never to champions). */
+    CIRESTEAMSURVIVAL_API float PvEDamageMultiplier(const UWorld* World, int32 Team);
+    /** Seconds to show on prep timers: while the portals are open the countdown is not part of the prep. */
+    CIRESTEAMSURVIVAL_API float PrepSecondsLeft(const ACireGameState* State);
+    /** The champion (owner) behind a damage causer: the hero itself, or the owner/instigator of a pet, summon or construct. */
+    CIRESTEAMSURVIVAL_API ACireHero* KillerHero(AActor* Causer);
+#if !UE_BUILD_SHIPPING
+    CIRESTEAMSURVIVAL_API bool RunTests(ACireGameMode* Mode);
 #endif
 }
 

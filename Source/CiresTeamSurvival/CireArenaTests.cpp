@@ -2,6 +2,10 @@
 #include "CireArenas.h"
 #if !UE_BUILD_SHIPPING
 #include "CireGame.h"
+#include "CireArenaPortal.h"
+#include "CireEffects.h"
+#include "CireBuffs.h"
+#include "CireWaves.h"
 #include "CireAmbience.h"
 #include "CireMusic.h"
 #include "Components/DirectionalLightComponent.h"
@@ -178,6 +182,87 @@ bool CireArenas::RunSmoke(ACireGameMode* Mode)
         State->Phase = OldPhase; State->ArenaIndex = OldIndex; Mode->ArenaIndex = OldModeIndex; Sync(World);
     }
     UE_LOG(LogCireArenaTests, Display, TEXT("CIRE_ARENA_%s checks=%d arenas=%d rotation=%d"), bPassed ? TEXT("PASS") : TEXT("FAIL"), Checks, P.Arenas.Num(), Rot.Num());
+    return bPassed;
+}
+
+// arena-flow: schedule adapter, prep/countdown data, killing-blow gold, the win/loss rewards and the team buff icons.
+bool CireArenaFlow::RunTests(ACireGameMode* Mode)
+{
+    bool bPassed = true; int32 Checks = 0;
+    auto Check = [&](bool bOk, const FString& Label)
+    {
+        ++Checks;
+        if (!bOk) { bPassed = false; UE_LOG(LogCireArenaTests, Error, TEXT("CIRE_ARENA_FLOW_CHECK_FAIL %s"), *Label); }
+    };
+    UWorld* World = Mode ? Mode->GetWorld() : nullptr;
+    auto* State = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
+    if (!World || !State) { UE_LOG(LogCireArenaTests, Error, TEXT("CIRE_ARENA_FLOW_TESTS_FAIL no mode")); return false; }
+    const CireArenaPortal::FConfig& C = CireArenaPortal::Config();
+    Check(FMath::IsNearlyEqual(C.PrepSeconds, 30.f) && FMath::IsNearlyEqual(C.CountdownSeconds, 7.f), TEXT("30 s prep, then a 7 s countdown (Arenas.json flow)"));
+    Check(C.KillGold == 50 && C.WinGold == 250 && FMath::IsNearlyEqual(C.PvEBuffPercent, 15.f) && FMath::IsNearlyEqual(C.PvEDebuffPercent, 15.f), TEXT("reward data: 50 g kill, 250 g win, +/-15% PvE"));
+    const TArray<int32> Schedule = PvPAfterWaves(World);
+    Check(Schedule == CireWaveDirector::Schedule(World).PvpAfterWaves && !Schedule.IsEmpty(), TEXT("the PvP schedule comes from the wave director (Waves.json match)"));
+    bool bScheduled = true; for (int32 W : Schedule) bScheduled &= IsPvPAfterWave(World, W) || CireWaveDirector::IsSuddenDeath(CireWaveDirector::Config(World), W);
+    Check(bScheduled && !IsPvPAfterWave(World, 7), TEXT("scheduled waves lead to an arena, others do not"));
+    const int32 SuddenDeathWave = CireWaveDirector::Schedule(World).TotalWaves + 5;
+    Check(CireWaveDirector::Schedule(World).TotalWaves <= 0 || !IsPvPAfterWave(World, SuddenDeathWave), TEXT("no arena after a Sudden Death wave"));
+
+    // Team buff / debuff: stacks, multiplier, icons.
+    const int32 Saved[4] = {State->EmberArenaBuffs, State->EmberArenaDebuffs, State->DuskArenaBuffs, State->DuskArenaDebuffs};
+    const Cires::TeamRewards SavedRewards[2] = {Mode->Rewards[0], Mode->Rewards[1]};
+    State->EmberArenaBuffs = State->EmberArenaDebuffs = State->DuskArenaBuffs = State->DuskArenaDebuffs = 0;
+    Check(FMath::IsNearlyEqual(PvEDamageMultiplier(World, 0), 1.f) && FMath::IsNearlyEqual(PvEDamageMultiplier(World, 1), 1.f), TEXT("no arena yet: PvE damage x1"));
+    TArray<ACireHero*> Team[2];
+    for (ACireHero* H : Mode->Heroes) if (IsValid(H) && H->bDrafted && H->TeamId >= 0 && H->TeamId < 2) Team[H->TeamId].Add(H);
+    TMap<ACireHero*, int32> Gold; for (ACireHero* H : Mode->Heroes) if (IsValid(H)) Gold.Add(H, H->Gold);
+    const FString Text = AwardResult(Mode, 0, false);
+    Check(State->EmberArenaBuffs == 1 && State->DuskArenaDebuffs == 1 && State->EmberArenaDebuffs == 0 && State->DuskArenaBuffs == 0, TEXT("a win stacks the buff on the winners and the debuff on the losers"));
+    Check(FMath::IsNearlyEqual(PvEDamageMultiplier(World, 0), 1.15f) && FMath::IsNearlyEqual(PvEDamageMultiplier(World, 1), .85f), TEXT("+15% / -15% damage to monsters"));
+    bool bSplit = true;
+    for (ACireHero* H : Team[0]) bSplit &= H->Gold - Gold[H] == 250 / Team[0].Num();
+    for (ACireHero* H : Team[1]) bSplit &= H->Gold == Gold[H];
+    Check(bSplit, FString::Printf(TEXT("250 g split across the %d winners, nothing for the losers"), Team[0].Num()));
+    Check(Text.Contains(TEXT("EMBER won")), TEXT("result announcement names the winner"));
+    AwardResult(Mode, 0, false);
+    Check(State->EmberArenaBuffs == 2 && FMath::IsNearlyEqual(PvEDamageMultiplier(World, 0), 1.30f) && FMath::IsNearlyEqual(PvEDamageMultiplier(World, 1), .70f), TEXT("the buff and debuff stack"));
+    AwardResult(Mode, -1, false);
+    Check(State->EmberArenaBuffs == 2 && State->DuskArenaDebuffs == 2, TEXT("a draw changes nothing"));
+    const FCireEffectInfo* Victor = CireEffects::Find(VictorId); const FCireEffectInfo* Vanquished = CireEffects::Find(VanquishedId);
+    Check(Victor && !Victor->IsHarmful() && Vanquished && Vanquished->IsHarmful(), TEXT("buff rows: Arena Victor (buff), Arena Vanquished (debuff)"));
+    // Icons and killing blows do not need a drafted champion: any champion on each side will do.
+    TArray<ACireHero*> Side[2];
+    for (ACireHero* H : Mode->Heroes) if (IsValid(H) && !H->bDead && H->TeamId >= 0 && H->TeamId < 2) Side[H->TeamId].Add(H);
+    if (Side[0].Num() > 0 && Side[1].Num() > 0)
+    {
+        TArray<FCireActiveEffect> Effects;
+        CireEffects::Gather(Side[0][0], CireBuffs::ServerNow(World), Effects);
+        const FCireActiveEffect* Mine = Effects.FindByPredicate([](const FCireActiveEffect& E) { return E.Id == VictorId; });
+        Check(Mine && Mine->Stacks == 2 && !Effects.ContainsByPredicate([](const FCireActiveEffect& E) { return E.Id == VanquishedId; }), TEXT("winners show the Arena Victor icon with 2 stacks"));
+        CireEffects::Gather(Side[1][0], CireBuffs::ServerNow(World), Effects);
+        const FCireActiveEffect* Theirs = Effects.FindByPredicate([](const FCireActiveEffect& E) { return E.Id == VanquishedId; });
+        Check(Theirs && Theirs->Stacks == 2, TEXT("losers show the Arena Vanquished icon with 2 stacks"));
+
+        // Killing blow: +50 g in the arena only, only for an enemy champion.
+        const Cires::MatchClock SavedClock = Mode->Clock;
+        ACireHero* A = Side[0][0]; ACireHero* B = Side[1][0];
+        const int32 GoldA = A->Gold, GoldB = B->Gold;
+        const FString NoticeA = A->Notice;
+        OnHeroKilled(Mode, B, A);
+        Check(A->Gold == GoldA, TEXT("no killing-blow gold outside the arena"));
+        Mode->Clock = Cires::MatchClock({60, 90, 15}); Mode->Clock.BeginIntermission(); Mode->Clock.Advance(60);
+        Check(Mode->Clock.Phase() == Cires::MatchPhase::Arena, TEXT("fixture: arena clock"));
+        OnHeroKilled(Mode, B, A);
+        Check(A->Gold == GoldA + 50, TEXT("+50 g to the champion who lands the killing blow"));
+        OnHeroKilled(Mode, A, A); OnHeroKilled(Mode, B, nullptr);
+        Check(A->Gold == GoldA + 50 && B->Gold == GoldB, TEXT("no gold for suicides or unknown killers"));
+        Check(KillerHero(A) == A && KillerHero(nullptr) == nullptr, TEXT("killer resolution"));
+        Mode->Clock = SavedClock; A->Gold = GoldA; A->Notice = NoticeA;
+    }
+    else UE_LOG(LogCireArenaTests, Display, TEXT("CIRE_ARENA_FLOW_NOTE no champion on both teams: icon and kill checks skipped"));
+    for (auto& Pair : Gold) if (IsValid(Pair.Key)) Pair.Key->Gold = Pair.Value;
+    State->EmberArenaBuffs = Saved[0]; State->EmberArenaDebuffs = Saved[1]; State->DuskArenaBuffs = Saved[2]; State->DuskArenaDebuffs = Saved[3];
+    Mode->Rewards[0] = SavedRewards[0]; Mode->Rewards[1] = SavedRewards[1];
+    UE_LOG(LogCireArenaTests, Display, TEXT("CIRE_ARENA_FLOW_TESTS_%s checks=%d"), bPassed ? TEXT("PASS") : TEXT("FAIL"), Checks);
     return bPassed;
 }
 #endif

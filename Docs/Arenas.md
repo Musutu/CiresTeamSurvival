@@ -191,7 +191,7 @@ portal should match the arena so players have an instant knowledge of the arena 
    phase would give it). It waits there for the rest of the minute: its client shows the arena, lighting, ambience and music
    early; the town Play Bounds leash and the realm lane clamp skip it; it can still shop (B). Bots never use the portals.
    **Everyone through (Eric, September 27):** when every human champion has stepped through, the prep minute is cut to
-   `portal.countdownSeconds` (5 s): an **ALL THROUGH** banner names the arena and the match clock counts down, then the arena
+   `flow.countdownSeconds` (7 s, see "Arena flow" below): an **ALL THROUGH** banner names the arena and the match clock counts down, then the arena
    phase begins as usual. Bots do not count; they are pulled through.
 3. **When the minute ends** the arena phase moves everyone else exactly as before, so nobody is ever left behind. The town
    portals fold shut, and a matching **arrival rift** opens behind each team's spawn line for 4 s.
@@ -239,3 +239,44 @@ none of them.
   (`CIRE_INTERFACE_CLIENT_PORTAL_PASS`).
 - Review: `Tools/RunArenaGallery.py --portals` renders every arena's portal in town (gameplay framing with the HUD plate,
   and a near-straight close-up) into `Saved/PortalGallery/<stamp>`.
+
+## Arena flow (September 27, Playtest 6)
+
+Eric: "After a PvP wave (5/10/15/20) completes: a portal opens next to EACH player to the designated arena; both teams get a
+30 s prep. Players may enter early; anyone not in at timer end is auto-teleported. Once all are loaded: 7 s countdown banner,
+then the match starts." Rewards: +50 g per killing blow; winners 250 g split and a stacking +15% PvE damage team buff (not PvP);
+losers a stacking -15% PvE damage debuff.
+
+**Schedule.** A wave cycle that ends on a scheduled PvP wave leads to the prep + arena; any other cycle end rolls straight into
+the next cycle (`CireArenaFlow::SkipArena`). The schedule is read through `CireArenaFlow::PvPAfterWaves`, which returns
+`CireWaveDirector::Schedule(World).PvpAfterWaves` (Waves.json `match.pvpAfterWaves`, default 5/10/15/20, a game-type preset
+may override it). Sudden Death waves (after `match.totalWaves`) never lead to an arena.
+
+**Timeline (server, `CireArenaPortal.cpp`).**
+1. The cycle clears on a PvP wave: prep (phase 1) starts and lasts `flow.prepSeconds + flow.countdownSeconds` (30 + 7 s).
+   A shadow portal opens beside **every** human champion at once (`ArenaStage = 1`). The match plate, the PvP Prep banner and
+   the portal prompt show only the 30 s prep part.
+2. Walking in stages that champion at its arena spawn. When the last human is through, the bots follow and the prep is cut to
+   the countdown.
+3. When the 30 s run out, everyone still in town (humans and bots) is drawn through (`ServerPullAll`).
+4. Either way, once everyone is in the arena, `ArenaStage = 2`: the ALL THROUGH banner plus a big centre countdown
+   (`ACireHUD::DrawArenaCountdown`, 7..1) run, then the arena phase begins.
+
+**Rewards (`CireArenaFlow`).**
+- Killing blow on an enemy champion in the arena: `flow.killGold` (50 g) to the killer, win or lose. Pets, summons and
+  constructs credit their owner.
+- Winners: `flow.winGold` (250 g) split across the drafted team (50 g each at 5v5), plus 100 XP each (kept from before), and one
+  more stack of **Arena Victor** (+`pveBuffPercent` = 15% damage to monsters per stack).
+- Losers: one more stack of **Arena Vanquished** (-`pveDebuffPercent` = 15% per stack), no gold.
+- Draw: nothing.
+- The multiplier is `1 + 0.15 x wins - 0.15 x losses` (clamped 0.1..10), applied in `ACireMonster::TakeDamage` only, so
+  champion-vs-champion damage is untouched. The old +3% power / +8% loot per win also affected PvP; it is off unless
+  `flow.legacyPowerLoot` is true.
+- Icons: both are derived effects (`CireEffects::Gather` reads the replicated stacks on the game state), so they appear in the
+  existing buff row with a stack count and a rich tooltip ("Damage to monsters +15%", N stacks). Rows live in
+  `BuffModifiers.json` and `BuffVisuals.json`.
+
+All numbers are in `Content/Data/Arenas.json` `flow` (written by `Tools/AuthorArenas.py` `FLOW`).
+
+Checks: `CireArenaFlow::RunTests` (inside the arena-portal native checks: data, schedule, split, stacking, icons, killing-blow
+gold) and the interface probe (portals at prep start, 37 s prep, stage 1 -> 2).

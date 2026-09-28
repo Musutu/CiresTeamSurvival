@@ -81,6 +81,20 @@ void Load()
                     CireFabVFX::FEntry E=ParseEntry(R.Value);
                     if(E.Candidates.Num())T.Abilities.Add(FString(A.Key.ToView()).ToLower()+TEXT(".")+FString(R.Key.ToView()).ToLower(),MoveTemp(E));
                 }
+    // ability-expansion: FabVFX.expansion.json "abilities" (same shape) signs the expansion pool; FabVFX.json wins on a clash.
+    {
+        FString XText;TSharedPtr<FJsonObject> XRoot;const TSharedPtr<FJsonObject>* XAbilities=nullptr;
+        if(FFileHelper::LoadFileToString(XText,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/FabVFX.expansion.json")))&&
+           FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(XText),XRoot)&&XRoot.IsValid()&&XRoot->TryGetObjectField(TEXT("abilities"),XAbilities))
+            for(const auto& A:(*XAbilities)->Values)
+                if(const TSharedPtr<FJsonObject> Roles=A.Value->AsObject())
+                    for(const auto& R:Roles->Values)
+                    {
+                        const FString Key=FString(A.Key.ToView()).ToLower()+TEXT(".")+FString(R.Key.ToView()).ToLower();
+                        CireFabVFX::FEntry E=ParseEntry(R.Value);
+                        if(E.Candidates.Num()&&!T.Abilities.Contains(Key))T.Abilities.Add(Key,MoveTemp(E));
+                    }
+    }
     // telegraphs: curated ground overlays. "groundRadius" (path -> cm at scale 1, measured by RunSpellGallery.py --fab-ground)
     // is the allow-list; "groundExcluded" (path -> reason) documents the systems that must never sit on a zone.
     const TSharedPtr<FJsonObject>* Radii=nullptr;

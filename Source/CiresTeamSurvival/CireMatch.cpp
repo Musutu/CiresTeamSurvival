@@ -165,6 +165,9 @@ void ACireGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME(ACireGameState,EmberLives); DOREPLIFETIME(ACireGameState,DuskLives);
     DOREPLIFETIME(ACireGameState,EmberWins); DOREPLIFETIME(ACireGameState,DuskWins);
     DOREPLIFETIME(ACireGameState,ArenaIndex); DOREPLIFETIME(ACireGameState,Announcement);
+    DOREPLIFETIME(ACireGameState,ArenaStage); DOREPLIFETIME(ACireGameState,ArenaCountdownLength); // arena-flow
+    DOREPLIFETIME(ACireGameState,EmberArenaBuffs); DOREPLIFETIME(ACireGameState,EmberArenaDebuffs); DOREPLIFETIME(ACireGameState,DuskArenaBuffs); DOREPLIFETIME(ACireGameState,DuskArenaDebuffs); // arena-flow
+    DOREPLIFETIME(ACireGameState,WavePreset); // waves-modes
     DOREPLIFETIME(ACireGameState,ProgressionMode); DOREPLIFETIME(ACireGameState,bReadyGateHold); DOREPLIFETIME(ACireGameState,ReadyGateLeft); // progression-shop
     DOREPLIFETIME(ACireGameState,WaveLabel); DOREPLIFETIME(ACireGameState,NextWaveLabel); // wave-director
     DOREPLIFETIME(ACireGameState,BreatherReady); DOREPLIFETIME(ACireGameState,BreatherPlayers); // wave-director
@@ -495,7 +498,7 @@ void ACireGameMode::ChangePhase(int32 NewPhase) {
         // wave-director: the first wave's authored delay, and the finite cycle count.
         const auto& Waves=CireWaveDirector::Config(GetWorld());
         if(!bSmoke&&!Waves.Waves.IsEmpty())WaveTimer=CireWaveDirector::ResolveWave(Waves,0,Clock.Round()-1).DelayBefore;
-        if(Waves.Cycles>0&&Clock.Round()>Waves.Cycles) {
+        if(Waves.Cycles>0&&Clock.Round()>Waves.Cycles&&Waves.Match.TotalWaves<=0) { // waves-modes: with Sudden Death on, the match runs until a team is out of lives
             bCyclesComplete=true;
             EndSurvival(S->EmberLives==S->DuskLives?-1:S->EmberLives>S->DuskLives?0:1);
             return;
@@ -513,10 +516,8 @@ void ACireGameMode::ResolveArena() {
     if(Alive[0]!=Alive[1]) Winner=Alive[0]>Alive[1]?0:1;
     else if(!FMath::IsNearlyEqual(Fraction[0],Fraction[1],.01f)) Winner=Fraction[0]>Fraction[1]?0:1;
     auto* S=GetGameState<ACireGameState>();
-    if(Winner>=0) {
-        Cires::AwardArenaWin(Rewards[Winner]); AwardTeam(Winner,100,80);
-        S->Announcement=FString::Printf(TEXT("%s won the arena | team power %.0f%% | loot %.0f%%"),Winner==0?TEXT("EMBER"):TEXT("DUSK"),(Power(Winner)-1)*100,(Loot(Winner)-1)*100);
-    } else S->Announcement=TEXT("Arena drawn | Both teams return without a victory buff.");
+    // arena-flow: 250 g split + stacking PvE team buff for the winners, stacking PvE debuff for the losers (Arenas.json "flow").
+    S->Announcement=CireArenaFlow::AwardResult(this,Winner);
     S->EmberWins=Rewards[0].ArenaWins; S->DuskWins=Rewards[1].ArenaWins;
     Clock.ResolveArena(); ChangePhase(4);
 }
@@ -622,7 +623,9 @@ void ACireGameMode::Tick(float Dt) {
             }
             if(S->CycleWavesDone>=S->WavesPerCycle) {
                 // Prep waits for every wave unit, including non-blocking ones, to die or leak.
-                if(!bWaveAlive&&Clock.BeginIntermission()) ChangePhase(1);
+                // arena-flow: only the scheduled PvP waves (default 5/10/15/20) lead to the prep + arena; other cycle ends roll on.
+                if(!bWaveAlive&&!bSmoke&&!CireArenaFlow::IsPvPAfterWave(GetWorld(),S->Wave)) CireArenaFlow::SkipArena(this);
+                else if(!bWaveAlive&&Clock.BeginIntermission()) ChangePhase(1);
                 else S->NextWaveSeconds=0;
             } else {
                 // wave-director: every human pressed Ready in the Skill Shop window -> start in 1 s.

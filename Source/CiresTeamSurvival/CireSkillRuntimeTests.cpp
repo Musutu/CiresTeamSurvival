@@ -4,6 +4,7 @@
 #include "CireConstruct.h"
 #include "CireSummon.h"
 #include "CireSkillCasting.h"
+#include "CireSkillTuning.h" // casting-rules
 
 #if !UE_BUILD_SHIPPING
 #include "CireCombatEvents.h"
@@ -102,6 +103,12 @@ bool CireSkillshots::RunSkillshotSmoke(ACireGameMode* Mode)
     T.Check(Fast->CanObserve(Hero) && !Fast->CanObserve(Other), TEXT("projectile hidden in opposing survival realm"));
     Fast->Tick(.2f);
     T.Check(FMath::IsNearlyEqual(First->Health, 950.f) && Second->Health == 1000 && Fast->IsActorBeingDestroyed(), TEXT("swept high-speed stop hits first unit only"));
+    First->Health = Second->Health = 1000; // casting-rules: champion skillshots carry through their target, so they pierce (with falloff)
+    auto* Lance = F.Keep(ACireSkillshot::Spawn(Hero, S, F.Ground + FVector(1000, 0, 0), TEXT("Ember Lance")));
+    if (Lance) Lance->Tick(.2f);
+    T.Check(Lance && First->Health < 1000 && Second->Health < 1000 && (1000 - Second->Health) < (1000 - First->Health) && Lance->GetHitCount() == 2,
+        TEXT("casting-rules: a champion skillshot pierces every unit on its line, each extra target taking less"));
+    if (Lance && !Lance->IsActorBeingDestroyed()) Lance->Destroy();
     First->Health = Second->Health = 1000;
     auto* Miss = Shoot(Hero, S, F.Ground + FVector(1000, 0, 0));
     F.Move(First, FVector(0, 250, 0)); F.Move(Second, FVector(400, 250, 0));
@@ -184,13 +191,15 @@ bool CireConstructs::RunConstructSmoke(ACireGameMode* Mode)
     T.Check(ACireConstruct::FindBlockingConstruct(Monster, Hero) == Wall && ACireConstruct::FindBlockingConstruct(Monster, Hero->GetActorLocation()) == Wall, TEXT("actor and destination obstruction helpers identify wall"));
     T.Check(!Wall->BlocksMovementOf(WrongLane), TEXT("other lane units do not interact with wall"));
     FVector Overlap = P;
-    T.Check(!ACireConstruct::ValidatePlacement(Hero, S, Overlap, FRotator::ZeroRotator), TEXT("existing wall overlap rejected"));
+    T.Check(ACireConstruct::ValidatePlacement(Hero, S, Overlap, FRotator::ZeroRotator), TEXT("casting-rules: overlapping an existing wall is placed (placement ignores clipping)"));
     FVector Unit = Hero->GetActorLocation() - FVector(0, 0, 92);
-    T.Check(!ACireConstruct::ValidatePlacement(Hero, S, Unit, FRotator::ZeroRotator), TEXT("hero overlap rejected"));
+    T.Check(ACireConstruct::ValidatePlacement(Hero, S, Unit, FRotator::ZeroRotator), TEXT("casting-rules: a hero inside the footprint does not refuse placement"));
     FVector EnemyUnit = Monster->GetActorLocation() - FVector(0, 0, 92);
-    T.Check(!ACireConstruct::ValidatePlacement(Hero, S, EnemyUnit, FRotator::ZeroRotator), TEXT("monster overlap rejected"));
+    T.Check(ACireConstruct::ValidatePlacement(Hero, S, EnemyUnit, FRotator::ZeroRotator), TEXT("casting-rules: a monster inside the footprint does not refuse placement"));
     FVector Boundary = F.Ground + FVector(0, 1060, 0);
-    T.Check(!ACireConstruct::ValidatePlacement(Hero, S, Boundary, FRotator::ZeroRotator), TEXT("footprint crossing lane boundary rejected"));
+    T.Check(ACireConstruct::ValidatePlacement(Hero, S, Boundary, FRotator::ZeroRotator), TEXT("casting-rules: a footprint near the fixture edge is placed, not refused"));
+    FVector FarOut = F.Ground + FVector(0, 4200, 0);
+    T.Check(!ACireConstruct::ValidatePlacement(Hero, S, FarOut, FRotator::ZeroRotator), TEXT("casting-rules: an aim far outside range / realm is still refused"));
     FVector Town = F.Ground + FVector(-1500, 0, 0);
     T.Check(!ACireConstruct::ValidatePlacement(Hero, S, Town, FRotator(0, 35, 0)), TEXT("rotated town overlap rejected"));
     T.Check(CireCombat::ApplyDamage(Hero, Wall, 100, TEXT("Friendly")) == 0 && CireCombat::ApplyDamage(Other, Wall, 100, TEXT("Other realm")) == 0 &&
@@ -317,11 +326,17 @@ bool CireSkillCasting::RunCastSmoke(ACireGameMode* Mode)
     T.Check(!CireSkillCasting::Cast(Hero, 1, TEXT("summoned_wall")) && Hero->Mana == ChargedMana, TEXT("global cooldown blocks another ability")); Reset();
     Hero->CastAimPoint = F.Ground + FVector(100, 0, 0);
     T.Check(CireSkillCasting::Cast(Hero, 1, TEXT("summoned_wall")) && Hero->Mana == ChargedMana - Wall->ManaCost, TEXT("clear supported wall cast charges authored mana"));
-    const float AfterWall = Hero->Mana; Reset();
-    T.Check(!CireSkillCasting::Cast(Hero, 1, TEXT("summoned_wall")) && Hero->Mana == AfterWall && Hero->Cooldowns[1] == 0, TEXT("overlapping wall placement leaves resources and cooldown unchanged"));
-    Hero->CastAimPoint = F.Ground + FVector(200, 0, 0);
-    T.Check(!CireSkillCasting::Cast(Hero, 1, TEXT("summoned_wall")) && Hero->Mana == AfterWall, TEXT("ground placement cannot cross an existing wall"));
-    ACireConstruct::ClearForActor(Hero); Reset();
+    float AfterWall = Hero->Mana; Reset();
+    T.Check(CireSkillCasting::Cast(Hero, 1, TEXT("summoned_wall")) && Hero->Mana < AfterWall, TEXT("casting-rules: a wall overlapping another wall is placed (placement ignores clipping)"));
+    Reset(); const float AfterSecond = Hero->Mana;
+    Hero->CastAimPoint = Hero->GetActorLocation() + FVector(Wall->CastRange * 1.15f, 0, 0);
+    int32 WallsBefore = 0; for (TActorIterator<ACireConstruct> It(Mode->GetWorld()); It; ++It) if (It->GetSourceActor() == Hero && !It->IsActorBeingDestroyed()) ++WallsBefore;
+    T.Check(CireSkillCasting::Cast(Hero, 1, TEXT("summoned_wall")) && Hero->Mana < AfterSecond, TEXT("casting-rules: a slightly long placement aim is pulled into range, not refused"));
+    bool bInRange = true; int32 WallsAfter = 0;
+    for (TActorIterator<ACireConstruct> It(Mode->GetWorld()); It; ++It) if (It->GetSourceActor() == Hero && !It->IsActorBeingDestroyed())
+    { ++WallsAfter; bInRange &= FVector::Dist2D(It->GetActorLocation(), Hero->GetActorLocation()) <= Wall->CastRange + 1.f; }
+    T.Check(WallsAfter == WallsBefore + 1 && bInRange, TEXT("casting-rules: the clamped wall stands within cast range"));
+    ACireConstruct::ClearForActor(Hero); Reset(); AfterWall = Hero->Mana;
     Hero->CastAimPoint = F.Ground + FVector(-100, 0, 0);
     T.Check(CireSkillCasting::Cast(Hero, 2, TEXT("oathbound_guardian")) && CountOwned() == 1 && Hero->Mana == AfterWall - Guardian->ManaCost, TEXT("guardian cast creates one unit and charges once"));
     Reset(); Hero->CastAimPoint = F.Ground + FVector(0, 200, 0); Hero->Target = nullptr;

@@ -1,0 +1,254 @@
+{
+ "schemaVersion": 1,
+ "notes": "ability-expansion: buff visuals of the expansion pool (BuffVisuals.json schema; BuffVisuals.json wins on a clash). Written by Tools/BuildAbilityExpansion.py.",
+ "limits": {
+  "maxUnits": 32,
+  "maxLayersPerUnit": 5,
+  "maxLights": 6,
+  "maxStrikes": 24,
+  "maxVerticesPerUnit": 9000,
+  "fullDetailCm": 2800,
+  "reducedDetailCm": 5500,
+  "cullCm": 9000
+ },
+ "buffs": {
+  "xp_empowered": {
+   "name": "Empowered",
+   "kind": "buff",
+   "school": "blood",
+   "source": "ability-expansion: Bloodletting / Rallying Cry / Sanguine Ascension (+damage dealt)",
+   "palette": {
+    "primary": [
+     1.0,
+     0.3,
+     0.2
+    ],
+    "secondary": [
+     0.4,
+     0.08,
+     0.05
+    ],
+    "core": [
+     1.0,
+     0.8,
+     0.6
+    ]
+   },
+   "priority": 61,
+   "layers": [
+    {
+     "shape": "flames",
+     "attach": "hands",
+     "count": 4,
+     "speed": 1.4
+    },
+    {
+     "shape": "glyph",
+     "attach": "overhead",
+     "style": "skull",
+     "speed": 0.8
+    }
+   ],
+   "lifecycle": {
+    "burstSeconds": 0.4,
+    "fadeSeconds": 0.35
+   },
+   "sound": {
+    "start": "npc.feral.start",
+    "end": "buff.expire"
+   }
+  },
+  "xp_fortified": {
+   "name": "Fortified",
+   "kind": "buff",
+   "school": "earth",
+   "source": "ability-expansion: Iron Resolve / Aegis of Ages (-damage taken)",
+   "palette": {
+    "primary": [
+     0.85,
+     0.7,
+     0.45
+    ],
+    "secondary": [
+     0.35,
+     0.25,
+     0.12
+    ],
+    "core": [
+     1.0,
+     0.95,
+     0.8
+    ]
+   },
+   "priority": 61,
+   "layers": [
+    {
+     "shape": "plates",
+     "attach": "body",
+     "count": 6,
+     "speed": 0.5
+    },
+    {
+     "shape": "crystals",
+     "attach": "ground",
+     "count": 6,
+     "speed": 0.4
+    },
+    {
+     "shape": "glyph",
+     "attach": "overhead",
+     "style": "shield",
+     "speed": 0.6
+    }
+   ],
+   "lifecycle": {
+    "burstSeconds": 0.4,
+    "fadeSeconds": 0.35
+   },
+   "sound": {
+    "start": "npc.ward.start",
+    "end": "buff.expire"
+   }
+  },
+  "xp_hastened": {
+   "name": "Hastened",
+   "kind": "buff",
+   "school": "arcane",
+   "source": "ability-expansion: Adrenaline Surge / Tailwind / Warlord's Anthem (+move and attack speed)",
+   "palette": {
+    "primary": [
+     0.6,
+     0.85,
+     1.0
+    ],
+    "secondary": [
+     0.12,
+     0.25,
+     0.45
+    ],
+    "core": [
+     0.95,
+     1.0,
+     1.0
+    ]
+   },
+   "priority": 60,
+   "layers": [
+    {
+     "shape": "motes",
+     "attach": "body",
+     "style": "chevron_up",
+     "count": 10,
+     "speed": 2.0
+    },
+    {
+     "shape": "swirl",
+     "attach": "ground",
+     "speed": 1.8
+    }
+   ],
+   "lifecycle": {
+    "burstSeconds": 0.4,
+    "fadeSeconds": 0.35
+   },
+   "sound": {
+    "start": "npc.rune.start",
+    "end": "buff.expire"
+   }
+  },
+  "xp_exposed": {
+   "name": "Exposed",
+   "kind": "debuff",
+   "school": "void",
+   "source": "ability-expansion: Void Bolt / Shadow Rend marks (+damage taken)",
+   "palette": {
+    "primary": [
+     0.75,
+     0.35,
+     1.0
+    ],
+    "secondary": [
+     0.25,
+     0.08,
+     0.4
+    ],
+    "core": [
+     1.0,
+     0.85,
+     1.0
+    ]
+   },
+   "priority": 60,
+   "layers": [
+    {
+     "shape": "glyph",
+     "attach": "overhead",
+     "style": "eye",
+     "speed": 0.8
+    },
+    {
+     "shape": "ring",
+     "attach": "ground",
+     "style": "spikes",
+     "count": 8,
+     "speed": 0.9
+    }
+   ],
+   "lifecycle": {
+    "burstSeconds": 0.4,
+    "fadeSeconds": 0.35
+   },
+   "sound": {
+    "start": "npc.silence.start",
+    "end": "buff.expire"
+   }
+  },
+  "xp_bleeding": {
+   "name": "Bleeding",
+   "kind": "debuff",
+   "school": "blood",
+   "source": "ability-expansion: bleeds (Hemorrhage, Lacerate, Serrated Edge...)",
+   "palette": {
+    "primary": [
+     0.8,
+     0.05,
+     0.05
+    ],
+    "secondary": [
+     0.35,
+     0.02,
+     0.02
+    ],
+    "core": [
+     1.0,
+     0.5,
+     0.45
+    ]
+   },
+   "priority": 59,
+   "layers": [
+    {
+     "shape": "drips",
+     "attach": "body",
+     "style": "blood",
+     "count": 10,
+     "speed": 1.4
+    },
+    {
+     "shape": "pool",
+     "attach": "ground",
+     "style": "blood",
+     "speed": 0.6
+    }
+   ],
+   "lifecycle": {
+    "burstSeconds": 0.4,
+    "fadeSeconds": 0.35
+   },
+   "sound": {
+    "start": "debuff.poisoned.start",
+    "end": "buff.expire"
+   }
+  }
+ }
+}

@@ -520,7 +520,7 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     if(!FMath::IsFinite(Delta)||Delta<0)return;
     const float Now=M->GetWorld()->GetTimeSeconds();
     if(M->BaseMoveSpeed<=0)M->BaseMoveSpeed=Movement->MaxWalkSpeed;
-    Movement->MaxWalkSpeed=(CireBuffs::IsActive(M,TEXT("npc_rooted"))?0.f:1.f)*M->BaseMoveSpeed*(M->SlowUntil>Now?.65f:1.f) /* kits-complete: roots */*(S&&S->RallyUntil>Now?1.1f:1.f)
+    Movement->MaxWalkSpeed=(CireBuffs::IsActive(M,TEXT("npc_rooted"))?0.f:1.f)*M->BaseMoveSpeed*(M->SlowUntil>Now&&!CireWaveDirector::IsSlowImmune(M)?.65f:1.f) /* waves-modes: armored ignore slows */ /* kits-complete: roots */*(S&&S->RallyUntil>Now?1.1f:1.f)
         *CireWaveDirector::MarchSpeed(M); // wave-director: pacing, faster while a wave unit walks the road
     M->AttackTimer=FMath::Max(0.f,M->AttackTimer-Delta*CireKits::MonsterAttackRate(M)); // scaling-kits: Mech slam -10% attack speedM->AbilityTimer=FMath::Max(0.f,M->AbilityTimer-Delta);
     if(M->MonsterArt)M->MonsterArt->ReleaseSwing(Now); // creature-anim: a committed swing lands on its contact frame
@@ -539,10 +539,11 @@ void CireNPCCombat::Tick(ACireMonster* M,float Delta)
     }
     // wave-director: the stall failsafe's forced march behaves like an armored marcher. rules-conformance: only a
     // unit with NO threat marches; one that is attacked keeps its threat and fights (the director ends the march).
-    if(M->bArmoredEscort||(CireWaveDirector::IsForcedMarch(M)&&M->Threat.IsEmpty()&&!M->Victim))
+    const bool bPassive=CireWaveDirector::IsPassive(M); // waves-modes: damage-off wave units march like armored ones
+    if(M->bArmoredEscort||bPassive||(CireWaveDirector::IsForcedMarch(M)&&M->Threat.IsEmpty()&&!M->Victim))
     {
         if(!M->CastingAbility.IsEmpty())Interrupt(M);
-        if(M->bArmoredEscort&&(!M->Threat.IsEmpty()||M->Victim))CireThreat::Clear(M); // escortees never fight (no threat table)
+        if((M->bArmoredEscort||bPassive)&&(!M->Threat.IsEmpty()||M->Victim))CireThreat::Clear(M); // escortees never fight (no threat table)
         M->bEngaged=false;
         CireLanePath::RefreshEscortCollision(M);MarchLane(M,Mode);return;
     }
