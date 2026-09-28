@@ -83,6 +83,9 @@ struct FCireLayoutEditorState
     float Yaw = 180.f, Pitch = -62.f, Distance = 6200.f;
     FString Message;
     double MessageAt = -100;
+    /** world-editor: the WORLD tab (choose which town pieces matches remove; CireWorldEditorState.h). Naming 3 = its set name. */
+    bool bWorldTab = false;
+    TSharedPtr<struct FCireWorldEditorState> WorldEdit;
 #if !UE_BUILD_SHIPPING
     /** Gallery: a virtual ground point under the pointer. */
     bool bDebugGround = false;

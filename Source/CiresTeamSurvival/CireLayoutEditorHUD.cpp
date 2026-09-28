@@ -17,6 +17,7 @@
 #include "CireDeveloperTools.h"
 #include "CireLayoutRuntime.h" // layout-wiring
 #include "CireTownTrim.h" // town-trim
+#include "CireWorldEditorState.h" // world-editor
 #include "CireZones.h" // tier-readability: zones and their monster tier
 #include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireLeash.h" // outdoor-bosses: the boss leash radius
@@ -373,6 +374,7 @@ void ACireHUD::OpenLayoutEditor(bool bOpen)
     {
         CireLayoutEditor::StopPreview(E);
         CireTownTrim::StopPreview(); // town-trim: the whole town again
+        if (E.WorldEdit.IsValid()) { CireWorldEditor::Autosave(*E.WorldEdit, World ? World->GetRealTimeSeconds() : 0, true); CireWorldEditor::Unsync(World, *E.WorldEdit); } // world-editor: removed pieces come back
         CireLayoutEditor::Autosave(E, World ? World->GetRealTimeSeconds() : 0, true);
         if (PlayerOwner) PlayerOwner->SetViewTarget(E.PreviousView.IsValid() ? E.PreviousView.Get() : PlayerOwner->GetPawn());
         if (E.Camera.IsValid()) E.Camera->Destroy();
@@ -385,6 +387,8 @@ bool ACireHUD::LayoutEditorEscape()
 {
     if (!LayoutEditor.IsValid()) return false;
     FCireLayoutEditorState& E = *LayoutEditor;
+    if (CireWorldEditor::Escape(E)) return true; // world-editor
+    if (E.bWorldTab) return CireRouteEditMode::IsActive() ? true : (OpenLayoutEditor(false), true);
     if (E.Naming != 0) { E.Naming = 0; return true; }
     if (E.bLoadList) { E.bLoadList = false; return true; }
     if (E.bReplace || !E.Armed.IsNone() || !E.ChainId.IsEmpty()) { E.bReplace = false; E.Armed = NAME_None; E.ChainId.Reset(); E.ChainFrom.Reset(); return true; }
@@ -448,6 +452,8 @@ void ACireHUD::TickLayoutEditor()
     }
     else if (E.Camera.IsValid() && PlayerOwner->GetViewTarget() == E.Camera.Get()) PlayerOwner->SetViewTarget(Hero ? static_cast<AActor*>(Hero) : E.PreviousView.Get());
 
+    if (E.bWorldTab) { TickWorldEditor(); return; } // world-editor: the WORLD tab draws and drives itself
+    if (E.WorldEdit.IsValid()) CireWorldEditor::Sync(World, *E.WorldEdit); // world-editor: removed pieces stay hidden in this tab too
     // ---- projection and ground picking ----------------------------------------------------------------------------
     auto Project = [&](const FVector& W, FVector2D& Out)
     {
@@ -511,6 +517,7 @@ void ACireHUD::TickLayoutEditor()
     LayoutUIRects.Add({CmdX, CmdY, CmdW, CmdH});
     LayoutUIRects.Add({CmdX + CmdW, CmdY, 84.f, CmdH}); // town-trim: the REALM button (past CmdW)
     LayoutUIRects.Add({BarX + BarW + 24.f, BarY + 8.f, 100.f, 22.f}); // town-trim: PREVIEW TRIM
+    DrawEditorTabs(); // world-editor: MAP LAYOUT | WORLD
     bool bOverUI = false;
     for (const FCireUIRect& R : LayoutUIRects) bOverUI |= MX >= R.X && MX <= R.X + R.W && MY >= R.Y && MY <= R.Y + R.H;
 
@@ -1007,6 +1014,7 @@ void ACireHUD::TickLayoutEditor()
         if (bCtrl && Pressed(EKeys::T)) DoTest(); // layout-wiring
         if (Pressed(EKeys::M)) SwitchView();
         if (Pressed(EKeys::G)) SwitchRealm();
+        if (Pressed(EKeys::B)) { E.bWorldTab = true; E.Armed = NAME_None; E.bReplace = false; E.ChainId.Reset(); Say(TEXT("WORLD tab: choose which town pieces matches remove (B: back to the layout).")); } // world-editor
         if (Pressed(EKeys::F) && bCursor)
         {
             // Aim at a marker and press F: the nearest handle to the cursor within 6 m is selected.

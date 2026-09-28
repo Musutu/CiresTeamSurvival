@@ -325,11 +325,11 @@ void ACireHUD::TickWorldEditor()
     W.Hover.Reset(); W.bHoverGhost = false;
     if (!bOverUI && MX >= 0 && E.Naming == 0 && !W.bDragging)
     {
-        FVector Origin, Dir;
-        if (PlayerOwner->DeprojectScreenPositionToWorld(MX * Scale, MY * Scale, Origin, Dir))
+        FVector RayFrom, RayDir;
+        if (PlayerOwner->DeprojectScreenPositionToWorld(MX * Scale, MY * Scale, RayFrom, RayDir))
         {
             FHitResult HitResult; FCollisionQueryParams Params(TEXT("CireWorldEditPick"), true, Hero);
-            if (World->LineTraceSingleByChannel(HitResult, Origin, Origin + Dir * 80000.f, ECC_Visibility, Params))
+            if (World->LineTraceSingleByChannel(HitResult, RayFrom, RayFrom + RayDir * 80000.f, ECC_Visibility, Params))
                 if (AActor* UnitActor = CireWorldEdit::UnitActorOf(World, HitResult.GetActor()))
                 {
                     int32 Realm = 0; const FString Id = CireWorldEdit::ActorId(UnitActor, &Realm);

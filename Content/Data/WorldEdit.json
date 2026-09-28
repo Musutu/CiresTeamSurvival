@@ -1,0 +1,9 @@
+{
+  "notes": "world-editor (Docs/WorldEditor.md). active: the world edit set every match loads (Content/Data/WorldEdits/<name>.json; \"\" = the whole town). The map layout editor's WORLD tab (RouteEditor.cmd, B) writes it on SAVE; cire.WorldEdit <name>|off switches live. mirror / ghosts: the WORLD tab's defaults. protectWords: pieces whose name contains one of these are guarded (protected on a monster path, a warning elsewhere). protectPad: cm around a piece's footprint for the marker checks. boxSelectMaxSize: box select skips pieces larger than this (cm).",
+  "active": "",
+  "mirror": true,
+  "ghosts": false,
+  "protectWords": ["Castle", "Gate", "Keep"],
+  "protectPad": 150,
+  "boxSelectMaxSize": 8000
+}
