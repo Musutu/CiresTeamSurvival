@@ -350,9 +350,12 @@ const FChampionArtDefinition* ArtFor(const ACireHero& Hero)
 {
     const FString Key=SummonArtKey(Hero);
     if(!Key.IsEmpty())if(const FChampionArtDefinition* Summon=BaseProfileArt(Key))return Summon;
+    // paragon-champions: a picked skin is its own binding row "<profile>@<skin>" (falls back to the default body).
+    if(!Hero.ChampionSkin.IsEmpty())if(const FChampionArtDefinition* Skin=FabProfileArt(Hero.ChampionProfileId+TEXT("@")+Hero.ChampionSkin))return Skin;
     return ProfileArt(Hero.ChampionProfileId);
 }
-FString ArtAttemptKey(const ACireHero& Hero){return Hero.ChampionProfileId+TEXT("|")+SummonArtKey(Hero);}
+FString ArtAttemptKey(const ACireHero& Hero){return Hero.ChampionProfileId+TEXT("|")+SummonArtKey(Hero)+TEXT("|")+Hero.ChampionSkin;} // paragon-champions: skin
+
 
 const FChampionArtDefinition* ProfileArt(const FString& Id)
 {

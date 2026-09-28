@@ -13,7 +13,14 @@ Worktree `F:\CiresTeamSurvival-agents\cts-paragon-champions`, ports 17600-17609.
 - `CireParagonGallery.*` + `Tools/RunParagonGallery.py`: a close-up and one shot per ability, for every hero.
 - `Tools/RunParagonPortraits.py`: local portraits in `/Game/ParagonDerived/Portraits`.
 
+- **Skins (Eric's 2026-09-28 direction):** 158 skin meshes classified. The table is in ParagonChampions.md.
+  - **93 reskins:** selectable in champion select (arrows or `[` / `]`). The pick replicates as `ACireHero::ChampionSkin` via `ServerSetChampionSkin`, and the binding row is `<profile>@<skin>`.
+  - **24 new champions:** own id, name, role, primary stat and passive. Their kits reuse the parent's clips and FX, recoloured by school.
+  - **30 monster variants:** 17 skins plus 13 ParagonMinions bodies, merged into race units by `CireMonsterArt`.
+  - **11 not usable:** parts, or a skeleton with no clips.
+
 ## Not done / next
+- **Monster variants are opt-in (`-CireParagonMonsters`).** With the flag on, 30 bodies fail the monster-body checks (stride speeds 0, archetype props on Paragon weapons, knockback hit clips not upright, Khaimera head bone). Next: measure walk/run speeds, set `dropPropBones`, pick calmer hit clips, fix the Khaimera head, then turn them on.
 - Run the gates, the gallery and the portraits, then review the captures (see the status below).
 - Painted icons for the ~190 Paragon abilities (ChatGPT). Until then the procedural sigil fallback is used.
 - Dedicated draft backgrounds. Until then each hero uses its closest existing painting.
@@ -36,6 +43,14 @@ Worktree `F:\CiresTeamSurvival-agents\cts-paragon-champions`, ports 17600-17609.
 - `CireRosterHUD.cpp`: portrait fallback and draft background fallback.
 - `CireMatch.cpp`: gallery `Initialize`/`Tick`.
 - `CireCombatExpansionProbe.cpp`: `RunSmoke`.
+- `CireGame.h`: `ACireHero::ChampionSkin` (replicated) and `ACireController::ServerSetChampionSkin`.
+- `CireHero.cpp`: `DOREPLIFETIME(ChampionSkin)`.
+- `CireDraftStage.*`: `SetPreviewSkin`.
+- `CireRosterHUD.cpp`: the skin selector above LOCK IN.
+- `CireChampionArt.cpp`: `ArtFor` uses the `<profile>@<skin>` row; the art attempt key includes the skin.
+- `CireMonsterArt.cpp`: reads `Content/Data/RaceMeshes.paragon.json` (generated) and merges it as extra variants.
+- `CireSoundEvents.cpp`: reads ParagonChampions.json `audio` rows.
+- `CireWeaponPresentation.cpp` and `CireChampionActions.cpp`: skip Paragon profiles (their weapons are in the mesh; they use their own clips).
 - `Content/Data/BuffVisuals.json` and `BuffModifiers.json`: five `pg_*` rows.
 - `Content/UI/Draft/Portraits/Exposure.json`: RunDraftPortraits merges exposure trims for the `pg_*` ids.
 

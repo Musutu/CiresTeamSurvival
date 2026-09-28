@@ -14,6 +14,7 @@ Usage: python Tools/AuthorParagonChampions.py [--check]   (--check exits 1 when 
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import re
@@ -499,6 +500,177 @@ def fx_for(entry, group):
     return [obj(s) for s in cast], [obj(s) for s in impact]
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# Skins (Eric, 2026-09-28): every alternate skin is a RESKIN (selectable in champion select, same kit), a NEW
+# CHAMPION (own name / role / primary stat, kit built from the parent's Paragon clips + FX, recoloured by school), or
+# a MONSTER VARIANT (an extra body of the closest race unit). Parts (drones, ult guns, VFX shells) and meshes on a
+# skeleton without clips are recorded as not usable.
+# ---------------------------------------------------------------------------------------------------------------
+PART_WORDS = ("bot", "UltGun", "FuryFX", "GhostBeastVFX", "ForVariantsTest", "Antlers", "BadSantaBelly")
+PASSIVE_TEXT = {"guard": "Take {effect}% less damage from every source.", "lifesteal": "Heal for {effect}% of your ability damage.",
+                "haste": "+{effect}% move speed.", "frenzy": "+{effect}% attack speed.", "power": "+{effect}% ability damage."}
+
+# (parent hero id, skin key): new identity. rename: slot -> ability name; school: recolour of every ability.
+NEW_CHAMPIONS = {
+    ("pg_greystone", "Dragonlord"): dict(name="Dragonlord", cls="Wyrm Knight", roles=["damage", "tank"], threat="damage", primary="strength", school="fire", passive=("Dragonblood", "lifesteal", 10),
+                                          rename={"rmb": "Wyrmfall", "q": "Dragon Path", "e": "Scaled Ward", "r": "Wrath of the Wyrm"}, lore="He slew the dragon and took its fire.", quote="Burn with me."),
+    ("pg_greystone", "Novaborn"): dict(name="Novaborn", cls="Star Paladin", roles=["tank", "support"], threat="tank", primary="intelligence", school="arcane", passive=("Starforged", "guard", 12),
+                                        rename={"rmb": "Starfall", "q": "Comet Path", "e": "Nova Aegis", "r": "Supernova"}, lore="A knight reforged in a dying star.", quote="The stars hold the line."),
+    ("pg_gideon", "Mephisto"): dict(name="Mephisto", cls="Hellfire Magus", roles=["damage"], threat="damage", primary="intelligence", school="fire", passive=("Infernal Pact", "power", 12),
+                                     rename={"rmb": "Hellrift", "q": "Brimstone Weight", "e": "Infernal Door", "r": "Abyssal Maw"}, lore="He bargained with the pit and kept the change.", quote="Every soul has a price."),
+    ("pg_gideon", "Inquisitor"): dict(name="Grand Inquisitor", cls="Zealot Mage", roles=["support", "healer"], threat="healer", primary="intelligence", school="holy", passive=("Zeal", "haste", 8),
+                                       heal_slot="e", rename={"rmb": "Judgement Rift", "q": "Penance", "e": "Absolution", "r": "Holy Singularity"}, lore="He burns heresy and mends the faithful.", quote="Confess."),
+    ("pg_fengmao", "RoyalGuard"): dict(name="Royal Guard", cls="Palace Sentinel", roles=["tank"], threat="tank", primary="strength", school="holy", passive=("Oath of the Throne", "guard", 12),
+                                        rename={"rmb": "Guardian Charge", "q": "Throne Wall", "e": "Halberd Sweep", "r": "Royal Decree"}, lore="The last guard of a fallen throne.", quote="None shall pass."),
+    ("pg_grux", "Qilin"): dict(name="Qilin", cls="Celestial Beast", roles=["damage", "tank"], threat="damage", primary="agility", school="storm", passive=("Heaven Stride", "haste", 10),
+                                rename={"rmb": "Thunder Hooves", "q": "Sky Stampede", "e": "Storm Rend", "r": "Celestial Roar"}, lore="A storm spirit wearing a warrior's skin.", quote="The sky runs with me."),
+    ("pg_grux", "Molten"): dict(name="Magmalord", cls="Molten Warlord", roles=["tank"], threat="tank", primary="strength", school="fire", passive=("Molten Core", "guard", 12),
+                                 rename={"rmb": "Lava Fists", "q": "Eruption Stampede", "e": "Magma Ripple", "r": "Caldera Challenge"}, lore="Born in a volcano, raised by anger.", quote="Melt."),
+    ("pg_iggy", "MechaTerror"): dict(name="Mecha Terror", cls="War Engineer", roles=["damage", "tank"], threat="damage", primary="intelligence", school="storm", passive=("Overclocked", "frenzy", 12),
+                                      rename={"rmb": "Arc Breath", "q": "Tesla Turret", "e": "Coolant Slick", "r": "Meltdown"}, lore="Iggy built a bigger friend.", quote="Upgrade complete."),
+    ("pg_iggy", "Phoenix"): dict(name="Phoenix Rider", cls="Firebird Caller", roles=["damage", "support"], threat="damage", primary="intelligence", school="holy", passive=("Rebirth Flame", "lifesteal", 10),
+                                  rename={"rmb": "Phoenix Breath", "q": "Ember Nest", "e": "Ash Trail", "r": "Rebirth Storm"}, lore="A rider on a bird that refuses to stay dead.", quote="From the ashes!"),
+    ("pg_belica", "SpiderWitch"): dict(name="Spider Witch", cls="Venom Matriarch", roles=["damage"], threat="damage", primary="intelligence", school="poison", passive=("Brood Venom", "power", 10),
+                                        rename={"rmb": "Web Snare", "q": "Venom Sac", "e": "Silk Lash", "r": "Brood Queen Bite"}, lore="Her drones have eight legs now.", quote="Come closer."),
+    ("pg_belica", "HeavyArmor"): dict(name="Siege Lieutenant", cls="Armoured Tactician", roles=["tank", "support"], threat="tank", primary="strength", school="storm", passive=("Plated Command", "guard", 12),
+                                       rename={"rmb": "Suppression Drone", "q": "Shock Mortar", "e": "Breach Beam", "r": "Command Override"}, lore="Belica stopped dodging and started tanking.", quote="Hold formation."),
+    ("pg_morigesh", "NorthernMystic"): dict(name="Northern Mystic", cls="Frost Shaman", roles=["healer", "support"], threat="healer", primary="intelligence", school="cold", passive=("Aurora Blessing", "haste", 8),
+                                             heal_slot="e", rename={"rmb": "Frost Swarm", "q": "Rime Doll", "e": "Aurora Mend", "r": "Northern Lights"}, lore="She sings to the ice and the ice sings back.", quote="Breathe the cold."),
+    ("pg_murdock", "Executioner"): dict(name="The Executioner", cls="Headsman", roles=["damage"], threat="damage", primary="agility", school="shadow", passive=("Final Verdict", "power", 12),
+                                         rename={"rmb": "Grim Spread", "q": "Shackle Trap", "e": "Iron Hood", "r": "The Sentence"}, lore="Justice, delivered one shell at a time.", quote="Kneel."),
+    ("pg_revenant", "ChronoBoss"): dict(name="Chronoboss", cls="Time Enforcer", roles=["damage"], threat="damage", primary="agility", school="arcane", passive=("Borrowed Seconds", "frenzy", 12),
+                                         rename={"rmb": "Paradox Round", "q": "Time Mark", "e": "Temporal Rupture", "r": "End of Time"}, lore="He collects the seconds you owe.", quote="Time is up."),
+    ("pg_revenant", "FrostKing"): dict(name="Frost King", cls="Glacial Tyrant", roles=["tank", "damage"], threat="tank", primary="strength", school="cold", passive=("Permafrost", "guard", 12),
+                                        rename={"rmb": "Frozen Bolt", "q": "King Mark", "e": "Glacier Break", "r": "Eternal Winter"}, lore="The king under the ice woke hungry.", quote="Kneel before winter."),
+    ("pg_sevarog", "MaskedReaper"): dict(name="Masked Reaper", cls="Harvest Shade", roles=["damage"], threat="damage", primary="agility", school="shadow", passive=("Reaper Due", "lifesteal", 12),
+                                          rename={"rmb": "Soul Hook", "q": "Shade Rush", "e": "Harvest Arc", "r": "Final Harvest"}, lore="Behind the mask there is only the scythe.", quote="Your harvest is due."),
+    ("pg_sparrow", "Raven"): dict(name="Raven Queen", cls="Shadow Archer", roles=["damage"], threat="damage", primary="agility", school="shadow", passive=("Murder of Crows", "power", 10),
+                                   rename={"rmb": "Raven Shot", "q": "Crow Rain", "e": "Night Feathers", "r": "Storm of Crows"}, lore="Her arrows are feathers of the dark.", quote="The ravens are hungry."),
+    ("pg_steel", "Doomsday"): dict(name="Doomsday", cls="Apocalypse Engine", roles=["tank", "damage"], threat="tank", primary="strength", school="fire", passive=("Reactor Plating", "guard", 14),
+                                    rename={"rmb": "Doom Bash", "q": "Ram Engine", "e": "Reactor Wall", "r": "Doomsday Impact"}, lore="Built to end sieges, and cities.", quote="Doomsday has arrived."),
+    ("pg_wukong", "GreatSage"): dict(name="Great Sage", cls="Cloud Master", roles=["support", "damage"], threat="damage", primary="intelligence", school="storm", passive=("Enlightenment", "haste", 10),
+                                      rename={"rmb": "Heaven Staff", "q": "Nimbus Slam", "e": "Seventy-Two Forms", "r": "Equal of Heaven"}, lore="The monkey became a sage and kept the staff.", quote="Heaven listens."),
+    ("pg_terra", "GryphonKnight"): dict(name="Gryphon Knight", cls="Sky Lancer", roles=["damage", "tank"], threat="damage", primary="strength", school="storm", passive=("Talon Guard", "frenzy", 10),
+                                         rename={"rmb": "Gryphon Dive", "q": "Talon Sweep", "e": "Wing Gust", "r": "Sky Judgement"}, lore="She rides the storm and falls with it.", quote="From above!"),
+    ("pg_zinx", "StarQueen"): dict(name="Star Queen", cls="Astral Sovereign", roles=["damage", "healer"], threat="damage", primary="intelligence", school="arcane", passive=("Stellar Court", "power", 10),
+                                    heal_slot="rmb", rename={"rmb": "Starlight Mend", "q": "Astral Needle", "e": "Gravity Spike", "r": "Constellation"}, lore="Queen of a court of stars.", quote="Bow to the heavens."),
+    ("pg_crunch", "CrashSite"): dict(name="Crash Site", cls="Wreck Brawler", roles=["tank", "damage"], threat="tank", primary="strength", school="storm", passive=("Scrap Armor", "guard", 12),
+                                      rename={"rmb": "Crash Cross", "q": "Impact Uppercut", "e": "Shrapnel Punch", "r": "Meteor Hook"}, lore="Pulled from a crater, still swinging.", quote="Impact!"),
+    ("pg_narbash", "BashOLantern"): dict(name="Bash-O-Lantern", cls="Harvest Drummer", roles=["damage", "support"], threat="damage", primary="intelligence", school="fire", passive=("Hollow Beat", "power", 10),
+                                          rename={"rmb": "Pumpkin Toss", "q": "Hollow Drum", "e": "Harvest March", "r": "Night of Drums"}, lore="The drummer of the last harvest night.", quote="Trick or beat!"),
+    ("pg_rampage", "Elemental"): dict(name="Stone Colossus", cls="Earth Elemental", roles=["tank"], threat="tank", primary="strength", school="earth", passive=("Living Rock", "guard", 14),
+                                       rename={"rmb": "Quake Smash", "q": "Boulder Toss", "e": "Earthen Surge", "r": "Tectonic Rage"}, lore="A mountain that learned to walk.", quote="The earth rises."),
+}
+
+# (parent hero id, skin key): (race, unit, reason)
+MONSTER_VARIANTS = {
+    ("pg_khaimera", "GruxPelt"): ("feral_kin", "wild_outrider", "wears a beast pelt: a feral raider"),
+    ("pg_khaimera", "Halloween"): ("voidborn", "rift_stalker", "spectral hunter silhouette"),
+    ("pg_grux", "Halloween"): ("hollow", "ironbound_bruiser", "undead brute look"),
+    ("pg_grux", "BeetleRed"): ("drakkari", "drakkari_scalebreaker", "red carapace reads as scaled"),
+    ("pg_sevarog", "Chronos"): ("stoneborn", "stoneborn_forgelord", "clockwork titan: a forge boss"),
+    ("pg_sevarog", "Bloodred"): ("fallen_order", "dread_knight", "blood-armour reaper knight"),
+    ("pg_revenant", "RavenQuill"): ("fallen_order", "fallen_inquisitor_crossbow", "plague-doctor gunman: ranged fallen"),
+    ("pg_rampage", "Redneck"): ("feral_kin", "werebear_mauler", "hulking beast brawler"),
+    ("pg_crunch", "BlackSite"): ("aetheri", "aetheri_warframe", "black-ops cyborg"),
+    ("pg_grim", "Wasteland"): ("ironhide", "redmoon_axethrower", "scrap raider with a ranged weapon"),
+    ("pg_howitzer", "Domed"): ("stoneborn", "crystal_ballista", "domed artillery mech"),
+    ("pg_drongo", "AlienInvader"): ("voidborn", "rift_gazer", "alien gunner from beyond"),
+    ("pg_kallari", "DeathLotus"): ("voidborn", "void_ravager", "shadow assassin"),
+    ("pg_fey", "Nightshade"): ("blightwood", "rotbloom_shaman", "poisoned grove caster"),
+    ("pg_yin", "CryptGoddess"): ("hollow", "barbed_hunter", "crypt huntress"),
+    ("pg_gideon", "Undertow"): ("drowned_deep", "tidecaller", "drowned sorcerer"),
+    ("pg_countess", "Carnivale"): ("fallen_order", "flagellant", "masked carnival zealot"),
+}
+
+# ParagonMinions -> race units (the lane minions are Paragon's robots: the Aetheri; jungle buffs by colour).
+MINION_UNITS = [
+    # (inventory unit, mesh name, race, unit, reason)
+    ("Minions/Down_Minions", "Minion_Lane_Melee_Dawn", "aetheri", "aetheri_phaseblade", "lane melee robot (Dawn)"),
+    ("Minions/Dusk_Minions", "Minion_Lane_Melee_Dusk", "aetheri", "aetheri_phaseblade", "lane melee robot (Dusk)"),
+    ("Minions/Down_Minions", "Minion_Lane_Ranged_Dawn", "aetheri", "aetheri_lancer", "lane ranged robot (Dawn)"),
+    ("Minions/Dusk_Minions", "Minion_Lane_Ranged_Dusk", "aetheri", "aetheri_lancer", "lane ranged robot (Dusk)"),
+    ("Minions/Down_Minions", "Minion_Lane_Siege_Dawn", "aetheri", "aetheri_warframe", "siege robot (Dawn)"),
+    ("Minions/Dusk_Minions", "Minion_Lane_Siege_Dusk", "aetheri", "aetheri_warframe", "siege robot (Dusk)"),
+    ("Minions/Down_Minions", "Minion_Lane_Super_Dawn", "aetheri", "aetheri_bulwark", "super minion (Dawn)"),
+    ("Minions/Dusk_Minions", "Minion_Lane_Super_Dusk", "aetheri", "aetheri_bulwark", "super minion (Dusk)"),
+    ("Buff/Buff_Black", "Buff_Black", "voidborn", "void_ravager", "black jungle buff beast"),
+    ("Buff/Buff_Red", "Buff_Red", "drakkari", "drakkari_scalebreaker", "red jungle brute"),
+    ("Buff/Buff_White", "Buff_White", "stoneborn", "granite_crusher", "white camp golem (minion rig)"),
+    ("Buff/Buff_Blue", "Buff_Blue", "drowned_deep", "barbspitter", "floating blue caster (fly clips)"),
+    ("Minions/Prime_Helix", "Prime_Helix", "aetheri", "aetheri_colossus", "Prime Helix guardian: a boss body"),
+]
+
+
+def skin_key(hero_folder, mesh_name):
+    n = mesh_name[3:] if mesh_name.startswith("SM_") else mesh_name
+    for pre in (hero_folder, "Khai", "Gadget", "gadget"):
+        if n.lower().startswith(pre.lower()):
+            n = n[len(pre):]
+            break
+    n = n.strip("_").replace("_GDC", "").replace("BadSanta_belly", "BadSantaBelly")
+    return re.sub(r"[^A-Za-z0-9]", "", n)
+
+
+def spaced(key):
+    return re.sub(r"(?<=[a-z])(?=[A-Z])", " ", key).strip()
+
+
+def derive_new_champions(inspect):
+    """Synthetic HEROES rows for the new champions: the parent's kit (clips + FX) renamed, re-schooled and re-roled."""
+    by_id = {h["id"]: h for h in HEROES}
+    out = []
+    for (parent_id, key), n in NEW_CHAMPIONS.items():
+        p = by_id[parent_id]
+        inv = inspect.get(p["pack"], {}).get("heroes", {}).get(p["folder"], {})
+        skin = next((m for m in inv.get("meshes", []) if m.get("skin") and skin_key(p["folder"], m["path"].split("/")[-1]) == key), None)
+        if not skin:
+            continue
+        h = copy.deepcopy(p)
+        h.update(id=f"{parent_id}_{key.lower()}", name=n["name"], cls=n["cls"], roles=n["roles"], threat=n["threat"], primary=n["primary"],
+                 lore=n["lore"], quote=n["quote"], diff=2, skin_mesh=skin["path"], parent=parent_id, skin_key=key, pool=False)
+        for a in h["kit"]:
+            a["name"] = n["rename"].get(a["slot"], a["name"])
+            a["school"] = n["school"]
+            o = a["o"]
+            if a["slot"] == n.get("heal_slot") and a["delivery"] not in ("ally_heal", "party_heal"):
+                a["delivery"] = "ally_heal"
+                for k in ("cc", "angle", "warning", "hits", "speed", "style", "atAim", "taunt", "radius", "buff", "buffPct", "dur", "text"):
+                    o.pop(k, None)
+                o.update(effect=90, coef=2.4, types=["HEAL"], section="defensive", range=1100)
+            elif n["threat"] == "tank" and a["delivery"] in ("self_burst", "strike", "self_buff"):
+                o["taunt"] = True
+                o["types"] = ["TANK"]
+            elif "types" in o and "HEAL" not in o["types"]:
+                o["types"] = ["TANK"] if n["threat"] == "tank" else ["DPS"]
+        pn = n["passive"]
+        h["passive"] = P(pn[0], pn[1], pn[2], PASSIVE_TEXT[pn[1]])
+        out.append(h)
+    return out
+
+
+def classify_skins(h, hero_inv, base_skeleton):
+    """Every alternate skin of a base hero -> (key, mesh, decision, detail)."""
+    rows = []
+    for m in hero_inv.get("meshes", []):
+        if not m.get("skin"):
+            continue
+        key = skin_key(h["folder"], m["path"].split("/")[-1])
+        if any(w.lower() in key.lower() for w in PART_WORDS):
+            rows.append((key, m, "not usable", "a part of another skin (drone, ultimate gun, VFX shell, antlers), not a body"))
+        elif m["skeleton"] != base_skeleton:
+            rows.append((key, m, "not usable", "its own skeleton (" + m["skeleton"].split("/")[-1] + ") has no clips in the pack"))
+        elif (h["id"], key) in NEW_CHAMPIONS:
+            n = NEW_CHAMPIONS[(h["id"], key)]
+            rows.append((key, m, "new champion", f"{n['name']} ({n['cls']}; {'/'.join(n['roles'])}; {n['primary'][:3].upper()}; {n['school']})"))
+        elif (h["id"], key) in MONSTER_VARIANTS:
+            race, unit, why = MONSTER_VARIANTS[(h["id"], key)]
+            rows.append((key, m, "monster variant", f"{race} / {unit}: {why}"))
+        else:
+            rows.append((key, m, "reskin", "same silhouette and weapon: a cosmetic variant"))
+    return rows
+
+
 def markdown_table(table, abilities, heroes, bindings):
     """Per-hero summary for Docs/ParagonChampions.md (between the paragon-table markers)."""
     by_id = {h["id"]: h for h in heroes}
@@ -536,13 +708,16 @@ def main() -> int:
     problems, abilities, champions_kits, recipes, bindings, heroes, roster, audio = [], {}, {}, {}, [], [], [], {}
     base_audio = json.loads((ROOT / "Content/Data/AudioEvents.json").read_text(encoding="utf-8"))
     pool = {"DPS": [], "TANK": [], "HEAL": []}
-    for h in HEROES:
+    skin_table, units = [], {}
+    for h in HEROES + derive_new_champions(inspect):
         pack = inspect.get(h["pack"], {})
         hero_inv = pack.get("heroes", {}).get(h["folder"], {})
         anims = hero_inv.get("anims", {})
         names = set(anims)
         base_meshes = [m for m in hero_inv.get("meshes", []) if not m.get("skin")]
         mesh = next((m for m in base_meshes if m["path"].split("/")[-1].lower() == h["folder"].lower()), base_meshes[0] if base_meshes else None)
+        if h.get("skin_mesh"):
+            mesh = next((m for m in hero_inv.get("meshes", []) if m["path"] == h["skin_mesh"]), None)
         if not mesh:
             problems.append(f"{h['id']}: no base skeletal mesh in {h['pack']}")
             continue
@@ -667,7 +842,7 @@ def main() -> int:
                     recipe["voice"] = voice + "." + voice.split("/")[-1]
             recipes[aid] = recipe
             own_ids.append(aid)
-            if kind == "active":
+            if kind == "active" and h.get("pool", True):
                 for t in types:
                     pool[t].append(aid)
         # passive
@@ -740,6 +915,23 @@ def main() -> int:
         bindings.append({"profileId": h["id"], "status": "custom_ready", "motion": "monster_native", "reactions": True, "mesh": mesh_obj,
                          "heightCm": round(target, 1), "meshScale": round(target / native, 4), "yaw": -90.0, "groundAtPivot": True, "lockRoot": True,
                          "animations": animations, "parts": [], "source": "Epic Paragon pack (Epic-licensed, local only): " + h["pack"]})
+        skin_rows = []
+        body = {k: v for k, v in animations.items() if k in ("idle", "walk", "run", "attack", "attackAlt", "hit", "death")}
+        for key, m, decision, detail in (classify_skins(h, hero_inv, skeleton) if not h.get("parent") else []):
+            skin_table.append((h["name"], spaced(key), decision, detail))
+            obj = m["path"] + "." + m["path"].split("/")[-1]
+            scale = bindings[-1]["meshScale"]
+            if decision == "reskin":
+                row = copy.deepcopy(bindings[-1])
+                row.update(profileId=f"{h['id']}@{key}", mesh=obj, heightCm=round(max(50.0, min(400.0, float(m["height"]) * scale)), 1))
+                bindings.append(row)
+                skin_rows.append({"key": key, "name": spaced(key), "mesh": obj})
+            elif decision == "monster variant":
+                race, unit, why = MONSTER_VARIANTS[(h["id"], key)]
+                units.setdefault(unit, {"race": race, "alternates": []})["alternates"].append({
+                    "variant": f"Paragon{h['folder']}{key}", "mesh": obj, "meshScale": scale, "yaw": -90.0,
+                    "heightCm": round(float(m["height"]) * scale, 1), "lockRoot": True, "reachCm": 900.0 if h["range"] > 400 else 260.0,
+                    "animations": body, "source": "Epic Paragon skin (local only): " + h["pack"]})
         sounds = pack.get("sounds", [])
         voice = lambda suffix: next((s + "." + s.split("/")[-1] for s in sounds if s.endswith(suffix)), "")
         skins = sorted({m["skin"] for m in hero_inv.get("meshes", []) if m.get("skin")})
@@ -747,7 +939,8 @@ def main() -> int:
                        "portrait": f"/Game/ParagonDerived/Portraits/T_Portrait_{h['id']}.T_Portrait_{h['id']}",
                        "background": BACKGROUNDS.get(h["id"], template),
 
-                       "animBlueprint": [b["path"] for b in hero_inv.get("animbp", [])], "skins": skins, "own": own_ids,
+                       "animBlueprint": [b["path"] for b in hero_inv.get("animbp", [])], "skins": skin_rows, "skinFolders": skins, "own": own_ids,
+                       "parent": h.get("parent", ""),
                        "voice": {"select": voice("_DraftSelect"), "lock": voice("_DraftLock")},
                        "inventory": {"anims": len(anims), "montages": len(hero_inv.get("montages", {})), "fxSystems": sum(len(v) for v in pack.get("fx", {}).values()),
                                      "fxGroups": sorted(pack.get("fx", {})), "sounds": len(sounds), "materials": len({mm["material"] for mm in mesh.get("materials", [])})},
@@ -755,6 +948,36 @@ def main() -> int:
     # ParagonMinions: creep inventory for future monster variants (not used by gameplay yet).
     minions = inspect.get("ParagonMinions", {})
     creeps = {}
+    # ParagonMinions as monster variants: clips come from any minion folder on the same skeleton.
+    minion_anims = {}
+    for unit_name, inv in minions.get("heroes", {}).items():
+        for n, a in inv.get("anims", {}).items():
+            minion_anims.setdefault(a.get("skeleton", ""), {}).setdefault(n.split("#")[0], a["path"] + "." + a["path"].split("/")[-1])
+    for folder, mesh_name, race, unit, why in MINION_UNITS:
+        inv = minions.get("heroes", {}).get(folder, {})
+        m = next((x for x in inv.get("meshes", []) if x["path"].split("/")[-1] == mesh_name), None)
+        if not m:
+            problems.append(f"minion {mesh_name}: mesh not found")
+            continue
+        clips = minion_anims.get(m["skeleton"], {})
+        first = lambda *names: next((clips[n] for n in names if n in clips), None)
+        mb = {"idle": first("Idle", "Melee_Idle_A", "Idle_A", "Aggro_Transition_A"),
+              "run": first("Run_FWD", "Run_Fwd", "Combat_JogFwd", "Jog_Fwd_Combat", "Combat_Jog_Fwd_Alt", "NonCombat_Jog_Fwd", "Melee_Run_Forward", "Fly_Fwd_FullSpeed") or (first("Idle") if unit == "aetheri_colossus" else None),
+              "attack": first("Attack_A", "BiteAttack_A", "Attack_Punch_01", "Melee_Attack_01_A", "Fire_A", "Attack_Special_1", "Primary_Fire"),
+              "attackAlt": first("Attack_B", "BiteAttack_B", "Attack_Punch_02", "Melee_Attack_02_A", "Fire_B", "Attack_Special_2"),
+              "hit": first("HitReaction_FWD", "Hit_Front", "Hitreat_Fwd", "Melee_Hit_Front_05_A", "Hitreact_Fwd", "Hit_React_Fwd"),
+              "death": first("Death_front", "Death_Fwd", "Death_Front", "Melee_Death_Fwd_01_A", "Death", "Death_A")}
+        mb["walk"] = first("Walk_Fwd", "Fly_Fwd_MidSpeed") or mb["run"]
+        if not mb["idle"] or not mb["run"] or not mb["attack"]:
+            skin_table.append(("ParagonMinions", mesh_name, "not usable", "no idle / run / attack clips on its skeleton"))
+            continue
+        target = max(110.0, min(420.0, float(m["height"]) * 0.9))
+        units.setdefault(unit, {"race": race, "alternates": []})["alternates"].append({
+            "variant": "Paragon" + mesh_name.replace("_", ""), "mesh": m["path"] + "." + m["path"].split("/")[-1], "meshScale": round(target / float(m["height"]), 4),
+            "yaw": -90.0, "heightCm": round(target, 1), "lockRoot": True,
+            "reachCm": 900.0 if unit in ("aetheri_lancer", "barbspitter", "crystal_ballista") else 260.0,
+            "animations": {k: v for k, v in mb.items() if v}, "source": "Epic ParagonMinions (local only)"})
+        skin_table.append(("ParagonMinions", spaced(mesh_name.replace("_", "")), "monster variant", f"{race} / {unit}: {why}"))
     for unit, inv in sorted(minions.get("heroes", {}).items()):
         if not inv.get("meshes"):
             continue
@@ -779,10 +1002,12 @@ def main() -> int:
         "bindings": bindings,
         "heroes": heroes,
         "creeps": creeps,
+        "skinTable": [{"hero": a, "skin": b, "decision": c, "detail": d} for a, b, c, d in skin_table],
         "problems": problems,
     }
     text = json.dumps(doc, indent=1, ensure_ascii=False) + "\n"
-    doc_table = markdown_table(HEROES, abilities, heroes, bindings)
+    doc_table = markdown_table(HEROES + derive_new_champions(inspect), abilities, heroes, bindings)
+    skins_md = "\n| Hero | Skin | Decision | Detail |\n|---|---|---|---|\n" + "".join(f"| {a} | {b} | **{c}** | {d} |\n" for a, b, c, d in skin_table) + "\n"
     if args.check:
         current = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
         if current != text:
@@ -791,13 +1016,23 @@ def main() -> int:
         print("ParagonChampions.json up to date")
         return 0
     OUT.write_text(text, encoding="utf-8")
+    # Monster variants live in their own small file (CireMonsterArt reads RaceMeshes.*.json, capped at 400 KB).
+    (ROOT / "Content/Data/RaceMeshes.paragon.json").write_text(json.dumps({
+        "schemaVersion": 1, "generator": "Tools/AuthorParagonChampions.py",
+        "description": "Paragon skins and ParagonMinions as extra variants of race units (Docs/ParagonChampions.md). Merged into each unit's bodies by CireMonsterArt; a body is used only when its mesh and idle clip exist locally (Epic-licensed packs, never committed).",
+        "units": units}, indent=1) + "\n", encoding="utf-8")
     md = ROOT / "Docs/ParagonChampions.md"
     if md.exists():
         body = md.read_text(encoding="utf-8")
         start, end = "<!-- paragon-table -->", "<!-- /paragon-table -->"
         if start in body and end in body:
             body = body[:body.index(start) + len(start)] + "\n" + doc_table + body[body.index(end):]
+        s2, e2 = "<!-- paragon-skins -->", "<!-- /paragon-skins -->"
+        if s2 in body and e2 in body:
+            body = body[:body.index(s2) + len(s2)] + "\n" + skins_md + body[body.index(e2):]
             md.write_text(body, encoding="utf-8")
+    from collections import Counter
+    print("skins:", dict(Counter(r[2] for r in skin_table)), "units:", {k: len(v["alternates"]) for k, v in units.items()})
     print(f"heroes={len(heroes)} abilities={len(abilities)} bindings={len(bindings)} pool=" + ",".join(f"{k}:{len(v)}" for k, v in pool.items()) +
           f" creeps={len(creeps)} problems={len(problems)}")
     for p in problems:

@@ -79,7 +79,7 @@ struct FPgRecipe
 struct FPgHero
 {
     FString Id, Pack, Mesh, Portrait, VoiceSelect, VoiceLock, Background;
-    TArray<FString> Own;
+    TArray<FString> Own, Skins; // Skins: "<key>|<name>" (installed reskins)
     bool bInstalled = false;
 };
 struct FPgData
@@ -163,6 +163,13 @@ void PgLoad()
             (*O)->TryGetStringField(TEXT("portrait"), H.Portrait); (*O)->TryGetStringField(TEXT("background"), H.Background); H.Own = PgStrings(*O, TEXT("own"));
             const TSharedPtr<FJsonObject>* Voice = nullptr;
             if ((*O)->TryGetObjectField(TEXT("voice"), Voice)) { (*Voice)->TryGetStringField(TEXT("select"), H.VoiceSelect); (*Voice)->TryGetStringField(TEXT("lock"), H.VoiceLock); }
+            if (const TArray<TSharedPtr<FJsonValue>>* SkinRows = nullptr; (*O)->TryGetArrayField(TEXT("skins"), SkinRows))
+                for (const auto& SkinValue : *SkinRows)
+                {
+                    const TSharedPtr<FJsonObject>* SO = nullptr; FString Key, Name, SkinMesh;
+                    if (SkinValue->TryGetObject(SO) && (*SO)->TryGetStringField(TEXT("key"), Key) && (*SO)->TryGetStringField(TEXT("name"), Name) &&
+                        (*SO)->TryGetStringField(TEXT("mesh"), SkinMesh) && PgPresent(SkinMesh)) H.Skins.Add(Key + TEXT("|") + Name);
+                }
             bool bPlayable = true; (*O)->TryGetBoolField(TEXT("playable"), bPlayable);
             H.bInstalled = !bOff && bPlayable && !H.Id.IsEmpty() && PgPresent(H.Mesh);
             if (H.bInstalled) GPg.Installed.Add(H.Id);
@@ -279,6 +286,22 @@ bool CireParagonChampions::IsParagon(const FString& ProfileId) { PgLoad(); retur
 int32 CireParagonChampions::AuthoredCount() { PgLoad(); return GPg.Heroes.Num(); }
 TArray<FString> CireParagonChampions::OwnAbilities(const FString& ProfileId) { const FPgHero* H = PgHero(ProfileId); return H ? H->Own : TArray<FString>(); }
 FString CireParagonChampions::DraftBackground(const FString& ProfileId) { const FPgHero* H = PgHero(ProfileId); return H && H->bInstalled ? H->Background : FString(); }
+TArray<FString> CireParagonChampions::Skins(const FString& ProfileId) { const FPgHero* H = PgHero(ProfileId); return H && H->bInstalled ? H->Skins : TArray<FString>(); }
+bool CireParagonChampions::HasSkin(const FString& ProfileId, const FString& SkinKey)
+{
+    if (SkinKey.IsEmpty()) return true;
+    for (const FString& S : Skins(ProfileId)) if (S.StartsWith(SkinKey + TEXT("|"))) return true;
+    return false;
+}
+// Champion select: the skin applies to the drafted (or hovered) profile; validated against the hero's installed reskins.
+void ACireController::ServerSetChampionSkin_Implementation(const FString& ProfileId, const FString& Skin)
+{
+    auto* Hero = Cast<ACireHero>(GetPawn());
+    if (!Hero || Skin.Len() > 64 || !CireParagonChampions::HasSkin(ProfileId, Skin)) return;
+    if (!Hero->ChampionProfileId.IsEmpty() && Hero->ChampionProfileId != ProfileId) return;
+    Hero->ChampionSkin = Skin; Hero->ForceNetUpdate();
+}
+
 
 
 void CireParagonChampions::AppendProfiles(TArray<FCireChampionProfile>& InOut)

@@ -695,3 +695,12 @@ void ACireDraftStage::EndPlay(const EEndPlayReason::Type Reason)
     DestroyPreview();
     Super::EndPlay(Reason);
 }
+
+// paragon-champions: champion-select skin preview.
+void ACireDraftStage::SetPreviewSkin(const FString& Skin)
+{
+    if(!IsValid(Preview)||Preview->ChampionSkin==Skin)return;
+    Preview->ChampionSkin=Skin;
+    if(Preview->ChampionArt)Preview->ChampionArt->UpdateVisuals(*Preview,.016f);
+    RefreshCutoutParts();
+}

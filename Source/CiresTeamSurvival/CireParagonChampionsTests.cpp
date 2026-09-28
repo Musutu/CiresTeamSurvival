@@ -124,7 +124,7 @@ bool CireParagonChampions::RunSmoke(ACireGameMode* Mode)
     // gallery (Tools/RunParagonGallery.py) and -CireParagonFullSmoke cover every hero. The sample is fixed (every delivery family).
     TArray<FString> Sample;
     if (FParse::Param(FCommandLine::Get(), TEXT("CireParagonFullSmoke"))) Sample = HeroIds();
-    else for (const TCHAR* Id : {TEXT("pg_greystone"), TEXT("pg_sparrow"), TEXT("pg_zinx"), TEXT("pg_gideon"), TEXT("pg_yin")}) if (IsParagon(Id)) Sample.Add(Id);
+    else for (const TCHAR* Id : {TEXT("pg_greystone"), TEXT("pg_sparrow"), TEXT("pg_zinx"), TEXT("pg_gideon"), TEXT("pg_yin"), TEXT("pg_greystone_dragonlord")}) if (IsParagon(Id)) Sample.Add(Id);
     // Data-level art checks for every hero: the binding resolves to the pack mesh.
     for (const FString& Id : HeroIds())
     {
@@ -135,7 +135,7 @@ bool CireParagonChampions::RunSmoke(ACireGameMode* Mode)
 
     UWorld* World = Mode->GetWorld();
     const bool bForce = GCireForceTripoChampionArt; GCireForceTripoChampionArt = true;
-    int32 Bodies = 0, CastClips = 0;
+    int32 Bodies = 0, CastClips = 0, SkinsApplied = 0;
     for (const FString& Id : Sample)
     {
         ACireHero* H = F.Hero(0, FVector(-400, 0, 0), Id);
@@ -159,6 +159,17 @@ bool CireParagonChampions::RunSmoke(ACireGameMode* Mode)
             T.Check(Clip != nullptr && Clip->GetSkeleton() == Body->GetSkeletalMeshAsset()->GetSkeleton(), S + TEXT(": plays a clip on the hero skeleton"));
             CastClips += Clip ? 1 : 0;
             H->Cooldowns = {0.f}; for (int32 I = 0; I < 90; ++I) Art->Update(*H, Dt);
+        }
+        // Skins: the first reskin re-binds the body to the skin mesh on the same clips; an unknown skin is rejected.
+        if (const TArray<FString> SkinList = Skins(Id); SkinList.Num() > 0)
+        {
+            const FString Key = SkinList[0].Left(SkinList[0].Find(TEXT("|")));
+            T.Check(HasSkin(Id, Key) && HasSkin(Id, FString()) && !HasSkin(Id, TEXT("NotASkin")), Id + TEXT(": skin validation"));
+            H->ChampionSkin = Key;
+            const bool bSkinApplied = H->ChampionArt->DebugApply(*H);
+            USkeletalMeshComponent* SkinBody = Art->GetNativeBody();
+            T.Check(bSkinApplied && SkinBody && SkinBody->GetSkeletalMeshAsset() && SkinBody->GetSkeletalMeshAsset()->GetPathName() != Mesh, Id + TEXT(": skin ") + Key + TEXT(" wears its own mesh"));
+            ++SkinsApplied;
         }
         H->Destroy();
     }
@@ -216,8 +227,9 @@ bool CireParagonChampions::RunSmoke(ACireGameMode* Mode)
         }
     }
     const bool bPass = T.Failed == 0;
-    UE_LOG(LogCireParagonTests, Display, TEXT("CIRE_PARAGON_SMOKE_%s checks=%d failed=%d installed=%d bodies=%d castClips=%d casts=%d"),
-        bPass ? TEXT("PASS") : TEXT("FAIL"), T.Count, T.Failed, HeroIds().Num(), Bodies, CastClips, Casts);
+    UE_LOG(LogCireParagonTests, Display, TEXT("CIRE_PARAGON_SMOKE_%s checks=%d failed=%d installed=%d bodies=%d castClips=%d casts=%d skins=%d"),
+        bPass ? TEXT("PASS") : TEXT("FAIL"), T.Count, T.Failed, HeroIds().Num(), Bodies, CastClips, Casts, SkinsApplied);
+
     return bPass;
 }
 #endif

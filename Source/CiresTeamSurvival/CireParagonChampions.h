@@ -72,7 +72,11 @@ namespace CireParagonChampions
     CIRESTEAMSURVIVAL_API USoundBase* Voice(const FString& ProfileId, const FString& Key);
     /** Champion-select painting id (an existing T_DraftBg_<id>) for a Paragon hero, empty otherwise. */
     CIRESTEAMSURVIVAL_API FString DraftBackground(const FString& ProfileId);
+    /** Selectable cosmetic skins of a hero (reskins whose mesh is installed), as "<key>|<display name>". Empty for others. */
+    CIRESTEAMSURVIVAL_API TArray<FString> Skins(const FString& ProfileId);
+    CIRESTEAMSURVIVAL_API bool HasSkin(const FString& ProfileId, const FString& SkinKey);
     /** Ability ids of a hero's own Paragon kit (RMB, Q, E, then the ultimate). */
+
 
     CIRESTEAMSURVIVAL_API TArray<FString> OwnAbilities(const FString& ProfileId);
 
