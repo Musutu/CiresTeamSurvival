@@ -65,7 +65,7 @@ bool FCireRareSpawnRules::operator==(const FCireRareSpawnRules& O) const
 FCireBonusWaveRules::FCireBonusWaveRules() { Wave = CireWaveDirector::BonusTemplate(); }
 bool FCireBonusWaveRules::operator==(const FCireBonusWaveRules& O) const
 {
-    return bEnabled == O.bEnabled && Near(Chance, O.Chance) && FromWave == O.FromWave && MaxPerCycle == O.MaxPerCycle &&
+    return bEnabled == O.bEnabled && Near(Chance, O.Chance) && Near(ReplaceChance, O.ReplaceChance) && bEscapeTimerOnHit == O.bEscapeTimerOnHit && FromWave == O.FromWave && MaxPerCycle == O.MaxPerCycle &&
         Near(ExtraBreatherSeconds, O.ExtraBreatherSeconds) && Near(EscapeSeconds, O.EscapeSeconds) && Near(FleeRadius, O.FleeRadius) &&
         Near(Bounty, O.Bounty) && Wave == O.Wave;
 }
@@ -343,9 +343,9 @@ bool CireWaveDirector::Validate(FCireWaveConfig& C, FString* Error, bool bClamp)
         if (Rr.Pool.Num() > 16) Rr.Pool.SetNum(16);
         Rr.Pool.RemoveAll([](FName Id) { return !CireNPCArchetypes::Find(Id); }); // a missing Bestiary.json never takes the waves down
         auto& B = C.Bonus;
-        B.Chance = ClampF(B.Chance, 0, 1, .4f); B.FromWave = FMath::Clamp(B.FromWave, 1, 200); B.MaxPerCycle = FMath::Clamp(B.MaxPerCycle, 0, 5);
-        B.ExtraBreatherSeconds = ClampF(B.ExtraBreatherSeconds, 0, 60, 6); B.EscapeSeconds = ClampF(B.EscapeSeconds, 5, 120, 26);
-        B.FleeRadius = ClampF(B.FleeRadius, 0, 3000, 950); B.Bounty = ClampF(B.Bounty, 0, 100, 4);
+        B.Chance = ClampF(B.Chance, 0, 1, 0); B.ReplaceChance = ClampF(B.ReplaceChance, 0, 1, .08f); // bonus-loot B.FromWave = FMath::Clamp(B.FromWave, 1, 200); B.MaxPerCycle = FMath::Clamp(B.MaxPerCycle, 0, 5);
+        B.ExtraBreatherSeconds = ClampF(B.ExtraBreatherSeconds, 0, 60, 6); B.EscapeSeconds = ClampF(B.EscapeSeconds, 5, 240, 52);
+        B.FleeRadius = ClampF(B.FleeRadius, 0, 3000, 950); B.Bounty = ClampF(B.Bounty, 0, 100, 1);
         B.Wave.Type = ECireWaveType::BonusLoot; B.Wave.bMustClear = false; B.Wave.Race = NAME_None;
         B.Wave.Label = B.Wave.Label.Left(40).TrimStartAndEnd(); if (B.Wave.Label.IsEmpty()) B.Wave.Label = TEXT("Bonus Loot");
         B.Wave.SpawnInterval = ClampF(B.Wave.SpawnInterval, 0, 5, .35f); B.Wave.DelayBefore = 0; B.Wave.RewardMultiplier = ClampF(B.Wave.RewardMultiplier, 0, 10, 1);
@@ -611,6 +611,8 @@ bool CireWaveDirector::ParseJson(const FString& Json, FCireWaveConfig& Out, FStr
         auto& B = C.Bonus;
         B.bEnabled = Flag(*BonusObj, TEXT("enabled"), B.bEnabled);
         B.Chance = static_cast<float>(Num(*BonusObj, TEXT("chance"), B.Chance));
+        B.ReplaceChance = static_cast<float>(Num(*BonusObj, TEXT("replaceChance"), B.ReplaceChance)); // bonus-loot
+        B.bEscapeTimerOnHit = Flag(*BonusObj, TEXT("escapeTimerOnHit"), B.bEscapeTimerOnHit);
         B.FromWave = static_cast<int32>(Num(*BonusObj, TEXT("fromWave"), B.FromWave));
         B.MaxPerCycle = static_cast<int32>(Num(*BonusObj, TEXT("maxPerCycle"), B.MaxPerCycle));
         B.ExtraBreatherSeconds = static_cast<float>(Num(*BonusObj, TEXT("extraBreatherSeconds"), B.ExtraBreatherSeconds));
@@ -761,9 +763,11 @@ FString CireWaveDirector::ToJson(const FCireWaveConfig& C)
         Rare->SetArrayField(TEXT("pool"), Pool);
         Root->SetObjectField(TEXT("rareSpawn"), Rare);
         auto Bonus = MakeShared<FJsonObject>();
-        Bonus->SetStringField(TEXT("_comment"), TEXT("Bonus Loot Wave: after a cleared wave (never the cycle's last), from fromWave, `chance` to run `wave` during the breather (at most maxPerCycle). Its creatures flee champions closer than fleeRadius, never attack, never cost lives and escape after escapeSeconds. Each pays `bounty` mob values plus a personal chest (LootTables.json sources.bonusWave). The breather grows by extraBreatherSeconds only when it runs. Docs/MonsterExpansion.md."));
+        Bonus->SetStringField(TEXT("_comment"), TEXT("Bonus Loot Stage (playtest 6): from fromWave, `replaceChance` per non-boss wave that the stage REPLACES the wave (at most maxPerCycle). Its creatures run the route to the castle, never attack, bolt from champions closer than fleeRadius, never cost lives and escape escapeSeconds after they are first attacked (escapeTimerOnHit) or at the castle. The stage rolls a loot tier (LootTables.json bonusStage). Each creature pays `bounty` mob values. `chance` = the older breather bonus wave after a cleared wave (0 = off; extraBreatherSeconds). Docs/Items.md, Docs/MonsterExpansion.md."));
         Bonus->SetBoolField(TEXT("enabled"), C.Bonus.bEnabled);
         Bonus->SetNumberField(TEXT("chance"), C.Bonus.Chance);
+        Bonus->SetNumberField(TEXT("replaceChance"), C.Bonus.ReplaceChance); // bonus-loot
+        Bonus->SetBoolField(TEXT("escapeTimerOnHit"), C.Bonus.bEscapeTimerOnHit);
         Bonus->SetNumberField(TEXT("fromWave"), C.Bonus.FromWave);
         Bonus->SetNumberField(TEXT("maxPerCycle"), C.Bonus.MaxPerCycle);
         Bonus->SetNumberField(TEXT("extraBreatherSeconds"), C.Bonus.ExtraBreatherSeconds);

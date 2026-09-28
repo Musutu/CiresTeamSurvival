@@ -237,6 +237,7 @@ ACireMonster* CireOutdoorBosses::SpawnOne(ACireGameMode* Mode, int32 Realm, int3
     const auto* State = Mode->GetGameState<ACireGameState>();
     const int32 Wave = FMath::Max(State ? State->Wave : 1, R.StrengthWave);
     M->Lane = Realm; M->PackId = PackId;
+    if (M->NPCState) M->NPCState->BodySize = FMath::Clamp(Spot.SizeScale, .2f, 3.f); // bosses-spacing: the marker's model size x
     // Boss-grade stats (the wave boss curve at the strength wave), but it never marches and never leaks.
     CireNPCCombat::ConfigureArchetype(M, BossId, Wave, 0, Mode->Clock.Round(), true);
     M->bBoss = false; M->LeakCostOverride = 0; M->bPathLeash = false;

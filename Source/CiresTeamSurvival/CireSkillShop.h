@@ -12,6 +12,7 @@
 
 class ACireHero;
 class ACireGameMode;
+struct FCirePriceQuote; // shop-anywhere (CireVendors.h)
 class UWorld;
 
 struct CIRESTEAMSURVIVAL_API FCireShopSkill
@@ -35,6 +36,7 @@ struct CIRESTEAMSURVIVAL_API FCireSkillShopData
 {
     Cires::Items::SkillShopRules Rules;
     bool bBreather = true, bPrep = true, bRecovery = true, bAutoOpen = true;
+    bool bAnytime = true;            // shop-anywhere (playtest 6): open at any time, anywhere (bots keep the windows above)
     // Ready to Continue gate (Skill Shop mode): the post-wave shop phase waits for every human.
     bool bReadyGate = true;
     float ReadyMaxSeconds = 180.f;   // safety cap for AFK players; 0 = none
@@ -78,8 +80,13 @@ namespace CireSkillShop
     CIRESTEAMSURVIVAL_API bool IsBreather(const UWorld* World);
     CIRESTEAMSURVIVAL_API int32 Level(const ACireHero* Hero, const FString& Id);   // 0 = not owned
     CIRESTEAMSURVIVAL_API int32 OwnedOfKind(const ACireHero* Hero, Cires::Items::ShopSkillKind Kind);
+    // Prices this hero pays where he stands (shop-anywhere: vendor -10% / town list / out of town +10%).
     CIRESTEAMSURVIVAL_API int32 BuyPrice(const ACireHero* Hero, const FString& Id);
     CIRESTEAMSURVIVAL_API int32 LevelPrice(const ACireHero* Hero, const FString& Id);
+    CIRESTEAMSURVIVAL_API FCirePriceQuote BuyQuote(const ACireHero* Hero, const FString& Id);
+    CIRESTEAMSURVIVAL_API FCirePriceQuote LevelQuote(const ACireHero* Hero, const FString& Id);
+    // The classic windows (breather, prep, recovery): bots shop only then.
+    CIRESTEAMSURVIVAL_API bool InShopWindow(const ACireHero* Hero);
     // Why a buy would fail right now (empty when it would succeed).
     CIRESTEAMSURVIVAL_API FString BuyBlocker(const ACireHero* Hero, const FString& Id);
 

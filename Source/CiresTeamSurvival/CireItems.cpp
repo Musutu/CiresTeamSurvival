@@ -1,8 +1,10 @@
 #include "CireItems.h"
+#include "CireItemsPvP.h" // bonus-loot
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireInitiation.h" // initiation: Blink Dagger
 #include "CireSkillShop.h" // progression-shop: Skill Shop
+#include "CireVendors.h" // shop-anywhere: buy anywhere, vendor discount / out-of-town surcharge
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
 #include "CireBuffs.h" // aura-vfx
 // progression-shop: see CireItems.h, Docs/Items.md.
@@ -256,7 +258,7 @@ bool CireItems::Reload()
     const FString Path = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/Items.json"));
     FCireItemData Parsed;
     if (!FFileHelper::LoadFileToString(Json, *Path)) Error = TEXT("Cannot read Content/Data/Items.json");
-    else ParseJson(Json, Parsed, Error);
+    else if (ParseJson(Json, Parsed, Error)) { FString PvPError; CireItemsPvP::MergeInto(Parsed, PvPError); } // bonus-loot: PvPUniques.json (a bad file only drops the PvP uniques)
     bDataLoaded = true;
     if (!Parsed.bValid)
     {
@@ -388,6 +390,7 @@ float CireItems::MoveSpeedMultiplier(const ACireHero* Hero)
             if (const ItemDef* Item = Find(Buff.Id); Item && Item->Use.Kind == EffectKind::Haste)
                 Bonus += static_cast<float>(Item->Use.Amount / 100.);
             else if (Item) { for (const Passive& P : Item->Passives) if (P.Kind == PassiveKind::RollHaste) Bonus += static_cast<float>(P.Amount / 100.); } // items-v2: Tailwind
+    Bonus += CireItemsPvP::MoveSpeedBonus(Inventory); // bonus-loot: Hunter's Pursuit
     return FMath::Clamp(1.f + Bonus, .5f, 2.f);
 }
 
@@ -427,6 +430,7 @@ float CireItems::ModifyOutgoingDamage(AActor* Source, AActor* Target, float Amou
             else if (const auto* Monster = Cast<ACireMonster>(Target)) { Health = Monster->Health; MaxHealth = Monster->MaxHealth; }
             if (MaxHealth > 0 && Health / MaxHealth * 100.f < T.ExecuteThreshold) Amount *= 1.f + static_cast<float>(T.ExecuteBonus / 100.);
         }
+        Amount = CireItemsPvP::ModifyOutgoing(Hero, Target, Amount, AbilityName); // bonus-loot: PvP uniques (champion targets only)
     }
     else if (IsSummon(Source)) Amount *= SummonMultiplier(Source); // items-v2: Soulbinder's Crook
     const int32 Team = CireCombat::TeamOf(Source);
@@ -446,6 +450,7 @@ void CireItems::OnDamageDealt(AActor* Source, AActor* Target, float Applied, con
     if (T.SplashPercent > 0 && T.SplashRadius > 0 && IsBasicAttack(Source, AbilityName) && IsValid(Target)) // items-v2: Howling Cleave
         for (AActor* Other : EnemiesNear(Hero, Target->GetActorLocation(), static_cast<float>(T.SplashRadius)))
             if (Other != Target) CireCombat::ApplyDamage(Hero, Other, Applied * static_cast<float>(T.SplashPercent / 100.), TEXT("Howling Cleave"));
+    CireItemsPvP::OnDamageDealt(Hero, Target, Applied, AbilityName); // bonus-loot: PvP uniques (champion targets only)
 }
 
 float CireItems::StrengthDefense(const ACireHero* Hero, bool bPhysical)
@@ -484,6 +489,7 @@ float CireItems::ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FSt
         if (Buff.EndsAt > Now)
             if (const ItemDef* Item = Find(Buff.Id); Item && Item->Use.Kind == EffectKind::SelfBarrier)
                 Amount *= 1.f - FMath::Clamp(static_cast<float>(Item->Use.Amount / 100.), 0.f, .9f);
+    Amount = CireItemsPvP::ModifyIncoming(Hero, Causer, AbilityName, Amount); // bonus-loot: PvP uniques (champion attackers only)
     if (Inventory->BarrierHP > 0 && Inventory->BarrierEndsAt > Now) // items-v2: party shield absorbs first
     {
         const float Absorbed = FMath::Min(Inventory->BarrierHP, Amount);
@@ -500,6 +506,7 @@ void CireItems::OnHeroDamaged(ACireHero* Hero, AActor* Causer, const FString& Ab
     if (!Inventory || Taken <= 0) return;
     Inventory->InterruptTeleport(TEXT("Teleport interrupted by damage."));
     const Totals& T = Inventory->Totals();
+    CireItemsPvP::OnHeroDamaged(Hero, Causer, AbilityName, Taken); // bonus-loot: PvP uniques (champion attackers only)
     if (T.Thorns > 0 && IsBasicAttack(Causer, AbilityName) && Hero->IsHostile(Causer))
         CireCombat::ApplyDamage(Hero, Causer, Taken * static_cast<float>(T.Thorns / 100.), TEXT("Iron Retribution"));
     if (T.LowHealthThreshold > 0 && !Hero->bDead && Hero->MaxHealth > 0)
@@ -530,6 +537,7 @@ ShopAccess CireItems::ShopAccessFor(const ACireHero* Hero)
 {
     const auto* Mode = ModeOf(Hero);
     if (!Hero || !Mode || !Hero->bDrafted) return ShopAccess::WrongPhase;
+    if (CireVendors::ShopAnywhere()) return Mode->Clock.Phase() == Cires::MatchPhase::Finished ? ShopAccess::WrongPhase : ShopAccess::Allowed; // shop-anywhere (playtest 6)
     const double Distance = FVector::Dist2D(Hero->GetActorLocation(), Mode->BasePosition(Hero->TeamId));
     return CheckShopAccess(Get().Shop, static_cast<int>(Mode->Clock.Phase()), Distance, Hero->bDead);
 }
@@ -660,6 +668,7 @@ void UCireInventory::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME_CONDITION(UCireInventory, bShopVisit, COND_OwnerOnly);
     DOREPLIFETIME(UCireInventory, SkillRanks);
     DOREPLIFETIME(UCireInventory, bReadyToContinue);
+    DOREPLIFETIME(UCireInventory, FreeSkillPoints); // bonus-loot
 }
 
 ACireHero* UCireInventory::Hero() const { return Cast<ACireHero>(GetOwner()); }
@@ -809,7 +818,12 @@ bool UCireInventory::Buy(FName ItemId, FString& Message)
     }
     Inventory Rules = ToRules();
     int32 Gold = Owner->Gold;
-    const PurchasePlan Plan = PlanPurchase(D.Catalog, Rules, Utf8(ItemId.ToString()), Gold);
+    // shop-anywhere: plan the recipe without a gold limit, then charge the price for where the buyer stands
+    // (vendor -10% / town list / out of town +10%, CireVendors::QuoteItem).
+    constexpr int32 PlanGold = MAX_int32 / 2;
+    PurchasePlan Plan = PlanPurchase(D.Catalog, Rules, Utf8(ItemId.ToString()), PlanGold);
+    const FCirePriceQuote Quote = CireVendors::QuoteItem(Owner, ItemId, Plan.Cost);
+    if (Plan.Ok && Gold < Quote.Price) { Plan.Ok = false; Plan.Error = "Not enough gold: " + std::to_string(Quote.Price - Gold) + " more needed."; }
     if (!Plan.Ok)
     {
         Message = UTF8_TO_TCHAR(Plan.Error.c_str());
@@ -820,9 +834,9 @@ bool UCireInventory::Buy(FName ItemId, FString& Message)
     if (!Session.Open) BeginShopVisit(false);
     if (Plan.Instant) Session.Clear(); // tomes are read on purchase and cannot be undone
     else Session.Record(Rules, Gold, "Buy " + Item->Name);
-    int Remaining = Gold;
+    int Remaining = PlanGold;
     if (!ApplyPurchase(D.Catalog, Rules, Remaining, Utf8(ItemId.ToString()), Plan)) { Message = TEXT("Purchase rejected."); return false; }
-    Owner->Gold = Remaining;
+    Owner->Gold = Gold - Quote.Price;
     if (Plan.Instant)
     {
         FString EffectMessage;
@@ -830,9 +844,10 @@ bool UCireInventory::Buy(FName ItemId, FString& Message)
     }
     else FromRules(Rules);
     AfterChange();
-    Message = FString::Printf(TEXT("Purchased %s  -%dg"), UTF8_TO_TCHAR(Item->Name.c_str()), Plan.Cost);
+    Message = FString::Printf(TEXT("Purchased %s  -%dg"), UTF8_TO_TCHAR(Item->Name.c_str()), Quote.Price);
+    if (const FString Why = CireVendors::QuoteLabel(Quote); !Why.IsEmpty()) Message += FString::Printf(TEXT("  (%s)"), *Why);
     Owner->Notice = Message;
-    SendFeedback(ECireShopAction::Buy, true, ItemId, Plan.TargetSlot, Plan.ToBelt, -Plan.Cost, Message);
+    SendFeedback(ECireShopAction::Buy, true, ItemId, Plan.TargetSlot, Plan.ToBelt, -Quote.Price, Message);
     return true;
 }
 

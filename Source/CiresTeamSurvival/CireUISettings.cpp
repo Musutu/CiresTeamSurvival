@@ -92,6 +92,8 @@ void FCireUISettings::Reset()
     // Right column under the minimap: boss frames, then threat, then the damage meter.
     Add(TEXT("Boss"), 1040.f, 208.f, 220.f, 150.f);
     Add(TEXT("Threat"), 1040.f, 372.f, 220.f, 124.f);
+    // bosses-spacing: raid-boss bars across the top, under the match plate, between the target frame and the minimap.
+    Add(TEXT("RaidBoss"), 546.f, 88.f, 480.f, 118.f);
     // Extra action bars stack above the main bar (panel "Skills").
     Add(TEXT("Bar2"), 368.f, 492.f, 536.f, 48.f);
     Add(TEXT("Bar3"), 368.f, 440.f, 536.f, 48.f);
@@ -131,6 +133,7 @@ void FCireUISettings::Reset()
     bShowThreatMeter=true; bThreatWarnings=true; bThreatSound=true; ThreatWarningPercent=90.f; bLevelUpEffect=true; bShowBossFrames=true;
     bShowActionBar2=true; bShowActionBar3=false; bLockActionBars=false; bMeterCollapsed=false; bThreatCollapsed=false;
     bEffectCallouts=true; bControlAlerts=true; bPlayerCastBar=true; OverheadStatusMode=0;
+    bConfirmDialogs=true; bConfirmOutOfTownBuy=true; // shop-anywhere
     bCameraAutoFollow=true; bAutoReacquireTarget=false; // feat/camera-movement
     bSmartCast=true; bMouseoverCast=false; bRightClickCancelsAim=true; bPressAgainToCast=true; bAutoStopToCast=true; // feat/camera-movement
     OtherEffectsIntensity=1.f; // aura-vfx
@@ -297,6 +300,7 @@ void FCireUISettings::Load(const FString& Filename)
     CIRE_LOAD_BOOL(bShowActionBar2); CIRE_LOAD_BOOL(bShowActionBar3); CIRE_LOAD_BOOL(bLockActionBars);
     CIRE_LOAD_BOOL(bMeterCollapsed); CIRE_LOAD_BOOL(bThreatCollapsed);
     CIRE_LOAD_BOOL(bEffectCallouts); CIRE_LOAD_BOOL(bControlAlerts); CIRE_LOAD_BOOL(bPlayerCastBar);
+    CIRE_LOAD_BOOL(bConfirmDialogs); CIRE_LOAD_BOOL(bConfirmOutOfTownBuy); // shop-anywhere
     CIRE_LOAD_BOOL(bCameraAutoFollow); CIRE_LOAD_BOOL(bAutoReacquireTarget); // feat/camera-movement
     CIRE_LOAD_BOOL(bSmartCast); CIRE_LOAD_BOOL(bMouseoverCast); CIRE_LOAD_BOOL(bRightClickCancelsAim); CIRE_LOAD_BOOL(bPressAgainToCast); CIRE_LOAD_BOOL(bAutoStopToCast); // feat/camera-movement
     CIRE_LOAD_BOOL(bMusicEnabled); CIRE_LOAD_BOOL(bFootstepCameraShake); // audio: absent keys keep the defaults
@@ -404,6 +408,7 @@ bool FCireUISettings::Save()
     CIRE_SAVE_BOOL(bShowActionBar2); CIRE_SAVE_BOOL(bShowActionBar3); CIRE_SAVE_BOOL(bLockActionBars);
     CIRE_SAVE_BOOL(bMeterCollapsed); CIRE_SAVE_BOOL(bThreatCollapsed);
     CIRE_SAVE_BOOL(bEffectCallouts); CIRE_SAVE_BOOL(bControlAlerts); CIRE_SAVE_BOOL(bPlayerCastBar);
+    CIRE_SAVE_BOOL(bConfirmDialogs); CIRE_SAVE_BOOL(bConfirmOutOfTownBuy); // shop-anywhere
     CIRE_SAVE_BOOL(bCameraAutoFollow); CIRE_SAVE_BOOL(bAutoReacquireTarget); // feat/camera-movement
     CIRE_SAVE_BOOL(bSmartCast); CIRE_SAVE_BOOL(bMouseoverCast); CIRE_SAVE_BOOL(bRightClickCancelsAim); CIRE_SAVE_BOOL(bPressAgainToCast); CIRE_SAVE_BOOL(bAutoStopToCast); // feat/camera-movement
     CIRE_SAVE_BOOL(bMusicEnabled); CIRE_SAVE_BOOL(bFootstepCameraShake); // audio:

@@ -38,6 +38,7 @@
 #include "CireAudio.h" // audio: recorded cues for level-up, aggro and phase banners
 #include "CireFabVFX.h" // pack-usage: level-up flourish
 #include "CireAbilityVFX.h" // pack-usage: spell-effect scale
+#include "CireUnitSpacing.h" // bosses-spacing
 #include "UObject/ConstructorHelpers.h"
 #include "CireArenaPortal.h" // arena-flow
 
@@ -1374,7 +1375,7 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
         Plate(*It,It->HeroName,It->Health,It->MaxHealth,It->TeamId==Hero->TeamId?Friendly*.85f:Hostile,120,nullptr);
     for(TCireActorIterator<ACireMonster> It(GetWorld());It;++It)if(!bArena&&It->Lane==Hero->TeamId)
         Plate(*It,It->LeashState==2?It->GetNPCDisplayName()+TEXT("  (evading)"):It->GetNPCDisplayName(), // layout-wiring: leash return
-            It->Health,It->MaxHealth,It->bNeutral?Neutral*.95f:It->bArmoredEscort?Silver*.8f:Hostile*.9f,100,*It); // wave-director: neutral = yellow
+            It->Health,It->MaxHealth,It->bNeutral?Neutral*.95f:It->bArmoredEscort?Silver*.8f:Hostile*.9f,CireUnitSpacing::PlateLift(*It),*It); // bosses-spacing: over a giant head // wave-director: neutral = yellow
     for(TCireActorIterator<ACireConstruct> It(GetWorld());It;++It)if(It->CanObserve(PlayerOwner))
         Plate(*It,It->GetDisplayName(),It->Health,It->MaxHealth,It->OriginTeam==Hero->TeamId?Friendly*.85f:Hostile,It->ConstructSpec.Height*.5f+25,nullptr);
     LayoutAndDraw();

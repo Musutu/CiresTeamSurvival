@@ -80,6 +80,9 @@ struct CIRESTEAMSURVIVAL_API FCireMapMarker
     FCirePackComposition Comp = {0, 0, 0};
     /** outdoor-bosses: Boss Spawn: health multiplier of this marker's boss (JSON "hp", default 1). */
     float HealthScale = 1.f;
+    /** bosses-spacing: Boss Spawn: model size multiplier of this marker's boss (JSON "size", default 1, 0.2-3); it multiplies
+     *  UnitSpacing.json boss.outdoorBoss. */
+    float SizeScale = 1.f;
     bool HasCompOverride() const { return !Comp.IsZero(); }
 };
 
@@ -200,6 +203,8 @@ namespace CireMapLayout
     CIRESTEAMSURVIVAL_API bool SetKind(FCireMapLayout& Layout, const FString& Id, const FString& Kind);
     /** outdoor-bosses: a Boss marker's health multiplier (0.1..20, twin follows). */
     CIRESTEAMSURVIVAL_API bool SetHealthScale(FCireMapLayout& Layout, const FString& Id, float Scale);
+    /** bosses-spacing: Boss Spawn model size x (0.2-3, rounded to 0.05); the mirrored twin follows. */
+    CIRESTEAMSURVIVAL_API bool SetBossSize(FCireMapLayout& Layout, const FString& Id, float Scale);
     /** layout-wiring: a path's weight (0..100) and a spawn's split mode (by path weight, or even). */
     CIRESTEAMSURVIVAL_API bool SetWeight(FCireMapLayout& Layout, const FString& Id, float Weight);
     CIRESTEAMSURVIVAL_API bool SetSplit(FCireMapLayout& Layout, const FString& Id, bool bWeighted);

@@ -20,6 +20,7 @@
 #include "CireZones.h" // tier-readability: zones and their monster tier
 #include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireLeash.h" // outdoor-bosses: the boss leash radius
+#include "CireUnitSpacing.h" // bosses-spacing: boss model size
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/Canvas.h"
@@ -982,9 +983,10 @@ void ACireHUD::TickLayoutEditor()
         if (Pressed(EKeys::Period)) Rotate(bShift ? 45.f : 15.f);
         if (const FCireMapMarker* Sel = SelectedMarker(); Sel && Sel->Type == ML::BossSpawn) // outdoor-bosses: [ ] step the boss's HP x
         {
-            const FString HpId = Sel->Id; const float HpScale = Sel->HealthScale;
-            if (Pressed(EKeys::LeftBracket)) Edit([&](FCireMapLayout& X) { return ML::SetHealthScale(X, HpId, HpScale - .25f); });
-            if (Pressed(EKeys::RightBracket)) Edit([&](FCireMapLayout& X) { return ML::SetHealthScale(X, HpId, HpScale + .25f); });
+            const FString HpId = Sel->Id; const float HpScale = Sel->HealthScale, SizeScale = Sel->SizeScale;
+            // bosses-spacing: Shift+[ ] step the boss's model size x instead.
+            if (Pressed(EKeys::LeftBracket)) Edit([&](FCireMapLayout& X) { return bShift ? ML::SetBossSize(X, HpId, SizeScale - .1f) : ML::SetHealthScale(X, HpId, HpScale - .25f); });
+            if (Pressed(EKeys::RightBracket)) Edit([&](FCireMapLayout& X) { return bShift ? ML::SetBossSize(X, HpId, SizeScale + .1f) : ML::SetHealthScale(X, HpId, HpScale + .25f); });
         }
         else
         {
@@ -1324,6 +1326,15 @@ void ACireHUD::TickLayoutEditor()
                 const float Hp = CireOutdoorBosses::HealthFor(Boss, HpScale, Rules);
                 TextFx(FString::Printf(TEXT("HEALTH  %s"), *FText::AsNumber(FMath::RoundToInt(Hp)).ToString()), IX, Y, 9.f, CireUIColors::BrightGold, ECireFont::Bold, true);
                 Y += 18;
+            }
+            // bosses-spacing: model SIZE x per marker (steps of 0.1, Shift+[ ] with a Boss marker selected); the twin follows.
+            {
+                const FString SizeMarker = M->Id; const float SizeScale = M->SizeScale;
+                auto StepSize = [&](float Delta) { Edit([&](FCireMapLayout& X) { return ML::SetBossSize(X, SizeMarker, SizeScale + Delta); }); };
+                Stepper(TEXT("SIZE x"), FString::Printf(TEXT("x%.2f"), SizeScale), Y, [&]() { StepSize(-.1f); }, [&]() { StepSize(.1f); },
+                    FString::Printf(TEXT("This marker's boss model size multiplier (0.2-3). Drawn size = its normal size x UnitSpacing.json boss.outdoorBoss (x%.1f) x this = x%.2f. Mirrored twins follow."),
+                        CireUnitSpacing::Get().OutdoorBossSize, CireUnitSpacing::Get().OutdoorBossSize * SizeScale));
+                Y += 26;
             }
             Wrapped(FString::Printf(TEXT("Always there, neutral until attacked, leashed %.0f m to this marker; boss bounty and loot; %s."), CireLeash::Rules().RadiusBoss / 100.f,
                 Rules.RespawnSeconds > 0 ? *FString::Printf(TEXT("returns %.0f min after it dies"), Rules.RespawnSeconds / 60.f)

@@ -7,6 +7,8 @@
 #include "CireLoot.h"
 #include "CireLanePath.h" // jungle-packs: recall points
 #include "CireSkillShop.h"
+#include "CireVendors.h" // shop-anywhere: these checks pin the classic access rules and list prices
+#include "Misc/ScopeExit.h"
 #include "CireGame.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCCombat.h"
@@ -110,6 +112,11 @@ bool CireItems::RunSmoke(ACireGameMode* Mode)
     if (!Mode || !Mode->HasAuthority()) return false;
     FChecker Check{TEXT("ITEMS")};
     FFixture F(Mode);
+    // shop-anywhere: the checks below cover the classic phase/town rules at list prices; CireVendors::RunSmoke covers
+    // buying anywhere with the vendor discount and the out-of-town surcharge.
+    const FCireVendorPricing SavedPricing = CireVendors::Pricing();
+    CireVendors::MutablePricing().bShopAnywhere = false;
+    ON_SCOPE_EXIT { CireVendors::MutablePricing() = SavedPricing; };
     const auto& D = Get();
     Check(D.bValid && D.Order.Num() >= 45 && D.Order.Num() <= 60, TEXT("Items.json loads a 45-60 item catalog")); // items-v2
     int32 Tiers[4] = {0, 0, 0, 0}, Actives = 0, Uniques = 0;

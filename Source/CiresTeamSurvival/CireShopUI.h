@@ -27,6 +27,14 @@ namespace CireShopUI
     CIRESTEAMSURVIVAL_API void OpenVendor(ACireController* Controller, FName VendorId);
     // vendors: the merchant tab shown (NAME_None = every merchant).
     CIRESTEAMSURVIVAL_API FName CurrentVendor();
+    // shop-anywhere: the out-of-town purchase confirmation. Escape cancels it first (ACireHUD::HandleEscape).
+    CIRESTEAMSURVIVAL_API bool IsConfirmOpen();
+    CIRESTEAMSURVIVAL_API bool CancelConfirm();
+#if !UE_BUILD_SHIPPING
+    /** Interface probe: the dialog appears out of town, never in town, and is suppressed by "Don't show this again"
+        and by Options > Confirmation dialogs (dry run: nothing is bought; settings are restored). */
+    CIRESTEAMSURVIVAL_API bool ProbeConfirmDialog(ACireHUD& HUD, ACireHero* Hero, FString& Detail);
+#endif
     // Personal loot history (toggle: L), newest first.
     CIRESTEAMSURVIVAL_API void DrawLootLog(ACireHUD& HUD, ACireHero* Hero);
 

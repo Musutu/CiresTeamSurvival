@@ -101,22 +101,28 @@ struct CIRESTEAMSURVIVAL_API FCireRareSpawnRules
     bool operator==(const FCireRareSpawnRules& O) const;
 };
 
-/** monster-expansion: Waves.json "bonusWave". After a cleared wave (never the cycle's last) a short Bonus Loot
- *  Wave may run during the breather: greedy creatures flee down the lane and escape after EscapeSeconds. */
+/** monster-expansion: Waves.json "bonusWave". bonus-loot (playtest 6): a Bonus Loot Stage REPLACES a non-boss wave
+ *  with ReplaceChance (low); its greedy creatures run the route to the castle, never attack, bolt from champions and
+ *  escape EscapeSeconds after they are first attacked (or at the castle). The stage rolls a loot tier (CireBonusStage).
+ *  The older breather bonus wave (Chance, after a cleared wave) is kept for tools and is off by default. */
 struct CIRESTEAMSURVIVAL_API FCireBonusWaveRules
 {
     bool bEnabled = true;
-    float Chance = .4f;
+    float Chance = 0.f; // bonus-loot: the breather bonus wave is off by default (was .4); stages replace waves instead
+    /** bonus-loot: chance per eligible (non-boss) wave that a Bonus Loot Stage replaces it. */
+    float ReplaceChance = .08f;
+    /** bonus-loot: the escape clock starts only when a creature is first attacked (false = at spawn, the old rule). */
+    bool bEscapeTimerOnHit = true;
     int32 FromWave = 2;
     int32 MaxPerCycle = 1;
     /** Added to the breather when the bonus wave runs (the match grows by at most this). */
     float ExtraBreatherSeconds = 6.f;
-    /** Seconds before a bonus creature escapes with its loot (no lives lost). */
-    float EscapeSeconds = 26.f;
+    /** Seconds before a bonus creature escapes with its loot (no lives lost). bonus-loot: doubled 26 -> 52. */
+    float EscapeSeconds = 52.f;
     /** A bonus creature bolts away from a champion closer than this. */
     float FleeRadius = 950.f;
-    /** Kill bounty in mob values. */
-    float Bounty = 4.f;
+    /** Kill bounty in mob values. bonus-loot: 4 -> 1 (the stage's tier chest is the reward). */
+    float Bounty = 1.f;
     FCireWaveDef Wave;
     FCireBonusWaveRules(); // Wave = the goblin hoard template (CireWaveDirector::BonusTemplate)
     bool operator==(const FCireBonusWaveRules& O) const;
@@ -348,6 +354,11 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API float OnWaveCleared(ACireGameMode* Mode, int32 WaveInCycle, bool bForce = false);
     /** Starts the configured bonus wave now (developer / tests). */
     CIRESTEAMSURVIVAL_API bool StartBonusWave(ACireGameMode* Mode, FString* Error = nullptr);
+    /** bonus-loot: does a Bonus Loot Stage replace this wave? Never a boss wave (or a wave with a boss row), never before
+     *  bonusWave.fromWave, at most maxPerCycle per cycle; deterministic per match seed and wave. */
+    CIRESTEAMSURVIVAL_API bool RollBonusStage(const FCireWaveConfig& C, const FCireWaveDef& W, int32 GlobalWave, int32 Seed, int32 BonusThisCycle, bool bForce = false);
+    /** bonus-loot: the next StartWave becomes a Bonus Loot Stage (developer / tests; -1 = tier rolled, 1..3 = forced tier). */
+    CIRESTEAMSURVIVAL_API void ForceNextBonusStage(ACireGameMode* Mode, int32 Tier = -1);
     /** Rare spawns / bonus waves started this match (server; tests and soaks). */
     CIRESTEAMSURVIVAL_API void SpecialCounts(const ACireGameMode* Mode, int32& Rares, int32& BonusWaves);
     /** Rare roll for a wave (deterministic per match seed and wave number). Appends the rare row when it hits. */

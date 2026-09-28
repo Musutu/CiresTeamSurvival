@@ -22,6 +22,23 @@ struct FCireLootSource
     FString Table;
 };
 
+/** bonus-loot (playtest 6): LootTables.json "bonusStage". A Bonus Loot Stage rolls one tier for the whole stage; every
+ *  player of the lane then rolls his own outcome in that tier (personal loot). Gold is in multiples of the replaced
+ *  wave's gold value (what its kills would have paid each player). Docs/Items.md. */
+struct CIRESTEAMSURVIVAL_API FCireBonusStageRules
+{
+    float LowWeight = 70, MidWeight = 25, RareWeight = 5;                  // tier roll weights
+    float LowGoldWeight = 1, LowComponentWeight = 1, LowConsumableWeight = 1; // Low outcomes
+    float MidGoldWeight = 1, MidItemWeight = 1, MidPvPWeight = 1;            // Mid outcomes
+    float LowGoldMultiplier = 2, MidGoldMultiplier = 5;                     // x wave gold value
+    int32 Components = 2, Consumables = 2;                                   // Low item counts per player
+    int32 MidItemMinCost = 350, MidItemMaxCost = 500;                        // Mid "1 item per player" shop value
+    int32 RareChests = 3, ChestGold = 100;                                   // Rare: up to 3 chests of 100 g ...
+    float ChestSkillPointChance = .5f;                                       // ... or a free skill point
+    float ItemCatchShare = .5f;   // share of the lane's hoard caught needed for item/unique outcomes (else tier gold)
+    bool bScaleByCatch = true;    // gold and chest count scale with the share caught
+};
+
 struct CIRESTEAMSURVIVAL_API FCireLootData
 {
     TMap<FString, Cires::Items::LootTable> Tables;
@@ -30,6 +47,7 @@ struct CIRESTEAMSURVIVAL_API FCireLootData
     TArray<FCireLootSource> PackCompletion, PackLeader, LaneBoss;
     // monster-expansion: personal chests from Rare Spawns and Bonus Loot Wave creatures (by round).
     TArray<FCireLootSource> RareSpawn, BonusWave;
+    FCireBonusStageRules BonusStage; // bonus-loot
     float PickupRadius = 320.f;
     bool bAutoCollectOnPrep = true;
     // Personal loot (default): every eligible player gets an independent roll and a chest only they see.
@@ -112,6 +130,11 @@ namespace CireLoot
     CIRESTEAMSURVIVAL_API int32 MobValueNow(const UWorld* World);
     CIRESTEAMSURVIVAL_API bool SaveEconomy(FString* Error = nullptr);
     CIRESTEAMSURVIVAL_API Cires::Items::Economy& MutableEconomy();
+    // bonus-loot: free skill points (Rare bonus-stage chests). Each one waives the price of the next Skill Shop
+    // purchase or level-up (CireSkillShop spends it).
+    CIRESTEAMSURVIVAL_API int32 FreeSkillPoints(const ACireHero* Hero);
+    CIRESTEAMSURVIVAL_API void GrantFreeSkillPoints(ACireHero* Hero, int32 Points);
+    CIRESTEAMSURVIVAL_API bool SpendFreeSkillPoint(ACireHero* Hero);
 }
 
 namespace CireProgression

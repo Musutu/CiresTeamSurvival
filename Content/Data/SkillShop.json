@@ -2,6 +2,8 @@
   "schemaVersion": 1,
   "_comment": "progression-shop: the Skill Shop (Eric's playtest-2 ruling). Replaces level-up skill offers; the free opening role pick at the start stays. Prices are in mob values (LootTables.json economy), so they follow the gold players have. Edit live in F8 > Economy. See Docs/Progression.md.",
   "access": {
+    "_comment": "shop-anywhere (playtest 6): anytime = skills can be bought at any time, anywhere (priced by location, Vendors.json pricing). The windows below still decide when bots shop.",
+    "anytime": true,
     "breather": true,
     "prep": true,
     "recovery": true,

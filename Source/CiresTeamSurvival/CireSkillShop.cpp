@@ -10,6 +10,7 @@
 #include "CireChampionProfiles.h"
 #include "CireAbilityDB.h"
 #include "CireWaves.h" // breather / ready-up (wave director)
+#include "CireVendors.h" // shop-anywhere: pricing by where the buyer stands
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "Misc/FileHelper.h"
@@ -74,6 +75,7 @@ bool CireSkillShop::ParseJson(const FString& Json, FCireSkillShopData& Out, FStr
         (*Section)->TryGetBoolField(TEXT("prep"), Out.bPrep);
         (*Section)->TryGetBoolField(TEXT("recovery"), Out.bRecovery);
         (*Section)->TryGetBoolField(TEXT("autoOpenOnWaveClear"), Out.bAutoOpen);
+        (*Section)->TryGetBoolField(TEXT("anytime"), Out.bAnytime); // shop-anywhere
     }
     if (Root->TryGetObjectField(TEXT("readyGate"), Section))
     {
@@ -115,14 +117,14 @@ FString CireSkillShop::ToJson(const FCireSkillShopData& D)
     return FString::Printf(TEXT(R"({
   "schemaVersion": 1,
   "_comment": "progression-shop: the Skill Shop (Eric's playtest-2 ruling). Replaces level-up skill offers; the free opening role pick at the start stays. Prices are in mob values (LootTables.json economy), so they follow the gold players have. Edit live in F8 > Economy. See Docs/Progression.md.",
-  "access": { "breather": %s, "prep": %s, "recovery": %s, "autoOpenOnWaveClear": %s },
+  "access": { "anytime": %s, "breather": %s, "prep": %s, "recovery": %s, "autoOpenOnWaveClear": %s },
   "readyGate": { "_comment": "Skill Shop mode: the next wave waits until every human presses READY TO CONTINUE (bots auto-ready); maxSeconds is the AFK safety cap (0 = none), counted down on screen in its last 30 s.", "enabled": %s, "maxSeconds": %g },
   "prices": { "active": %g, "passive": %g, "ultimate": %g, "activeOwnedGrowth": %g, "levelUpBase": %g, "levelUpGrowth": %g },
   "scaling": { "effectPerLevel": %g, "costPerLevel": %g, "cooldownPerLevel": %g, "minCooldownFactor": %g },
   "slots": { "activeStart": %d, "activeEveryWaves": %d, "maxActive": %d, "passiveFromWave": %d, "ultimateFromWave": %d },
   "bots": { "skillBudgetShare": %g }
 }
-)"), D.bBreather ? TEXT("true") : TEXT("false"), D.bPrep ? TEXT("true") : TEXT("false"), D.bRecovery ? TEXT("true") : TEXT("false"), D.bAutoOpen ? TEXT("true") : TEXT("false"),
+)"), D.bAnytime ? TEXT("true") : TEXT("false"), D.bBreather ? TEXT("true") : TEXT("false"), D.bPrep ? TEXT("true") : TEXT("false"), D.bRecovery ? TEXT("true") : TEXT("false"), D.bAutoOpen ? TEXT("true") : TEXT("false"),
         D.bReadyGate ? TEXT("true") : TEXT("false"), D.ReadyMaxSeconds,
         R.ActivePrice, R.PassivePrice, R.UltimatePrice, R.ActiveOwnedGrowth, R.LevelUpBase, R.LevelUpGrowth,
         R.EffectPerLevel, R.CostPerLevel, R.CooldownPerLevel, R.MinCooldownFactor,
@@ -283,9 +285,18 @@ bool CireSkillShop::IsOpen(const ACireHero* Hero, FString* Why)
     const auto* S = Hero && Hero->GetWorld() ? Hero->GetWorld()->GetGameState<ACireGameState>() : nullptr;
     if (!Hero || !S || !Hero->bDrafted) { if (Why) *Why = TEXT("Pick a champion first."); return false; }
     if (!IsSkillShopMode(Hero->GetWorld())) { if (Why) *Why = TEXT("Classic Draft mode: skills come from level-up offers."); return false; }
-    const bool bOpen = (S->Phase == 1 && D.bPrep) || (S->Phase == 4 && D.bRecovery) || (IsBreather(Hero->GetWorld()) && D.bBreather);
+    if (D.bAnytime && S->Phase != 3) return true; // shop-anywhere (playtest 6): anytime, anywhere (priced by location)
+    const bool bOpen = InShopWindow(Hero);
     if (!bOpen && Why) *Why = TEXT("The Skill Shop opens between waves (the breather), during prep and during recovery.");
     return bOpen;
+}
+
+bool CireSkillShop::InShopWindow(const ACireHero* Hero)
+{
+    const auto& D = Get();
+    const auto* S = Hero && Hero->GetWorld() ? Hero->GetWorld()->GetGameState<ACireGameState>() : nullptr;
+    if (!S) return false;
+    return (S->Phase == 1 && D.bPrep) || (S->Phase == 4 && D.bRecovery) || (IsBreather(Hero->GetWorld()) && D.bBreather);
 }
 
 int32 CireSkillShop::Level(const ACireHero* Hero, const FString& Id)
@@ -303,16 +314,23 @@ int32 CireSkillShop::OwnedOfKind(const ACireHero* Hero, CI::ShopSkillKind Kind)
     return Count;
 }
 
-int32 CireSkillShop::BuyPrice(const ACireHero* Hero, const FString& Id)
+FCirePriceQuote CireSkillShop::BuyQuote(const ACireHero* Hero, const FString& Id)
 {
+    if (CireLoot::FreeSkillPoints(Hero) > 0) return FCirePriceQuote(); // bonus-loot: a free skill point waives the price
     const CI::Economy& E = CireLoot::Get().Economy;
-    return CI::SkillBuyPrice(Get().Rules, E, KindOf(Id), OwnedOfKind(Hero, CI::ShopSkillKind::Active), CurrentWave(Hero ? Hero->GetWorld() : nullptr));
+    const int32 Base = CI::SkillBuyPrice(Get().Rules, E, KindOf(Id), OwnedOfKind(Hero, CI::ShopSkillKind::Active), CurrentWave(Hero ? Hero->GetWorld() : nullptr));
+    return CireVendors::QuoteSkill(Hero, Base);
 }
 
-int32 CireSkillShop::LevelPrice(const ACireHero* Hero, const FString& Id)
+FCirePriceQuote CireSkillShop::LevelQuote(const ACireHero* Hero, const FString& Id)
 {
-    return CI::SkillLevelPrice(Get().Rules, CireLoot::Get().Economy, FMath::Max(1, Level(Hero, Id)), CurrentWave(Hero ? Hero->GetWorld() : nullptr));
+    if (CireLoot::FreeSkillPoints(Hero) > 0) return FCirePriceQuote(); // bonus-loot: a free skill point waives the price
+    const int32 Base = CI::SkillLevelPrice(Get().Rules, CireLoot::Get().Economy, FMath::Max(1, Level(Hero, Id)), CurrentWave(Hero ? Hero->GetWorld() : nullptr));
+    return CireVendors::QuoteSkill(Hero, Base);
 }
+
+int32 CireSkillShop::BuyPrice(const ACireHero* Hero, const FString& Id) { return BuyQuote(Hero, Id).Price; }
+int32 CireSkillShop::LevelPrice(const ACireHero* Hero, const FString& Id) { return LevelQuote(Hero, Id).Price; }
 
 FString CireSkillShop::BuyBlocker(const ACireHero* Hero, const FString& Id)
 {
@@ -324,8 +342,12 @@ FString CireSkillShop::BuyBlocker(const ACireHero* Hero, const FString& Id)
     if (bAllowed && !CireKits::MeetsRequirement(Hero, Id, &Why)) return Why; // scaling-kits: shield / ranged skills
     int32 Price = 0;
     const int32 Wave = CurrentWave(Hero->GetWorld());
-    switch (CI::CheckSkillBuy(Get().Rules, CireLoot::Get().Economy, Kind, OwnedOfKind(Hero, Kind), OwnedOfKind(Hero, CI::ShopSkillKind::Active),
-        Hero->Skills.Contains(Id), bAllowed, Wave, Hero->Gold, Price))
+    // shop-anywhere: the rules check the slots at list price; the gold check uses the price where the hero stands.
+    CI::SkillShopResult Result = CI::CheckSkillBuy(Get().Rules, CireLoot::Get().Economy, Kind, OwnedOfKind(Hero, Kind), OwnedOfKind(Hero, CI::ShopSkillKind::Active),
+        Hero->Skills.Contains(Id), bAllowed, Wave, MAX_int32 / 2, Price);
+    Price = BuyPrice(Hero, Id);
+    if (Result == CI::SkillShopResult::Ok && Hero->Gold < Price) Result = CI::SkillShopResult::NotEnoughGold;
+    switch (Result)
     {
     case CI::SkillShopResult::Ok: return FString();
     case CI::SkillShopResult::NotAllowed: return TEXT("Not in your champion's skill list.");
@@ -348,7 +370,8 @@ bool CireSkillShop::Buy(ACireHero* Hero, const FString& Id, FString& Message)
     Message = BuyBlocker(Hero, Id);
     if (!Message.IsEmpty()) { Hero->Notice = Message; Feedback(Hero, ECireShopAction::SkillBuy, false, Id, -1, 0, Message); return false; }
     if (Hero->Skills.Num() >= Cires::MaxSkills) { Message = TEXT("Your skill book is full."); Feedback(Hero, ECireShopAction::SkillBuy, false, Id, -1, 0, Message); return false; }
-    const int32 Price = BuyPrice(Hero, Id);
+    const FCirePriceQuote Quote = BuyQuote(Hero, Id); // shop-anywhere: priced where the hero stands
+    const int32 Price = Quote.Price;
     const CI::ShopSkillKind Kind = KindOf(Id);
     // Shop purchases never count against the level breakpoints (Cires::SkillSchedule::Shop).
     SyncSchedule(Hero);
@@ -358,6 +381,7 @@ bool CireSkillShop::Buy(ACireHero* Hero, const FString& Id, FString& Message)
         Message = TEXT("You cannot learn that skill now."); Hero->Notice = Message;
         Feedback(Hero, ECireShopAction::SkillBuy, false, Id, -1, 0, Message); return false;
     }
+    const bool bFree = CireLoot::SpendFreeSkillPoint(Hero); // bonus-loot: Price is 0 while a free point is held
     Hero->Gold -= Price;
     Hero->Skills.Add(Id);
     Hero->Cooldowns.Add(0);
@@ -365,7 +389,8 @@ bool CireSkillShop::Buy(ACireHero* Hero, const FString& Id, FString& Message)
     FCireSkillRank Rank; Rank.Id = Id; Rank.Level = 1;
     Hero->Inventory->SkillRanks.Add(Rank);
     Hero->Inventory->EndShopVisit();
-    Message = FString::Printf(TEXT("Learned %s  -%dg"), *ACireHero::SkillName(Id), Price);
+    Message = bFree ? FString::Printf(TEXT("Learned %s  (free skill point)"), *ACireHero::SkillName(Id)) : FString::Printf(TEXT("Learned %s  -%dg"), *ACireHero::SkillName(Id), Price);
+    if (const FString Why = CireVendors::QuoteLabel(Quote); !bFree && !Why.IsEmpty()) Message += FString::Printf(TEXT("  (%s)"), *Why);
     Hero->Notice = Message;
     Feedback(Hero, ECireShopAction::SkillBuy, true, Id, Hero->Skills.Num() - 1, -Price, Message);
     UE_LOG(LogCireSkillShop, Display, TEXT("CIRE_SKILLSHOP_BUY hero=%s skill=%s price=%d wave=%d"), *Hero->HeroName, *Id, Price, CurrentWave(Hero->GetWorld()));
@@ -380,12 +405,16 @@ bool CireSkillShop::LevelUp(ACireHero* Hero, const FString& Id, FString& Message
     else if (!Hero->Skills.Contains(Id)) Message = TEXT("Learn the skill before levelling it.");
     else if (Hero->Gold < LevelPrice(Hero, Id)) Message = FString::Printf(TEXT("Not enough gold: %d more needed."), LevelPrice(Hero, Id) - Hero->Gold);
     if (!Message.IsEmpty()) { Hero->Notice = Message; Feedback(Hero, ECireShopAction::SkillLevel, false, Id, -1, 0, Message); return false; }
-    const int32 Price = LevelPrice(Hero, Id);
+    const FCirePriceQuote Quote = LevelQuote(Hero, Id); // shop-anywhere
+    const int32 Price = Quote.Price;
+    const bool bFree = CireLoot::SpendFreeSkillPoint(Hero); // bonus-loot: Price is 0 while a free point is held
     Hero->Gold -= Price;
     FCireSkillRank* Rank = FindRank(Hero, Id);
     if (!Rank) { FCireSkillRank New; New.Id = Id; New.Level = 1; Rank = &Hero->Inventory->SkillRanks.Add_GetRef(New); }
     ++Rank->Level;
-    Message = FString::Printf(TEXT("%s reached level %d  -%dg"), *ACireHero::SkillName(Id), Rank->Level, Price);
+    Message = bFree ? FString::Printf(TEXT("%s reached level %d  (free skill point)"), *ACireHero::SkillName(Id), Rank->Level)
+        : FString::Printf(TEXT("%s reached level %d  -%dg"), *ACireHero::SkillName(Id), Rank->Level, Price);
+    if (const FString Why = CireVendors::QuoteLabel(Quote); !bFree && !Why.IsEmpty()) Message += FString::Printf(TEXT("  (%s)"), *Why);
     Hero->Notice = Message;
     Feedback(Hero, ECireShopAction::SkillLevel, true, Id, Hero->Skills.IndexOfByKey(Id), -Price, Message);
     UE_LOG(LogCireSkillShop, Display, TEXT("CIRE_SKILLSHOP_LEVEL hero=%s skill=%s level=%d price=%d"), *Hero->HeroName, *Id, Rank->Level, Price);
@@ -394,7 +423,7 @@ bool CireSkillShop::LevelUp(ACireHero* Hero, const FString& Id, FString& Message
 
 void CireSkillShop::BotShop(ACireHero* Hero)
 {
-    if (!Hero || !Hero->bBot || !IsOpen(Hero)) return; // also off in Classic Draft mode
+    if (!Hero || !Hero->bBot || !IsOpen(Hero) || !InShopWindow(Hero)) return; // also off in Classic Draft mode; bots keep the between-waves windows
     FString Message;
     // 1) Fill an open slot with a skill that matches the bot's primary role (cheapest first).
     const Cires::RoleMask Primary = Cires::RoleBit(CireChampionProfiles::DraftRole(Hero));

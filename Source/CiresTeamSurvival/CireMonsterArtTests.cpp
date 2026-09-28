@@ -1,6 +1,7 @@
 // Native checks for the animated Tripo monster bodies (Docs/MonsterArt.md).
 // Invoked from CireNPCCombat::RunSmoke, so -CireCombatExpansionProbe and Tools/RunNPCChecks.py run them.
 #include "CireMonsterArt.h"
+#include "CireUnitSpacing.h" // bosses-spacing
 
 #if !UE_BUILD_SHIPPING
 #include "CireMonsterAnim.h"
@@ -247,11 +248,12 @@ bool CireMonsterArt::RunSmoke(ACireGameMode* Mode)
                 *Tag, Scale, Idle.FeetZ - Bottom, Idle.HeadZ - Bottom, Speeds.X, Speeds.Y, M->NPCState->VisualParts.Num());
         }
     }
-    // The Pack Leader is drawn 1.7x taller than its authored 190 cm body.
+    // The Pack Leader is drawn 1.7x taller than its authored 190 cm body, times the boss size (UnitSpacing.json).
     if (const auto* Leader = CireNPCArchetypes::Find(TEXT("gravemaw_pack_leader")); Leader && IdleHead.Contains(TEXT("gravemaw_pack_leader")) && IdleHead.Contains(TEXT("hollow_infantry")))
     {
         const float Ratio = IdleHead[TEXT("gravemaw_pack_leader")] / FMath::Max(.01f, IdleHead[TEXT("hollow_infantry")]);
-        Check(FMath::IsNearlyEqual(Ratio, Leader->Scale, .12f * Leader->Scale), FString::Printf(TEXT("pack leader height ratio %.2f (archetype scale %.2f)"), Ratio, Leader->Scale));
+        const float Want = Leader->Scale * CireUnitSpacing::Get().PackLeaderBossSize; // bosses-spacing: boss pack leaders are drawn boss.packLeaderBoss x
+        Check(FMath::IsNearlyEqual(Ratio, Want, .12f * Want), FString::Printf(TEXT("pack leader height ratio %.2f (archetype scale %.2f x boss size)"), Ratio, Leader->Scale));
     }
 
     // Melee blows land on the contact frame, not the first frame of the swing.
