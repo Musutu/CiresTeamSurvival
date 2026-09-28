@@ -604,7 +604,14 @@ void DrawLootWindow(ACireHUD& HUD, const FCireUIPainter& Base, FVector2D View, d
         const float RX = X + 10 + (1.f - Slide) * 20.f;
         Q.Rect(RX, RY, W - 20, RowH - 4, FLinearColor(0, 0, 0, .28f));
         const bool bGold = Line.Kind == static_cast<uint8>(CI::LootKind::Gold) || Line.Kind == static_cast<uint8>(CI::LootKind::Experience);
-        if (bGold)
+        if (Line.Kind == static_cast<uint8>(CI::LootKind::SkillPoint)) // bonus-loot: a free skill point (violet scroll disc)
+        {
+            Q.Disc(RX + 18, RY + 18, 12, FLinearColor(.36f, .16f, .62f, 1), 20);
+            Q.Disc(RX + 18, RY + 17, 9.5f, FLinearColor(.78f, .55f, 1.f, 1), 20);
+            Q.Text(Line.Text, RX + 40, RY + 4, 12, FLinearColor(.85f, .7f, 1.f, 1), ECireFont::Bold);
+            Q.Text(TEXT("Your next Skill Shop purchase or level-up is free"), RX + 40, RY + 20, 8, Muted, ECireFont::Body);
+        }
+        else if (bGold)
         {
             const bool bXP = Line.Kind == static_cast<uint8>(CI::LootKind::Experience);
             Q.Disc(RX + 18, RY + 18, 12, bXP ? FLinearColor(.2f, .45f, .8f, 1) : FLinearColor(.62f, .43f, .1f, 1), 20);
@@ -1182,7 +1189,8 @@ void DrawSkillScreen(ACireHUD& HUD, ACireHero* Hero, ACireController* Controller
         // Price on the lower roll; the reason ribbon when it cannot be bought.
         const float RollH = CH - (Pr.Y - CY) - Pr.H;
         const float PY = Pr.Y + Pr.H + RollH * .5f;
-        const FString PriceText = FString::Printf(TEXT("%s  %dg"), bOwned ? TEXT("LEVEL UP") : TEXT("LEARN"), Price);
+        const FString PriceText = CireLoot::FreeSkillPoints(Hero) > 0 ? FString::Printf(TEXT("%s  FREE"), bOwned ? TEXT("LEVEL UP") : TEXT("LEARN")) // bonus-loot
+            : FString::Printf(TEXT("%s  %dg"), bOwned ? TEXT("LEVEL UP") : TEXT("LEARN"), Price);
         const float PS = 11.f;
         const float PW = P.TextWidth(PriceText, PS, ECireFont::Numbers);
         P.Rect(CX + CW * .5f - PW * .5f - 8, PY - PS * .75f, PW + 16, PS * 1.5f, FLinearColor(.05f, .035f, .02f, .92f));

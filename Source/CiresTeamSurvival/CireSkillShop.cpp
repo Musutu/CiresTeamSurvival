@@ -316,6 +316,7 @@ int32 CireSkillShop::OwnedOfKind(const ACireHero* Hero, CI::ShopSkillKind Kind)
 
 FCirePriceQuote CireSkillShop::BuyQuote(const ACireHero* Hero, const FString& Id)
 {
+    if (CireLoot::FreeSkillPoints(Hero) > 0) return FCirePriceQuote(); // bonus-loot: a free skill point waives the price
     const CI::Economy& E = CireLoot::Get().Economy;
     const int32 Base = CI::SkillBuyPrice(Get().Rules, E, KindOf(Id), OwnedOfKind(Hero, CI::ShopSkillKind::Active), CurrentWave(Hero ? Hero->GetWorld() : nullptr));
     return CireVendors::QuoteSkill(Hero, Base);
@@ -323,6 +324,7 @@ FCirePriceQuote CireSkillShop::BuyQuote(const ACireHero* Hero, const FString& Id
 
 FCirePriceQuote CireSkillShop::LevelQuote(const ACireHero* Hero, const FString& Id)
 {
+    if (CireLoot::FreeSkillPoints(Hero) > 0) return FCirePriceQuote(); // bonus-loot: a free skill point waives the price
     const int32 Base = CI::SkillLevelPrice(Get().Rules, CireLoot::Get().Economy, FMath::Max(1, Level(Hero, Id)), CurrentWave(Hero ? Hero->GetWorld() : nullptr));
     return CireVendors::QuoteSkill(Hero, Base);
 }
@@ -379,6 +381,7 @@ bool CireSkillShop::Buy(ACireHero* Hero, const FString& Id, FString& Message)
         Message = TEXT("You cannot learn that skill now."); Hero->Notice = Message;
         Feedback(Hero, ECireShopAction::SkillBuy, false, Id, -1, 0, Message); return false;
     }
+    const bool bFree = CireLoot::SpendFreeSkillPoint(Hero); // bonus-loot: Price is 0 while a free point is held
     Hero->Gold -= Price;
     Hero->Skills.Add(Id);
     Hero->Cooldowns.Add(0);
@@ -386,8 +389,8 @@ bool CireSkillShop::Buy(ACireHero* Hero, const FString& Id, FString& Message)
     FCireSkillRank Rank; Rank.Id = Id; Rank.Level = 1;
     Hero->Inventory->SkillRanks.Add(Rank);
     Hero->Inventory->EndShopVisit();
-    Message = FString::Printf(TEXT("Learned %s  -%dg"), *ACireHero::SkillName(Id), Price);
-    if (const FString Why = CireVendors::QuoteLabel(Quote); !Why.IsEmpty()) Message += FString::Printf(TEXT("  (%s)"), *Why);
+    Message = bFree ? FString::Printf(TEXT("Learned %s  (free skill point)"), *ACireHero::SkillName(Id)) : FString::Printf(TEXT("Learned %s  -%dg"), *ACireHero::SkillName(Id), Price);
+    if (const FString Why = CireVendors::QuoteLabel(Quote); !bFree && !Why.IsEmpty()) Message += FString::Printf(TEXT("  (%s)"), *Why);
     Hero->Notice = Message;
     Feedback(Hero, ECireShopAction::SkillBuy, true, Id, Hero->Skills.Num() - 1, -Price, Message);
     UE_LOG(LogCireSkillShop, Display, TEXT("CIRE_SKILLSHOP_BUY hero=%s skill=%s price=%d wave=%d"), *Hero->HeroName, *Id, Price, CurrentWave(Hero->GetWorld()));
@@ -404,12 +407,14 @@ bool CireSkillShop::LevelUp(ACireHero* Hero, const FString& Id, FString& Message
     if (!Message.IsEmpty()) { Hero->Notice = Message; Feedback(Hero, ECireShopAction::SkillLevel, false, Id, -1, 0, Message); return false; }
     const FCirePriceQuote Quote = LevelQuote(Hero, Id); // shop-anywhere
     const int32 Price = Quote.Price;
+    const bool bFree = CireLoot::SpendFreeSkillPoint(Hero); // bonus-loot: Price is 0 while a free point is held
     Hero->Gold -= Price;
     FCireSkillRank* Rank = FindRank(Hero, Id);
     if (!Rank) { FCireSkillRank New; New.Id = Id; New.Level = 1; Rank = &Hero->Inventory->SkillRanks.Add_GetRef(New); }
     ++Rank->Level;
-    Message = FString::Printf(TEXT("%s reached level %d  -%dg"), *ACireHero::SkillName(Id), Rank->Level, Price);
-    if (const FString Why = CireVendors::QuoteLabel(Quote); !Why.IsEmpty()) Message += FString::Printf(TEXT("  (%s)"), *Why);
+    Message = bFree ? FString::Printf(TEXT("%s reached level %d  (free skill point)"), *ACireHero::SkillName(Id), Rank->Level)
+        : FString::Printf(TEXT("%s reached level %d  -%dg"), *ACireHero::SkillName(Id), Rank->Level, Price);
+    if (const FString Why = CireVendors::QuoteLabel(Quote); !bFree && !Why.IsEmpty()) Message += FString::Printf(TEXT("  (%s)"), *Why);
     Hero->Notice = Message;
     Feedback(Hero, ECireShopAction::SkillLevel, true, Id, Hero->Skills.IndexOfByKey(Id), -Price, Message);
     UE_LOG(LogCireSkillShop, Display, TEXT("CIRE_SKILLSHOP_LEVEL hero=%s skill=%s level=%d price=%d"), *Hero->HeroName, *Id, Rank->Level, Price);

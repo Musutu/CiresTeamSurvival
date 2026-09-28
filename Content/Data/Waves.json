@@ -88,15 +88,17 @@
     ]
   },
   "bonusWave": {
-    "_comment": "Bonus Loot Wave: after a cleared wave (never the cycle's last), from fromWave, `chance` to run `wave` during the breather (at most maxPerCycle). Its creatures flee champions closer than fleeRadius, never attack, never cost lives and escape after escapeSeconds. Each pays `bounty` mob values plus a personal chest (LootTables.json sources.bonusWave). The breather grows by extraBreatherSeconds only when it runs. Docs/MonsterExpansion.md.",
+    "_comment": "Bonus Loot Stage (playtest 6): from fromWave, `replaceChance` per non-boss wave that the stage REPLACES the wave (at most maxPerCycle). Its creatures run the route to the castle, never attack, bolt from champions closer than fleeRadius, never cost lives and escape escapeSeconds after they are first attacked (escapeTimerOnHit) or at the castle. The stage rolls a loot tier (LootTables.json bonusStage). Each creature pays `bounty` mob values. `chance` = the older breather bonus wave after a cleared wave (0 = off; extraBreatherSeconds). Docs/Items.md, Docs/MonsterExpansion.md.",
     "enabled": true,
-    "chance": 0.4,
+    "chance": 0,
+    "replaceChance": 0.08,
+    "escapeTimerOnHit": true,
     "fromWave": 2,
     "maxPerCycle": 1,
     "extraBreatherSeconds": 6,
-    "escapeSeconds": 26,
+    "escapeSeconds": 52,
     "fleeRadius": 950,
-    "bounty": 4,
+    "bounty": 1,
     "wave": {
       "label": "Goblin Hoard",
       "type": "bonus_loot",

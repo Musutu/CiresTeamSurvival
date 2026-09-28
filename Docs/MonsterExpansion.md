@@ -97,6 +97,12 @@ slot, so developer/test starts stay deterministic. No monster skills before `ski
 
 ## Bonus Loot Wave (Waves.json "bonusWave")
 
+> **Playtest 6 (27 Sep 2026, feat/bonus-loot):** the bonus wave now runs as a **Bonus Loot Stage** that *replaces* a
+> non-boss wave (`replaceChance` 0.08; the breather `chance` below is 0 = off). Creatures run the route to the castle
+> (bolting *ahead*, not back), the escape clock starts at the first hit (`escapeTimerOnHit`) and is 52 s, `bounty` is 1,
+> and the stage rolls a Low / Mid / Rare loot tier (LootTables.json `bonusStage`). Current rules: Docs/Items.md
+> "Bonus Loot Stages and PvP uniques". The text below describes the original breather wave.
+
 ```jsonc
 "bonusWave": { "enabled": true, "chance": 0.4, "fromWave": 2, "maxPerCycle": 1,
                "extraBreatherSeconds": 6, "escapeSeconds": 26, "fleeRadius": 950, "bounty": 4,

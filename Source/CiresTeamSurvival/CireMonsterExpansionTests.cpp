@@ -2,6 +2,7 @@
 // Run by CireNPCCombat::RunSmoke (-CireCombatExpansionProbe; Tools/RunExpansionChecks.py, Tools/RunNPCChecks.py).
 #include "CireMonsterExpansion.h"
 #include "CireAudio.h"
+#include "CireBonusStage.h" // bonus-loot
 #include "CireGame.h"
 #include "CireLoot.h"
 #include "CireMonsterArt.h"
@@ -236,6 +237,62 @@ bool CireMonsterExpansion::RunSmoke(ACireGameMode* Mode)
         }
         KillAll();
     }
+    // ------------------------------------------------------------ bonus-loot: a Bonus Loot Stage replaces a wave (playtest 6)
+    {
+        FCireWaveConfig C = D; C.WavesPerCycle = 3; C.Bonus.Chance = 0.f;
+        FCireWaveDef W = CireWaveDirector::Template(ECireWaveType::Normal); W.SpawnInterval = 0;
+        C.Waves = {W};
+        Check(CireWaveDirector::ApplyLive(Mode, C, &Error), TEXT("stage config applies: ") + Error);
+        State->Wave = 6; Mode->CycleWavesSpawned = 0; State->CycleWavesDone = 0; State->WavesPerCycle = 3;
+        const int32 StagesBefore = CireBonusStage::StageCount(World);
+        CireWaveDirector::ForceNextBonusStage(Mode, 3); // Rare tier: chests
+        Check(CireWaveDirector::StartWave(Mode, true), TEXT("a forced Bonus Loot Stage starts in place of the wave"));
+        Check(CireBonusStage::StageCount(World) == StagesBefore + 1 && State->Announcement.StartsWith(TEXT("BONUS LOOT STAGE | RARE TIER")),
+            TEXT("the stage is announced with its tier: ") + State->Announcement);
+        Check(CireBonusStage::AnnouncedTier(World) == ECireBonusTier::Rare, TEXT("clients read the tier from the announcement"));
+        SpawnAll();
+        const TArray<ACireMonster*> Hoard = Lane0(2);
+        CireBonusStage::FStageInfo Info;
+        Check(CireBonusStage::LatestStage(World, Info) && Info.Tier == ECireBonusTier::Rare, TEXT("the stage records its tier"));
+        Check(Hoard.Num() == C.Bonus.Wave.UnitsPerLane() && Lane0(0).Num() == 0 && Info.Spawned[0] == Hoard.Num(),
+            FString::Printf(TEXT("the treasure hoard replaces the wave's units (%d hoard, %d plain)"), Hoard.Num(), Lane0(0).Num()));
+        Check(Info.WaveValue == CireBonusStage::WaveGoldValue(W, State->Wave), TEXT("the stage is valued at the replaced wave's gold"));
+        Check(!CireWaveDirector::BlocksNextWave(Mode), TEXT("stage creatures never block the next wave"));
+        if (Hoard.Num() >= 2)
+        {
+            ACireMonster* G = Hoard[0];
+            Check(EscapeSecondsLeft(G) < 0.f, TEXT("no escape clock before the first hit"));
+            G->ConsumeMovementInputVector();
+            Check(TickSpecial(G, Mode, .1f) && Mode->Monsters.Contains(G), TEXT("an untouched stage creature keeps running for the castle"));
+            Check(G->Victim == nullptr && G->CastingAbility.IsEmpty(), TEXT("stage creatures never attack"));
+            CireWaveDirector::OnMonsterDamaged(G, Hero);
+            Check(FMath::IsNearlyEqual(EscapeSecondsLeft(G), C.Bonus.EscapeSeconds, 1.f) && C.Bonus.EscapeSeconds >= 52.f,
+                FString::Printf(TEXT("the first hit starts the doubled escape clock (%.0f s)"), EscapeSecondsLeft(G)));
+            const float Started = G->SpecialEscapeAt;
+            CireWaveDirector::OnMonsterDamaged(G, Hero);
+            Check(G->SpecialEscapeAt == Started, TEXT("later hits do not restart the clock"));
+            const int32 DropsBefore = Drops();
+            for (int32 I = 0; I < Hoard.Num() - 1; ++I)
+            {
+                ACireMonster* M = Hoard[I];
+                M->Health = 0;
+                CireLoot::OnMonsterKilled(Mode, M, Hero, false);
+                Mode->Monsters.Remove(M);
+            }
+            ACireMonster* Last = Hoard.Last();
+            CireMonsterExpansion::OnBonusCreatureAttacked(Last);
+            Last->SpecialEscapeAt = World->GetTimeSeconds() - 1.f;
+            TickSpecial(Last, Mode, .1f);
+            Check(!Mode->Monsters.Contains(Last), TEXT("a hit stage creature escapes when its clock runs out"));
+            CireWaveDirector::TickSurvival(Mode, 0.f);
+            Check(CireBonusStage::LatestStage(World, Info) && Info.bPaid[0] && Info.Caught[0] == Hoard.Num() - 1,
+                FString::Printf(TEXT("the lane's stage pays once its hoard is caught or escaped (caught %d)"), Info.Caught[0]));
+            Check(Info.Chests[0] >= 1 && Info.Chests[0] <= 3 && Drops() >= DropsBefore + Info.Chests[0],
+                FString::Printf(TEXT("rare tier: up to 3 personal chests for the player (%d)"), Info.Chests[0]));
+        }
+        KillAll();
+    }
+    bPass = CireBonusStage::RunSmoke(Mode) && bPass; // bonus-loot: tiers, rewards, free skill points, PvP uniques
     UE_LOG(LogCireExpansionTests, Display, TEXT("CIRE_MONSTER_EXPANSION_%s checks=%d creatures=%d fab_bodies=%d"), bPass ? TEXT("PASS") : TEXT("FAIL"), Checks, Creatures().Num(), FabBodies);
     return bPass;
 }

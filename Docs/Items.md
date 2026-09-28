@@ -450,6 +450,67 @@ now drop replacements. The Vigil regen aura merged into the Banner's active.
 `sigil_of_apotheosis`, `stormhowl_ravager`. Existing painted icons are kept for reused ids (their
 stats changed but not their look).
 
+## Bonus Loot Stages and PvP uniques (27 September 2026, playtest 6)
+
+**Bonus Loot Stage.** A stage *replaces* a wave instead of running in the breather. Any wave type can be replaced
+except boss waves (and any wave with a boss row). It's rare: `Waves.json bonusWave.replaceChance` 0.08 per eligible
+wave, from `fromWave` 2, at most `maxPerCycle` 1 per cycle. The replaced wave keeps its slot and number.
+
+- **Behaviour.** The Goblin Hoard creatures run the monster route to the castle and keep their treasure behaviour.
+  They never attack. When a champion comes near they bolt *ahead* along the route, away from him, instead of back up
+  the road. They never cost lives.
+- **Escape clock.** No creature despawns until it is attacked. Its first hit starts its own clock
+  (`escapeTimerOnHit`), and the clock is doubled from 26 to 52 s (`escapeSeconds`). A creature that reaches the
+  castle also escapes.
+- **Tier roll.** Each stage rolls one tier, which is announced in the wave line and on the banner as
+  "BONUS LOOT STAGE: Mid Tier". The weights are in `LootTables.json bonusStage.tierWeights`: Low 70, Mid 25, Rare 5.
+- **Personal loot.** When a lane's hoard has been caught or has escaped, every player of that lane rolls his own
+  outcome inside the tier. He gets a chest only he can see, at his feet. Bots auto-loot.
+- **Wave value.** Gold outcomes are multiples of the replaced wave's *value*: the gold its kills would have paid each
+  player. For example, 25 mobs at wave 6 are worth 75 g.
+
+| Tier | Outcomes (one per player, equal weights; `low` / `mid` blocks) |
+|---|---|
+| Low | wave value x2 gold, **or** 2 basic recipe components, **or** 2 shop consumables (belt potions, elixirs, wards, or a primary-stat / XP tome) |
+| Mid | wave value x5 gold, **or** 1 shop item worth 350-500 g, **or** 1 **PvP unique** (below) |
+| Rare | up to 3 chests, each 100 g **or** (50%) a **free skill point** |
+
+- **Catch share.** With `scaleByCatch`, gold scales with the share of the lane's hoard that was caught, and so does
+  the number of Rare chests (3 if everything is caught, 2 at a third). Item outcomes need `itemCatchShare` (50%)
+  caught; below that the tier's gold is paid instead. A lane that caught nothing gets nothing.
+- **Free skill point.** It waives the price of the next Skill Shop purchase *or* level-up. Skill cards show "FREE"
+  while a point is held, and the loot window shows a violet line. The point is replicated on the inventory
+  (`FreeSkillPoints`).
+- **Kill bounty.** `bonusWave.bounty` drops from 4 to 1 mob value per creature, because the stage chest is the reward.
+  The per-creature `sources.bonusWave` purse still applies to the older breather bonus wave (`chance`, now 0 = off),
+  which is kept for F8 / tests.
+
+### PvP uniques (`Content/Data/PvPUniques.json`, 10 items, never sold)
+
+These are completed, mid-value (410-450 g) **unique** items with `purchasable: false`. The shop grid never lists
+them, and `PlanPurchase` refuses them. They drop only from a Mid-tier stage (a player never gets a duplicate of one he
+already wears). Their stats follow the universal-scaling policy: primary stat plus flat HP/mana/armor/ward. Each
+has one effect that works **only champion vs enemy champion** (arena phase); monsters never trigger it. Effects live
+in `CireItemsPvP.cpp`, and the numbers can be edited in the JSON (`pvp` block).
+
+| Item (`id`) | Value | Stats | PvP effect | `pvp.kind` |
+|---|---|---|---|---|
+| Gladiator's Crest (`gladiators_crest`) | 440g | +14 Primary, +150 HP | +12% damage to enemy champions. | `championDamage` |
+| Colosseum Bulwark (`colosseum_bulwark`) | 430g | +350 HP, +20 Armor, +20 Ward | take 12% less damage from enemy champions. | `championGuard` |
+| Grievous Thorn (`grievous_thorn`) | 420g | +14 Primary, +150 HP | your hits on champions cut their healing received by 40% for 3 s. | `mortalWounds` |
+| Hushblade Signet (`hushblade_signet`) | 450g | +12 Primary, +250 Mana | your first hit on a champion every 15 s silences it for 1 s. | `silenceStrike` |
+| Headhunter's Mark (`headhunters_mark`) | 440g | +16 Primary | +20% damage to champions below 35% health. | `execute` |
+| Spellbreaker Veil (`spellbreaker_veil`) | 420g | +30 Ward, +250 HP | the first champion ability that hits you every 20 s deals 60% less damage. | `spellbreaker` |
+| Talisman of the Last Stand (`talisman_of_the_last_stand`) | 430g | +300 HP, +15 Armor | when a champion drops you below 30% health, gain a barrier of 25% max health for 4 s (60 s cooldown). | `lastStand` |
+| Vengeance Sigil (`vengeance_sigil`) | 420g | +300 HP, +20 Armor | reflect 15% of the damage enemy champions deal to you back at them. | `vengeance` |
+| Rimebrand (`rimebrand`) | 420g | +12 Primary, +200 Mana | your hits slow an enemy champion for 1.5 s (once every 4 s per target). | `frostbite` |
+| Hunter's Pursuit (`hunters_pursuit`) | 410g | +12 Primary, +200 HP | damaging an enemy champion grants +15% move speed for 2 s. | `pursuit` |
+
+Design notes: every effect is readable and has a counter. There's no lifesteal, which follows the items ruling;
+Hushblade Signet silences where lifesteal would otherwise have been. Bruisers get Grievous Thorn and Colosseum
+Bulwark, casters get Hushblade Signet and Rimebrand, and assassins get Headhunter's Mark and Hunter's Pursuit.
+Vengeance never answers a reflection, so two Sigils cannot ping-pong. Sell value is the normal 60%.
+
 ## Legacy compatibility
 
 `ServerAction(4, 0..3)` still works and buys Tome of Insight, Tome of Ascendance, Rusted Longsword and
@@ -472,7 +533,10 @@ follows the `constructor` build and the Summoner the `summoner` build.
    the numbers are floors. Party shields do not stack; the stronger one wins.
 6. **Ultimate upgrades** fire when the ultimate is cast (delayed to the impact for Starfall, Seismic
    Reprisal and Hexbane); the roster-kit ultimates (kits-complete) fire theirs too.
-7. Earlier decisions still open: shopping during waves (closed), sell ratio 60%, undo scope, the
+7. **Bonus Loot Stages / PvP uniques (27 Sep):** tier weights 70/25/5; one outcome per player per stage (not all
+   three lines of a tier); Mid PvP unique is per player (personal loot), not one per team; chests land at the player's
+   feet; the ten PvP effects and their numbers. See "Bonus Loot Stages and PvP uniques" above.
+8. Earlier decisions still open: shopping during waves (closed), sell ratio 60%, undo scope, the
    armor/ward split and 75% cap, teleport channel, lantern ward.
 
 ## Verification

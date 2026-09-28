@@ -29,6 +29,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "UObject/ConstructorHelpers.h"
+#include "CireBonusStage.h" // bonus-loot
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireLoot, Log, All);
 
@@ -200,6 +201,50 @@ bool CireLoot::ParseJson(const FString& Json, FCireLootData& Out, FString& Error
     for (const TArray<FCireLootSource>* List : {&Out.PackCompletion, &Out.PackLeader, &Out.LaneBoss, &Out.RareSpawn, &Out.BonusWave})
         for (const auto& Source : *List)
             if (!Out.Tables.Contains(Source.Table)) { Error = TEXT("Loot source uses unknown table ") + Source.Table; return false; }
+    // bonus-loot: Bonus Loot Stage tiers (absent = defaults).
+    const TSharedPtr<FJsonObject>* Stage = nullptr;
+    if (Root->TryGetObjectField(TEXT("bonusStage"), Stage))
+    {
+        FCireBonusStageRules& B = Out.BonusStage;
+        const TSharedPtr<FJsonObject>* Tiers = nullptr;
+        if ((*Stage)->TryGetObjectField(TEXT("tierWeights"), Tiers))
+        {
+            B.LowWeight = static_cast<float>(FMath::Clamp(Num(*Tiers, TEXT("low"), B.LowWeight), 0., 1000.));
+            B.MidWeight = static_cast<float>(FMath::Clamp(Num(*Tiers, TEXT("mid"), B.MidWeight), 0., 1000.));
+            B.RareWeight = static_cast<float>(FMath::Clamp(Num(*Tiers, TEXT("rare"), B.RareWeight), 0., 1000.));
+        }
+        const TSharedPtr<FJsonObject>* Low = nullptr;
+        if ((*Stage)->TryGetObjectField(TEXT("low"), Low))
+        {
+            B.LowGoldWeight = static_cast<float>(FMath::Clamp(Num(*Low, TEXT("goldWeight"), B.LowGoldWeight), 0., 1000.));
+            B.LowComponentWeight = static_cast<float>(FMath::Clamp(Num(*Low, TEXT("componentWeight"), B.LowComponentWeight), 0., 1000.));
+            B.LowConsumableWeight = static_cast<float>(FMath::Clamp(Num(*Low, TEXT("consumableWeight"), B.LowConsumableWeight), 0., 1000.));
+            B.LowGoldMultiplier = static_cast<float>(FMath::Clamp(Num(*Low, TEXT("goldMultiplier"), B.LowGoldMultiplier), 0., 50.));
+            B.Components = FMath::Clamp(static_cast<int32>(Num(*Low, TEXT("components"), B.Components)), 1, 6);
+            B.Consumables = FMath::Clamp(static_cast<int32>(Num(*Low, TEXT("consumables"), B.Consumables)), 1, 6);
+        }
+        const TSharedPtr<FJsonObject>* Mid = nullptr;
+        if ((*Stage)->TryGetObjectField(TEXT("mid"), Mid))
+        {
+            B.MidGoldWeight = static_cast<float>(FMath::Clamp(Num(*Mid, TEXT("goldWeight"), B.MidGoldWeight), 0., 1000.));
+            B.MidItemWeight = static_cast<float>(FMath::Clamp(Num(*Mid, TEXT("itemWeight"), B.MidItemWeight), 0., 1000.));
+            B.MidPvPWeight = static_cast<float>(FMath::Clamp(Num(*Mid, TEXT("pvpUniqueWeight"), B.MidPvPWeight), 0., 1000.));
+            B.MidGoldMultiplier = static_cast<float>(FMath::Clamp(Num(*Mid, TEXT("goldMultiplier"), B.MidGoldMultiplier), 0., 50.));
+            B.MidItemMinCost = FMath::Clamp(static_cast<int32>(Num(*Mid, TEXT("itemMinCost"), B.MidItemMinCost)), 0, 20000);
+            B.MidItemMaxCost = FMath::Clamp(static_cast<int32>(Num(*Mid, TEXT("itemMaxCost"), B.MidItemMaxCost)), B.MidItemMinCost, 20000);
+        }
+        const TSharedPtr<FJsonObject>* Rare = nullptr;
+        if ((*Stage)->TryGetObjectField(TEXT("rare"), Rare))
+        {
+            B.RareChests = FMath::Clamp(static_cast<int32>(Num(*Rare, TEXT("chests"), B.RareChests)), 1, 6);
+            B.ChestGold = FMath::Clamp(static_cast<int32>(Num(*Rare, TEXT("chestGold"), B.ChestGold)), 0, 5000);
+            B.ChestSkillPointChance = static_cast<float>(FMath::Clamp(Num(*Rare, TEXT("skillPointChance"), B.ChestSkillPointChance), 0., 1.));
+        }
+        B.ItemCatchShare = static_cast<float>(FMath::Clamp(Num(*Stage, TEXT("itemCatchShare"), B.ItemCatchShare), 0., 1.));
+        bool bScale = B.bScaleByCatch;
+        if ((*Stage)->TryGetBoolField(TEXT("scaleByCatch"), bScale)) B.bScaleByCatch = bScale;
+        if (B.LowWeight + B.MidWeight + B.RareWeight <= 0) { Error = TEXT("LootTables.json bonusStage.tierWeights are all zero"); return false; }
+    }
     Out.bValid = true;
     return true;
 }
@@ -294,6 +339,7 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
         Bundle.Experience += Part.Experience;
         Bundle.PrimaryTomes.insert(Bundle.PrimaryTomes.end(), Part.PrimaryTomes.begin(), Part.PrimaryTomes.end());
         Bundle.Items.insert(Bundle.Items.end(), Part.Items.begin(), Part.Items.end());
+        Bundle.SkillPoints += Part.SkillPoints; // bonus-loot
         if (Label.IsEmpty() || RollTier >= Tier) Label = UTF8_TO_TCHAR(Table->Label.c_str());
     };
     // outdoor-bosses: a world boss rolls the lane-boss table (boss-grade) plus the challenge-pack completion table at its tier.
@@ -309,7 +355,9 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
     if (bLeader) Merge(TableFor(D.PackLeader, Tier, Round), Tier, MakeSeed(Monster->PackId, 2));
     if (bPackCompleted) Merge(TableFor(D.PackCompletion, Tier, Round), Tier, MakeSeed(Monster->PackId, 3));
     // monster-expansion: Rare Spawns and Bonus Loot Wave creatures carry their own (much better) tables.
-    const TArray<FCireLootSource>* Special = Monster->SpecialSpawn == 1 ? &D.RareSpawn : Monster->SpecialSpawn == 2 ? &D.BonusWave : nullptr;
+    // bonus-loot: a creature of a Bonus Loot Stage pays through the stage's tier roll (CireBonusStage), not a per-creature chest.
+    const bool bStageCreature = Monster->SpecialSpawn == 2 && CireBonusStage::OnCaught(Monster, Killer);
+    const TArray<FCireLootSource>* Special = Monster->SpecialSpawn == 1 ? &D.RareSpawn : Monster->SpecialSpawn == 2 && !bStageCreature ? &D.BonusWave : nullptr;
     if (Special && Monster->PackId < 0) { Tier = FMath::Clamp(1 + (Round - 1) / 2, 1, 10); Merge(TableFor(*Special, Tier, Round), Tier, MakeSeed(Monster->GetUniqueID(), 4)); }
     if (!D.bPersonal)
     {
@@ -351,6 +399,7 @@ void CireLoot::OnMonsterKilled(ACireGameMode* Mode, ACireMonster* Monster, ACire
             Personal.Experience += Part.Experience;
             Personal.PrimaryTomes.insert(Personal.PrimaryTomes.end(), Part.PrimaryTomes.begin(), Part.PrimaryTomes.end());
             Personal.Items.insert(Personal.Items.end(), Part.Items.begin(), Part.Items.end());
+            Personal.SkillPoints += Part.SkillPoints; // bonus-loot
         }
         if (D.bLootGoldInMobValues) Personal.Gold *= MobValueNow(Mode->GetWorld());
         if (Personal.Empty()) continue;
@@ -454,6 +503,28 @@ int32 CireLoot::AwardKillGold(ACireGameMode* Mode, ACireMonster* Monster, float 
     return Gold;
 }
 
+// ------------------------------------------------------------------ bonus-loot: free skill points
+int32 CireLoot::FreeSkillPoints(const ACireHero* Hero)
+{
+    return Hero && Hero->Inventory ? FMath::Max(0, Hero->Inventory->FreeSkillPoints) : 0;
+}
+
+void CireLoot::GrantFreeSkillPoints(ACireHero* Hero, int32 Points)
+{
+    if (!IsValid(Hero) || !Hero->Inventory || !Hero->HasAuthority() || Points <= 0) return;
+    Hero->Inventory->FreeSkillPoints = FMath::Clamp(Hero->Inventory->FreeSkillPoints + Points, 0, 99);
+    Hero->ForceNetUpdate();
+    UE_LOG(LogCireLoot, Display, TEXT("CIRE_LOOT_FREE_SKILL_POINT hero=%s points=%d total=%d"), *Hero->HeroName, Points, Hero->Inventory->FreeSkillPoints);
+}
+
+bool CireLoot::SpendFreeSkillPoint(ACireHero* Hero)
+{
+    if (!IsValid(Hero) || !Hero->Inventory || !Hero->HasAuthority() || Hero->Inventory->FreeSkillPoints <= 0) return false;
+    --Hero->Inventory->FreeSkillPoints;
+    Hero->ForceNetUpdate();
+    return true;
+}
+
 CI::Economy& CireLoot::MutableEconomy() { Get(); return LootData.Economy; }
 
 bool CireLoot::SaveEconomy(FString* Error)
@@ -546,6 +617,13 @@ FCireLootReport CireLoot::GrantPersonal(ACireHero* Hero, const CI::LootBundle& B
         FCireLootLine& Line = AddLine(ItemId, CI::LootKind::Item, 1, CireItems::DisplayName(ItemId), ItemRarity(Item));
         Line.Slot = Slot; Line.bBelt = bBelt; Line.ConvertedGold = Converted;
         if (Converted > 0) Report.Gold += Converted;
+    }
+    if (Bundle.SkillPoints > 0) // bonus-loot: a free skill point waives the next Skill Shop purchase or level-up
+    {
+        GrantFreeSkillPoints(Hero, Bundle.SkillPoints);
+        Hero->Inventory->LootScore += Bundle.SkillPoints * 150;
+        AddLine(NAME_None, CI::LootKind::SkillPoint, Bundle.SkillPoints, Bundle.SkillPoints == 1 ? FString(TEXT("Free skill point"))
+            : FString::Printf(TEXT("%d free skill points"), Bundle.SkillPoints), 3);
     }
     FString Summary = Source + TEXT(":");
     for (const auto& Line : Report.Lines) Summary += TEXT("  ") + Line.Text + TEXT(";");

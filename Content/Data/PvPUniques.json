@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "_comment": "bonus-loot (playtest 6): PvP uniques. Completed, mid-value items the shop NEVER sells (purchasable false); they drop only from a Mid-tier Bonus Loot Stage (LootTables.json bonusStage). Each entry uses the Items.json item schema (stats follow the universal-scaling policy: primary stat + flat HP/mana/armor/ward) plus a `pvp` block whose effect works ONLY against enemy champions (arena PvP). pvp.kind: championDamage (+amount % damage to champions) | championGuard (-amount % damage from champions) | mortalWounds (healing received -amount % for duration s) | silenceStrike (first hit every cooldown s silences for duration s) | execute (+amount % damage below threshold % health) | spellbreaker (first champion spell every cooldown s -amount %) | lastStand (below threshold % health: barrier of amount % max HP for duration s, cooldown s) | vengeance (reflect amount % of champion damage) | frostbite (hits slow for duration s, once per cooldown s per target) | pursuit (+amount % move speed for duration s after hitting a champion). Loaded with Items.json (restart or an Items reload picks up edits). Docs/Items.md.",
+  "items": [
+    {
+      "id": "gladiators_crest",
+      "name": "Gladiator's Crest",
+      "tier": "legendary",
+      "cost": 440,
+      "unique": true,
+      "purchasable": false,
+      "tags": [
+        "pvp",
+        "unique"
+      ],
+      "stats": {
+        "primaryStat": 14,
+        "health": 150
+      },
+      "effect": "PvP: +12% damage to enemy champions.",
+      "lore": "Struck for the champions of the sand pits; it hungers only for worthy foes.",
+      "pvp": {
+        "kind": "championDamage",
+        "amount": 12
+      }
+    },
+    {
+      "id": "colosseum_bulwark",
+      "name": "Colosseum Bulwark",
+      "tier": "legendary",
+      "cost": 430,
+      "unique": true,
+      "purchasable": false,
+      "tags": [
+        "pvp",
+        "unique"
+      ],
+      "stats": {
+        "health": 350,
+        "armor": 20,
+        "ward": 20
+      },
+      "effect": "PvP: take 12% less damage from enemy champions.",
+      "lore": "Every dent is a duel it won.",
+      "pvp": {
+        "kind": "championGuard",
+        "amount": 12
+      }
+    },
+    {
+      "id": "grievous_thorn",
+      "name": "Grievous Thorn",
+      "tier": "legendary",
+      "cost": 420,
+      "unique": true,
+      "purchasable": false,
+      "tags": [
+        "pvp",
+        "unique"
+      ],
+      "stats": {
+        "primaryStat": 14,
+        "health": 150
+      },
+      "effect": "PvP: your hits on champions cut their healing received by 40% for 3 s.",
+      "lore": "The barb stays in the wound; no mending takes.",
+      "pvp": {
+        "kind": "mortalWounds",
+        "amount": 40,
+        "duration": 3
+      }
+    },
+    {
+      "id": "hushblade_signet",
+      "name": "Hushblade Signet",
+      "tier": "legendary",
+      "cost": 450,
+      "unique": true,
+      "purchasable": false,
+      "tags": [
+        "pvp",
+        "unique"
+      ],
+      "stats": {
+        "primaryStat": 12,
+        "mana": 250
+      },
+      "effect": "PvP: your first hit on a champion every 15 s silences it for 1 s.",
+      "lore": "Worn by the court's quiet knives. The first cut steals the voice.",
+      "pvp": {
+        "kind": "silenceStrike",
+        "duration": 1,
+        "cooldown": 15
+      }
+    },
+    {
+      "id": "headhunters_mark",
+      "name": "Headhunter's Mark",
+      "tier": "legendary",
+      "cost": 440,
+      "unique": true,
+      "purchasable": false,
+      "tags": [
+        "pvp",
+        "unique"
+      ],
+      "stats": {
+        "primaryStat": 16
+      },
+      "effect": "PvP: +20% damage to champions below 35% health.",
+      "lore": "A trophy-taker's brand. It glows when prey falters.",
+      "pvp": {
+        "kind": "execute",
+        "amount": 20,
+        "threshold": 35
+      }
+    },
+    {
+      "id": "spellbreaker_veil",
+      "name": "Spellbreaker Veil",
+      "tier": "legendary",
+      "cost": 420,
+      "unique": true,
+      "purchasable": false,
+      "tags": [
+        "pvp",
+        "unique"
+      ],
+      "stats": {
+        "ward": 30,
+        "health": 250
+      },
+      "effect": "PvP: the first champion ability that hits you every 20 s deals 60% less damage.",
+      "lore": "Woven from a silenced archmage's mantle.",
+      "pvp": {
+        "kind": "spellbreaker",
+        "amount": 60,
+        "cooldown": 20
+      }
+    },
+    {
+      "id": "talisman_of_the_last_stand",
+      "name": "Talisman of the Last Stand",
+      "tier": "legendary",
+      "cost": 430,
+      "unique": true,
+      "purchasable": false,
+      "tags": [
+        "pvp",
+        "unique"
+      ],
+      "stats": {
+        "health": 300,
+        "armor": 15
+      },
+      "effect": "PvP: when a champion drops you below 30% health, gain a barrier of 25% max health for 4 s (60 s cooldown).",
+      "lore": "It wakes only when you are about to fall.",
+      "pvp": {
+        "kind": "lastStand",
+        "amount": 25,
+        "threshold": 30,
+        "duration": 4,
+        "cooldown": 60
+      }
+    },
+    {
+      "id": "vengeance_sigil",
+      "name": "Vengeance Sigil",
+      "tier": "legendary",
+      "cost": 420,
+      "unique": true,
+      "purchasable": false,
+      "tags": [
+        "pvp",
+        "unique"
+      ],
+      "stats": {
+        "health": 300,
+        "armor": 20
+      },
+      "effect": "PvP: reflect 15% of the damage enemy champions deal to you back at them.",
+      "lore": "What is done to the bearer is done again.",
+      "pvp": {
+        "kind": "vengeance",
+        "amount": 15
+      }
+    },
+    {
+      "id": "rimebrand",
+      "name": "Rimebrand",
+      "tier": "legendary",
+      "cost": 420,
+      "unique": true,
+      "purchasable": false,
+      "tags": [
+        "pvp",
+        "unique"
+      ],
+      "stats": {
+        "primaryStat": 12,
+        "mana": 200
+      },
+      "effect": "PvP: your hits slow an enemy champion for 1.5 s (once every 4 s per target).",
+      "lore": "Cold iron from the north pass. It bites the legs first.",
+      "pvp": {
+        "kind": "frostbite",
+        "duration": 1.5,
+        "cooldown": 4
+      }
+    },
+    {
+      "id": "hunters_pursuit",
+      "name": "Hunter's Pursuit",
+      "tier": "legendary",
+      "cost": 410,
+      "unique": true,
+      "purchasable": false,
+      "tags": [
+        "pvp",
+        "unique"
+      ],
+      "stats": {
+        "primaryStat": 12,
+        "health": 200
+      },
+      "effect": "PvP: damaging an enemy champion grants +15% move speed for 2 s.",
+      "lore": "The chase is half the kill.",
+      "pvp": {
+        "kind": "pursuit",
+        "amount": 15,
+        "duration": 2
+      }
+    }
+  ]
+}
