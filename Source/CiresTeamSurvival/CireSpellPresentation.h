@@ -136,7 +136,8 @@ public:
     // vfx-loop-fix: the Fab system is ground-anchored (FabVFX.json "groundAnchored") and was spawned on the floor under the unit.
     bool HasGroundAnchoredFab() const { return bFabAnchoredGround && FabFX.IsValid(); }
     UFXSystemComponent* GetFabFX() const { return FabFX.Get(); }
-    bool bFabAnchoredGround = false;
+    bool WasFabTried() const { return bFabTried; } float GetAgeSeconds() const { return Age; }
+    bool bFabAnchoredGround = false; FVector FabSpawnAt = FVector::ZeroVector; // set even when the spawn is culled (tests)
     float FabGroundScale() const { return FabScale; }
     const FString& FabGroundSkipReason() const { return FabSkipReason; }
 private:

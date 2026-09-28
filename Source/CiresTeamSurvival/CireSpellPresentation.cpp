@@ -708,6 +708,7 @@ void ACireSpellVisual::UpdateFabVFX()
         FabAt=CireFabVFX::GroundUnder(GetWorld(),FabAt,CireSoundEvents::CharacterNear(GetWorld(),FabAt,160.f));
         bFabAnchoredGround=true;
     }
+    FabSpawnAt=FabAt;
     if(!C){C=bAttach?CireFabVFX::SpawnAttached(System,Mesh,Mesh->GetComponentTransform().InverseTransformPosition(FabAt),Scale,!bLoop&&FabRole!=CireFabVFX::ERole::Area)
         :CireFabVFX::SpawnAt(GetWorld(),System,FabAt,GetActorRotation(),Scale);
     CireFabVFX::ApplyEntryTint(C,*Entry);} // pack-usage: recolour variants (a placed cast applies the entry tint, then its own)
