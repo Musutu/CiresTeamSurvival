@@ -13,6 +13,7 @@
 #include "Net/UnrealNetwork.h"
 #include "CireSpellPresentation.h" // ability-vfx
 #include "CireAbilityVFX.h" // ability-vfx
+#include "CireKitEditor.h" // kit-editor: per-champion projectile muzzle
 
 namespace CireAttacks {
 float FeetZ(const AActor* Actor) {
@@ -76,7 +77,7 @@ ACireTargetProjectile* ACireTargetProjectile::Launch(ACireHero* Source,AActor* T
     if(!IsValid(Source)||!Source->HasAuthority()||!Source->IsHostile(Target)||!FMath::IsFinite(Damage)||Damage<=0)return nullptr;
     const auto* State=Source->GetWorld()->GetGameState<ACireGameState>();if(!State)return nullptr;
     FActorSpawnParameters P;P.Owner=Source;P.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-    const FVector Start=Source->GetActorLocation()+FVector(0,0,45)+Source->GetActorForwardVector()*45;
+    const FVector Start=CireKitEditor::ProjectileStart(Source,FString(),Source->GetActorLocation()+FVector(0,0,45)+Source->GetActorForwardVector()*45); // kit-editor: champion muzzle
     auto* Shot=Source->GetWorld()->SpawnActor<ACireTargetProjectile>(Start,(Target->GetActorLocation()-Start).Rotation(),P);
     if(!Shot)return nullptr;
     Shot->Attacker=Source;Shot->Victim=Target;Shot->Amount=Damage;Shot->Result=Outcome;

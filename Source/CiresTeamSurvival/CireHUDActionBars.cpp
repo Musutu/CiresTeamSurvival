@@ -3,6 +3,7 @@
 // placement and dispatch come from CireKeybindings (Docs/Keybindings.md); this file
 // only draws and edits them.
 #include "CireHUD.h"
+#include "CireTunerLink.h" // kit-editor: Alt+click -> Ability Tuner
 #include "CireClassTraits.h"
 #include "CireAbilityIcons.h"
 #include "CireGame.h"
@@ -175,6 +176,11 @@ bool ACireHUD::DrawActionButton(ACireHero* Hero, ACireController* Controller, in
         HoverSlot = Action;
         if (!Slot.bEmpty) { TooltipAbility = Id; TooltipAbilitySlot = Action; }
         else if (!bQuickKeybind) { TooltipTitle = TEXT("Empty action slot"); TooltipBody = TEXT("Drag an ability here from another slot. Key: ") + UISettings.Keybindings.FullLabel(Action) + TEXT("."); }
+        // kit-editor: Alt+click an ability slot -> the Ability Tuner on that ability (tooltips cannot hold the EDIT badge).
+        if (bInteractive && !bQuickKeybind && Clicked && !Slot.bEmpty && CireTunerLink::ModifierDown(PlayerOwner) && CireTunerLink::Open(PlayerOwner, Id))
+        {
+            Clicked = false; PlayUIFeedback();
+        }
         if (bInteractive && !bQuickKeybind && Clicked)
         {
             // Press starts a potential drag; a release without movement casts.
@@ -432,6 +438,7 @@ void ACireHUD::DrawAbilityTooltip(const FString& Id, FVector2D Cursor)
         }
     }
     T.Footer = UISettings.bLockActionBars ? TEXT("Shift-drag to move (bars locked)") : TEXT("Drag to move  ·  drop on the world to remove");
+    if (const FString Edit = CireTunerLink::ActionBarHint(*this); !Edit.IsEmpty()) T.Footer += FString(TEXT("  ·  ")) + Edit; // kit-editor: EDIT -> Ability Tuner
     const float S = FMath::Clamp(UISettings.TooltipScale, .6f, 1.4f) * 1.25f;
     ResetTransform();
     DrawRichTooltip(T, Cursor, 310 * S, false);

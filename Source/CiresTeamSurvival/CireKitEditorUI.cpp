@@ -18,6 +18,8 @@
 #include "CireAbilityDB.h"
 #include "CireAbilityIcons.h"
 #include "CireAbilityTuner.h" // ability-tuner: refresh on live retunes
+#include "CireAbilityTunerUI.h"
+#include "CireTunerLink.h" // EDIT badge -> Ability Tuner
 #include "CireAbilityVFX.h"
 #include "CireChampionActions.h"
 #include "CireChampionProfiles.h"
@@ -43,6 +45,14 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
+#include "CireAbilityShapes.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Particles/ParticleSystem.h"
 #include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireKitEditorUI, Log, All);
@@ -101,6 +111,13 @@ struct FKitEditorState
     bool bGallery = false, bGalleryDone = false;
     double GalleryStart = 0, GalleryShotAt = 0;
     int32 GalleryStage = 0;
+    int32 PlaceMode = 0;                     // effect placement tab: 0 cast effect, 1 projectile muzzle
+    bool bMuzzleSpell = false;               // muzzle page: edit the selected spell's own override (else the champion's "*")
+    TMap<FString, FCireKitMuzzle> Muzzles, MuzzlesSaved; // this champion's muzzles (key "*" or ability id)
+    TWeakObjectPtr<UFXSystemComponent> Shot; // looping test projectile
+    TWeakObjectPtr<UStaticMeshComponent> Marker, Ball; // muzzle marker + test ball (no projectile art installed)
+    FString ShotKey;
+    double ShotAt = -100;
     uint32 TunerVersion = 0;                 // CireAbilityTuner::Version() the screen last refreshed for
     bool bTunerDirty = false;                // set by the OnChanged subscription
 };
@@ -142,7 +159,48 @@ bool KitDirty(const FKitEditorState& S)
     for (auto It = B.CreateIterator(); It; ++It) if (It.Value().IsDefault()) It.RemoveCurrent();
     if (A.Num() != B.Num()) return true;
     for (const auto& P : A) { const FCireKitEffectPlacement* O = B.Find(P.Key); if (!O || !(*O == P.Value)) return true; }
+    TMap<FString, FCireKitMuzzle> MA = S.Muzzles, MB = S.MuzzlesSaved;
+    for (auto It = MA.CreateIterator(); It; ++It) if (It.Value().IsDefault()) It.RemoveCurrent();
+    for (auto It = MB.CreateIterator(); It; ++It) if (It.Value().IsDefault()) It.RemoveCurrent();
+    if (MA.Num() != MB.Num()) return true;
+    for (const auto& P : MA) { const FCireKitMuzzle* O = MB.Find(P.Key); if (!O || *O != P.Value) return true; }
     return false;
+}
+void KitStopShot(FKitEditorState& S)
+{
+    if (UFXSystemComponent* Shot = S.Shot.Get()) Shot->DestroyComponent();
+    if (UStaticMeshComponent* M = S.Marker.Get()) M->DestroyComponent();
+    if (UStaticMeshComponent* B = S.Ball.Get()) B->DestroyComponent();
+    S.Shot.Reset(); S.Marker.Reset(); S.Ball.Reset(); S.ShotKey.Reset(); S.ShotAt = -100;
+}
+// Muzzle preview helpers: components owned by the preview hero (the draft stage renders only its show-only actors).
+UStaticMeshComponent* KitPreviewBall(TWeakObjectPtr<UStaticMeshComponent>& Slot, ACireHero* Owner, float Size, FLinearColor Color)
+{
+    UStaticMeshComponent* C = Slot.Get();
+    if (C && C->GetOwner() != Owner) { C->DestroyComponent(); C = nullptr; }
+    if (!C)
+    {
+        static UStaticMesh* Sphere = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+        static UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+        if (!Sphere || !Owner) return nullptr;
+        C = NewObject<UStaticMeshComponent>(Owner);
+        C->SetStaticMesh(Sphere);
+        C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        C->SetCastShadow(false);
+        C->SetUsingAbsoluteLocation(true); C->SetUsingAbsoluteRotation(true); C->SetUsingAbsoluteScale(true);
+        C->SetupAttachment(Owner->GetRootComponent());
+        C->RegisterComponent();
+        if (Base) if (UMaterialInstanceDynamic* MID = C->CreateDynamicMaterialInstance(0, Base)) MID->SetVectorParameterValue(TEXT("Color"), Color);
+        Slot = C;
+    }
+    C->SetWorldScale3D(FVector(Size / 100.f));
+    return C;
+}
+void KitMuzzleMarkers(FKitEditorState& S, ACireHero* Owner, const FVector& Muzzle, const FVector& BallAt, bool bBall)
+{
+    if (UStaticMeshComponent* M = KitPreviewBall(S.Marker, Owner, 7.f, FLinearColor(.2f, 1.f, 1.f, 1))) M->SetWorldLocation(Muzzle);
+    if (bBall) { if (UStaticMeshComponent* B = KitPreviewBall(S.Ball, Owner, 16.f, FLinearColor(1.f, .7f, .2f, 1))) { B->SetWorldLocation(BallAt); B->SetVisibility(true); } }
+    else if (UStaticMeshComponent* B = S.Ball.Get()) B->SetVisibility(false);
 }
 // Loads the champion in the current profile: the named or default loadout, else (new in this profile) a copy of Standard's.
 void KitLoadChampion(FKitEditorState& S, const FString& Champion, const FString& Loadout = FString())
@@ -167,6 +225,8 @@ void KitLoadChampion(FKitEditorState& S, const FString& Champion, const FString&
     }
     CireKitEditor::Compact(S.Work); CireKitEditor::Compact(S.Base);
     S.Effects = S.EffectsSaved = D.Effects.Contains(Champion) ? D.Effects[Champion] : TMap<FString, FCireKitEffectPlacement>();
+    S.Muzzles = S.MuzzlesSaved = D.Muzzles.Contains(Champion) ? D.Muzzles[Champion] : TMap<FString, FCireKitMuzzle>();
+    KitStopShot(S);
     S.SelectedSlot = INDEX_NONE;
     const TArray<FString> Skills = S.Work.Skills();
     S.Selected = Skills.Num() ? Skills[0] : FString();
@@ -196,6 +256,22 @@ bool KitCommit(FKitEditorState& S, const FString& Name)
     C.bGrantOnDraft = S.bGrant;
     C.Updated = FDateTime::UtcNow().ToIso8601();
     D.Effects.Add(S.Champion, S.Effects);
+    // Muzzles: bake the authored socket + offset into champion space on the posed preview body (the server has no pose).
+    {
+        const ACireDraftStage* Stage = S.Stage.Get();
+        const ACireHero* Body = Stage ? Stage->GetPreviewHero() : nullptr;
+        if (Body && Body->ChampionProfileId != S.Champion) Body = nullptr;
+        TMap<FString, FCireKitMuzzle> Out;
+        for (const auto& Pair : S.Muzzles)
+        {
+            if (Pair.Value.IsDefault()) continue;
+            FCireKitMuzzle M = Pair.Value;
+            if (Body) CireKitEditor::BakeMuzzle(M, Body);
+            else if (const FCireKitMuzzle* Old = S.MuzzlesSaved.Find(Pair.Key); !(Old && *Old == M && Old->bHasPoint)) M.bHasPoint = false;
+            Out.Add(Pair.Key, M);
+        }
+        if (Out.IsEmpty()) D.Muzzles.Remove(S.Champion); else D.Muzzles.Add(S.Champion, Out);
+    }
     if (!KitSaveData(S, D)) return false;
     KitLoadChampion(S, S.Champion, Name);
     return true;
@@ -291,6 +367,7 @@ void CireKitEditor::Open(ACireHUD* HUD, bool bOpen, const FString& ChampionId)
         if (Controller) { Controller->DraftSearch = S.SavedSearch; Controller->bDraftSearch = false; }
         if (UFXSystemComponent* C = S.Live.Get()) C->DestroyComponent();
         S.Live.Reset(); S.LiveKey.Reset();
+        KitStopShot(S);
         if (ACireDraftStage* Stage = S.Stage.Get()) Stage->Destroy();
         S.Stage.Reset();
     }
@@ -476,6 +553,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
             X += W + 6;
         }
         const FString Hint = S.Tab == 0 ? FString(TEXT("Click a scroll: next free button (or the selected one)  ·  drag a scroll onto a button  ·  right-click a button: clear"))
+                                        : S.PlaceMode == 1 ? FString(TEXT("Set where this champion's projectiles leave from: attach point + offset, with a looping test shot"))
                                         : FString(TEXT("Click a skill button below to place that ability's cast effect on the body"));
         P.Text(P.Fit(Hint, 8.5f, VW - X - Pad - 8, ECireFont::Body), X + 8, TabY + 6, 8.5f, Muted * 1.3f, ECireFont::Body, false, false);
     }
@@ -518,6 +596,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
             PreviewHero = Stage->GetPreviewHero();
         }
     }
+    if ((S.Tab != 1 || S.PlaceMode != 1) && S.Shot.IsValid()) KitStopShot(S);
 
     if (S.Tab == 0)
     {
@@ -668,6 +747,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
                     : Target == INDEX_NONE ? FString(TEXT("All six key buttons are filled: select one to replace it."))
                     : FString::Printf(TEXT("Click: put it on %s  ·  or drag it onto a button"), *KitSlotWord(HUD, Target));
                 CireShopUI::TipSkill(HUD, Hero, C.Id, Foot);
+                if (CireTunerLink::Badge(HUD, P, M, X + CW, Y2, C.Id, bInteractive)) S.PressId.Reset(); // EDIT -> Ability Tuner (takes the click)
             }
         }
         // A press on a card starts a click or a drag (resolved on release, below).
@@ -828,9 +908,156 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
         CireShopArt::Panel(P, RX, BodyY, RightW, BodyB - BodyY);
         const float IX = RX + 16, IW = RightW - 32;
         float Y = BodyY + 12;
-        CireShopArt::Spaced(P, TEXT("EFFECT PLACEMENT"), IX + 10, Y + 2, 11.f, .25f, TitleText, ECireFont::Display, false, true);
+        CireShopArt::Spaced(P, S.PlaceMode == 1 ? TEXT("PROJECTILE MUZZLE") : TEXT("EFFECT PLACEMENT"), IX + 10, Y + 2, 11.f, .25f, TitleText, ECireFont::Display, false, true);
         Y += 22;
-        if (!SelDef)
+        {
+            // Page: the cast effect of the selected ability, or where the champion's projectiles leave from.
+            float CX = IX, CY = Y;
+            const int32 Was = S.PlaceMode;
+            if (Chip(CX, CY, TEXT("CAST EFFECT"), Gold, S.PlaceMode == 0, 22.f)) S.PlaceMode = 0;
+            if (Chip(CX, CY, TEXT("PROJECTILE MUZZLE"), FLinearColor(.3f, .9f, 1.f, 1), S.PlaceMode == 1, 22.f)) S.PlaceMode = 1;
+            if (Was != S.PlaceMode)
+            {
+                S.BoneCursor = -1; KitStopShot(S);
+                if (UFXSystemComponent* C = S.Live.Get()) C->DestroyComponent();
+                S.Live.Reset(); S.LiveKey.Reset();
+                HUD.PlayInterfaceSound(4, .4f);
+            }
+            Y = CY + 30;
+        }
+        USkeletalMeshComponent* Mesh = PreviewHero ? PreviewHero->GetMesh() : nullptr;
+        // Attach point chips + the bone / socket picker (shared by the cast effect and the muzzle).
+        const auto AttachRows = [&](FString& Attach, const TCHAR* DefaultText)
+        {
+            P.Text(TEXT("ATTACH TO"), IX, Y + 3, 8.5f, Gold, ECireFont::Heading, false, false);
+            {
+                float CX = IX + 76, CY = Y;
+                for (const FKitAnchorChip& A : KitAnchorChips)
+                {
+                    const bool bResolved = !*A.Key || !Mesh || ResolveAttach(Mesh, A.Key) != NAME_None;
+                    const float W = P.TextWidth(A.Label, 9.f, ECireFont::Heading) + 29;
+                    if (CX + W > IX + IW) { CX = IX + 76; CY += 24; }
+                    if (Chip(CX, CY, A.Label, bResolved ? FLinearColor(.3f, .9f, 1.f, 1) : Muted * .6f, Attach == A.Key) && bResolved) { Attach = A.Key; S.BoneCursor = -1; }
+                }
+                Y = CY + 28;
+            }
+            TArray<FName> Names = Mesh ? Mesh->GetAllSocketNames() : TArray<FName>();
+            Names.RemoveAll([](const FName& N) { const FString X2 = N.ToString().ToLower(); return X2.Contains(TEXT("twist")) || X2.StartsWith(TEXT("ik_")) || X2.StartsWith(TEXT("vb ")); });
+            const FName Resolved = ResolveAttach(Mesh, Attach);
+            const FString Shown = Attach.IsEmpty() ? FString(DefaultText) : Resolved.IsNone() ? FString::Printf(TEXT("%s (not on this body)"), *Attach) : Resolved.ToString();
+            P.Text(TEXT("BONE"), IX, Y + 5, 8.5f, Gold, ECireFont::Heading, false, false);
+            const float BX = IX + 76, BW = IW - 76;
+            const bool bHas = Names.Num() > 0;
+            const bool bPrev = Button(BX, Y, 26, 24, TEXT("<"), bHas, Gold, false, 9.f), bNext = Button(BX + BW - 26, Y, 26, 24, TEXT(">"), bHas, Gold, false, 9.f);
+            if (bPrev || bNext)
+            {
+                int32 Index = S.BoneCursor >= 0 ? S.BoneCursor : Names.IndexOfByKey(Resolved);
+                Index = Index < 0 ? 0 : (Index + (bNext ? 1 : -1) + Names.Num()) % Names.Num();
+                S.BoneCursor = Index; Attach = Names[Index].ToString();
+            }
+            P.Rect(BX + 30, Y, BW - 60, 24, FLinearColor(.02f, .025f, .035f, .95f));
+            const FString FitName = P.Fit(Shown, 9.f, BW - 68, ECireFont::Body);
+            P.Text(FitName, BX + 30 + (BW - 60 - P.TextWidth(FitName, 9.f, ECireFont::Body)) * .5f, Y + 4, 9.f, Attach.IsEmpty() ? Muted * 1.3f : Resolved.IsNone() ? KitBad : Parchment, ECireFont::Body, false, false);
+            Y += 32;
+        };
+        const auto SliderRow = [&](int32 Id, const TCHAR* Label, float& Value, float Min, float Max, float Default, const FString& Text)
+        {
+            P.Text(Label, IX, Y + 1, 8.5f, Gold, ECireFont::Heading, false, false);
+            const float TX = IX + 76, TW = IW - 76 - 58, TY = Y + 5;
+            const bool bOver = In(TX - 6, Y - 2, TW + 12, 20);
+            CireUIStyle::Slider(P, TX, TY, TW, (Value - Min) / (Max - Min), true, bOver || S.DragSlider == Id);
+            P.Text(Text, TX + TW + 10, Y + 1, 9.f, Parchment, ECireFont::Numbers, false, false);
+            if (bInteractive && HUD.HasClick() && bOver) { HUD.TakeClick(); S.DragSlider = Id; }
+            if (S.DragSlider == Id && bMouseDown) Value = FMath::Clamp(Min + (Pointer.X - TX) / TW * (Max - Min), Min, Max);
+            if (bOver && bRight) Value = Default;
+            if (bOver && Wheel) Value = FMath::Clamp(Value - Wheel * (Max - Min) / 60.f, Min, Max);
+            Y += 24;
+        };
+        const auto OffsetRows = [&](int32 IdBase, FVector& Offset)
+        {
+            float OX = Offset.X, OY = Offset.Y, OZ = Offset.Z;
+            SliderRow(IdBase + 0, TEXT("FORWARD"), OX, -150, 150, 0, FString::Printf(TEXT("%+.0f"), OX));
+            SliderRow(IdBase + 1, TEXT("RIGHT"), OY, -150, 150, 0, FString::Printf(TEXT("%+.0f"), OY));
+            SliderRow(IdBase + 2, TEXT("UP"), OZ, -150, 150, 0, FString::Printf(TEXT("%+.0f"), OZ));
+            Offset = FVector(FMath::RoundToFloat(OX), FMath::RoundToFloat(OY), FMath::RoundToFloat(OZ));
+        };
+        if (S.PlaceMode == 1)
+        {
+            // ================= projectile muzzle (per champion, optional per-spell override) =================
+            const FLinearColor Cyan(.3f, .9f, 1.f, 1);
+            const bool bSpell = S.bMuzzleSpell && SelDef;
+            {
+                float CX = IX, CY = Y;
+                if (Chip(CX, CY, TEXT("ALL PROJECTILES"), Cyan, !bSpell)) { S.bMuzzleSpell = false; S.BoneCursor = -1; }
+                if (SelDef)
+                {
+                    const FString Label = P.Fit(FString::Printf(TEXT("ONLY %s"), *SelDef->Name.ToUpper()), 9.f, FMath::Max(40.f, IX + IW - CX - 30), ECireFont::Heading);
+                    if (Chip(CX, CY, Label, FLinearColor(.78f, .56f, 1.f, 1), bSpell)) { S.bMuzzleSpell = true; S.BoneCursor = -1; }
+                }
+                Y = CY + 26;
+            }
+            const FString Key = bSpell ? SelDef->Id : FString(CireKitEditor::MuzzleAll);
+            FCireKitMuzzle& Mz = S.Muzzles.FindOrAdd(Key);
+            const FCireKitMuzzle* AllMz = S.Muzzles.Find(CireKitEditor::MuzzleAll);
+            const bool bOwn = SelDef && S.Muzzles.Contains(SelDef->Id) && !S.Muzzles[SelDef->Id].IsDefault();
+            const FString Help = bSpell ? FString::Printf(TEXT("%s's projectiles only (overrides ALL PROJECTILES)."), *SelDef->Name)
+                : bOwn ? FString::Printf(TEXT("Every skillshot and the ranged basic attack. %s has its own muzzle."), *SelDef->Name)
+                : FString(TEXT("Every skillshot and the ranged basic attack of this champion (every profile)."));
+            P.Wrapped(Help, IX, Y, IW, 8.5f, Muted * 1.35f, 2, ECireFont::Body);
+            Y += 30;
+            AttachRows(Mz.Attach, bSpell && AllMz && !AllMz->IsDefault() ? TEXT("default (the ALL PROJECTILES muzzle)") : TEXT("default (chest, in front)"));
+            OffsetRows(11, Mz.Offset);
+            const bool bResetMuzzle = Button(IX, Y + 2, 140, 26, TEXT("RESET MUZZLE"), !Mz.IsDefault(), Gold, false, 9.f);
+            if (Button(IX + 146, Y + 2, IW - 146, 26, bDirty ? TEXT("SAVE") : TEXT("SAVED"), bDirty, KitGood, false, 9.f))
+            {
+                if (S.Work.Name.IsEmpty()) StartNaming(EKitName::SaveAs, FString::Printf(TEXT("%s Loadout"), *Profile->DisplayName));
+                else { const FString Name = S.Work.Name; if (KitCommit(S, Name)) KitStatus(S, TEXT("Saved the loadout, its effect placements and the projectile muzzle."), KitGood); }
+            }
+            if (bResetMuzzle) { Mz = FCireKitMuzzle(); S.BoneCursor = -1; }
+            Y += 34;
+            P.Text(TEXT("Right-click a slider to reset it  ·  the wheel nudges it"), IX, Y, 8.f, Muted * 1.1f, ECireFont::Body, false, false);
+            Y += 16;
+            if (!S.Status.IsEmpty() && Now - S.StatusAt < 9.0) P.Wrapped(S.Status, IX, Y, IW, 9.f, S.StatusColor, 3, ECireFont::Body, 2.f);
+
+            // Live preview: a marker on the muzzle + a looping test projectile flying forward from it.
+            const FCireKitMuzzle Shown = !Mz.IsDefault() ? Mz : (bSpell && AllMz) ? *AllMz : Mz;
+            if (PreviewHero && Mesh)
+            {
+                const FVector Muzzle = MuzzleWorldPosed(PreviewHero, Shown);
+                const FVector Forward = PreviewHero->GetActorForwardVector();
+                const FString ShotId = SelDef ? SelDef->Id : FString(TEXT("muzzle_test"));
+                const FName SkillKey(*ShotId);
+                const CireFabVFX::FEntry* ShotEntry = CireFabVFX::FindFor(SkillKey, CireAbilityShapes::SchoolFor(SkillKey), CireFabVFX::ERole::Projectile);
+                UFXSystemAsset* ShotSystem = CireFabVFX::Resolve(ShotEntry);
+                const FString ShotKey = FString::Printf(TEXT("%s|%s|%u"), *S.Champion, *ShotId, S.TunerVersion);
+                constexpr float Travel = 650.f, Flight = .85f, Pause = .35f;
+                UFXSystemComponent* ShotC = S.Shot.Get();
+                if (ShotKey != S.ShotKey || (!ShotC && ShotSystem) || Now - S.ShotAt > Flight + Pause)
+                {
+                    if (ShotC) ShotC->DestroyComponent();
+                    ShotC = nullptr;
+                    if (UNiagaraSystem* Niagara = ::Cast<UNiagaraSystem>(ShotSystem))
+                        ShotC = UNiagaraFunctionLibrary::SpawnSystemAttached(Niagara, PreviewHero->GetRootComponent(), NAME_None, Muzzle, Forward.Rotation(), EAttachLocation::KeepWorldPosition, false);
+                    else if (UParticleSystem* Cascade = ::Cast<UParticleSystem>(ShotSystem))
+                        ShotC = UGameplayStatics::SpawnEmitterAttached(Cascade, PreviewHero->GetRootComponent(), NAME_None, Muzzle, Forward.Rotation(), EAttachLocation::KeepWorldPosition, false);
+                    if (ShotC && ShotEntry)
+                    {
+                        CireFabVFX::ApplyEntryTint(ShotC, *ShotEntry);
+                        ShotC->SetUsingAbsoluteScale(true);
+                        ShotC->SetWorldScale3D(FVector(FMath::Max(.05f, ShotEntry->Scale * CireAbilityVFX::SpellEffectScale(World))));
+                    }
+                    S.Shot = ShotC; S.ShotKey = ShotKey; S.ShotAt = Now;
+                }
+                const float T01 = FMath::Clamp(static_cast<float>(Now - S.ShotAt) / Flight, 0.f, 1.f);
+                const FVector ShotAt = Muzzle + Forward * Travel * T01;
+                if (ShotC) { ShotC->SetWorldLocationAndRotation(ShotAt, Forward.Rotation()); ShotC->SetVisibility(Now - S.ShotAt <= Flight); }
+                KitMuzzleMarkers(S, PreviewHero, Muzzle, ShotC ? FVector::ZeroVector : ShotAt, !ShotC && Now - S.ShotAt <= Flight);
+                const FVector Local = PreviewHero->GetActorTransform().InverseTransformPosition(Muzzle);
+                P.Text(FString::Printf(TEXT("muzzle %+.0f fwd  %+.0f right  %+.0f up%s"), Local.X, Local.Y, Local.Z, ShotSystem ? TEXT("") : TEXT("  ·  no projectile art installed: test ball")),
+                    ImgX + 8, ImgTop + 8, 8.f, Muted * 1.3f, ECireFont::Body, false, true);
+            }
+        }
+        else if (!SelDef)
         {
             P.Wrapped(TEXT("Select a skill button below. Its cast effect loops on the champion at the placement you set here: attach point, offset, size and colour. Placements belong to the champion (every profile)."),
                 IX, Y, IW, 9.f, Muted * 1.3f, 6, ECireFont::Body);
@@ -845,57 +1072,8 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
             P.Text(P.Fit(System ? System->GetName() : FString(TEXT("no cast effect: procedural presentation only")), 8.f, IW - 44, ECireFont::Body), IX + 42, Y + 20, 8.f, Muted * 1.3f, ECireFont::Body, false, false);
             Y += 44;
             FCireKitEffectPlacement& Pl = S.Effects.FindOrAdd(S.Selected);
-            USkeletalMeshComponent* Mesh = PreviewHero ? PreviewHero->GetMesh() : nullptr;
-            P.Text(TEXT("ATTACH TO"), IX, Y + 3, 8.5f, Gold, ECireFont::Heading, false, false);
-            {
-                float CX = IX + 76, CY = Y;
-                for (const FKitAnchorChip& A : KitAnchorChips)
-                {
-                    const bool bResolved = !*A.Key || !Mesh || ResolveAttach(Mesh, A.Key) != NAME_None;
-                    const float W = P.TextWidth(A.Label, 9.f, ECireFont::Heading) + 29;
-                    if (CX + W > IX + IW) { CX = IX + 76; CY += 24; }
-                    if (Chip(CX, CY, A.Label, bResolved ? FLinearColor(.3f, .9f, 1.f, 1) : Muted * .6f, Pl.Attach == A.Key) && bResolved) { Pl.Attach = A.Key; S.BoneCursor = -1; }
-                }
-                Y = CY + 28;
-            }
-            {
-                TArray<FName> Names = Mesh ? Mesh->GetAllSocketNames() : TArray<FName>();
-                Names.RemoveAll([](const FName& N) { const FString X2 = N.ToString().ToLower(); return X2.Contains(TEXT("twist")) || X2.StartsWith(TEXT("ik_")) || X2.StartsWith(TEXT("vb ")); });
-                const FName Resolved = ResolveAttach(Mesh, Pl.Attach);
-                const FString Shown = Pl.Attach.IsEmpty() ? FString(TEXT("default (effect origin)")) : Resolved.IsNone() ? FString::Printf(TEXT("%s (not on this body)"), *Pl.Attach) : Resolved.ToString();
-                P.Text(TEXT("BONE"), IX, Y + 5, 8.5f, Gold, ECireFont::Heading, false, false);
-                const float CX = IX + 76, CW = IW - 76;
-                const bool bHas = Names.Num() > 0;
-                const bool bPrev = Button(CX, Y, 26, 24, TEXT("<"), bHas, Gold, false, 9.f), bNext = Button(CX + CW - 26, Y, 26, 24, TEXT(">"), bHas, Gold, false, 9.f);
-                if (bPrev || bNext)
-                {
-                    int32 Index = S.BoneCursor >= 0 ? S.BoneCursor : Names.IndexOfByKey(Resolved);
-                    Index = Index < 0 ? 0 : (Index + (bNext ? 1 : -1) + Names.Num()) % Names.Num();
-                    S.BoneCursor = Index; Pl.Attach = Names[Index].ToString();
-                }
-                P.Rect(CX + 30, Y, CW - 60, 24, FLinearColor(.02f, .025f, .035f, .95f));
-                const FString FitName = P.Fit(Shown, 9.f, CW - 68, ECireFont::Body);
-                P.Text(FitName, CX + 30 + (CW - 60 - P.TextWidth(FitName, 9.f, ECireFont::Body)) * .5f, Y + 4, 9.f, Pl.Attach.IsEmpty() ? Muted * 1.3f : Resolved.IsNone() ? KitBad : Parchment, ECireFont::Body, false, false);
-                Y += 32;
-            }
-            const auto SliderRow = [&](int32 Id, const TCHAR* Label, float& Value, float Min, float Max, float Default, const FString& Text)
-            {
-                P.Text(Label, IX, Y + 1, 8.5f, Gold, ECireFont::Heading, false, false);
-                const float TX = IX + 76, TW = IW - 76 - 58, TY = Y + 5;
-                const bool bOver = In(TX - 6, Y - 2, TW + 12, 20);
-                CireUIStyle::Slider(P, TX, TY, TW, (Value - Min) / (Max - Min), true, bOver || S.DragSlider == Id);
-                P.Text(Text, TX + TW + 10, Y + 1, 9.f, Parchment, ECireFont::Numbers, false, false);
-                if (bInteractive && HUD.HasClick() && bOver) { HUD.TakeClick(); S.DragSlider = Id; }
-                if (S.DragSlider == Id && bMouseDown) Value = FMath::Clamp(Min + (Pointer.X - TX) / TW * (Max - Min), Min, Max);
-                if (bOver && bRight) Value = Default;
-                if (bOver && Wheel) Value = FMath::Clamp(Value - Wheel * (Max - Min) / 60.f, Min, Max);
-                Y += 24;
-            };
-            float OX = Pl.Offset.X, OY = Pl.Offset.Y, OZ = Pl.Offset.Z;
-            SliderRow(1, TEXT("FORWARD"), OX, -150, 150, 0, FString::Printf(TEXT("%+.0f"), OX));
-            SliderRow(2, TEXT("RIGHT"), OY, -150, 150, 0, FString::Printf(TEXT("%+.0f"), OY));
-            SliderRow(3, TEXT("UP"), OZ, -150, 150, 0, FString::Printf(TEXT("%+.0f"), OZ));
-            Pl.Offset = FVector(FMath::RoundToFloat(OX), FMath::RoundToFloat(OY), FMath::RoundToFloat(OZ));
+            AttachRows(Pl.Attach, TEXT("default (effect origin)"));
+            OffsetRows(1, Pl.Offset);
             SliderRow(4, TEXT("SIZE"), Pl.Scale, .2f, 3.f, 1.f, FString::Printf(TEXT("%.2fx"), Pl.Scale));
             Pl.Scale = FMath::RoundToFloat(Pl.Scale * 100.f) / 100.f;
             {
@@ -983,7 +1161,8 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
                 KitBorder(P, X - 3, SlotY - 3, SlotS + 6, SlotS + 6, bOk ? (SlotWarning(I, S.PressId).IsEmpty() ? KitGood : KitWarn) : KitBad, 2.f);
             }
             const FString Warn = SlotWarning(I, Id);
-            if (!Warn.IsEmpty()) { P.Disc(X + SlotS - 5, SlotY + 5, 7.f, FLinearColor(.55f, .35f, .02f, 1), 16); P.Text(TEXT("!"), X + SlotS - 7, SlotY - 3, 10.f, Parchment, ECireFont::Bold, false, false); }
+            const bool bEditBadge = HoverSlot == I && !Id.IsEmpty() && S.PressId.IsEmpty() && CireTunerLink::Available(PC); // the badge takes the corner
+            if (!Warn.IsEmpty() && !bEditBadge) { P.Disc(X + SlotS - 5, SlotY + 5, 7.f, FLinearColor(.55f, .35f, .02f, 1), 16); P.Text(TEXT("!"), X + SlotS - 7, SlotY - 3, 10.f, Parchment, ECireFont::Bold, false, false); }
             if (!Id.IsEmpty() && S.Tab == 0 && (S.SelectedSlot == I || HoverSlot == I))
             {
                 const float CX = X + 6, CY = SlotY + 6;
@@ -999,13 +1178,14 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
                 if (!Id.IsEmpty()) CireShopUI::TipSkill(HUD, Hero, Id, Warn.IsEmpty() ? Foot : Warn + TEXT("\n") + Foot);
                 else HUD.SetRichTooltip(FCireTooltipSpec().Text(FString::Printf(TEXT("%s. %s"), *KitSlotWord(HUD, I), *Foot), Parchment));
             }
-            if (Click(X, SlotY, SlotS, SlotS))
+            const bool bOverEdit = bEditBadge && CireTunerLink::Badge(HUD, P, M, X + SlotS, SlotY, Id, bInteractive); // EDIT -> Ability Tuner
+            if (!bOverEdit && Click(X, SlotY, SlotS, SlotS))
             {
                 if (S.Tab == 1) { if (!Id.IsEmpty()) { S.Selected = Id; S.BoneCursor = -1; } }
                 else S.SelectedSlot = S.SelectedSlot == I ? INDEX_NONE : I;
                 HUD.PlayInterfaceSound(4, .35f);
             }
-            if (HoverSlot == I && bRight && !Id.IsEmpty()) { S.Work.Slots[I].Reset(); Compact(S.Work); if (S.SelectedSlot == I) S.SelectedSlot = INDEX_NONE; }
+            if (HoverSlot == I && bRight && !Id.IsEmpty() && !bOverEdit) { S.Work.Slots[I].Reset(); Compact(S.Work); if (S.SelectedSlot == I) S.SelectedSlot = INDEX_NONE; }
         }
         const float TX = SlotX[FCireKitLoadout::PassiveSlot] + SlotS + 24, TW = VW - Pad - 16 - TX;
         if (TW > 120)

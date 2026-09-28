@@ -4,6 +4,8 @@
 #if !UE_BUILD_SHIPPING
 #include "CireAbilityDB.h"
 #include "CireAbilityTuner.h"
+#include "CireAttackSystem.h"
+#include "CireTunerLink.h"
 #include "CireChampionRoster.h"
 #include "CireFabVFX.h"
 #include "CireGame.h"
@@ -257,6 +259,75 @@ bool CireKitEditor::RunTests(ACireGameMode* Mode)
         T.Check(!SpawnPlacedCast(World, FName(*Actives[3]), H->GetActorLocation() + FVector(5000, 0, 0), System, 1.f), TEXT("cast hook ignores far casters"));
     }
     else UE_LOG(LogCireKitEditorTests, Display, TEXT("CIRE_KIT_EDITOR_NOTE placement spawn checks skipped (no renderer or no Fab cast system for %s)"), *Actives[3]);
+
+    // ---------------- projectile muzzle ----------------
+    {
+        FCireKitData J;
+        FCireKitMuzzle M; M.Attach = TEXT("hand_r"); M.Offset = FVector(5, 0, 2); M.Point = FVector(900, 12, 40); M.bHasPoint = true;
+        J.Muzzles.FindOrAdd(TEXT("champ_x")).Add(MuzzleAll, M);
+        FCireKitMuzzle Empty; J.Muzzles.FindOrAdd(TEXT("champ_x")).Add(TEXT("dropped"), Empty);
+        FCireKitData Back; FString Error;
+        T.Check(ParseJson(ToJson(J), Back, Error), TEXT("muzzle json parses: ") + Error);
+        const FCireKitMuzzle* R = Back.Muzzles.Contains(TEXT("champ_x")) ? Back.Muzzles[TEXT("champ_x")].Find(MuzzleAll) : nullptr;
+        T.Check(R && *R == M && R->bHasPoint && FMath::IsNearlyEqual(R->Point.X, 200.0) && FMath::IsNearlyEqual(R->Point.Y, 12.0), TEXT("muzzle round trip (point clamped to the body box)"));
+        T.Check(!Back.Muzzles.Contains(TEXT("champ_x")) || !Back.Muzzles[TEXT("champ_x")].Contains(TEXT("dropped")), TEXT("default muzzles are not written"));
+    }
+    if (H && H2)
+    {
+        const FString KnightId = Knight->Id;
+        const FVector OldAttack = H->GetActorLocation() + FVector(0, 0, 45) + H->GetActorForwardVector() * 45;
+        T.Check(ProjectileStart(H, FString(), OldAttack).Equals(OldAttack) && ProjectileStart(H, Actives[0], H->GetActorLocation()).Equals(H->GetActorLocation()),
+            TEXT("no muzzle: projectiles keep the old spawn point"));
+        H->SetActorRotation(FRotator(0, 90, 0));
+        FCireKitMuzzle MzAll; MzAll.Attach = TEXT("hand_r"); MzAll.Point = FVector(60, 25, 40); MzAll.bHasPoint = true;
+        FCireKitMuzzle Own; Own.Attach = TEXT("head"); Own.Point = FVector(10, -30, 70); Own.bHasPoint = true;
+        Fake.Muzzles.FindOrAdd(KnightId).Add(MuzzleAll, MzAll);
+        Fake.Muzzles.FindOrAdd(KnightId).Add(Actives[0], Own);
+        const FTransform X = H->GetActorTransform();
+        T.Check(FindMuzzle(KnightId, FString()) && *FindMuzzle(KnightId, FString()) == MzAll, TEXT("basic attack uses the champion muzzle"));
+        T.Check(FindMuzzle(KnightId, Actives[1]) && *FindMuzzle(KnightId, Actives[1]) == MzAll, TEXT("other spells use the champion muzzle"));
+        const FCireAbilityDef* OwnDef = CireAbilityDB::Find(Actives[0]);
+        T.Check(FindMuzzle(KnightId, Actives[0]) && *FindMuzzle(KnightId, Actives[0]) == Own && OwnDef && FindMuzzle(KnightId, OwnDef->Name) && *FindMuzzle(KnightId, OwnDef->Name) == Own,
+            TEXT("per-spell muzzle override (by id and by display name)"));
+        T.Check(ProjectileStart(H, FString(), OldAttack).Equals(X.TransformPosition(FVector(60, 25, 40)), .01), TEXT("muzzle: basic attack starts at body transform x point"));
+        T.Check(ProjectileStart(H, Actives[0], H->GetActorLocation()).Equals(X.TransformPosition(FVector(10, -30, 70)), .01), TEXT("muzzle: spell override start"));
+        T.Check(ProjectileStart(H2, FString(), OldAttack).Equals(OldAttack), TEXT("muzzle belongs to its champion only"));
+        FCireKitMuzzle NoPoint; NoPoint.Offset = FVector(0, 0, 20);
+        T.Check(FMath::IsNearlyEqual(MuzzleLocal(NoPoint, FVector(45, 0, 45)).Z, 65.0) && FMath::IsNearlyEqual(MuzzleLocal(MzAll, FVector::ZeroVector).X, 60.0), TEXT("unbaked muzzle = old point + offset; baked point wins"));
+        FCireKitMuzzle Bake; Bake.Offset = FVector(10, 0, 0);
+        T.Check(BakeMuzzle(Bake, H) && Bake.bHasPoint && Bake.Point.Equals(FVector(55, 0, 45), .5), TEXT("bake: no attach = old attack point + offset, in champion space"));
+        FCireKitMuzzle Unset;
+        T.Check(!BakeMuzzle(Unset, H) && !Unset.bHasPoint, TEXT("bake: default muzzle has no point"));
+
+        // The real spawn: a targeted basic-attack projectile leaves from the muzzle (server position, replicated as is).
+        // Survival: a monster in the hero's lane is hostile; arena: an enemy hero.
+        AActor* Foe = nullptr;
+        if (ACireMonster* Mon = World->SpawnActor<ACireMonster>(H->GetActorLocation() + FVector(600, 0, 0), FRotator::ZeroRotator, SP))
+        {
+            Spawned.Add(Mon); Mon->Lane = H->TeamId; Mon->Health = Mon->MaxHealth = 5000; Mon->SetActorTickEnabled(false);
+            if (H->IsHostile(Mon)) Foe = Mon;
+        }
+        if (!Foe) if (ACireHero* Enemy = MakeHero()) { Enemy->TeamId = 1; Enemy->SetActorLocation(H->GetActorLocation() + FVector(600, 0, 0)); if (H->IsHostile(Enemy)) Foe = Enemy; }
+        if (Foe)
+        {
+            if (ACireTargetProjectile* Shot = ACireTargetProjectile::Launch(H, Foe, 10.f, ECireHitOutcome::Hit))
+            {
+                Spawned.Add(Shot);
+                T.Check(Shot->GetActorLocation().Equals(X.TransformPosition(FVector(60, 25, 40)), .5), TEXT("launched basic attack spawns at the muzzle: ") + Shot->GetActorLocation().ToString());
+                Fake.Muzzles.Remove(KnightId);
+                ACireTargetProjectile* Old = ACireTargetProjectile::Launch(H, Foe, 10.f, ECireHitOutcome::Hit);
+                if (Old) Spawned.Add(Old);
+                T.Check(Old && Old->GetActorLocation().Equals(H->GetActorLocation() + FVector(0, 0, 45) + H->GetActorForwardVector() * 45, .5), TEXT("muzzle unset: launched basic attack spawns at the old point"));
+            }
+            else T.Check(false, TEXT("basic attack launches at a hostile target"));
+        }
+        else UE_LOG(LogCireKitEditorTests, Display, TEXT("CIRE_KIT_EDITOR_NOTE no hostile target in this phase: launch check skipped (ProjectileStart checks cover the hook)"));
+        Fake.Muzzles.Remove(KnightId);
+        H->SetActorRotation(FRotator::ZeroRotator);
+    }
+
+    // ---------------- EDIT badge -> Ability Tuner ----------------
+    T.Check(CireTunerLink::RunTests(), TEXT("EDIT badge opens the Ability Tuner on its ability, hidden when tuning is not allowed"));
 
     UE_LOG(LogCireKitEditorTests, Display, TEXT("CIRE_KIT_EDITOR_TESTS_%s checks=%d"), T.bPassed ? TEXT("PASS") : TEXT("FAIL"), T.Count);
     return T.bPassed;
