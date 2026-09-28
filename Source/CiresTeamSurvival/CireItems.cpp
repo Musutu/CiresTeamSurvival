@@ -1,4 +1,5 @@
 #include "CireItems.h"
+#include "CireItemsPvP.h" // bonus-loot
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // scaling-kits
 #include "CireSkillShop.h" // progression-shop: Skill Shop
@@ -255,7 +256,7 @@ bool CireItems::Reload()
     const FString Path = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/Items.json"));
     FCireItemData Parsed;
     if (!FFileHelper::LoadFileToString(Json, *Path)) Error = TEXT("Cannot read Content/Data/Items.json");
-    else ParseJson(Json, Parsed, Error);
+    else if (ParseJson(Json, Parsed, Error)) { FString PvPError; CireItemsPvP::MergeInto(Parsed, PvPError); } // bonus-loot: PvPUniques.json (a bad file only drops the PvP uniques)
     bDataLoaded = true;
     if (!Parsed.bValid)
     {
@@ -387,6 +388,7 @@ float CireItems::MoveSpeedMultiplier(const ACireHero* Hero)
             if (const ItemDef* Item = Find(Buff.Id); Item && Item->Use.Kind == EffectKind::Haste)
                 Bonus += static_cast<float>(Item->Use.Amount / 100.);
             else if (Item) { for (const Passive& P : Item->Passives) if (P.Kind == PassiveKind::RollHaste) Bonus += static_cast<float>(P.Amount / 100.); } // items-v2: Tailwind
+    Bonus += CireItemsPvP::MoveSpeedBonus(Inventory); // bonus-loot: Hunter's Pursuit
     return FMath::Clamp(1.f + Bonus, .5f, 2.f);
 }
 
@@ -426,6 +428,7 @@ float CireItems::ModifyOutgoingDamage(AActor* Source, AActor* Target, float Amou
             else if (const auto* Monster = Cast<ACireMonster>(Target)) { Health = Monster->Health; MaxHealth = Monster->MaxHealth; }
             if (MaxHealth > 0 && Health / MaxHealth * 100.f < T.ExecuteThreshold) Amount *= 1.f + static_cast<float>(T.ExecuteBonus / 100.);
         }
+        Amount = CireItemsPvP::ModifyOutgoing(Hero, Target, Amount, AbilityName); // bonus-loot: PvP uniques (champion targets only)
     }
     else if (IsSummon(Source)) Amount *= SummonMultiplier(Source); // items-v2: Soulbinder's Crook
     const int32 Team = CireCombat::TeamOf(Source);
@@ -445,6 +448,7 @@ void CireItems::OnDamageDealt(AActor* Source, AActor* Target, float Applied, con
     if (T.SplashPercent > 0 && T.SplashRadius > 0 && IsBasicAttack(Source, AbilityName) && IsValid(Target)) // items-v2: Howling Cleave
         for (AActor* Other : EnemiesNear(Hero, Target->GetActorLocation(), static_cast<float>(T.SplashRadius)))
             if (Other != Target) CireCombat::ApplyDamage(Hero, Other, Applied * static_cast<float>(T.SplashPercent / 100.), TEXT("Howling Cleave"));
+    CireItemsPvP::OnDamageDealt(Hero, Target, Applied, AbilityName); // bonus-loot: PvP uniques (champion targets only)
 }
 
 float CireItems::StrengthDefense(const ACireHero* Hero, bool bPhysical)
@@ -483,6 +487,7 @@ float CireItems::ModifyIncomingDamage(ACireHero* Hero, AActor* Causer, const FSt
         if (Buff.EndsAt > Now)
             if (const ItemDef* Item = Find(Buff.Id); Item && Item->Use.Kind == EffectKind::SelfBarrier)
                 Amount *= 1.f - FMath::Clamp(static_cast<float>(Item->Use.Amount / 100.), 0.f, .9f);
+    Amount = CireItemsPvP::ModifyIncoming(Hero, Causer, AbilityName, Amount); // bonus-loot: PvP uniques (champion attackers only)
     if (Inventory->BarrierHP > 0 && Inventory->BarrierEndsAt > Now) // items-v2: party shield absorbs first
     {
         const float Absorbed = FMath::Min(Inventory->BarrierHP, Amount);
@@ -499,6 +504,7 @@ void CireItems::OnHeroDamaged(ACireHero* Hero, AActor* Causer, const FString& Ab
     if (!Inventory || Taken <= 0) return;
     Inventory->InterruptTeleport(TEXT("Teleport interrupted by damage."));
     const Totals& T = Inventory->Totals();
+    CireItemsPvP::OnHeroDamaged(Hero, Causer, AbilityName, Taken); // bonus-loot: PvP uniques (champion attackers only)
     if (T.Thorns > 0 && IsBasicAttack(Causer, AbilityName) && Hero->IsHostile(Causer))
         CireCombat::ApplyDamage(Hero, Causer, Taken * static_cast<float>(T.Thorns / 100.), TEXT("Iron Retribution"));
     if (T.LowHealthThreshold > 0 && !Hero->bDead && Hero->MaxHealth > 0)
@@ -659,6 +665,7 @@ void UCireInventory::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
     DOREPLIFETIME_CONDITION(UCireInventory, bShopVisit, COND_OwnerOnly);
     DOREPLIFETIME(UCireInventory, SkillRanks);
     DOREPLIFETIME(UCireInventory, bReadyToContinue);
+    DOREPLIFETIME(UCireInventory, FreeSkillPoints); // bonus-loot
 }
 
 ACireHero* UCireInventory::Hero() const { return Cast<ACireHero>(GetOwner()); }

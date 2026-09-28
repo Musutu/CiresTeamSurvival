@@ -612,5 +612,36 @@
         }
       ]
     }
+  },
+  "bonusStage": {
+    "_comment": "bonus-loot (playtest 6): a Bonus Loot Stage replaces a non-boss wave (Waves.json bonusWave.replaceChance) and rolls ONE tier by tierWeights. Every player of the lane then rolls his own outcome inside that tier (personal chest, bots auto-loot). Wave value = the gold the replaced wave's kills would have paid each player. Low: goldMultiplier x wave value | `components` basic recipe components | `consumables` shop consumables (belt potions/elixirs/wards or primary-stat/XP tomes). Mid: goldMultiplier x wave value | 1 shop item of itemMinCost-itemMaxCost g | 1 PvP unique (PvPUniques.json, never sold). Rare: up to `chests` chests, each chestGold gold or (skillPointChance) a free skill point that waives the next Skill Shop purchase/level-up. Paid when the lane's hoard is all caught or escaped; with scaleByCatch gold and chest count scale with the share caught, and item outcomes need itemCatchShare caught (else the tier's gold). Reload: F8 > Economy. Docs/Items.md.",
+    "tierWeights": {
+      "low": 70,
+      "mid": 25,
+      "rare": 5
+    },
+    "low": {
+      "goldWeight": 1,
+      "componentWeight": 1,
+      "consumableWeight": 1,
+      "goldMultiplier": 2,
+      "components": 2,
+      "consumables": 2
+    },
+    "mid": {
+      "goldWeight": 1,
+      "itemWeight": 1,
+      "pvpUniqueWeight": 1,
+      "goldMultiplier": 5,
+      "itemMinCost": 350,
+      "itemMaxCost": 500
+    },
+    "rare": {
+      "chests": 3,
+      "chestGold": 100,
+      "skillPointChance": 0.5
+    },
+    "itemCatchShare": 0.5,
+    "scaleByCatch": true
   }
 }

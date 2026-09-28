@@ -14,6 +14,7 @@
 #include "CireRaces.h"
 #include "CireThreat.h"
 #include "CireWaves.h"
+#include "CireBonusStage.h" // bonus-loot
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -140,8 +141,10 @@ float CireMonsterExpansion::ApplyBonus(ACireMonster* M, const FCireBonusWaveRule
     M->SpecialSpawn = 2;
     const FCireNPCArchetype* A = ArchetypeOf(M);
     M->MonsterName = A ? A->DisplayName : M->MonsterName;
-    M->SpecialEscapeAt = NowOf(M) + Rules.EscapeSeconds;
+    // bonus-loot: the escape clock waits for the first hit (0 = not started) unless escapeTimerOnHit is off.
+    M->SpecialEscapeAt = Rules.bEscapeTimerOnHit ? 0.f : NowOf(M) + Rules.EscapeSeconds;
     M->LeakCostOverride = 0; M->bEngaged = false;
+    CireBonusStage::Register(M);
     CireNPCCombat::Interrupt(M); CireThreat::Clear(M);
     M->ForceNetUpdate();
     return 1.f;
@@ -152,6 +155,19 @@ float CireMonsterExpansion::BountyMobValues(const ACireMonster* M)
     if (!M || M->SpecialSpawn == 0) return 0.f;
     const FCireWaveConfig& C = CireWaveDirector::Config(M->GetWorld());
     return M->SpecialSpawn == 2 ? C.Bonus.Bounty : C.Rare.Bounty;
+}
+
+void CireMonsterExpansion::OnBonusCreatureAttacked(ACireMonster* M)
+{
+    if (!IsValid(M) || M->SpecialSpawn != 2 || M->SpecialEscapeAt > 0 || M->Health <= 0) return;
+    M->SpecialEscapeAt = NowOf(M) + CireWaveDirector::Config(M->GetWorld()).Bonus.EscapeSeconds;
+    UE_LOG(LogCireExpansion, Display, TEXT("CIRE_BONUS_CLOCK_START %s lane=%d escape_in=%.0f"), *M->GetNPCDisplayName(), M->Lane, M->SpecialEscapeAt - NowOf(M));
+}
+
+float CireMonsterExpansion::EscapeSecondsLeft(const ACireMonster* M)
+{
+    if (!IsValid(M) || M->SpecialSpawn != 2 || M->SpecialEscapeAt <= 0) return -1.f;
+    return FMath::Max(0.f, M->SpecialEscapeAt - NowOf(M));
 }
 
 int32 CireMonsterExpansion::EscapedCount(const UWorld* World)
@@ -181,8 +197,10 @@ bool CireMonsterExpansion::TickSpecial(ACireMonster* M, ACireGameMode* Mode, flo
     if (!M->CastingAbility.IsEmpty()) CireNPCCombat::Interrupt(M);
     if (!M->Threat.IsEmpty() || M->Victim) CireThreat::Clear(M);
     M->bEngaged = false;
-    if (NowOf(M) >= M->SpecialEscapeAt || CireNPCCombat::ReachedGoal(M)) { Escape(M, Mode); return true; }
-    // Greedy creatures bolt from the closest champion of their lane; otherwise they trot down the road toward the town.
+    if ((M->SpecialEscapeAt > 0 && NowOf(M) >= M->SpecialEscapeAt) || CireNPCCombat::ReachedGoal(M)) { Escape(M, Mode); return true; }
+    // Greedy creatures bolt from the closest champion of their lane; otherwise they trot down the road toward the castle.
+    // bonus-loot (playtest 6): they always path to the castle, so a bolt runs AHEAD along the route (away from the
+    // champion) instead of back toward the rift.
     ACireHero* Near = nullptr; double Best = FMath::Square(static_cast<double>(B.FleeRadius));
     for (ACireHero* H : Mode->Heroes)
     {
@@ -200,8 +218,8 @@ bool CireMonsterExpansion::TickSpecial(ACireMonster* M, ACireGameMode* Mode, flo
         // layout-wiring: along the creature's own path.
         const float Length = FMath::Max(1.f, CireLanePath::PathLengthOf(World, M->Lane, M->LanePath));
         const float Progress = CireLanePath::PathProgress(World, M->Lane, M->LanePath, From);
-        const FVector Back = (CireLanePath::PointAlongPath(World, M->Lane, M->LanePath, FMath::Max(0.f, Progress - 700.f / Length), From.Z) - From).GetSafeNormal2D();
-        FVector Dir = (Away * .65f + Back * .35f).GetSafeNormal2D();
+        const FVector Ahead = (CireLanePath::PointAlongPath(World, M->Lane, M->LanePath, FMath::Min(1.f, Progress + 700.f / Length), From.Z) - From).GetSafeNormal2D();
+        FVector Dir = (Away * .55f + Ahead * .45f).GetSafeNormal2D();
         if (Dir.IsNearlyZero()) Dir = Away.IsNearlyZero() ? FVector(1, 0, 0) : Away;
         const FVector Goal = CireLanePath::ClampToLane(World, M->Lane, From + Dir * 600.f, 120.f);
         M->AddMovementInput(CireNav::Steer(M, Goal));
@@ -277,7 +295,13 @@ void UCireExpansionPresenter::Tick(float DeltaTime)
                 if (bMine && S.Special == 2 && Time - LastBonusBannerAt > 15.f)
                 {
                     ++BonusBanners; LastBonusBannerAt = Time;
-                    CireBanners::Show(ECireBanner::Custom, TEXT("Bonus Loot Wave"), TEXT("Treasure creatures flee down your lane with gold. Catch them before they escape!"), TEXT("BONUS LOOT WAVE"));
+                    // bonus-loot: a Bonus Loot Stage names its rolled tier (from the replicated wave announcement).
+                    const ECireBonusTier Tier = CireBonusStage::AnnouncedTier(World);
+                    if (Tier != ECireBonusTier::None)
+                        CireBanners::Show(ECireBanner::Custom, FString::Printf(TEXT("Bonus Loot Stage: %s Tier"), CireBonusStage::TierName(Tier)),
+                            TEXT("Treasure creatures run for the castle. Their escape clock starts at the first hit: catch them all!"), TEXT("BONUS LOOT STAGE"));
+                    else
+                        CireBanners::Show(ECireBanner::Custom, TEXT("Bonus Loot Wave"), TEXT("Treasure creatures run for the castle with gold. Catch them before they escape!"), TEXT("BONUS LOOT WAVE"));
                     CireAudio::PlayCue2D(World, TEXT("sting.bonus_wave"));
                 }
             }

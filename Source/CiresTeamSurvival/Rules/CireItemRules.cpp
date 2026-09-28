@@ -510,6 +510,7 @@ bool ParseLootKind(const std::string& key, LootKind& out)
     else if (key == "experience") out = LootKind::Experience;
     else if (key == "primaryTome") out = LootKind::PrimaryTome;
     else if (key == "item") out = LootKind::Item;
+    else if (key == "skillPoint") out = LootKind::SkillPoint; // bonus-loot
     else return false;
     return true;
 }
@@ -565,6 +566,7 @@ LootBundle RollLoot(const LootTable& table, int tier, double lootMultiplier, std
         case LootKind::Item:
             if (!entry.Pool.empty()) bundle.Items.push_back(entry.Pool[random.Bounded(static_cast<int>(entry.Pool.size()))]);
             break;
+        case LootKind::SkillPoint: if (amount > 0) bundle.SkillPoints += amount; break; // bonus-loot
         }
     }
     return bundle;

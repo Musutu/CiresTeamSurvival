@@ -16,6 +16,7 @@
 #include "CireMonsterExpansion.h" // monster-expansion
 #include "CireLeash.h" // layout-wiring
 #include "CireOutdoorBosses.h" // outdoor-bosses
+#include "CireBonusStage.h" // bonus-loot
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -84,6 +85,7 @@ struct FRuntime
     int32 LastWaveNumber = 0;
     // monster-expansion: rare spawns and bonus waves this cycle and this match.
     int32 RaresThisCycle = 0, BonusThisCycle = 0, RaresTotal = 0, BonusTotal = 0;
+    int32 ForceStage = 0; // bonus-loot: 0 none, -1 next wave is a stage (tier rolled), 1..3 forced tier
 };
 /** Phase clock and breather from the pacing block (normal matches only; smoke/probes keep their own timing). */
 void ApplyPacing(ACireGameMode* Mode, const FCireWaveConfig& C)
@@ -442,8 +444,24 @@ bool CireWaveDirector::StartWave(ACireGameMode* Mode, bool bLive)
     const int32 WaveInCycle = Mode->CycleWavesSpawned;
     FCireWaveDef W = ResolveWave(R.Config, WaveInCycle, Mode->Clock.Round() - 1);
     ++S->Wave; ++Mode->CycleWavesSpawned;
+    // bonus-loot: a Bonus Loot Stage may REPLACE this wave (never a boss wave; low chance; CireBonusStage rolls its tier).
+    // feat/waves-modes owns wave selection: this is the one additive hook (see Docs/RESUME-bonus-loot.md).
+    const int32 ForcedStage = R.ForceStage; R.ForceStage = 0;
+    const bool bBonusStage = ForcedStage != 0 ? RollBonusStage(R.Config, W, S->Wave, 0, 0, true)
+        : bLive && !Mode->bSmoke && RollBonusStage(R.Config, W, S->Wave, CireRaces::MatchSeed(Mode->GetWorld()), R.BonusThisCycle);
+    if (bBonusStage)
+    {
+        const int32 Value = CireBonusStage::WaveGoldValue(W, S->Wave);
+        const FString Replaced = W.Label;
+        FCireWaveDef Stage = R.Config.Bonus.Wave;
+        if (Stage.Units.IsEmpty()) Stage = BonusTemplate();
+        Stage.Type = ECireWaveType::BonusLoot; Stage.bMustClear = false; Stage.DelayBefore = W.DelayBefore;
+        W = Stage;
+        ++R.BonusThisCycle; ++R.BonusTotal;
+        CireBonusStage::Begin(Mode, S->Wave, Value, W.UnitsPerLane(), ForcedStage > 0 ? ForcedStage : 0, Replaced);
+    }
     // monster-expansion: a rare creature may join this wave (both lanes; deterministic per match seed and wave).
-    const bool bRareJoined = bLive && !Mode->bSmoke && RollRare(R.Config, W, S->Wave, CireRaces::MatchSeed(Mode->GetWorld()), R.RaresThisCycle);
+    const bool bRareJoined = !bBonusStage && bLive && !Mode->bSmoke && RollRare(R.Config, W, S->Wave, CireRaces::MatchSeed(Mode->GetWorld()), R.RaresThisCycle);
     if (bRareJoined) { ++R.RaresThisCycle; ++R.RaresTotal; }
     S->NextWaveSeconds = 0;
     const int32 Serial = ++R.Serial;
@@ -457,12 +475,13 @@ bool CireWaveDirector::StartWave(ACireGameMode* Mode, bool bLive)
     const FString Race = RaceLabel(R.Config, W, Cycle, WaveInCycle);
     if (!Race.IsEmpty()) Rec.Label = FString::Printf(TEXT("%s (%s)"), *W.Label, *Race);
     S->WaveRace = RaceFor(R.Config, W, Cycle, 0, WaveInCycle);
-    QueueWave(R, W, Serial, Mode->bSmoke, Cycle, false, bLive && !Mode->bSmoke);
+    QueueWave(R, W, Serial, Mode->bSmoke, Cycle, bBonusStage, bLive && !Mode->bSmoke);
     const TCHAR* Lead = W.Type == ECireWaveType::Armored ? TEXT("ARMORED | They will not fight back. Stop them before the gate!") :
         W.Type == ECireWaveType::ArmoredEscort ? TEXT("ARMORED ESCORT | Break the escorted tank; its guards will defend it.") :
         W.Type == ECireWaveType::Boss ? TEXT("SIEGE | A lane boss marches with this wave. A leak costs 10 lives.") : TEXT("DEFEND THE GATES");
     S->Announcement = FString::Printf(TEXT("%s | Wave %d of %d: %s"), Lead, Mode->CycleWavesSpawned, S->WavesPerCycle, *Rec.Label);
     if (bRareJoined) S->Announcement += TEXT(" | A RARE creature marches with it!"); // monster-expansion
+    if (bBonusStage) S->Announcement = CireBonusStage::Announcement(Mode, S->Wave, Mode->CycleWavesSpawned, S->WavesPerCycle); // bonus-loot
     Publish(Mode);
     UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_START round=%d wave=%d cycle=%d/%d type=%s label=\"%s\" units=%d race=%s"), S->Round, S->Wave, Mode->CycleWavesSpawned,
         S->WavesPerCycle, TypeName(W.Type), *W.Label, W.UnitsPerLane(), *S->WaveRace.ToString());
@@ -510,6 +529,7 @@ void CireWaveDirector::TickSurvival(ACireGameMode* Mode, float Delta)
     FRuntime& R = Get(Mode);
     const float Time = Now(Mode);
     UWorld* World = Mode->GetWorld();
+    CireBonusStage::Tick(Mode); // bonus-loot: pays a lane's stage once its creatures are all caught or escaped
     // Challenge packs start neutral the first time the director sees them.
     for (auto* M : Mode->Monsters)
         if (IsValid(M) && M->PackId >= 0 && !R.SeenPacks.Contains(M)) { R.SeenPacks.Add(M); if (!M->bAlwaysHostile) MakeNeutral(M); } // outdoor-bosses: sudden-death bosses stay hostile
@@ -793,6 +813,7 @@ bool CireWaveDirector::AllowDamage(ACireMonster* M, ACireHero* Attacker)
 void CireWaveDirector::OnMonsterDamaged(ACireMonster* M, ACireHero* Attacker)
 {
     if (!IsValid(M) || !IsValid(Attacker) || M->PackId >= 0) return;
+    CireMonsterExpansion::OnBonusCreatureAttacked(M); // bonus-loot: the escape clock starts on the first hit
     const FTrack* T = TrackOf(M);
     const FRuntime* R = Find(M->GetWorld());
     if (!T || !T->bEscortee || !R) return;
@@ -975,6 +996,22 @@ float CireWaveDirector::OnWaveCleared(ACireGameMode* Mode, int32 WaveInCycle, bo
     return StartBonusWave(Mode) ? B.ExtraBreatherSeconds : 0.f;
 }
 
+bool CireWaveDirector::RollBonusStage(const FCireWaveConfig& C, const FCireWaveDef& W, int32 GlobalWave, int32 Seed, int32 BonusThisCycle, bool bForce)
+{
+    // bonus-loot: any wave type except bosses (a boss row anywhere keeps the wave), low frequency.
+    if (W.Type == ECireWaveType::Boss || W.Units.ContainsByPredicate([](const FCireWaveUnit& U) { return U.bBoss; })) return false;
+    if (bForce) return true;
+    const FCireBonusWaveRules& B = C.Bonus;
+    if (!B.bEnabled || B.ReplaceChance <= 0 || W.Type == ECireWaveType::BonusLoot || GlobalWave < B.FromWave || BonusThisCycle >= B.MaxPerCycle) return false;
+    FRandomStream Stream(static_cast<int32>(HashCombine(GetTypeHash(Seed), GetTypeHash(GlobalWave * 15485863 + 29))));
+    return Stream.FRand() < B.ReplaceChance;
+}
+
+void CireWaveDirector::ForceNextBonusStage(ACireGameMode* Mode, int32 Tier)
+{
+    if (Mode) Get(Mode).ForceStage = Tier > 0 ? FMath::Clamp(Tier, 1, 3) : -1;
+}
+
 bool CireWaveDirector::StartBonusWave(ACireGameMode* Mode, FString* Error)
 {
     auto* S = Mode ? Mode->GetGameState<ACireGameState>() : nullptr;
@@ -989,7 +1026,7 @@ bool CireWaveDirector::StartBonusWave(ACireGameMode* Mode, FString* Error)
     Rec.WaveNumber = FMath::Max(1, S->Wave); Rec.WaveInCycle = FMath::Max(1, Mode->CycleWavesSpawned); Rec.Cycle = Mode->Clock.Round(); Rec.WaveType = W.Type;
     QueueWave(R, W, Serial, Mode->bSmoke, Mode->Clock.Round() - 1, true);
     ++R.BonusThisCycle; ++R.BonusTotal;
-    S->Announcement = FString::Printf(TEXT("BONUS LOOT WAVE | %s: treasure creatures flee down your lane. Catch them before they escape (%.0f s)!"), *W.Label, R.Config.Bonus.EscapeSeconds);
+    S->Announcement = FString::Printf(TEXT("BONUS LOOT WAVE | %s: treasure creatures run for the castle. Catch them before they escape (%.0f s after the first hit)!"), *W.Label, R.Config.Bonus.EscapeSeconds);
     S->ForceNetUpdate();
     UE_LOG(LogCireWaves, Display, TEXT("CIRE_WAVES_BONUS_START label=\"%s\" units=%d escape=%.0f extra_breather=%.0f wave=%d"), *W.Label, W.UnitsPerLane(),
         R.Config.Bonus.EscapeSeconds, R.Config.Bonus.ExtraBreatherSeconds, S->Wave);

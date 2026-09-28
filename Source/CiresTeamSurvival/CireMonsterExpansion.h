@@ -48,6 +48,10 @@ namespace CireMonsterExpansion
     CIRESTEAMSURVIVAL_API float BountyMobValues(const ACireMonster* Monster);
     /** Bonus creature behaviour (flee / march / escape). True when it handled the monster's tick. */
     CIRESTEAMSURVIVAL_API bool TickSpecial(ACireMonster* Monster, ACireGameMode* Mode, float Delta);
+    /** bonus-loot: the first hit on a bonus creature starts its escape clock (bonusWave.escapeTimerOnHit). */
+    CIRESTEAMSURVIVAL_API void OnBonusCreatureAttacked(ACireMonster* Monster);
+    /** bonus-loot: seconds left before this bonus creature escapes (-1 = its clock has not started). */
+    CIRESTEAMSURVIVAL_API float EscapeSecondsLeft(const ACireMonster* Monster);
     /** Bonus creatures that escaped so far in this world (tests, soak summary). */
     CIRESTEAMSURVIVAL_API int32 EscapedCount(const UWorld* World);
 #if !UE_BUILD_SHIPPING

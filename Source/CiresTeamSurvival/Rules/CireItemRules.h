@@ -313,7 +313,7 @@ double Mitigation(double value);
 constexpr double MaxCooldownReductionTotal = 0.60;
 
 // ---------------------------------------------------------------- loot
-enum class LootKind : std::uint8_t { Gold, Experience, PrimaryTome, Item };
+enum class LootKind : std::uint8_t { Gold, Experience, PrimaryTome, Item, SkillPoint }; // bonus-loot: SkillPoint = free Skill Shop purchase
 bool ParseLootKind(const std::string& key, LootKind& out);
 struct LootEntry
 {
@@ -334,7 +334,8 @@ struct LootBundle
     int Experience = 0;
     std::vector<int> PrimaryTomes;  // one entry per tome, value = points
     std::vector<std::string> Items;
-    bool Empty() const { return Gold <= 0 && Experience <= 0 && PrimaryTomes.empty() && Items.empty(); }
+    int SkillPoints = 0;            // bonus-loot: free skill points (the next Skill Shop buy/level costs nothing)
+    bool Empty() const { return Gold <= 0 && Experience <= 0 && PrimaryTomes.empty() && Items.empty() && SkillPoints <= 0; }
 };
 struct LootScaling
 {

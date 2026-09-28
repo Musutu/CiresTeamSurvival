@@ -207,6 +207,7 @@ public:
     UPROPERTY(Replicated) bool bShopVisit = false;
     UPROPERTY(Replicated) TArray<FCireSkillRank> SkillRanks;   // Skill Shop levels
     UPROPERTY(Replicated) bool bReadyToContinue = false;       // breather READY TO CONTINUE (bots: always)
+    UPROPERTY(Replicated) int32 FreeSkillPoints = 0;           // bonus-loot: next Skill Shop buys/levels are free
 
     // ---- client requests (owning client only) ----
     UFUNCTION(Server, Reliable) void ServerBuy(FName ItemId);
