@@ -86,9 +86,10 @@ message and nothing changes.
 
 ## Game-mode presets (`tuningProfile`)
 
-`feat/waves-modes` owns `WavePresets.json`. When a preset is applied on the server, call
-`CireAbilityTuner::ApplyModePresetJson(World, PresetJson)`; it reads `"tuningProfile"` (profile name, "" = the
-startup set) and `"allowTuning"` (true / false; false also locks the option). See the RESUME doc for the wiring.
+Add to a preset row in `WavePresets.json`: `"tuningProfile": "<profile name>"` ("" = the startup set) and
+`"allowTuning": true|false` (false also locks the option, e.g. ranked / standard). Selecting the game type
+(`CireWaveDirector::SelectPreset`, or `-CireWavePreset=` at match start) applies them through
+`CireAbilityTuner::ApplyWavePreset`.
 
 ## Limits
 

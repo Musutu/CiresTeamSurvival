@@ -29,15 +29,15 @@ feat/ability-expansion). Ports 17630-17639. User doc: `Docs/AbilityTuner.md`.
   (`CIRE_NET_CLIENT_TUNER PASS`).
 
 ## Not done / next
-- Gate runs: see "Gate logs" below.
-- `tuningProfile` preset wiring waits for feat/waves-modes (see below).
+- Hero Creator (feat/kit-editor) should subscribe to `CireAbilityTuner::OnChanged()` / poll `Version()` to refresh its cards.
 - No clipboard import / export (would need the ApplicationCore module); files only.
 
-## Wiring for feat/waves-modes (`tuningProfile`)
-Where the server applies a `WavePresets.json` preset object, add one line:
-`CireAbilityTuner::ApplyModePresetJson(Mode->GetWorld(), PresetJsonObject);`
-It reads `"tuningProfile": "<profile name>"` ("" = startup set) and `"allowTuning": true|false` (false also locks the
-option, the ranked / standard default). Suggested: ranked / standard presets `"allowTuning": false`, custom `true`.
+## Wiring for feat/waves-modes (`tuningProfile`) — DONE after merging main
+`CireAbilityTuner::ApplyWavePreset(World, PresetId)` reads the preset's raw row in `WavePresets.json` (no change to
+`FCireWavePreset`, so it cannot conflict with kitProfile work). Called from `CireWaveDirector::SelectPreset` and the
+match-init preset pick in `CireWaves.cpp`. Keys: `"tuningProfile": "<profile name>"` ("" = startup set) and
+`"allowTuning": true|false` (false also locks the option). No shipped preset sets them yet: Eric decides which game
+types are ranked (suggest `"allowTuning": false` on standard / ranked presets).
 
 ## Assumptions / questions for Eric
 1. There is no ranked / custom game distinction yet. Default: **on** in editor and development builds, **off** in a
@@ -67,7 +67,9 @@ option, the ranked / standard default). Suggested: ranked / standard presets `"a
 - `CireKeybindings.cpp`: `ToggleAbilityTuner` (F7) + action-count test `+1`.
 - `CireMatch.cpp`: `CireAbilityTuner::InitializeServer(this)` in BeginPlay.
 - `CireCombatExpansionProbe.cpp`: `CireAbilityTuner::RunSmoke(Mode)`.
-- `Docs/EricFeedback/2026-09-27/PLAYTEST-6.md`: appended section M (Eric's words).
+- `CireWaves.cpp`: two `CireAbilityTuner::ApplyWavePreset` calls (SelectPreset, match-init pick).
 
-## Gate logs
-(pending)
+## Gate logs (after merging main e5d261a7, 2026-09-28)
+- Native PASS (`CIRE_ABILITY_TUNER_PASS checks=39`, keybindings 83 actions): `Saved/ExpansionChecks/20260928T065836921128Z/report.json`
+- Network PASS (`CIRE_NET_CLIENT_TUNER PASS ... name=Tuned Ember Lance cooldown=3.50 client_denied`): `Saved/NetworkSmoke/20260928T070141688917Z/report.json`
+- Interface PASS: `Saved/InterfaceSmoke/20260928T070307224355Z/report.json`
