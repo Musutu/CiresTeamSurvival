@@ -163,13 +163,20 @@ namespace CireJunglePacks
     /** Units of a type and role (Dps: every DPS kind). Mixed: every race's units. A DPS kind the race lacks falls back to
      *  the race's other DPS; bOutStandIn: the race has none at all, so a cross-race stand-in pool (Mixed) is returned. */
     CIRESTEAMSURVIVAL_API TArray<FName> Pool(FName Type, ECirePackRole Role, bool* bOutStandIn = nullptr);
-    /** The archetypes of a pack, tanks first, then healers, then DPS (deterministic for the seed). OutRoles: each member's
-     *  own role (RoleOf). */
+    /** The archetypes of a pack, tanks first, then healers, then DPS (deterministic for the seed). OutRoles: the role each
+     *  member fills (its RoleOf, or Caster for a caster body in a caster-DPS slot). */
     CIRESTEAMSURVIVAL_API TArray<FName> Members(uint32 Seed, FName Type, const FCirePackComposition& C, TArray<ECirePackRole>* OutRoles = nullptr);
     /** Non-basic abilities of the unit's complete kit (own + borrowed). */
     CIRESTEAMSURVIVAL_API int32 KitSize(const FCireNPCArchetype& Archetype);
     /** The abilities a pack unit uses at a tier: its own kit first (core, then the seeded order), then borrowed ones. */
-    CIRESTEAMSURVIVAL_API TArray<FName> TierLoadout(const FCireNPCArchetype& Archetype, int32 Tier, int32 Seed);
+    CIRESTEAMSURVIVAL_API TArray<FName> TierLoadout(const FCireNPCArchetype& Archetype, int32 Tier, int32 Seed, bool bNoHeals = false);
+    /** pack-formations: a caster body (role caster / support): it can fill a ranged-caster DPS slot even when it also heals
+     *  (then it fights without its heals). The roster's casters nearly all heal, so this is where caster DPS come from. */
+    CIRESTEAMSURVIVAL_API bool IsCasterBody(const FCireNPCArchetype& Archetype);
+    /** Abilities a unit filling Role uses at Tier (a healer body in a caster-DPS slot drops its heals). */
+    CIRESTEAMSURVIVAL_API int32 LoadoutCount(const FCireNPCArchetype& Archetype, int32 Tier, ECirePackRole Role);
+    /** The pack role a spawned pack monster fills (recorded by ApplyTier; else its archetype's RoleOf). */
+    CIRESTEAMSURVIVAL_API ECirePackRole PackRoleOf(const ACireMonster* Monster);
     /** Called by CireNPCArchetypes::Reload after Races.json and Bestiary.json: tops every pack unit's kit up to the floor
      *  from its race (flagged borrowed) and records the audit. */
     CIRESTEAMSURVIVAL_API void MergeInto(FCireNPCDatabase& Database);
@@ -190,7 +197,7 @@ namespace CireJunglePacks
      *  not seen yet does not hitch the frame it spawns in (server and clients; each archetype once). */
     CIRESTEAMSURVIVAL_API void PrewarmBodies(const UWorld* World);
     /** Apply the tier: ability loadout (TierLoadout), the challenge-mob stats (UnitHealth / UnitDamage) and the numeral. */
-    CIRESTEAMSURVIVAL_API void ApplyTier(ACireMonster* Monster, int32 Tier, int32 Seed, bool bLeader = false);
+    CIRESTEAMSURVIVAL_API void ApplyTier(ACireMonster* Monster, int32 Tier, int32 Seed, bool bLeader = false, TOptional<ECirePackRole> Role = {});
 
 #if !UE_BUILD_SHIPPING
     /** -CireJungleProbe (Tools/RunJunglePackProbe.py): Eric's committed layout spawns T1..T4 through the real schedule, then

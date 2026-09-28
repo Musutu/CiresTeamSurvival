@@ -716,7 +716,7 @@ void CireProgression::SpawnBay(ACireGameMode* Mode, int32 Team, int32 Bay, int32
         CireNPCCombat::ConfigureArchetype(M, Members[I], Wave, Tier, Round);
         CireRaces::ApplyPackUnit(M, Tier, bIsLeader, Wave); // monster-races: elite/champion/warlord colours
         if (bIsLeader && M->NPCState) M->NPCState->Classification = ECireNPCClass::Boss; // pack-leader bounty, loot and frame
-        CireJunglePacks::ApplyTier(M, Tier, static_cast<int32>(Seed ^ static_cast<uint32>(I)), bIsLeader); // jungle-packs kit + pack-formations stats
+        CireJunglePacks::ApplyTier(M, Tier, static_cast<int32>(Seed ^ static_cast<uint32>(I)), bIsLeader, Roles.IsValidIndex(I) ? TOptional<ECirePackRole>(Roles[I]) : TOptional<ECirePackRole>()); // jungle-packs kit + pack-formations stats
         const FString Role = CireJunglePacks::RoleName(Roles.IsValidIndex(I) ? Roles[I] : ECirePackRole::Melee);
         M->MonsterName = FString::Printf(TEXT("%s T%d %s | %s"), bIsLeader ? TEXT("Pack Leader") : TEXT("Jungle"), Tier, *Role, *M->GetNPCDisplayName());
         Mode->Monsters.Add(M);

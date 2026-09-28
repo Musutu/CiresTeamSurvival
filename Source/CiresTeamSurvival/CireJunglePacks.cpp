@@ -39,6 +39,7 @@ bool OwnsHeal(const FCireNPCArchetype& A)
     for (const FCireNPCAbility& Ab : A.Abilities) if (!Ab.bBorrowed && Ab.Kind == ECireNPCAbilityKind::HealAlly) return true;
     return false;
 }
+TMap<TWeakObjectPtr<const ACireMonster>, ECirePackRole> GPackRoles;
 int32 OwnKit(const FCireNPCArchetype& A)
 {
     int32 N = 0; for (const FCireNPCAbility& Ab : A.Abilities) N += !Ab.bBasic && !Ab.bBorrowed ? 1 : 0; return N;
@@ -205,8 +206,8 @@ void CireJunglePacks::SetStats(UWorld* World, const FCirePackStats& Stats, const
         if (!A || M->Health <= 0) continue;
         const float Fraction = M->MaxHealth > 0 ? FMath::Clamp(M->Health / M->MaxHealth, 0.f, 1.f) : 1.f;
         const bool bLeader = M->NPCState->Classification == ECireNPCClass::Boss;
-        M->MaxHealth = UnitHealth(RoleOf(*A), M->Tier, bLeader); M->Health = FMath::Max(1.f, M->MaxHealth * Fraction);
-        M->Damage = UnitDamage(RoleOf(*A), M->Tier);
+        M->MaxHealth = UnitHealth(PackRoleOf(M), M->Tier, bLeader); M->Health = FMath::Max(1.f, M->MaxHealth * Fraction);
+        M->Damage = UnitDamage(PackRoleOf(M), M->Tier);
         M->ForceNetUpdate(); ++Changed;
     }
     UE_LOG(LogCireJungle, Display, TEXT("CIRE_JUNGLE_STATS dmg=%.0f tank=%.0f global=%.2f/%.2f rescaled=%d"), Stats.BaseDamage, Stats.TankHealth, Stats.GlobalHealth, Stats.GlobalDamage, Changed);
@@ -380,7 +381,9 @@ TArray<FName> CireJunglePacks::Pool(FName Type, ECirePackRole Role, bool* bOutSt
         // Mixed draws from every race; a race keeps its own units (rare creatures stay Mixed-only).
         const bool bInType = Type == Mixed || (U.Race == Type && !(U.bCreature && CireNPCArchetypes::Find(U.Id) && CireNPCArchetypes::Find(U.Id)->RaceId.IsNone()));
         if (bInType && IsDps(Role) && IsDps(U.Role)) RaceDps.Add(U.Id);
-        if (U.Role != Role && !(Role == ECirePackRole::Dps && IsDps(U.Role))) continue;
+        const FCireNPCArchetype* UA = Role == ECirePackRole::Caster ? CireNPCArchetypes::Find(U.Id) : nullptr;
+        const bool bCasterBody = UA && U.Role == ECirePackRole::Healer && IsCasterBody(*UA); // pack-formations: healing casters fight as caster DPS
+        if (U.Role != Role && !(Role == ECirePackRole::Dps && IsDps(U.Role)) && !bCasterBody) continue;
         Any.Add(U.Id);
         if (bInType) Out.Add(U.Id);
     }
@@ -404,7 +407,7 @@ TArray<FName> CireJunglePacks::Members(uint32 Seed, FName Type, const FCirePackC
         {
             const FName Id = Candidates[I % Candidates.Num()];
             const FCireNPCArchetype* A = CireNPCArchetypes::Find(Id);
-            Out.Add(Id); if (OutRoles) OutRoles->Add(A ? RoleOf(*A) : Role);
+            Out.Add(Id); if (OutRoles) OutRoles->Add(A ? (Role == ECirePackRole::Caster && IsCasterBody(*A) ? ECirePackRole::Caster : RoleOf(*A)) : Role);
         }
     }
     return Out;
@@ -413,12 +416,24 @@ int32 CireJunglePacks::KitSize(const FCireNPCArchetype& A)
 {
     int32 N = 0; for (const FCireNPCAbility& Ab : A.Abilities) N += Ab.bBasic ? 0 : 1; return N;
 }
-TArray<FName> CireJunglePacks::TierLoadout(const FCireNPCArchetype& A, int32 Tier, int32 Seed)
+bool CireJunglePacks::IsCasterBody(const FCireNPCArchetype& A) { return A.Role == ECireNPCRole::Caster || A.Role == ECireNPCRole::Support; }
+int32 CireJunglePacks::LoadoutCount(const FCireNPCArchetype& A, int32 Tier, ECirePackRole Role)
+{
+    return TierLoadout(A, Tier, 0, Role == ECirePackRole::Caster && OwnsHeal(A)).Num();
+}
+ECirePackRole CireJunglePacks::PackRoleOf(const ACireMonster* M)
+{
+    if (const ECirePackRole* R = GPackRoles.Find(TWeakObjectPtr<const ACireMonster>(M))) return *R;
+    const FCireNPCArchetype* A = M && M->NPCState ? M->NPCState->Archetype() : nullptr;
+    return A ? RoleOf(*A) : ECirePackRole::Melee;
+}
+TArray<FName> CireJunglePacks::TierLoadout(const FCireNPCArchetype& A, int32 Tier, int32 Seed, bool bNoHeals)
 {
     TArray<FName> Order;
     for (const FCireNPCAbility& Ab : A.Abilities) if (!Ab.bBasic && Ab.bCore && !Ab.bBorrowed) Order.Add(Ab.Id);
     for (const FName Id : CireRaces::MatchOrder(Seed, A)) Order.AddUnique(Id);
     for (const FCireNPCAbility& Ab : A.Abilities) if (!Ab.bBasic && Ab.bBorrowed) Order.AddUnique(Ab.Id);
+    if (bNoHeals) Order.RemoveAll([&](FName Id) { const FCireNPCAbility* Ab = A.FindAbility(Id); return Ab && Ab->Kind == ECireNPCAbilityKind::HealAlly; });
     Order.SetNum(FMath::Min(Order.Num(), AbilityCount(Tier, KitSize(A))));
     return Order;
 }
@@ -579,19 +594,22 @@ void CireJunglePacks::PrewarmBodies(const UWorld* World)
     if (TSharedPtr<FStreamableHandle> Handle = Streamable.RequestAsyncLoad(Paths, FStreamableDelegate())) Handles.Add(Handle);
     UE_LOG(LogCireJungle, Display, TEXT("CIRE_JUNGLE_PREWARM units=%d assets=%d"), Units.Num(), Paths.Num());
 }
-void CireJunglePacks::ApplyTier(ACireMonster* M, int32 Tier, int32 Seed, bool bLeader)
+void CireJunglePacks::ApplyTier(ACireMonster* M, int32 Tier, int32 Seed, bool bLeader, TOptional<ECirePackRole> InRole)
 {
     UCireNPCState* S = M ? M->NPCState.Get() : nullptr;
     const FCireNPCArchetype* A = S ? S->Archetype() : nullptr;
     if (!S || !A || !M->HasAuthority()) return;
     Tier = ClampTier(Tier);
     const FCirePackTier& T = TierRules(Tier);
-    S->Loadout = TierLoadout(*A, Tier, Seed);
+    // pack-formations: the role this unit fills (a healing caster in a caster-DPS slot fights without its heals).
+    const ECirePackRole Role = InRole.IsSet() ? InRole.GetValue() : RoleOf(*A);
+    for (auto It = GPackRoles.CreateIterator(); It; ++It) if (!It.Key().IsValid()) It.RemoveCurrent();
+    GPackRoles.Add(TWeakObjectPtr<const ACireMonster>(M), Role);
+    S->Loadout = TierLoadout(*A, Tier, Seed, Role == ECirePackRole::Caster && OwnsHeal(*A));
     S->bLoadoutSet = true;
     S->SkillTier = static_cast<uint8>(S->Loadout.IsEmpty() ? 0 : FMath::Clamp(Tier, 1, 3));
     (void)T;
     // pack-formations: challenge-mob stats (JunglePacks.json "stats" x the tier's multipliers), then the F8 monster scale.
-    const ECirePackRole Role = RoleOf(*A);
     M->MaxHealth = M->Health = UnitHealth(Role, Tier, bLeader);
     M->Damage = UnitDamage(Role, Tier);
     CireDeveloperTools::AdjustMonster(M);
@@ -703,7 +721,9 @@ bool CireJunglePacks::RunTests(TArray<FString>& Failures)
     for (const FName Type : PackTypes())
         for (const ECirePackRole Role : {ECirePackRole::Melee, ECirePackRole::Ranged, ECirePackRole::Caster})
             for (const FName Id : Pool(Type, Role))
-                Check(CireNPCArchetypes::Find(Id) && IsDps(RoleOf(*CireNPCArchetypes::Find(Id))), FString::Printf(TEXT("%s %s pool holds DPS"), *Type.ToString(), RoleName(Role)));
+                Check(CireNPCArchetypes::Find(Id) && (IsDps(RoleOf(*CireNPCArchetypes::Find(Id))) || IsCasterBody(*CireNPCArchetypes::Find(Id))), FString::Printf(TEXT("%s %s pool holds DPS or caster bodies"), *Type.ToString(), RoleName(Role)));
+    for (const FName Type : PackTypes()) { int32 Bodies = 0; for (const FName Id : Pool(Type, ECirePackRole::Caster)) Bodies += CireNPCArchetypes::Find(Id) && IsCasterBody(*CireNPCArchetypes::Find(Id)) ? 1 : 0;
+        Check(Bodies > 0, FString::Printf(TEXT("%s fields a ranged caster"), *Type.ToString())); }
     Check(Pool(Mixed, ECirePackRole::Caster).Num() > 0 && Pool(Mixed, ECirePackRole::Ranged).Num() > 0 && Pool(Mixed, ECirePackRole::Melee).Num() > 0, TEXT("Mixed fields every DPS kind"));
     for (const FCirePackUnit& U : Units)
     {
@@ -732,7 +752,7 @@ bool CireJunglePacks::RunTests(TArray<FString>& Failures)
             for (int32 I = 0; I < M.Num(); ++I)
             {
                 const FCireNPCArchetype* A = CireNPCArchetypes::Find(M[I]);
-                Check(A && RoleOf(*A) == Roles[I], TEXT("each member reports its own role"));
+                Check(A && (RoleOf(*A) == Roles[I] || (Roles[I] == ECirePackRole::Caster && IsCasterBody(*A))), TEXT("each member reports the role it fills"));
                 ++Got[Roles[I] == ECirePackRole::Tank ? 0 : Roles[I] == ECirePackRole::Healer ? 1 : 2];
             }
             Check(Got[0] == C.Tanks && Got[1] == C.Healers && Got[2] == C.DpsTotal(), TEXT("members fill the tank / healer / DPS counts"));

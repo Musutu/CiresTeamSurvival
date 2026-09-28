@@ -236,10 +236,10 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
                 {
                     const FCireNPCArchetype* A = M->NPCState ? M->NPCState->Archetype() : nullptr;
                     if (!A) { bComposed = false; continue; }
-                    const ECirePackRole Role = CireJunglePacks::RoleOf(*A);
+                    const ECirePackRole Role = CireJunglePacks::PackRoleOf(M);
                     Got.CountRef(CireJunglePacks::IsDps(Role) ? ECirePackRole::Dps : Role) += 1;
                     Leaders += M->GetNPCClassification() == ECireNPCClass::Boss ? 1 : 0;
-                    bComposed &= M->NPCState->Loadout.Num() == CireJunglePacks::AbilityCount(M->Tier, CireJunglePacks::KitSize(*A));
+                    bComposed &= M->NPCState->Loadout.Num() == CireJunglePacks::LoadoutCount(*A, M->Tier, Role);
                     // tier-readability: the tier reads as "T#" next to the name, and the body carries no rank glow.
                     bTierPlates &= CireZones::TierOf(M) == M->Tier && CireZones::NameplateLabel(M->GetNPCDisplayName(), CireZones::TierOf(M)).EndsWith(FString::Printf(TEXT("  T%d"), M->Tier));
                     bNoGlow &= UCireMonsterArt::RimFor(M).A <= 0.f && !CireRaces::RankBodyColours();
@@ -479,7 +479,8 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
     // ================================================================ jungle-packs: unlimited markers, 100+ packs, types, compositions
     {
         TArray<FString> Failures;
-        Check(CireJunglePacks::RunTests(Failures), TEXT("jungle pack rules: ") + FString::Join(Failures, TEXT(" / ")));
+        const bool bJungle = CireJunglePacks::RunTests(Failures); // run first: argument order would build the message before the failures exist
+        Check(bJungle, TEXT("jungle pack rules: ") + FString::Join(Failures, TEXT(" / ")));
         TArray<FString> ZoneFailures; // tier-readability: tier tags, colours, zone tiers, zone markers
         Check(CireZones::RunTests(ZoneFailures), TEXT("tier readability and zones: ") + FString::Join(ZoneFailures, TEXT(" / ")));
         FCireMapLayout L;
@@ -517,10 +518,10 @@ bool CireRouteEditor::RunTests(ACireGameMode* Mode)
         Check(ML::Number(L, Next) == 50 && ML::Number(L, NextTwin) == 50 && ML::Number(L, Packs[119]) == 119 && ML::OfType(L, ML::ChallengePack).Num() == 238, TEXT("removing pack 50 of 120 renumbers the rest (twins too)"));
         // Pack type and composition: set on one twin, kept on the other; overrides clamp; Validate stays clean.
         ML::SetPackType(L, Packs[10], TEXT("voidborn"));
-        ML::SetComposition(L, Packs[10], {2, 2, 3});
+        ML::SetComposition(L, Packs[10], {3, 3, 3}); // pack-formations: 9 clamps to 8 (DPS trimmed first)
         const FCireMapMarker* P = ML::Find(L, Packs[10]); const FCireMapMarker* PT = P ? ML::Find(L, P->Pair) : nullptr;
-        Check(P && PT && PT->PackType == FName(TEXT("voidborn")) && P->Comp == FCirePackComposition{2, 2, 2} && PT->Comp == P->Comp, TEXT("pack type and a clamped composition sync to the twin"));
-        Check(P && ML::PackSummary(*P).StartsWith(FString::Printf(TEXT("T%d Voidborn: 2 tank"), P->Tier)), TEXT("the summary line reads tier, race and composition: ") + (P ? ML::PackSummary(*P) : FString()));
+        Check(P && PT && PT->PackType == FName(TEXT("voidborn")) && P->Comp == FCirePackComposition(3, 3, 2) && PT->Comp == P->Comp, TEXT("pack type and a clamped composition sync to the twin"));
+        Check(P && ML::PackSummary(*P).StartsWith(FString::Printf(TEXT("T%d Voidborn: 3 tank"), P->Tier)), TEXT("the summary line reads tier, race and composition: ") + (P ? ML::PackSummary(*P) : FString()));
         ML::SetComposition(L, Packs[10], {0, 0, 0});
         Check(!ML::Find(L, Packs[10])->HasCompOverride() && CireJunglePacks::IsValid(ML::PackComposition(*ML::Find(L, Packs[10]))), TEXT("AUTO restores a valid automatic composition"));
         const TArray<FCireLayoutIssue> Found = ML::Validate(L);

@@ -171,7 +171,7 @@ bool CireJunglePacks::TickProbe(ACireGameMode* Mode, float Delta)
             {
                 const FCireNPCArchetype* A = M->NPCState ? M->NPCState->Archetype() : nullptr; if (!A) continue;
                 const float Along = FVector::DotProduct(M->SpawnPosition - Center, Fwd);
-                const ECirePackRole Role = RoleOf(*A);
+                const ECirePackRole Role = PackRoleOf(M);
                 if (Role == ECirePackRole::Tank) TankAhead = FMath::Max(TankAhead, Along);
                 if (Role == ECirePackRole::Healer) HealerAhead = FMath::Max(HealerAhead, Along);
                 bFacing &= FMath::Abs(FMath::FindDeltaAngleDegrees(M->GetActorRotation().Yaw, Yaw)) < 30.f || M->bEngaged;
@@ -241,11 +241,11 @@ bool CireJunglePacks::TickProbe(ACireGameMode* Mode, float Delta)
                 ++Monsters;
                 const FCireNPCArchetype* A = M->NPCState ? M->NPCState->Archetype() : nullptr;
                 if (!A) { Fail(TEXT("a pack member has no archetype")); continue; }
-                const ECirePackRole Role = RoleOf(*A);
+                const ECirePackRole Role = PackRoleOf(M);
                 Casters += Role == ECirePackRole::Caster ? 1 : 0;
                 Got.CountRef(IsDps(Role) ? ECirePackRole::Dps : Role) += 1;
                 Leaders += M->GetNPCClassification() == ECireNPCClass::Boss ? 1 : 0;
-                bLoadouts &= M->NPCState->Loadout.Num() == AbilityCount(Pack.Tier, KitSize(*A)) && M->Tier == Pack.Tier;
+                bLoadouts &= M->NPCState->Loadout.Num() == LoadoutCount(*A, Pack.Tier, Role) && M->Tier == Pack.Tier;
                 bRace &= Pack.PackType == Mixed || A->RaceId == Pack.PackType;
                 bInside &= FVector::Dist2D(M->GetActorLocation(), CireLanePath::ChallengePosition(World, Realm, Bay, 0)) <= Pack.Radius + 300.f;
                 FVector OnNav; OffNav += CireNav::Project(World, M->GetActorLocation(), OnNav, FVector(120, 120, 300)) ? 0 : 1;
