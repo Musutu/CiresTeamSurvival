@@ -435,7 +435,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
                                         : FString(TEXT("Click a skill button below to place that ability's cast effect on the body"));
         P.Text(P.Fit(Hint, 8.5f, VW - X - Pad - 8, ECireFont::Body), X + 8, TabY + 6, 8.5f, Muted * 1.3f, ECireFont::Body, false, false);
     }
-    const float BarH = 96.f;
+    const float BarH = 110.f;
     const float BodyY = TabY + TabH + 8, BarY = VH - Pad - BarH, BodyB = BarY - 8;
     const float Gap = 10.f;
     const float RightW = FMath::Clamp(VW * .27f, 320.f, 440.f);
@@ -443,7 +443,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
     const float LX = Pad, RX = LX + LeftW + Gap;
 
     // Action-bar layout first (the drop targets).
-    const float SlotS = 54.f, SlotGap = 8.f, SlotY = BarY + 28;
+    const float SlotS = 54.f, SlotGap = 8.f, SlotY = BarY + 30;
     float SlotX[FCireKitLoadout::SlotCount];
     {
         float X = Pad + 18;
@@ -544,7 +544,10 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
         }
         // Shelves: section blocks of scroll cards, paged by rows (the Skill Shop's layout).
         const auto Groups = Pool(S.Filter);
-        constexpr float CardW = 132.f, CardH = 174.f, CGap = 9.f, BPad = 7.f, Head = 20.f;
+        constexpr float CardW = 128.f, CGap = 9.f, BPad = 7.f, Head = 20.f;
+        // The scroll art keeps its own aspect: size the shelf to the tallest tier so no row has dead space.
+        const float CardH = FMath::Max3(CireShopArt::NaturalHeight(CireShopArt::EScroll::Golden, CardW), CireShopArt::NaturalHeight(CireShopArt::EScroll::Plain, CardW),
+            CireShopArt::NaturalHeight(CireShopArt::EScroll::Prismatic, CardW)) + 6.f;
         const float AreaY = Y, AreaH = BodyB - 22 - AreaY, AreaW = IW - 14;
         const float RowH = CardH + Head + BPad * 2 + 6;
         struct FBlock { int32 Group, Start, Count; bool bCont; float X, W; };
@@ -628,7 +631,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
         CireShopArt::Panel(P, RX, BodyY, RightW, BodyB - BodyY);
         const float PX = RX + 16, PW = RightW - 32;
         float PY = BodyY + 12;
-        CireShopArt::Spaced(P, TEXT("LOADOUT PRESETS"), PX, PY, 11.f, .25f, TitleText, ECireFont::Display, false, true);
+        CireShopArt::Spaced(P, TEXT("LOADOUT PRESETS"), PX + 10, PY + 2, 11.f, .25f, TitleText, ECireFont::Display, false, true);
         PY += 22;
         const FCireKitProfile* Prof = Data().FindProfile(S.Profile);
         const FCireKitChampion* Entry = Prof ? Prof->Champions.Find(S.Champion) : nullptr;
@@ -779,7 +782,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
         CireShopArt::Panel(P, RX, BodyY, RightW, BodyB - BodyY);
         const float IX = RX + 16, IW = RightW - 32;
         float Y = BodyY + 12;
-        CireShopArt::Spaced(P, TEXT("EFFECT PLACEMENT"), IX, Y, 11.f, .25f, TitleText, ECireFont::Display, false, true);
+        CireShopArt::Spaced(P, TEXT("EFFECT PLACEMENT"), IX + 10, Y + 2, 11.f, .25f, TitleText, ECireFont::Display, false, true);
         Y += 22;
         if (!SelDef)
         {
@@ -909,7 +912,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
         const float BW = VW - 2 * Pad;
         CireShopArt::Panel(P, Pad, BarY, BW, BarH);
         const FString Title = FString::Printf(TEXT("BASE LOADOUT  ·  %s  ·  %s PROFILE"), *(S.Work.Name.IsEmpty() ? FString(TEXT("NOT SAVED YET")) : S.Work.Name.ToUpper()), *S.Profile.ToUpper());
-        CireShopArt::Spaced(P, P.Fit(Title, 8.5f, SlotX[FCireKitLoadout::PassiveSlot] + SlotS - Pad - 18, ECireFont::Display), Pad + 18, BarY + 9, 8.5f, .25f, CireShopArt::Filigree, ECireFont::Display, false, false);
+        CireShopArt::Spaced(P, P.Fit(Title, 8.5f, SlotX[FCireKitLoadout::PassiveSlot] + SlotS - Pad - 18, ECireFont::Display), Pad + 30, BarY + 10, 8.5f, .25f, CireShopArt::Filigree, ECireFont::Display, false, false);
         const int32 HoverSlot = SlotAt(M);
         const int32 DropSlot = S.bDragging ? SlotAt(Pointer) : INDEX_NONE;
         for (int32 I = 0; I < FCireKitLoadout::SlotCount; ++I)
@@ -1085,7 +1088,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
             S.Tab = 0;
             if (Controller) Controller->DraftSearch.Reset();
         }
-        const bool bReady = S.Tab == 0 ? Now - S.GalleryStart > 5.0 : ((Stage && Stage->IsPreviewReady() && Stage->SecondsShown() > 3.0) || Now - S.GalleryStart > 40.0);
+        const bool bReady = S.Tab == 0 ? Now - S.GalleryStart > 14.0 : ((Stage && Stage->IsPreviewReady() && Stage->SecondsShown() > 3.0) || Now - S.GalleryStart > 40.0);
         const FString Dir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("KitEditorGallery"));
         if (S.GalleryShotAt == 0 && bReady)
         {
