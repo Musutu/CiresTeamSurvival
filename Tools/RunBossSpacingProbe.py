@@ -2,8 +2,8 @@
 when installed, else the Citadel):
   1. crowd before/after: 16 melee monsters engage one hero with the legacy spacing, then with Content/Data/UnitSpacing.json;
      the probe measures overlapping body pairs and the mean nearest-neighbour gap (after must overlap less, spread more);
-  2. every outdoor world boss is drawn 5x with a Large-nav-agent capsule, stands on the navmesh and can path to the spawn;
-  3. a 5x wave boss marches the lane road through the town for 45 s without stalling;
+  2. every outdoor world boss is drawn boss.outdoorBoss (5) x its marker size with a Large-nav-agent capsule, stands on the navmesh and can path to the spawn;
+  3. a wave boss (boss.waveBoss, default 1x) marches the lane road through the town for 45 s without stalling;
   4. --shots (renders): the marching giant and a world boss with the raid-boss bar, in all 4 HUD themes (PNG).
 
     python Tools/RunBossSpacingProbe.py [--shots] [--citadel] [--timeout 1800]

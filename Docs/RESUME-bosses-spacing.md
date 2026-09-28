@@ -96,6 +96,17 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bosses-spacing`, ports 17570-17579 (re
   `CireNPCState.h/.cpp` (replicated BodySize), `CireOutdoorBosses.cpp` (copies the marker size), `CireLayoutWiringTests.cpp`,
   `CireMonsterArtTests.cpp` (pack leader ratio)
 
+## Gate logs (2026-09-28 re-gate: main 8b323888 merged cleanly + the boss size split; ports 17925-17949)
+- Build: Result: Succeeded
+- Native: PASS `Saved/ExpansionChecks/20260928T075931897429Z/report.json` (`CIRE_UNIT_SPACING_TESTS_PASS checks=26`,
+  `CIRE_LAYOUT_WIRING_PASS checks=62`, `CIRE_MONSTER_ART_PASS`, `CIRE_COMBAT_EXPANSION_PASS`)
+- Network: PASS `Saved/NetworkSmoke/20260928T080318955667Z/report.json` (first run failed the client strafe step once —
+  hero movement, untouched here; rerun passed: environmental)
+- Interface: PASS `Saved/InterfaceSmoke/20260928T080438168255Z/report.json`
+- Boss spacing probe (town, no shots): PASS `Saved/BossSpacing/20260928T080647Z/report.json` — crowd 8 -> 3 overlapping pairs
+  (62% fewer), nearest 107 -> 119 cm; 12 outdoor bosses marker size 1 x outdoorBoss 5 = scale 7.5-8, capsule 72/150, on nav,
+  path to spawn; wave boss (waveBoss 1) scale 1.35, capsule 62/119, marched 67.8 m in 45 s, longest stall 0.4 s.
+
 ## Gate logs (after merging main a8f83d78)
 - Build: Result: Succeeded (`Saved/build7.log`)
 - Native: PASS `Saved/ExpansionChecks/20260928T065100216529Z/report.json` (earlier runs under load hit the 240 s exit
