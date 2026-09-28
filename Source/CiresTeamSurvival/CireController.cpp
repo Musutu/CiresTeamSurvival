@@ -385,6 +385,7 @@ void ACireController::PlayerTick(float Dt) {
 void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActor* Selected) {
     auto* H=Cast<ACireHero>(GetPawn()); auto* M=GetWorld()->GetAuthGameMode<ACireGameMode>();if(!H||!M)return;
     if(Action==10) {CireWaveDirector::SetPlayerReady(H,Value!=0);return;} // wave-director: breather Ready (Skill Shop window)
+    if(Action==11) {if(IsLocalController()){const auto& P=CireWaveDirector::Presets();if(P.IsValidIndex(Value))CireWaveDirector::SelectPreset(M,P[Value].Id);}return;} // waves-modes: host picks the game type
     if(Action==9) {if(M->Clock.Phase()==Cires::MatchPhase::Finished)GetWorld()->ServerTravel(TEXT("/Game/Maps/Citadel"));return;}
     if(Action==5) {if(Value>=0&&Value<5&&!H->bDrafted)H->Draft(Value);return;}
     if(!H->bDrafted)return;

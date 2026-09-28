@@ -24,7 +24,7 @@ struct FCireChallengeBay
     uint32 Seed = 0;
     static constexpr float DefaultRadius = 450.f, MinRadius = 200.f, MaxRadius = 1500.f;
     static constexpr int32 MaxTier = CireJunglePacks::MaxTier;
-    bool HasCompOverride() const { return Comp.Tanks > 0 || Comp.Healers > 0 || Comp.Dps > 0; }
+    bool HasCompOverride() const { return !Comp.IsZero(); }
     uint32 EffectiveSeed() const { return Seed != 0 ? Seed : CireJunglePacks::SeedFor(Position); }
     /** The composition this pack spawns. */
     FCirePackComposition Composition() const { return CireJunglePacks::Resolve(HasCompOverride() ? &Comp : nullptr, EffectiveSeed(), PackType, Tier); }

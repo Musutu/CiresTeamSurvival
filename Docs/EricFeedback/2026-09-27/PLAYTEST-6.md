@@ -70,6 +70,6 @@ Each section names the owning branch. Anything ambiguous: pick the sensible defa
 - Initiation spells: good PvP spells for starting a team fight and enabling team synergies (engage + group CC that allies can follow up on).
 - Blink Dagger item.
 
-## M. Ability Tuner (feat/ability-tuner) — Eric, 2026-09-28
-- "we need to adjust ability names and effects/duration as a feature in the testing build and final release, allowing for skill adjustments and balancing while playing and testing."
-- In-game, live, server-authoritative + replicated override layer on the ability data (names, tooltip text, numbers, durations, cooldown/cost/cast/range/radius, level-15 bonus, VFX scale/tint, enabled); host / single player only behind the "Allow ability tuning" game option; named profiles (save/load/export/import). See Docs/AbilityTuner.md.
+## M. Hero Creator + Ability Tuner — Eric, 2026-09-28
+- Hero Creator (feat/kit-editor): Skill-Shop-style picking of ALL skills (not class-limited), assign to action-bar slots, multiple named presets; kit PROFILES that span all champions and are hardwired to game modes (WavePresets `kitProfile`).
+- Ability Tuner (feat/ability-tuner): adjust ability names, effects, durations and numbers live while playing/testing — in the testing build AND the final release — for balancing.

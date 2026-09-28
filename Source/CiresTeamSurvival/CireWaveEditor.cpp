@@ -16,6 +16,8 @@ namespace
 // ui-themes: themed colours are references to CireUIColors so they follow the active UI theme.
 const FLinearColor &Gold=CireUIColors::Gold, &Parchment=CireUIColors::Parchment, &Muted=CireUIColors::Muted;
 const FLinearColor Teal(.2f, .71f, .59f, 1), Row(.045f, .06f, .07f, .96f), RowSelected(.1f, .13f, .12f, 1), Red(.75f, .2f, .23f, 1);
+// waves-modes: the "MODES & SCALE" sub-page replaces the wave composer pane (dev UI, one HUD per client).
+bool bWaveModesPage = false;
 
 TArray<FName> ArchetypeIds()
 {
@@ -79,7 +81,12 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     // ---- header: live status ------------------------------------------------------
     const FString Live = State ? FString::Printf(TEXT("LIVE  |  %s  |  NEXT: %s"), State->WaveLabel.IsEmpty() ? TEXT("no wave yet") : *State->WaveLabel,
         State->NextWaveLabel.IsEmpty() ? TEXT("-") : *State->NextWaveLabel) : FString(TEXT("LIVE  |  match state unavailable"));
-    Label(Painter().Fit(Live, 9.5f, 600, ECireFont::Heading), L, T - 2, 9.5f, Teal);
+    Label(Painter().Fit(Live, 9.5f, 470, ECireFont::Heading), L, T - 2, 9.5f, Teal);
+    // waves-modes: live scale, damage toggles, packs and game-type presets.
+    if (Button(bWaveModesPage ? TEXT("BACK TO WAVE") : TEXT("MODES & SCALE"), L + 480, T - 6, 120, 20,
+        TEXT("Live wave scale (health / damage / speed, applied to the monsters already on the road), per-wave damage on/off, fight-back packs, pack sizes and the game-type presets."),
+        true, bWaveModesPage, Teal))
+        bWaveModesPage = !bWaveModesPage;
 
     // ---- wave list (left) ---------------------------------------------------------
     const float ListX = L, ListY = T + 18, ListW = 170, RowH = 27;
@@ -101,15 +108,18 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         const int32 ListCycle = WaveDraft.bCampaignOrder ? I / PerCycle : State ? FMath::Max(0, State->Round - 1) : 0;
         const int32 ListWave = I % PerCycle;
         const FString RaceText = W.Race.IsNone() ? CireWaveDirector::RaceLabel(WaveDraft, W, ListCycle, ListWave) + TEXT("*") : CireWaveDirector::RaceLabel(WaveDraft, W, ListCycle, ListWave);
-        Label(Painter().Fit(FString::Printf(TEXT("%s  |  %d/lane  |  %s"), *CireWaveDirector::TypeLabel(W.Type), W.UnitsPerLane(), *RaceText), 8, ListW - 16, ECireFont::Body), ListX + 10, RY + 15, 8, bInCycle ? Gold : Muted);
+        // waves-modes: pack waves show their pack layout; damage-off waves are flagged.
+        const FString Size = W.Packs > 0 ? FString::Printf(TEXT("%dx%d-%d"), W.Packs, W.PackSizeMin, W.PackSizeMax) : FString::Printf(TEXT("%d/lane"), W.UnitsPerLane());
+        Label(Painter().Fit(FString::Printf(TEXT("%s%s  |  %s  |  %s"), W.bDealsDamage ? TEXT("") : TEXT("NO DMG  "), *CireWaveDirector::TypeLabel(W.Type), *Size, *RaceText), 8, ListW - 16, ECireFont::Body), ListX + 10, RY + 15, 8,
+            !bInCycle ? Muted : W.bDealsDamage ? Gold : Teal);
         Tip(W.Label, bInCycle ? (WaveDraft.bCampaignOrder ? TEXT("Select to edit. Campaign order: this wave is played in the match (cycle = row / waves per cycle).") : TEXT("Select to edit. This wave is inside the cycle."))
             : TEXT("Beyond the waves the match plays: kept in the list but not played until the cycle (or cycle count) grows."), ListX + 2, RY, ListW - 4, RowH - 2);
         if (Over && Clicked) { Clicked = false; PlayUIFeedback(); WaveSelected = I; bWaveEditBonus = false; } // monster-expansion: back to the cycle
     }
     const float LB = ListY + Visible * RowH + 10;
-    if (Button(TEXT("ADD"), ListX, LB, 54, 22, TEXT("Add a Normal wave after the selected one (max 20).")) && WaveDraft.Waves.Num() < 20)
+    if (Button(TEXT("ADD"), ListX, LB, 54, 22, TEXT("Add a Normal wave after the selected one (max 40).")) && WaveDraft.Waves.Num() < 40)
     { WaveDraft.Waves.Insert(CireWaveDirector::Template(ECireWaveType::Normal), WaveSelected + 1); ++WaveSelected; }
-    if (Button(TEXT("DUP"), ListX + 58, LB, 54, 22, TEXT("Duplicate the selected wave.")) && WaveDraft.Waves.Num() < 20)
+    if (Button(TEXT("DUP"), ListX + 58, LB, 54, 22, TEXT("Duplicate the selected wave.")) && WaveDraft.Waves.Num() < 40)
     { const FCireWaveDef Copy = WaveDraft.Waves[WaveSelected]; WaveDraft.Waves.Insert(Copy, WaveSelected + 1); ++WaveSelected; }
     if (Button(TEXT("DEL"), ListX + 116, LB, 54, 22, TEXT("Remove the selected wave (at least one remains)."), WaveDraft.Waves.Num() > 1, false, Red) && WaveDraft.Waves.Num() > 1)
     { WaveDraft.Waves.RemoveAt(WaveSelected); WaveSelected = FMath::Min(WaveSelected, WaveDraft.Waves.Num() - 1); }
@@ -124,10 +134,91 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
     }
     WaveSelected = FMath::Clamp(WaveSelected, 0, WaveDraft.Waves.Num() - 1);
 
+    // ---- waves-modes: MODES & SCALE sub-page (right pane) ------------------------------
+    if (bWaveModesPage)
+    {
+        const float EX = L + 190, EW = 410;
+        FCireWaveDef& W = WaveDraft.Waves[WaveSelected];
+        CireUIStyle::Header(Painter(), EX, T + 16, EW, TEXT("MODES & LIVE SCALE"), Teal, 10.f);
+        // Live scale: applies at once to the living wave monsters (and every later spawn).
+        auto& S = WaveDraft.Live;
+        StepF(TEXT("LIVE HEALTH x"), S.Health, .05f, .1f, 10, EX, T + 56, 94, 2, TEXT(""), TEXT("Every wave monster's health (living ones keep their health fraction)."));
+        StepF(TEXT("LIVE DAMAGE x"), S.Damage, .05f, 0, 10, EX + 98, T + 56, 94, 2, TEXT(""), TEXT("Every wave monster's damage."));
+        StepF(TEXT("LIVE SPEED x"), S.Speed, .05f, .2f, 3, EX + 196, T + 56, 94, 2, TEXT(""), TEXT("Every wave monster's movement speed (on top of the -20% wave pace)."));
+        if (Button(TEXT("APPLY SCALE NOW"), EX + 294, T + 56, 116, 20, TEXT("Apply the live scale to the running match at once (monsters already on the road included). Also: console cire.WaveScale <health> <damage> <speed>."), !bLab, false, Teal))
+        {
+            if (CireWaveDirector::SetLiveScale(Mode, S, &Error)) DeveloperMessage = FString::Printf(TEXT("Live wave scale: health x%.2f, damage x%.2f, speed x%.2f."), S.Health, S.Damage, S.Speed);
+            else DeveloperMessage = Error;
+        }
+        // Monster rules (Waves.json "monsters") and the pack-size modifier.
+        auto& Mr = WaveDraft.Monsters;
+        StepI(TEXT("PACK SIZE +/-"), WaveDraft.PackSizeBonus, -3, 3, EX, T + 96, 76, TEXT("Difficulty modifier: added to every pack of every pack wave (pack size 1-10)."));
+        StepF(TEXT("WAVE SPEED x"), Mr.Speed, .05f, .2f, 2, EX + 80, T + 96, 76, 2, TEXT(""), TEXT("Every wave monster's speed (Eric: 0.80 = -20%)."));
+        StepF(TEXT("ARMORED SPEED x"), Mr.ArmoredSpeed, .05f, .1f, 2, EX + 160, T + 96, 84, 2, TEXT(""), TEXT("Armored marchers move this much slower on top of the wave speed (0.50 = -50%)."));
+        StepF(TEXT("ARMORED STUN x"), Mr.ArmoredStunMultiplier, .25f, 0, 5, EX + 248, T + 96, 80, 2, TEXT(""), TEXT("Stuns last this much longer on armored marchers."));
+        if (Button(Mr.bArmoredSlowImmune ? TEXT("NO SLOWS") : TEXT("SLOWABLE"), EX + 332, T + 96, 78, 20, TEXT("Armored marchers cannot be slowed (they can still be stunned, rooted and path-blocked)."), true, Mr.bArmoredSlowImmune, Teal))
+            Mr.bArmoredSlowImmune = !Mr.bArmoredSlowImmune;
+        // The selected wave: damage toggle, packs, fight-back packs.
+        const FString DamageTitle = FString::Printf(TEXT("WAVE %d: %s"), WaveSelected + 1, W.bDealsDamage ? TEXT("DAMAGE ON") : TEXT("DAMAGE OFF"));
+        if (Button(DamageTitle, EX, T + 136, 130, 20, TEXT("Damage ON: this wave fights the heroes (armored units never do). OFF: it only paths to the castle like an armored round, except the fight-back packs below."),
+            true, !W.bDealsDamage, W.bDealsDamage ? Gold : Teal))
+            W.bDealsDamage = !W.bDealsDamage;
+        StepI(TEXT("PACKS"), W.Packs, 0, 8, EX + 136, T + 136, 70, TEXT("0 = the rows spawn as authored. N = N packs; the rows are each pack's recipe (counts are weights)."));
+        if (StepI(TEXT("SIZE MIN"), W.PackSizeMin, 1, 8, EX + 210, T + 136, 64, TEXT("Smallest pack.")) && W.PackSizeMax < W.PackSizeMin) W.PackSizeMax = W.PackSizeMin;
+        if (StepI(TEXT("SIZE MAX"), W.PackSizeMax, 1, 8, EX + 278, T + 136, 64, TEXT("Largest pack.")) && W.PackSizeMin > W.PackSizeMax) W.PackSizeMin = W.PackSizeMax;
+        {
+            const int32 Lo = W.Packs * FMath::Clamp(W.PackSizeMin + WaveDraft.PackSizeBonus, 1, 10), Hi = W.Packs * FMath::Clamp(W.PackSizeMax + WaveDraft.PackSizeBonus, 1, 10);
+            Label(W.Packs > 0 ? FString::Printf(TEXT("%d-%d / lane"), Lo, Hi) : FString::Printf(TEXT("%d / lane"), W.UnitsPerLane()), EX + 348, T + 140, 9.5f, Gold);
+        }
+        Label(TEXT("FIGHT BACK"), EX, T + 168, 8.5f, Muted);
+        for (int32 P = 1; P <= 8; ++P)
+        {
+            const bool bOn = W.FightBackPacks.Contains(P);
+            if (Button(FString::FromInt(P), EX + 60 + (P - 1) * 24, T + 164, 22, 20,
+                FString::Printf(TEXT("Pack %d fights back when this wave's damage is off (the Hybrid mode). Legacy waves without packs count rows."), P), true, bOn, Red))
+            { if (bOn) W.FightBackPacks.Remove(P); else { W.FightBackPacks.Add(P); W.FightBackPacks.Sort(); } }
+        }
+        if (Button(TEXT("ALL WAVES OFF"), EX + 256, T + 164, 76, 20, TEXT("Damage off for every wave (Hero TD). Keeps each wave's fight-back packs.")))
+            for (auto& X : WaveDraft.Waves) X.bDealsDamage = false;
+        if (Button(TEXT("ALL ON"), EX + 336, T + 164, 74, 20, TEXT("Damage on for every wave (Standard).")))
+            for (auto& X : WaveDraft.Waves) X.bDealsDamage = true;
+        // Presets: load into the draft, save, and play (host, before the first wave).
+        Label(TEXT("PRESETS"), EX, T + 196, 8.5f, Muted);
+        const TArray<FCireWavePreset>& Presets = CireWaveDirector::Presets();
+        float PX = EX + 50;
+        for (const FCireWavePreset& P : Presets)
+        {
+            const float PW = FMath::Min(110.f, TextWidth(P.Label, 8.5f) + 18);
+            if (PX + PW > EX + EW) break;
+            if (Button(P.Label, PX, T + 192, PW, 20, P.Description + TEXT("\nClick to load it into the draft (APPLY LIVE or PLAY THIS TYPE to use it)."), true, WaveDraft.Preset == P.Id, P.bBuiltIn ? Gold : Teal))
+            { CireWaveDirector::ApplyPreset(WaveDraft, P); DeveloperMessage = FString::Printf(TEXT("Preset %s loaded into the draft."), *P.Label); }
+            PX += PW + 4;
+        }
+        const FCireWavePreset* Current = CireWaveDirector::FindPreset(WaveDraft.Preset);
+        if (Button(Current ? FString::Printf(TEXT("SAVE OVER %s"), *Current->Label.ToUpper()) : FString(TEXT("SAVE OVER")), EX, T + 222, 136, 22,
+            TEXT("Write the draft's damage toggles, fight-back packs, live scale, pack modifier and PvP rounds over the selected preset (Content/Data/WavePresets.json)."), Current != nullptr))
+        {
+            const FCireWavePreset P = CireWaveDirector::CapturePreset(WaveDraft, Current->Id, Current->Label, Current->Description);
+            DeveloperMessage = CireWaveDirector::SavePreset(P, &Error) ? FString::Printf(TEXT("Preset %s saved."), *P.Label) : Error;
+        }
+        if (Button(TEXT("SAVE AS NEW"), EX + 140, T + 222, 110, 22, TEXT("Save the draft's settings as a new Custom preset. It shows up under GAME TYPE when hosting.")))
+        {
+            int32 N = 1; while (CireWaveDirector::FindPreset(FName(*FString::Printf(TEXT("custom_%d"), N)))) ++N;
+            const FCireWavePreset P = CireWaveDirector::CapturePreset(WaveDraft, FName(*FString::Printf(TEXT("custom_%d"), N)), FString::Printf(TEXT("Custom %d"), N),
+                TEXT("Saved from F8 > Waves > Modes & Scale."));
+            if (CireWaveDirector::SavePreset(P, &Error)) { WaveDraft.Preset = P.Id; DeveloperMessage = FString::Printf(TEXT("Saved as %s (Content/Data/WavePresets.json)."), *P.Label); }
+            else DeveloperMessage = Error;
+        }
+        const bool bCanPlay = State && State->Wave == 0 && !bLab;
+        if (Button(TEXT("PLAY THIS TYPE"), EX + 254, T + 222, 156, 22, TEXT("Host: make the selected preset this match's game type (before the first wave). Afterwards use APPLY LIVE."), bCanPlay && Current != nullptr, false, Teal))
+            DeveloperMessage = CireWaveDirector::SelectPreset(Mode, WaveDraft.Preset, &Error) ? TEXT("Game type set for this match.") : Error;
+    }
     // ---- selected wave (right) -----------------------------------------------------
     // monster-expansion: EDIT BONUS WAVE switches the composer to Waves.json bonusWave.wave (its own type, never in the cycle).
     const bool bBonusEdit = bWaveEditBonus;
     FCireWaveDef& W = bBonusEdit ? WaveDraft.Bonus.Wave : WaveDraft.Waves[WaveSelected];
+    if (!bWaveModesPage) // waves-modes: the MODES & SCALE page owns the right pane
+    {
     const float EX = L + 190, EW = 410;
     CireUIStyle::Header(Painter(), EX, T + 16, EW, bBonusEdit ? FString::Printf(TEXT("BONUS LOOT WAVE  |  %s"), *W.Label.ToUpper()) :
         FString::Printf(TEXT("WAVE %d  |  %s"), WaveSelected + 1, *W.Label.ToUpper()), bBonusEdit ? CireMonsterExpansion::SpecialColor(2) : Gold, 10.f);
@@ -240,6 +331,7 @@ void ACireHUD::DrawWaveEditor(float X, float Y)
         FCireWaveUnit U; U.Archetype = TEXT("hollow_infantry"); U.Slot = TEXT("line"); U.Count = 1; // monster-races: follows the race
         if (bBonusEdit) { U.Archetype = TEXT("treasure_goblin"); U.Slot = NAME_None; } // monster-expansion
         W.Units.Add(U);
+    }
     }
 
     // ---- globals ---------------------------------------------------------------------

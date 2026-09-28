@@ -424,6 +424,25 @@
       "lifecycle": { "burstSeconds": 0.5, "fadeSeconds": 0.4 },
       "sound": { "start": "item.oathshield.start", "end": "item.oathshield.end" }
     },
+    "arena_victor": {
+      "name": "Arena Victor", "kind": "passive", "school": "holy", "source": "arena-flow: team reward per arena win (+15% damage to monsters per stack, never to champions)",
+      "palette": { "primary": [1.0, 0.8, 0.3], "secondary": [0.85, 0.55, 0.15], "core": [1.0, 0.96, 0.8] },
+      "priority": 8, "allegianceRim": false,
+      "layers": [ { "shape": "ring", "attach": "ground", "style": "runes", "size": 0.6, "alpha": 0.3, "count": 6, "speed": 0.3 }, { "shape": "motes", "attach": "body", "style": "glint", "count": 3, "alpha": 0.35, "speed": 0.5 } ],
+      "lifecycle": { "burstSeconds": 0, "fadeSeconds": 0.3 },
+      "intensity": { "expiringSeconds": 0 },
+      "attack": { "swipe": "holy", "onHit": "glint" },
+      "sound": { "hit": "buff.blessing.hit" }
+    },
+    "arena_vanquished": {
+      "name": "Arena Vanquished", "kind": "debuff", "school": "shadow", "source": "arena-flow: team penalty per arena loss (-15% damage to monsters per stack, never to champions)",
+      "palette": { "primary": [0.45, 0.4, 0.55], "secondary": [0.2, 0.15, 0.28], "core": [0.75, 0.7, 0.85] },
+      "priority": 8, "allegianceRim": false,
+      "layers": [ { "shape": "motes", "attach": "body", "count": 3, "alpha": 0.3, "speed": 0.4 } ],
+      "lifecycle": { "burstSeconds": 0, "fadeSeconds": 0.3 },
+      "intensity": { "expiringSeconds": 0 },
+      "sound": { "start": "npc.mind.start", "end": "debuff.expire" }
+    },
     "toll_of_the_grave": {
       "name": "Toll of the Grave", "kind": "stance", "school": "death", "source": "Gravebell active: every monster within 8m must attack you for 3s",
       "palette": { "primary": [0.6, 0.85, 0.72], "secondary": [0.2, 0.32, 0.28], "core": [0.9, 1.0, 0.94] },

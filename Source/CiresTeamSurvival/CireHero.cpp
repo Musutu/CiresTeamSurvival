@@ -58,6 +58,7 @@
 #include "Net/UnrealNetwork.h"
 #include "CirePets.h" // pets
 #include "UObject/ConstructorHelpers.h"
+#include "CireArenaPortal.h" // arena-flow
 
 namespace
 {
@@ -649,6 +650,7 @@ float ACireHero::TakeDamage(float Amount, FDamageEvent const& Event, AController
         GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Notice = Mode->Clock.Phase() == Cires::MatchPhase::Arena ? TEXT("Eliminated. Team is still fighting.") : TEXT("Fallen. Reviving at base in 10 seconds.");
         Mode->HeroKilled(this);
+        CireArenaFlow::OnHeroKilled(Mode, this, Causer); // arena-flow: +50 g per killing blow in the arena
         CireRollSkills::OnKill(::Cast<ACireHero>(Causer)); // champion-draft: Bloodrush
     }
     return Taken;
@@ -1007,6 +1009,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
     if (!CireLeash::AllowDamage(this)) return 0; // layout-wiring: a unit evading back to its path is immune
     if (CirePolymorph::IsPolymorphed(this)) { UE_LOG(LogTemp, Display, TEXT("CIRE_POLYMORPH_DAMAGED by %s amount=%.1f"), *GetNameSafe(Causer), Amount); }
     CirePolymorph::Break(this); // progression-shop: any damage breaks Polymorph
+    Amount *= CireArenaFlow::PvEDamageMultiplier(GetWorld(), Attacker->TeamId); // arena-flow: arena victor / vanquished (PvE only)
     Amount = CireNPCCombat::ModifyIncomingDamage(this, Attacker, Amount); // npc-boss: armor/guard/shield wall/provoke
     if (Amount <= 0 || Health <= 0) return 0;
     const float Taken = FMath::Min(Health, Amount);
