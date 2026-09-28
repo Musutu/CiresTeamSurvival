@@ -5,7 +5,9 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bonus-loot`, ports 17540-17549. The sp
 "Bonus Loot Stages and PvP uniques".
 
 ## Done
-- **Stage replaces a wave.** The hook is `CireWaveDirector::StartWave`, which calls `RollBonusStage`.
+- **Stage replaces a wave.** The roll lives in waves-modes' `CireWaveDirector::RollWaveType`, which calls
+  `RollBonusStage` and returns the stage wave. StartWave applies the per-cycle cap, the developer force, and
+  `CireBonusStage::Begin`. The earlier temporary hook was removed when feat/waves-modes merged into main.
   - The roll never replaces a boss wave or a wave with a boss row.
   - Chance is `Waves.json bonusWave.replaceChance` 0.08, from `fromWave`, at most `maxPerCycle`.
   - The roll is deterministic per match seed and wave.
@@ -42,7 +44,7 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bonus-loot`, ports 17540-17549. The sp
 - **Docs.** `Docs/Items.md` (new section and decision 7) and a note in `Docs/MonsterExpansion.md`.
 
 ## Not done / next
-- Gates: see the log section below. Merge latest main, then run the three gates.
+- Main (with feat/waves-modes, 13b101ed) is merged in.
 - The PvP uniques have no painted icons yet (procedural placeholders), pending the ChatGPT icon pass.
 - "Include some other special wave types" (raw notes) is left to feat/waves-modes (section C).
 - The F8 wave editor has no field yet for `replaceChance` / `escapeTimerOnHit`; they are JSON-editable and saved by the
@@ -66,8 +68,8 @@ Worktree `F:\CiresTeamSurvival-agents\cts-bonus-loot`, ports 17540-17549. The sp
 ## Shared-file edits (keep small on merge)
 - `CireWaves.cpp`:
   - `FRuntime::ForceStage`.
-  - The StartWave stage hook, **the only wave-selection touch; feat/waves-modes owns selection.** If C adds a
-    wave-type roll, call `RollBonusStage` there instead.
+  - `RollWaveType`: waves-modes' hook, now filled in.
+  - StartWave: the cap, the force and `Begin` around the `RollWaveType` call. `QueueWave` gets `bBonusStage`.
   - Announcement.
   - `RollBonusStage` / `ForceNextBonusStage`.
   - `CireBonusStage::Tick` in `TickSurvival`.
