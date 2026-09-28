@@ -13,7 +13,7 @@
   "offset": 330,
   "arrivalSeconds": 4,
   "returnSeconds": 6,
-  "countdownSeconds": 5,
+  "countdownSeconds": 7,
   "discMaterial": "/Game/Arenas/Portal/M_ArenaPortal.M_ArenaPortal",
   "moteMaterial": "/Game/Arenas/Portal/M_ArenaPortalMote.M_ArenaPortalMote",
   "vfx": {
@@ -47,6 +47,21 @@
    "loop": "arena_portal_loop",
    "enter": "arena_portal_enter"
   }
+ },
+ "flow": {
+  "prepSeconds": 30,
+  "countdownSeconds": 7,
+  "killGold": 50,
+  "winGold": 250,
+  "pveBuffPercent": 15,
+  "pveDebuffPercent": 15,
+  "legacyPowerLoot": false,
+  "pvpAfterWaves": [
+   5,
+   10,
+   15,
+   20
+  ]
  },
  "slots": {
   "proxy_box": {
