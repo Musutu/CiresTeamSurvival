@@ -1097,12 +1097,13 @@ void ACireHUD::DrawCombatText(ACireHero* Hero,ACireController* Controller)
     {
         if(!E.bLocalTarget&&!E.bLocalSource)return false;
         if(!(E.bLocalTarget&&UISettings.bShowIncoming)&&!(E.bLocalSource&&UISettings.bShowOutgoing))return false;
-        if(E.Outcome!=ECireHitOutcome::Hit&&E.Outcome!=ECireHitOutcome::Block&&!UISettings.bShowMisses)return false; // scaling-kits: BLOCK always shows
+        if(E.Outcome!=ECireHitOutcome::Hit&&E.Outcome!=ECireHitOutcome::Block&&E.Outcome!=ECireHitOutcome::SetUp&&!UISettings.bShowMisses)return false; // scaling-kits: BLOCK always shows; initiation: SET UP! too
         return E.bHealing?UISettings.bShowHealing:UISettings.bShowDamage;
     };
     auto ColorFor=[&](const FCireCombatEvent& E,bool bIncomingLane)
     {
         if(E.Outcome==ECireHitOutcome::Block)return FLinearColor(.55f,.8f,1.f,1); // scaling-kits: shield block
+        if(E.Outcome==ECireHitOutcome::SetUp)return FLinearColor(1.f,.62f,.12f,1); // initiation: SET UP! (engage orange)
         if(E.Outcome!=ECireHitOutcome::Hit)return FLinearColor(.78f,.83f,.9f,1);
         if(E.bHealing)return FLinearColor(.35f,1.f,.55f,1);
         if(bIncomingLane)return FLinearColor(1.f,.28f,.24f,1);
@@ -1111,7 +1112,7 @@ void ACireHUD::DrawCombatText(ACireHero* Hero,ACireController* Controller)
     };
     auto NumberFor=[](const FCireCombatEvent& E,float Amount,bool bIncoming)
     {
-        if(E.Outcome!=ECireHitOutcome::Hit)return E.Outcome==ECireHitOutcome::Block?FString(TEXT("BLOCK")):CireCombat::OutcomeText(E.Outcome); // scaling-kits: shield block
+        if(E.Outcome!=ECireHitOutcome::Hit)return E.Outcome==ECireHitOutcome::Block?FString(TEXT("BLOCK")):E.Outcome==ECireHitOutcome::SetUp?FString(TEXT("SET UP!")):CireCombat::OutcomeText(E.Outcome); // scaling-kits: shield block; initiation
         return FString::Printf(TEXT("%s%.0f"),E.bHealing?TEXT("+"):bIncoming?TEXT("-"):TEXT(""),Amount);
     };
     // Crit "pop": starts large and settles, WoW style.

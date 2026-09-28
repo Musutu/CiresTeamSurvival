@@ -364,7 +364,7 @@ void ACireHUD::DrawActionBars(ACireHero* Hero, ACireController* Controller)
         {
             const int32 Item = CireItems::ResolveItemSlot(UISettings.Keybindings, *Hero, DragSlot);
             const int32 Skill = CireKeybindings::ResolveSlot(UISettings.Keybindings, *Hero, DragSlot);
-            if (Item != INDEX_NONE) { if (Hero->Inventory) Hero->Inventory->ServerUse(Item, false); }
+            if (Item != INDEX_NONE) { if (Hero->Inventory) Hero->Inventory->ServerUseAt(Item, false, Controller->CursorAim()); } // initiation: cursor aim
             else if (Skill != INDEX_NONE) Controller->RequestCast(Skill);
             PressFlashAt.Add(DragAbility, Now);
         }

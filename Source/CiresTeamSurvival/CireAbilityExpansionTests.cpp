@@ -110,7 +110,7 @@ bool CireAbilityExpansion::RunSmoke(ACireGameMode* Mode)
     const TArray<FString>& Ids = AllIds();
     T.Check(Ids.Num() >= 100, FString::Printf(TEXT("100+ expansion abilities (%d)"), Ids.Num()));
     int32 Ultimates = 0, Passives = 0, Summons = 0, Constructs = 0;
-    static const TSet<FString> Sections = {TEXT("spell"), TEXT("attack"), TEXT("defensive"), TEXT("control"), TEXT("summon"), TEXT("construct"), TEXT("passive"), TEXT("ultimate")};
+    static const TSet<FString> Sections = {TEXT("spell"), TEXT("attack"), TEXT("defensive"), TEXT("control"), TEXT("summon"), TEXT("construct"), TEXT("passive"), TEXT("ultimate"), TEXT("initiation")};
     for (const FString& Id : Ids)
     {
         const FCireAbilityDef* D = CireAbilityDB::Find(Id);

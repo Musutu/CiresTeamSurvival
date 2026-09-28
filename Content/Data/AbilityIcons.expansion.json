@@ -668,6 +668,78 @@
    "glyph": "venom",
    "accent": "#5ae6d2",
    "pool": false
+  },
+  "tidal_ravage": {
+   "school": "spectral",
+   "glyph": "rune_circle",
+   "accent": "#5ae6d2",
+   "pool": false
+  },
+  "reverse_polarity": {
+   "school": "ether",
+   "glyph": "rune_circle",
+   "accent": "#5abeff",
+   "pool": false
+  },
+  "vacuum_rift": {
+   "school": "shadow",
+   "glyph": "hook",
+   "accent": "#a05aff",
+   "pool": false
+  },
+  "black_hole": {
+   "school": "shadow",
+   "glyph": "venom",
+   "accent": "#a05aff",
+   "pool": false
+  },
+  "chronofield": {
+   "school": "arcane",
+   "glyph": "hourglass",
+   "accent": "#6eaaff",
+   "pool": false
+  },
+  "warpath_charge": {
+   "school": "blood",
+   "glyph": "hooves",
+   "accent": "#e62832",
+   "pool": false
+  },
+  "titanfall_leap": {
+   "school": "earth",
+   "glyph": "dash",
+   "accent": "#dca050",
+   "pool": false
+  },
+  "challengers_roar": {
+   "school": "earth",
+   "glyph": "war_cry",
+   "accent": "#dca050",
+   "pool": false
+  },
+  "hallowed_cage": {
+   "school": "holy",
+   "glyph": "square_ward",
+   "accent": "#ffc45a",
+   "pool": false
+  },
+  "upheaval": {
+   "school": "earth",
+   "glyph": "beam",
+   "accent": "#dca050",
+   "pool": false
+  },
+  "soul_hook": {
+   "school": "shadow",
+   "glyph": "chains",
+   "accent": "#a05aff",
+   "pool": false
+  },
+  "echo_slam": {
+   "school": "earth",
+   "glyph": "rune_circle",
+   "accent": "#dca050",
+   "pool": false
   }
  }
 }

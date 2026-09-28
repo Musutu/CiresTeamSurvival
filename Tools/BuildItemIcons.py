@@ -490,6 +490,14 @@ def icons():
         L(lambda x, y: union(*[circle(x, y, .6 * math.cos(k * math.pi / 3 + .5), .6 * math.sin(k * math.pi / 3 + .5), .05) for k in range(6)]), "amethyst", False, True)])
     I["stormhowl_ravager"] = ("attack", (.55, .8, 1.0), sword(-.785, "darksteel", "silver", "darkleather", "sapphire", broad=1.35, length=1.05, curve=.12) + [
         L(lambda x, y: union(seg(x, y, .2, -.55, .45, -.3, .025), seg(x, y, .45, -.3, .3, -.2, .025), seg(x, y, .3, -.2, .6, .05, .025)), "blueflame", False, True)])
+    # ---- initiation: Blink Dagger and its component (procedural until the 2D art pass paints them)
+    I["phase_shard"] = ("spell", (.65, .45, 1.0), [
+        L(lambda x, y: poly(x, y, [(0, -.72), (.3, -.1), (.12, .66), (-.12, .66), (-.3, -.1)]), "amethyst"),
+        L(lambda x, y: poly(x, y, [(0, -.5), (.12, -.1), (0, .45), (-.12, -.1)]), "glass", False, True),
+        L(lambda x, y: union(ring(x, y, 0, 0, .78, .025), circle(x, y, .55, -.5, .05), circle(x, y, -.6, .35, .04)), "blueflame", False, True)])
+    I["blink_dagger"] = ("attack", (.7, .5, 1.0), sword(-.785, "darksteel", "silver", "darkleather", "amethyst", broad=.75, length=.82) + [
+        L(lambda x, y: union(arc(x, y, .35, -.35, .32, .03, -2.4, -.6), arc(x, y, .35, -.35, .46, .025, -2.2, -.9)), "blueflame", False, True),
+        L(lambda x, y: union(circle(x, y, .62, -.62, .06), circle(x, y, .5, -.78, .04), circle(x, y, .78, -.45, .035)), "amethyst", False, True)])
     return I
 
 
