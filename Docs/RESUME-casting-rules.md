@@ -77,8 +77,15 @@ their own tuning. Monster bolts, basic attacks and probes are unchanged. Opt-out
 ## Not done / next
 - F8 panel for CastRules.json (JSON + `cire.ReloadCastRules` for now).
 
-## Gate logs
-(see bottom — filled in after the runs)
+## Gate logs (2026-09-28, after merging main a5e640e1) — all PASS
+- Build: Result: Succeeded
+- Native: PASS — `Saved/ExpansionChecks/20260928T052438980796Z/report.json` (CIRE_CAST_RULES_PASS, SKILLSHOT/CONSTRUCT/SUMMON/SKILL_CAST, ABILITY_VFX, TARGETING)
+- Network: CIRE_NETWORK_SMOKE_PASS — `Saved/NetworkSmoke/20260928T052906513122Z/report.json`
+- Interface: CIRE_INTERFACE_SMOKE_PASS — `Saved/InterfaceSmoke/20260928T053048050922Z/report.json`
+
+Existing tests updated for the new rules: CrowdControl (ruled heal cast), RollSkills (heal nerf), Targeting descriptor/runtime
+(normalized library shapes, clip-free placement, venom_ground cast completes), AbilityVFX (casts complete before radius checks,
+normalized authored area), SkillRuntime construct/cast expectations.
 
 ## Cast-rule table (live from the native run)
 
