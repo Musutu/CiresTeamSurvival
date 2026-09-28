@@ -580,6 +580,36 @@ void CireGrip::SolveTwoBone(FCompactPose& Pose, const int32 Chain[3], const FTra
     if (Weight > KINDA_SMALL_NUMBER && !Target.ContainsNaN()) TwoBoneIK(Pose, Chain, Target, FMath::Min(Weight, 1.f));
 }
 
+int32 CireGrip::GuardElbows(FCompactPose& Pose, const int32 Arms[2][3], const FVector Anterior[2], float LimitDeg, float FullDeg)
+{
+    const FBoneContainer& Bones = Pose.GetBoneContainer();
+    int32 Fixed = 0;
+    for (int32 Side = 0; Side < 2; ++Side)
+    {
+        const int32* Chain = Arms[Side];
+        if (Chain[0] == INDEX_NONE || Chain[1] == INDEX_NONE || Chain[2] == INDEX_NONE || Anterior[Side].IsNearlyZero()) continue;
+        FCompactPoseBoneIndex I[3];
+        bool bValid = true;
+        for (int32 J = 0; J < 3; ++J) { I[J] = Bones.MakeCompactPoseIndex(FMeshPoseBoneIndex(Chain[J])); bValid &= I[J].IsValid(); }
+        if (!bValid) continue;
+        const FTransform U = ComponentBone(Pose, Chain[0]), L = ComponentBone(Pose, Chain[1]), H = ComponentBone(Pose, Chain[2]);
+        const FVector Up = (L.GetLocation() - U.GetLocation()).GetSafeNormal(), Fore = (H.GetLocation() - L.GetLocation()).GetSafeNormal();
+        if (Up.IsNearlyZero() || Fore.IsNearlyZero()) continue;
+        FVector Ant = U.GetRotation().RotateVector(Anterior[Side]);
+        Ant = (Ant - Up * FVector::DotProduct(Ant, Up)).GetSafeNormal();
+        const FVector Perp = Fore - Up * FVector::DotProduct(Fore, Up);
+        const float Elbow = static_cast<float>(FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(Perp, Ant), FVector::DotProduct(Fore, Up))));
+        if (!(Elbow < LimitDeg)) continue;
+        const float W = FMath::Clamp((LimitDeg - Elbow) / FMath::Max(.1f, LimitDeg - FullDeg), 0.f, 1.f);
+        FQuat Before[3];
+        for (int32 J = 0; J < 3; ++J) Before[J] = Pose[I[J]].GetRotation();
+        TwoBoneIK(Pose, Chain, H, 1.f);
+        for (int32 J = 0; J < 3; ++J) Pose[I[J]].SetRotation(FQuat::Slerp(Before[J], Pose[I[J]].GetRotation(), W).GetNormalized());
+        ++Fixed;
+    }
+    return Fixed;
+}
+
 void CireGrip::TwistSpine(FCompactPose& Pose, float Degrees)
 {
     if (FMath::Abs(Degrees) < .05f || !FMath::IsFinite(Degrees)) return;

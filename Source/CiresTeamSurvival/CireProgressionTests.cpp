@@ -271,18 +271,18 @@ bool CireProgression::RunSmoke(ACireGameMode* Mode)
     const auto& Loot = CireLoot::Get();
     Check(Loot.bValid && Loot.Tables.Num() >= 6 && Loot.Schedule.Bays.size() == 3, TEXT("LootTables.json loads tables and the pack schedule"));
 
-    // ---- challenge gating (jungle-packs: JunglePacks.json unlocks T1 at cycle 1 wave 1, T2 at cycle 1 wave 3, T3 at cycle 2,
-    // T4 at cycle 3; LootTables.json promotions cap at tier 4): tiers unlock as the match advances and sit deeper along the route
+    // ---- challenge packs (pack-formations: JunglePacks.json opens every tier at cycle 1 wave 1, so every authored pack spawns
+    // from the start; LootTables.json promotions still raise tiers in later cycles, capped at 4). Deeper bays hold higher tiers.
     auto PackTiers = [&]() { TMap<int32, int32> Bays; for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->PackId >= 0 && M->Lane == 0) Bays.Add(CireProgression::PackBayOf(M->PackId), M->Tier); return Bays; };
     auto ClearPacks = [&]() { for (ACireMonster* M : Mode->Monsters) if (IsValid(M)) { F.Spawned.AddUnique(M); M->Destroy(); } Mode->Monsters.Reset(); };
     F.Round(1); CireProgression::SpawnPacks(Mode, 1);
     TMap<int32, int32> Bays = PackTiers();
-    Check(Bays.Num() == 1 && Bays.FindRef(1) == 1, TEXT("cycle 1 opens with only the tier-1 outpost nearest town"));
+    Check(Bays.Num() == 3 && Bays.FindRef(1) == 1 && Bays.FindRef(2) == 2 && Bays.FindRef(3) == 3, TEXT("cycle 1 opens every bay at its own tier (T3 included)"));
     CireProgression::OnWaveSpawned(Mode, 3); Bays = PackTiers();
-    Check(Bays.Num() == 2 && Bays.FindRef(2) == 2, TEXT("the tier-2 bay appears when wave 3 of cycle 1 spawns"));
+    Check(Bays.Num() == 3, TEXT("a later wave adds no duplicate packs"));
     ClearPacks();
     F.Round(2); CireProgression::SpawnPacks(Mode, 1); Bays = PackTiers();
-    Check(Bays.Num() == 3 && Bays.FindRef(3) == 3, TEXT("cycle 2 opens the tier-3 bay"));
+    Check(Bays.Num() == 3 && Bays.FindRef(3) == 3, TEXT("cycle 2 keeps the authored tiers"));
     ClearPacks();
     F.Round(6); CireProgression::SpawnPacks(Mode, 1); Bays = PackTiers();
     Check(Bays.FindRef(1) == 3 && Bays.FindRef(2) == 4 && Bays.FindRef(3) == 4, TEXT("later cycles promote every bay, capped at tier 4"));

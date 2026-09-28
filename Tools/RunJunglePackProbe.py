@@ -43,7 +43,7 @@ def main() -> int:
     folder.mkdir(parents=True, exist_ok=False)
     log = folder / "probe.log"
     command = [str(EDITOR), str(ROOT / "CiresTeamSurvival.uproject"), "/Game/Maps/Citadel", "-game",
-               *([] if args.render else ["-nullrhi"]), "-CireJungleProbe", "-CireTown" if town else "-CireProcedural",
+               *([] if args.render else ["-nullrhi"]), "-CireJungleProbe", "-CireUseMapLayout", "-CireTown" if town else "-CireProcedural",
                "-benchmark", "-fps=30", f"-CireJungleProbeSummary={folder / 'probe.txt'}",
                "-unattended", "-nosplash", "-nosound", "-nop4", "-NoLiveCoding", "-CireNoReplay", f"-abslog={log}"]
     started = time.monotonic()

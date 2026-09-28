@@ -1,4 +1,5 @@
 #include "CireHUD.h"
+#include "CireAbilityTunerUI.h" // ability-tuner
 #include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireScalingKits.h" // kits-complete
@@ -25,6 +26,7 @@
 #include "EngineUtils.h"
 #include "CireVideoSettings.h"
 #include "InputCoreTypes.h"
+#include "CireArenaPortal.h" // arena-flow
 
 namespace
 {
@@ -185,6 +187,7 @@ bool ACireHUD::IsPointerOverInterface() const
     float CursorX=0,CursorY=0;
     if(!PlayerOwner||!PlayerOwner->GetMousePosition(CursorX,CursorY))return true;
     CursorX/=Scale;CursorY/=Scale;
+    if(CireAbilityTunerUI::ContainsPoint(FVector2D(CursorX,CursorY)))return true; // ability-tuner
     if(IsDeveloperLauncherVisible()){const auto R=DeveloperLauncherRect();if(CursorX>=R.X&&CursorX<=R.X+R.W&&CursorY>=R.Y&&CursorY<=R.Y+R.H)return true;}
     if(bLayoutEditor)for(const FCireUIRect& R:LayoutUIRects)if(CursorX>=R.X&&CursorX<=R.X+R.W&&CursorY>=R.Y&&CursorY<=R.Y+R.H)return true; // dev-route-tools
     for(FName Id:VisiblePanels) {
@@ -204,7 +207,7 @@ void ACireHUD::ToggleDeveloperTools()
     if(bEditLayout)ToggleLayoutEditor();
     RevertVideoPreview();bSettings=true;OptionsTab=5;DeveloperPage=5;bVideoLoaded=false;
 }
-bool ACireHUD::HandleEscape() { if(bQuickKeybind){ToggleQuickKeybind();return true;}if(!bSettings&&CireShopUI::CancelConfirm())return true;/* shop-anywhere: Esc cancels the purchase confirmation first */if(bLayoutEditor&&!bSettings&&LayoutEditorEscape())return true;/* dev-route-tools */if(bRouteEditor&&!bSettings){OpenRouteEditor(false);return true;}/* nav-paths */if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
+bool ACireHUD::HandleEscape() { if(!bSettings&&CireAbilityTunerUI::HandleEscape())return true;/* ability-tuner */if(bQuickKeybind){ToggleQuickKeybind();return true;}if(!bSettings&&CireShopUI::CancelConfirm())return true;/* shop-anywhere: Esc cancels the purchase confirmation first */if(bLayoutEditor&&!bSettings&&LayoutEditorEscape())return true;/* dev-route-tools */if(bRouteEditor&&!bSettings){OpenRouteEditor(false);return true;}/* nav-paths */if(bSettings){RevertVideoPreview();bSettings=false;UISettings.Save();return true;}if(bEditLayout){ToggleLayoutEditor();return true;}return false; }
 void ACireHUD::HandleMouseWheel(float Delta)
 {
     if(bSettings&&OptionsTab==0&&ControlsPage==1){KeybindScroll=FMath::Max(0,KeybindScroll+(Delta>0?-2:2));return;}
@@ -388,7 +391,7 @@ void ACireHUD::DrawMatch(ACireGameState* State)
     Label(Phase,(250-TextWidth(Phase,9))/2,7,9,State->Phase==2?Red:Teal);
     // Sentinel / frozen clocks (huge or non-finite) show as "--:--" instead of leaking.
     const bool bClockValid=FMath::IsFinite(State->SecondsLeft)&&State->SecondsLeft<100*60;
-    const int32 Seconds=bClockValid?FMath::Max(0,FMath::CeilToInt(State->SecondsLeft)):0;
+    const int32 Seconds=bClockValid?FMath::Max(0,FMath::CeilToInt(CireArenaFlow::PrepSecondsLeft(State))):0; // arena-flow: prep excludes the countdown
     const FString Time=State->Phase==0?FString::Printf(TEXT("%d / %d"),State->CycleWavesDone,State->WavesPerCycle):bClockValid?FString::Printf(TEXT("%02d:%02d"),Seconds/60,Seconds%60):FString(TEXT("--:--"));
     Label(Time,(250-TextWidth(Time,22))/2,20,22,Parchment);
     Label(FString::Printf(TEXT("%02d"),State->EmberLives),14,19,21,Gold);Label(TEXT("EMBER"),13,44,8,Muted);
@@ -754,6 +757,7 @@ void ACireHUD::DrawHUD()
     if(bEditLayout){VisiblePanels.AddUnique(TEXT("Tooltip"));VisiblePanels.AddUnique(TEXT("Threat"));VisiblePanels.AddUnique(TEXT("Boss"));}
     if(!bModal&&!bSettings&&!bEditLayout)UpdateHoverUnit(Hero);else HoverUnit.Reset();
     UpdateQuickKeybind();DrawQuickKeybind();
+    ResetTransform();CireAbilityTunerUI::Draw(*this,Hero,Controller); // ability-tuner (F7)
     DrawLayoutEditor();DrawDeveloperLauncher();DrawSettings();DrawDiagnostics();DrawTooltip();ResetTransform();
 }
 

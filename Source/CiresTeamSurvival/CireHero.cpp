@@ -1,6 +1,7 @@
 #include "CireDeveloperTools.h"
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireKitSkills.h" // kits-complete
+#include "CireAbilityExpansion.h" // ability-expansion
 #include <algorithm>
 #include "CireSkillShop.h" // progression-shop: game mode
 #include "CireCrowdControl.h" // champion-draft: crowd control, timed casts, execute skills
@@ -57,6 +58,7 @@
 #include "Net/UnrealNetwork.h"
 #include "CirePets.h" // pets
 #include "UObject/ConstructorHelpers.h"
+#include "CireArenaPortal.h" // arena-flow
 
 namespace
 {
@@ -167,6 +169,8 @@ void ACireHero::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
     DOREPLIFETIME(ACireHero, Archetype);
     DOREPLIFETIME(ACireHero, CastSkill); DOREPLIFETIME(ACireHero, CastStartTime); DOREPLIFETIME(ACireHero, CastEndTime); // champion-draft
     DOREPLIFETIME(ACireHero, ChampionProfileId);
+    DOREPLIFETIME(ACireHero, ChampionSkin); // paragon-champions
+
     DOREPLIFETIME(ACireHero, StatPrimaryOverride);
     DOREPLIFETIME(ACireHero, ProfileBasicAttackRange);
     DOREPLIFETIME(ACireHero, ProfileAttackSeconds);
@@ -648,6 +652,7 @@ float ACireHero::TakeDamage(float Amount, FDamageEvent const& Event, AController
         GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Notice = Mode->Clock.Phase() == Cires::MatchPhase::Arena ? TEXT("Eliminated. Team is still fighting.") : TEXT("Fallen. Reviving at base in 10 seconds.");
         Mode->HeroKilled(this);
+        CireArenaFlow::OnHeroKilled(Mode, this, Causer); // arena-flow: +50 g per killing blow in the arena
         CireRollSkills::OnKill(::Cast<ACireHero>(Causer)); // champion-draft: Bloodrush
     }
     return Taken;
@@ -834,6 +839,7 @@ void ACireHero::BotThink(float DeltaSeconds)
             {
                 if (IsPassive(Skills[Slot]) || Cooldowns[Slot] > 0 || GlobalCooldown > 0) continue;
                 if (CireKitSkills::Knows(Skills[Slot]) && !CireKitSkills::BotWantsCast(this, Skills[Slot])) continue; // kits-complete: no wasted heals/buffs
+                if (CireAbilityExpansion::Knows(Skills[Slot]) && !CireAbilityExpansion::BotWantsCast(this, Skills[Slot])) continue; // ability-expansion
                 if((Skills[Slot]==TEXT("second_wind")||Skills[Slot]==TEXT("last_stand"))&&Health>=MaxHealth*.8f)continue;
                 if(Skills[Slot]==TEXT("challenge_of_iron")||Skills[Slot]==TEXT("seismic_reprisal"))
                 {
@@ -1005,6 +1011,7 @@ float ACireMonster::TakeDamage(float Amount, FDamageEvent const& Event, AControl
     if (!CireLeash::AllowDamage(this)) return 0; // layout-wiring: a unit evading back to its path is immune
     if (CirePolymorph::IsPolymorphed(this)) { UE_LOG(LogTemp, Display, TEXT("CIRE_POLYMORPH_DAMAGED by %s amount=%.1f"), *GetNameSafe(Causer), Amount); }
     CirePolymorph::Break(this); // progression-shop: any damage breaks Polymorph
+    Amount *= CireArenaFlow::PvEDamageMultiplier(GetWorld(), Attacker->TeamId); // arena-flow: arena victor / vanquished (PvE only)
     Amount = CireNPCCombat::ModifyIncomingDamage(this, Attacker, Amount); // npc-boss: armor/guard/shield wall/provoke
     if (Amount <= 0 || Health <= 0) return 0;
     const float Taken = FMath::Min(Health, Amount);

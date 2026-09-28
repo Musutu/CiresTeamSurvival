@@ -12,7 +12,8 @@
     "vendorReachSlack": 120
   },
   "shared": [
-    "consumable"
+    "consumable",
+    "blink"
   ],
   "rules": [
     {

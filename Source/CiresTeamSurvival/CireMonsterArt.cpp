@@ -7,6 +7,7 @@
 
 #include "CireMonsterAnim.h"
 #include "CireWeaponPresentation.h" // blender-rig: CireWeapons::BusinessAxis
+#include "CireRigAudit.h" // blender-rig: elbow guard
 #include "CireGame.h"
 #include "CireNPCArchetypes.h"
 #include "CireNPCState.h"
@@ -45,6 +46,10 @@ TAutoConsoleVariable<int32> CVarSwingWindup(TEXT("cire.Monsters.SwingWindup"), 1
     TEXT("1: monster melee blows land on the swing's contact frame (default). 0: legacy instant hits."));
 TAutoConsoleVariable<int32> CVarTripoBodies(TEXT("cire.Monsters.TripoBodies"), 1,
     TEXT("1: draw monsters with the animated Tripo bodies. 0: mannequin fallback (applies to newly configured monsters)."));
+TAutoConsoleVariable<int32> CVarTentacleBones(TEXT("cire.Monsters.TentacleBones"), 1,
+    TEXT("blender-rig: 1: bodies with added tentacle bones wave them (the skin sway of that region stops). 0: skin sway only."));
+TAutoConsoleVariable<int32> CVarMonsterPropSizeClass(TEXT("cire.Monsters.PropSizeClass"), 1,
+    TEXT("blender-rig: 1: monster one-handed weapons and maces follow WeaponLoadouts.json sizeClasses (2x, capped). 0: authored size."));
 
 CireMonsterArt::FData GData;
 bool GLoaded = false;
@@ -218,8 +223,12 @@ void Load()
         auto Present = [](const FString& Path) { const FString Package = FPackageName::ObjectPathToPackageName(Path);
             return FPackageName::IsValidLongPackageName(Package) && FPackageName::DoesPackageExist(Package); };
         // monster-expansion: RaceMeshes.fabx.json (the Bestiary.json creatures, Tools/BuildFabExpansionCreatures.py) is read the same way.
-        for (const TCHAR* FabFile : {TEXT("RaceMeshes.fab.json"), TEXT("RaceMeshes.fabx.json")})
-        if (!FParse::Param(FCommandLine::Get(), TEXT("CireNoFabCreatures")) && !FParse::Param(FCommandLine::Get(), TEXT("CireNoFab")) && ReadFile(FabFile, FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
+        // paragon-champions: RaceMeshes.paragon.json "units" (Paragon skins and minions as extra variants of race units, opt-in
+        // with -CireParagonMonsters) are MERGED into the unit's bodies instead of replacing them.
+        for (const TCHAR* FabFile : {TEXT("RaceMeshes.fab.json"), TEXT("RaceMeshes.fabx.json"), TEXT("RaceMeshes.paragon.json")})
+        if (!FParse::Param(FCommandLine::Get(), TEXT("CireNoFabCreatures")) && !FParse::Param(FCommandLine::Get(), TEXT("CireNoFab")) &&
+            // paragon-champions: opt-in until the Paragon rigs pass the monster-body checks (stride, props, hit poses).
+            (FCString::Strcmp(FabFile, TEXT("RaceMeshes.paragon.json")) != 0 || FParse::Param(FCommandLine::Get(), TEXT("CireParagonMonsters"))) && ReadFile(FabFile, FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
             for (const auto& Pair : (*FabUnits)->Values)
             {
                 const FName Id(FString(Pair.Key.ToView()));
@@ -238,9 +247,16 @@ void Load()
                 if ((*Entry)->TryGetArrayField(TEXT("alternates"), Alternates))
                     for (const auto& Value : *Alternates) { const TSharedPtr<FJsonObject>* Alt = nullptr; if (Value->TryGetObject(Alt)) Add(*Alt); }
                 if (Bodies.IsEmpty()) continue;
+                if (FCString::Strcmp(FabFile, TEXT("RaceMeshes.paragon.json")) == 0 && ByArchetype.Contains(Id))
+                {
+                    ByArchetype[Id].Append(Bodies); RaceArt.Add(Id); // paragon-champions: extra variants
+                    UE_LOG(LogCireMonsterArt, Log, TEXT("CIRE_MONSTER_ART_PARAGON unit=%s variants+=%d"), *Id.ToString(), Bodies.Num());
+                    continue;
+                }
                 ByArchetype.Add(Id, Bodies); RaceArt.Add(Id);
                 TArray<FString> Keys; Bodies.GetKeys(Keys); Recommended.Add(Id, Keys[0]);
                 UE_LOG(LogCireMonsterArt, Log, TEXT("CIRE_MONSTER_ART_FAB unit=%s bodies=%d"), *Id.ToString(), Bodies.Num());
+
             }
     }
     // world-dressing: RaceMeshes.free.json (CC0 animated creatures, /Game/Free/Creatures) is the lowest-priority
@@ -314,7 +330,12 @@ void Load()
                     {
                         if (Clip.Value->Type != EJson::String) continue;
                         FString Path; const FString Name(Clip.Key.ToView());
-                        if (Body.Clips.Contains(Name) || !Clip.Value->TryGetString(Path) || !Path.StartsWith(TEXT("/Game/"))) continue;
+                        if (Body.Clips.Contains(Name) || !Clip.Value->TryGetString(Path)) continue;
+                        // blender-rig: "role:<role>" aliases a coverage clip to the body's weapon-matched set clip
+                        // (the Gun & Sword shout/slam bend the High Inquisitor's staff arm backwards).
+                        if (Path.StartsWith(TEXT("role:")))
+                            if (const FString* RolePath = Body.Roles.Find(Path.Mid(5))) Path = *RolePath;
+                        if (!Path.StartsWith(TEXT("/Game/"))) continue;
                         if (!FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))) continue;
                         Body.Clips.Add(Name, Path); ++Added;
                     }
@@ -745,13 +766,30 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
             if (const CireGrip::FWeapon* Grip = CireGrip::FindWeapon(PropMesh))
             {
                 // Handle inside the curled fist (CireGrip); shields strap onto the forearm.
-                const float Size = Prop.Scale * (Body.PropScale.Contains(Prop.Bone) ? Body.PropScale[Prop.Bone] : 1.f);
+                float Size = Prop.Scale * (Body.PropScale.Contains(Prop.Bone) ? Body.PropScale[Prop.Bone] : 1.f);
                 CireGrip::FWeapon Pointed = *Grip; Pointed.Axis = CireWeapons::BusinessAxis(*PropMesh, *Grip); // blender-rig: business end on the thumb side
-                const CireGrip::FPlacement Placement = CireGrip::Place(Skeletal, Prop.Bone, Pointed, Size, Body.MeshScale);
+                // blender-rig: the champions' WeaponLoadouts.json sizeClasses rule on monsters too (Eric 2026-09-26: 1H weapons
+                // and maces 2x): longer along the handle, girth kept closable, capped at maxBodyFraction of the body, and a
+                // blade that now reaches the floor is carried upright at rest like the champions' (CireWeaponPresentation).
+                FString SizeClass; float ClassScale = 1.f, Girth = 1.f, Cap = 0.f;
+                if (CVarMonsterPropSizeClass.GetValueOnGameThread() && CireWeapons::HeldSizeClass(*PropMesh, *Grip, SizeClass, ClassScale, Girth, Cap))
+                {
+                    const float Base = Size, Length = static_cast<float>(PropMesh->GetBounds().BoxExtent.GetMax() * 2);
+                    Size *= ClassScale;
+                    if (Cap > 0.f && Length > 1.f && Body.HeightCm > 50.f && Length * Size > Cap * Body.HeightCm)
+                        Size = FMath::Max(Base, Cap * Body.HeightCm / Length);
+                    if (Length * Size >= .65f * Body.HeightCm && Girth < .999f)
+                    { Pointed.bCarry = true; Pointed.CarryAt = FVector(.24f, -.08f, .72f); Pointed.CarryUp = FVector(.45f, .2f, 1.f); }
+                    Part->ComponentTags.AddUnique(FName(*(TEXT("CireSizeClass_") + SizeClass)));
+                    Part->ComponentTags.AddUnique(FName(*FString::Printf(TEXT("CireSizeBase_%d"), FMath::RoundToInt(Base * 1000.f))));
+                }
+                else Girth = 1.f;
+                const CireGrip::FPlacement Placement = CireGrip::Place(Skeletal, Prop.Bone, Pointed, Size * Girth, Body.MeshScale);
                 if (Placement.bValid)
                 {
                     Part->SetupAttachment(Mesh, Placement.Bone);
                     Part->SetRelativeTransform(Placement.Relative);
+                    if (Girth < .999f) Part->SetRelativeTransform(CireWeapons::HandleStretch(*Grip, 1.f / Girth) * Part->GetRelativeTransform());
                     Part->ComponentTags.AddUnique(FName(*(TEXT("CireGripHand_") + Prop.Bone.ToString())));
                     Part->RegisterComponent();
                     OutParts.Add(Part);
@@ -832,6 +870,40 @@ bool UCireMonsterArt::ApplyBody(const FCireNPCArchetype& Archetype, TArray<TObje
     AppliedReskinBody = Body.ReskinTextures.IsEmpty() ? CireMonsterArt::FBody() : Body; // monster-expansion
     bAppliedSpectral = Body.bSpectral;
     AppliedSwayRegions = Body.Sway; AppliedSwaySpeed = Body.SwaySpeed; AppliedSwayWave = Body.SwayWave; // monster-rig
+    // blender-rig: a body given real tentacle bones (Tools/Blender/add_chain.py) waves them in the anim instance; its first
+    // sway region (the one the bones replace) leaves the skin material. Tip travel ~ the region's amount, split per bone.
+    if (auto* Anim = GetMonsterAnim())
+    {
+        Anim->TentacleBones.Reset(); Anim->TentacleDegPerBone = 0.f;
+        const FReferenceSkeleton& Ref = Asset->GetRefSkeleton();
+        // blender-rig: elbow hyperextension guard on the humanoid arms (CireGrip::GuardElbows).
+        Anim->bElbowGuard = false;
+        for (int32 Side = 0; Side < 2; ++Side)
+        {
+            const TCHAR* S = Side ? TEXT("_r") : TEXT("_l");
+            int32* Arm = Anim->GuardArms[Side];
+            Arm[0] = Ref.FindBoneIndex(FName(FString(TEXT("upperarm")) + S)); Arm[1] = Ref.FindBoneIndex(FName(FString(TEXT("lowerarm")) + S));
+            Arm[2] = Ref.FindBoneIndex(FName(FString(TEXT("hand")) + S));
+            Anim->GuardAnterior[Side] = FVector::ZeroVector;
+            if (Arm[0] != INDEX_NONE && Arm[1] != INDEX_NONE && Arm[2] != INDEX_NONE &&
+                CireRigAudit::AnteriorLocal(Ref, Arm[0], Arm[1], Arm[2], Anim->GuardAnterior[Side])) Anim->bElbowGuard = true;
+        }
+        int32 MaxSegment = 0;
+        for (int32 I = 0; I < Ref.GetRawBoneNum(); ++I)
+        {
+            TArray<FString> Parts; Ref.GetBoneName(I).ToString().ParseIntoArray(Parts, TEXT("_"));
+            if (Parts.Num() == 3 && Parts[0] == TEXT("tentacle") && Parts[1].IsNumeric() && Parts[2].IsNumeric())
+            { Anim->TentacleBones.Add(FIntVector(I, FCString::Atoi(*Parts[1]), FCString::Atoi(*Parts[2]))); MaxSegment = FMath::Max(MaxSegment, FCString::Atoi(*Parts[2])); }
+        }
+        if (!Anim->TentacleBones.IsEmpty() && !AppliedSwayRegions.IsEmpty() && CVarTentacleBones.GetValueOnGameThread())
+        {
+            const CireMonsterArt::FSwayRegion Region = AppliedSwayRegions[0];
+            const float Length = FMath::Max(1.f, FMath::Abs(Region.Root - Region.Tip) * Body.MeshScale);
+            Anim->TentacleDegPerBone = FMath::RadiansToDegrees(FMath::Atan2(Region.Amount * 1.5f, Length)) / (MaxSegment + 1) * 1.6f;
+            Anim->TentacleSpeed = Body.SwaySpeed; Anim->TentacleWave = Body.SwayWave;
+            AppliedSwayRegions.RemoveAt(0);
+        }
+    }
     bTripoApplied = true; AppliedArchetype = Archetype.Id; AppliedVariant = Body.Variant; AppliedMeshScale = Body.MeshScale;
     AppliedWalkRaw = Body.WalkSpeedCm / FMath::Max(.01f, Body.MeshScale); AppliedRunRaw = Body.RunSpeedCm / FMath::Max(.01f, Body.MeshScale); // world-dressing
     Current = FAction(); SeenSwingSerial = SwingSerial; SeenCastStartedAt = -1.f; // a cast already under way is picked up mid-bar

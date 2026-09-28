@@ -375,7 +375,7 @@ bool CireSkillShop::RunSmoke(ACireGameMode* Mode)
         Check(Is(TEXT("ember_lance"), TEXT("spell"), nullptr) && Is(TEXT("piercing_shot"), TEXT("attack"), nullptr), TEXT("offensive split into spell and attack damage"));
         Check(Is(TEXT("stone_skin"), TEXT("passive"), nullptr) && Is(TEXT("cataclysm"), TEXT("ultimate"), nullptr), TEXT("passives and ultimates keep their own sections"));
         bool bAll = true;
-        static const TSet<FString> Valid = {TEXT("spell"), TEXT("attack"), TEXT("defensive"), TEXT("control"), TEXT("summon"), TEXT("construct"), TEXT("passive"), TEXT("ultimate")};
+        static const TSet<FString> Valid = {TEXT("spell"), TEXT("attack"), TEXT("defensive"), TEXT("control"), TEXT("summon"), TEXT("construct"), TEXT("passive"), TEXT("ultimate"), TEXT("initiation")}; // initiation
         for (const FCireAbilityDef& D : CireAbilityDB::All()) bAll &= Valid.Contains(D.Section) && D.EffectTags.Num() <= 4;
         Check(bAll, TEXT("every ability has one primary section and at most four tags"));
         // scaling-kits "requires": the catalog never lists a skill the champion may not buy (shield skills).

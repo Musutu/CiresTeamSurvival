@@ -48,9 +48,19 @@ public:
     UPROPERTY(Replicated) int32 EmberWins = 0;
     UPROPERTY(Replicated) int32 DuskWins = 0;
     UPROPERTY(Replicated) int32 ArenaIndex = 0;
+    // arena-flow (Docs/Arenas.md "Arena flow"): 1 = PvP prep (portals open), 2 = everyone through, the countdown runs.
+    UPROPERTY(Replicated) uint8 ArenaStage = 0;
+    UPROPERTY(Replicated) float ArenaCountdownLength = 7.f;
+    // arena-flow: stacking team PvE damage buff (arena wins) and debuff (arena losses), per team (0 Ember, 1 Dusk).
+    UPROPERTY(Replicated) int32 EmberArenaBuffs = 0;
+    UPROPERTY(Replicated) int32 EmberArenaDebuffs = 0;
+    UPROPERTY(Replicated) int32 DuskArenaBuffs = 0;
+    UPROPERTY(Replicated) int32 DuskArenaDebuffs = 0;
     UPROPERTY(Replicated) FString Announcement;
     // progression-shop: skill progression mode, 0 = Classic Draft (level-up offers), 1 = Skill Shop (default).
     UPROPERTY(Replicated) uint8 ProgressionMode = 1;
+    // waves-modes: the host's game type (a WavePresets.json id: standard, hero_td, hybrid, or a saved custom preset).
+    UPROPERTY(Replicated) FName WavePreset;
     // wave-director: current / next wave for the match plate (CireWaves.h).
     UPROPERTY(Replicated) FString WaveLabel;
     UPROPERTY(Replicated) FString NextWaveLabel;
@@ -98,6 +108,8 @@ public:
     UPROPERTY(Replicated) int32 Archetype = 0;
     // Server-authored gameplay snapshot; Archetype remains the fallback body.
     UPROPERTY(Replicated) FString ChampionProfileId;
+    // paragon-champions: cosmetic skin of the profile ("" = default); art binding "<profile>@<skin>" (ParagonChampions.json).
+    UPROPERTY(Replicated) FString ChampionSkin;
     UPROPERTY(Replicated) int32 StatPrimaryOverride = INDEX_NONE;
     UPROPERTY(Replicated) float ProfileBasicAttackRange = 0;
     UPROPERTY(Replicated) float ProfileAttackSeconds = 0;
@@ -367,6 +379,8 @@ public:
     UFUNCTION(Server,Reliable) void ServerAction(int32 Action, int32 Value, AActor* Selected);
     UFUNCTION(Server,Reliable) void ServerDraftProfile(const FString& ProfileId);
     UFUNCTION(Server,Reliable) void ServerDraftHover(const FString& ProfileId); // champion-select: selected, not locked
+    UFUNCTION(Server,Reliable) void ServerSetChampionSkin(const FString& ProfileId,const FString& Skin); // paragon-champions: skin picked in champion select
+
     UFUNCTION(Server,Reliable) void ServerCastAt(int32 Slot,FVector_NetQuantize Aim);
     UFUNCTION(Server,Reliable) void ServerSummonCommand(int32 Command,AActor* Target,FVector_NetQuantize Destination);
     UFUNCTION(Server,Reliable) void ServerPetCommand(uint8 Command); // pets: ECirePetCommand on the caller's companion

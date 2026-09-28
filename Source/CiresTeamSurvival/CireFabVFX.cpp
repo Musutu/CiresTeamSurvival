@@ -1,4 +1,5 @@
 #include "CireFabVFX.h"
+#include "CireAbilityTuner.h" // ability-tuner: per-ability VFX scale / tint
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -81,6 +82,20 @@ void Load()
                     CireFabVFX::FEntry E=ParseEntry(R.Value);
                     if(E.Candidates.Num())T.Abilities.Add(FString(A.Key.ToView()).ToLower()+TEXT(".")+FString(R.Key.ToView()).ToLower(),MoveTemp(E));
                 }
+    // ability-expansion: FabVFX.expansion.json "abilities" (same shape) signs the expansion pool; FabVFX.json wins on a clash.
+    {
+        FString XText;TSharedPtr<FJsonObject> XRoot;const TSharedPtr<FJsonObject>* XAbilities=nullptr;
+        if(FFileHelper::LoadFileToString(XText,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/FabVFX.expansion.json")))&&
+           FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(XText),XRoot)&&XRoot.IsValid()&&XRoot->TryGetObjectField(TEXT("abilities"),XAbilities))
+            for(const auto& A:(*XAbilities)->Values)
+                if(const TSharedPtr<FJsonObject> Roles=A.Value->AsObject())
+                    for(const auto& R:Roles->Values)
+                    {
+                        const FString Key=FString(A.Key.ToView()).ToLower()+TEXT(".")+FString(R.Key.ToView()).ToLower();
+                        CireFabVFX::FEntry E=ParseEntry(R.Value);
+                        if(E.Candidates.Num()&&!T.Abilities.Contains(Key))T.Abilities.Add(Key,MoveTemp(E));
+                    }
+    }
     // telegraphs: curated ground overlays. "groundRadius" (path -> cm at scale 1, measured by RunSpellGallery.py --fab-ground)
     // is the allow-list; "groundExcluded" (path -> reason) documents the systems that must never sit on a zone.
     const TSharedPtr<FJsonObject>* Radii=nullptr;
@@ -128,13 +143,26 @@ const CireFabVFX::FEntry* CireFabVFX::Find(ECireSchool School, ERole Role)
     return T.Schools.Find(FString(TEXT("default."))+RoleName(Role));
 }
 
+// ability-tuner: an entry with the Ability Tuner's per-ability VFX scale / tint (stable addresses, rebuilt per tuner version).
+static const CireFabVFX::FEntry* TunedEntry(const CireFabVFX::FEntry* E, FName Skill)
+{
+    float TScale=1.f;FLinearColor TTint(0,0,0,0);
+    if(!E||Skill.IsNone()||!CireAbilityTuner::VfxFor(Skill.ToString(),TScale,TTint))return E;
+    static TMap<FString,TUniquePtr<CireFabVFX::FEntry>> Cache;static uint32 CacheVersion=0;
+    if(CacheVersion!=CireAbilityTuner::Version()){Cache.Reset();CacheVersion=CireAbilityTuner::Version();}
+    const FString Key=FString::Printf(TEXT("%p|%s"),E,*Skill.ToString());
+    if(const TUniquePtr<CireFabVFX::FEntry>* Hit=Cache.Find(Key))return Hit->Get();
+    auto Copy=MakeUnique<CireFabVFX::FEntry>(*E);Copy->Scale*=TScale;if(TTint.A>0){Copy->Tint=TTint;Copy->TintStrength=1.f;}
+    return Cache.Add(Key,MoveTemp(Copy)).Get();
+}
+
 const CireFabVFX::FEntry* CireFabVFX::FindAbility(FName Skill, ERole Role)
 {
     FTable& T=Loaded();
     if(T.Abilities.IsEmpty()||Skill.IsNone())return nullptr;
-    if(const FEntry* E=T.Abilities.Find(Skill.ToString().ToLower()+TEXT(".")+RoleName(Role)))return E;
+    if(const FEntry* E=T.Abilities.Find(Skill.ToString().ToLower()+TEXT(".")+RoleName(Role)))return TunedEntry(E,Skill);
     // kits-complete: combat events carry display names ("Gravewood Maul"); map them to the ability id.
-    if(const FCireAbilityDef* D=CireAbilityDB::FindByName(Skill.ToString()))return T.Abilities.Find(D->Id.ToLower()+TEXT(".")+RoleName(Role));
+    if(const FCireAbilityDef* D=CireAbilityDB::FindByName(Skill.ToString()))return TunedEntry(T.Abilities.Find(D->Id.ToLower()+TEXT(".")+RoleName(Role)),Skill);
     return nullptr;
 }
 
@@ -148,7 +176,7 @@ const CireFabVFX::FEntry* CireFabVFX::FindFor(FName Skill, ECireSchool School, E
 {
     // The ability's signature system when its pack is installed, else the school's shared set.
     if(const FEntry* Own=FindAbility(Skill,Role);Own&&Resolve(Own))return Own;
-    return Find(School,Role);
+    return TunedEntry(Find(School,Role),Skill); // ability-tuner: the school set also takes the ability's tuned scale / tint
 }
 
 UFXSystemAsset* CireFabVFX::Resolve(const FEntry* Entry)
@@ -386,6 +414,23 @@ bool CireFabVFX::RunTests(UWorld* World)
             TEXT("kill.humanoid"),TEXT("kill.creature"),TEXT("kill.golem"),TEXT("kill.ethereal"),TEXT("kill.boss")})
             Check(FindKey(Key,ERole::Impact)!=nullptr,*FString::Printf(TEXT("hit / kill signature %s in FabVFX.json"),Key));
         Check(FindKey(TEXT("level_up"),ERole::Cast)!=nullptr,TEXT("level_up flourish in FabVFX.json"));
+        // pack-usage-3 (playtest 6): the circular green / teal swirls never carry the common physical hits (flesh / armour),
+        // and plate / mail hits vary with the attacker's weapon instead of one system on every armoured target.
+        {
+            static const TCHAR* Swirls[]={TEXT("NS_Air_Magic_Hit3"),TEXT("NS_Air_Magic_Splash"),TEXT("NS_Shadow_Magic_Hit2")};
+            TSet<FString> ArmorLooks;
+            for(const TCHAR* Layer:{TEXT("hit.flesh"),TEXT("hit.armor")})
+                for(const TCHAR* Weapon:{TEXT(""),TEXT(".sword"),TEXT(".axe"),TEXT(".mace"),TEXT(".dagger"),TEXT(".spear"),TEXT(".bow"),TEXT(".pistol")})
+                    for(const TCHAR* Crit:{TEXT(""),TEXT(".crit")})
+                    {
+                        const FString Key=FString(Layer)+Weapon+Crit;
+                        const FEntry* E=FindKey(Key,ERole::Impact);
+                        if(!E||E->Candidates.IsEmpty())continue;
+                        for(const TCHAR* S:Swirls)Check(!E->Candidates[0].Contains(S),*FString::Printf(TEXT("%s does not use the %s swirl"),*Key,S));
+                        if(FString(Layer)==TEXT("hit.armor")&&!*Crit)ArmorLooks.Add(E->Candidates[0]);
+                    }
+            Check(ArmorLooks.Num()>=4,*FString::Printf(TEXT("armour hits vary with the weapon (%d distinct systems)"),ArmorLooks.Num()));
+        }
         // Every monster race ability owns a signature (at least one role), and within one unit no two abilities share the same
         // cast look (system + tint): "no two nearby spells look alike".
         int32 Monsters=0,Covered=0;TArray<FString> Missing,Twins;

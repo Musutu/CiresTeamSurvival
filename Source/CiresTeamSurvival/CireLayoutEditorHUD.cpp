@@ -833,11 +833,12 @@ void ACireHUD::TickLayoutEditor()
     {
         const FCireMapMarker* M = SelectedMarker(); if (!M || M->Type != ML::ChallengePack) return;
         FCirePackComposition C = ML::PackComposition(*M);
-        (PackRole == ECirePackRole::Tank ? C.Tanks : PackRole == ECirePackRole::Healer ? C.Healers : C.Dps) += Delta;
+        C.CountRef(PackRole) += Delta;
+        if (C.Count(PackRole) < 0) return;
         if (!CireJunglePacks::IsValid(C))
         {
-            Say(C.Total() > CireJunglePacks::MaxSize ? FString(TEXT("A pack holds at most 6 monsters: lower another role first.")) :
-                FString::Printf(TEXT("A pack needs %s."), PackRole == ECirePackRole::Tank ? TEXT("1-2 tanks") : PackRole == ECirePackRole::Healer ? TEXT("1-2 healers") : TEXT("1-3 DPS")));
+            Say(C.Total() > CireJunglePacks::MaxSize ? FString(TEXT("A pack holds at most 8 monsters: lower another role first.")) :
+                FString::Printf(TEXT("A pack needs %s."), PackRole == ECirePackRole::Tank ? TEXT("1-3 tanks") : PackRole == ECirePackRole::Healer ? TEXT("1-3 healers") : TEXT("1-6 DPS in all (any, melee, ranged, caster)")));
             return;
         }
         const FString Id = M->Id;
@@ -1234,19 +1235,24 @@ void ACireHUD::TickLayoutEditor()
             if (Button(TEXT("AUTO"), IX + IW - 56, Y - 2, 56, TEXT("Back to the automatic composition (generated from the pack's seed, type and tier)."), !bAuto, bAuto, CireUIColors::Teal))
             { const FString PackId = M->Id; Edit([&](FCireMapLayout& X) { return ML::SetComposition(X, PackId, {0, 0, 0}); }); }
             Y += 22;
-            struct FRoleRow { ECirePackRole Role; const TCHAR* Caption; int32 Min, Max; };
-            const FRoleRow Rows[] = {{ECirePackRole::Tank, TEXT("TANKS"), CireJunglePacks::MinTanks, CireJunglePacks::MaxTanks},
-                {ECirePackRole::Healer, TEXT("HEALERS"), CireJunglePacks::MinHealers, CireJunglePacks::MaxHealers}, {ECirePackRole::Dps, TEXT("DPS"), CireJunglePacks::MinDps, CireJunglePacks::MaxDps}};
+            // pack-formations: DPS by kind: any (drawn from the race), melee, physical ranged, ranged caster.
+            struct FRoleRow { ECirePackRole Role; const TCHAR* Caption; int32 Min, Max; const TCHAR* Help; };
+            const FRoleRow Rows[] = {{ECirePackRole::Tank, TEXT("TANKS"), CireJunglePacks::MinTanks, CireJunglePacks::MaxTanks, TEXT("Tanks stand at the front of the formation; the first one leads the pack.")},
+                {ECirePackRole::Healer, TEXT("HEALERS"), CireJunglePacks::MinHealers, CireJunglePacks::MaxHealers, TEXT("Healers (support casters) stand at the back.")},
+                {ECirePackRole::Dps, TEXT("DPS (ANY)"), 0, CireJunglePacks::MaxDps, TEXT("DPS whose kind (melee, ranged, caster) is drawn from the pack's race.")},
+                {ECirePackRole::Melee, TEXT("MELEE DPS"), 0, CireJunglePacks::MaxDps, TEXT("Melee DPS (75% of tank health).")},
+                {ECirePackRole::Ranged, TEXT("RANGED DPS"), 0, CireJunglePacks::MaxDps, TEXT("Physical ranged DPS: archers, throwers (65% of tank health).")},
+                {ECirePackRole::Caster, TEXT("CASTER DPS"), 0, CireJunglePacks::MaxDps, TEXT("Ranged caster DPS: spellcasters (65% of tank health). A race without casters fills these with its other DPS.")}};
             for (const FRoleRow& Row : Rows)
             {
                 const int32 Count = C.Count(Row.Role);
                 const ECirePackRole PackRole = Row.Role;
                 Stepper(Row.Caption, FString::Printf(TEXT("%d  (%d-%d)"), Count, Row.Min, Row.Max), Y, [&]() { StepComp(PackRole, -1); }, [&]() { StepComp(PackRole, 1); },
-                    TEXT("Monsters of this role in the pack. Rules: 1-2 tanks, 1-2 healers, 1-3 DPS, 3-6 monsters in all. Mirrored twins follow."));
+                    FString(Row.Help) + TEXT(" Rules: 1-3 tanks, 1-3 healers, 1-6 DPS, 3-8 monsters in all. Mirrored twins follow."));
                 Y += 24;
             }
             const bool bValid = CireJunglePacks::IsValid(C);
-            Label(FString::Printf(TEXT("%d monsters (3-6)%s"), C.Total(), bValid ? TEXT("") : TEXT("  BREAKS THE RULES")), IX, Y + 2, 8.f, bValid ? CireUIColors::Muted : CireUIColors::Red);
+            Label(FString::Printf(TEXT("%d monsters (3-8), formation of %d%s"), C.Total(), C.Total(), bValid ? TEXT("") : TEXT("  BREAKS THE RULES")), IX, Y + 2, 8.f, bValid ? CireUIColors::Muted : CireUIColors::Red);
             Y += 16;
             Wrapped(ML::PackSummary(*M), IX, Y, IW, 9.f, CireUIColors::BrightGold, 2);
             Y += 30;
@@ -1256,6 +1262,41 @@ void ACireHUD::TickLayoutEditor()
             if (Button(TEXT("COPY WITHIN 30 m"), IX + IW * .5f + 2, Y, IW * .5f - 2, TEXT("Same, only for this team's packs within 30 m of this one."), true, false, CireUIColors::Teal))
             { const int32 N = CireLayoutEditor::CopyPackToOthers(E, 3000.f, Now); Say(FString::Printf(TEXT("%d nearby packs now match this one."), N)); }
             Y += 28;
+            // pack-formations: challenge-mob stats, live (every spawned pack rescales now) and saved to JunglePacks.json.
+            {
+                const FCireJungleRules& JR = CireJunglePacks::Rules();
+                FCirePackStats Stats = JR.Stats;
+                float TierHealth[4], TierDamage[4];
+                for (int32 K = 0; K < 4; ++K) { TierHealth[K] = JR.Tiers[K].Health; TierDamage[K] = JR.Tiers[K].Damage; }
+                const int32 TierIndex = FMath::Clamp(M->Tier, 1, 4) - 1;
+                bool bChanged = false;
+                auto StepValue = [&](float& Value, float Delta, float Min, float Max) { Value = FMath::Clamp(FMath::RoundToFloat((Value + Delta) * 100.f) / 100.f, Min, Max); bChanged = true; };
+                TextFx(TEXT("PACK STATS  (all packs, live)"), IX, Y + 2, 8.f, CireUIColors::Gold, ECireFont::Bold, true);
+                if (Button(TEXT("SAVE"), IX + IW - 56, Y - 2, 56, TEXT("Write these stats into Content/Data/JunglePacks.json (the next match starts with them)."), true, false, CireUIColors::Teal))
+                { FString Why; Say(CireJunglePacks::SaveStats(&Why) ? FString(TEXT("Pack stats saved to JunglePacks.json.")) : Why); }
+                Y += 22;
+                Stepper(TEXT("GLOBAL HP x"), FString::Printf(TEXT("x%.2f"), Stats.GlobalHealth), Y, [&]() { StepValue(Stats.GlobalHealth, -.1f, .1f, 20.f); }, [&]() { StepValue(Stats.GlobalHealth, .1f, .1f, 20.f); },
+                    TEXT("Health multiplier of every challenge mob (all tiers). Spawned packs rescale now, keeping their health fraction."));
+                Y += 24;
+                Stepper(TEXT("GLOBAL DMG x"), FString::Printf(TEXT("x%.2f"), Stats.GlobalDamage), Y, [&]() { StepValue(Stats.GlobalDamage, -.1f, .1f, 20.f); }, [&]() { StepValue(Stats.GlobalDamage, .1f, .1f, 20.f); },
+                    TEXT("Damage multiplier of every challenge mob (all tiers)."));
+                Y += 24;
+                Stepper(FString::Printf(TEXT("T%d HP x"), TierIndex + 1), FString::Printf(TEXT("x%.2f"), TierHealth[TierIndex]), Y, [&]() { StepValue(TierHealth[TierIndex], -.05f, .05f, 20.f); }, [&]() { StepValue(TierHealth[TierIndex], .05f, .05f, 20.f); },
+                    TEXT("Health multiplier of this pack's tier (every pack of the tier). Pick another tier above to edit its numbers."));
+                Y += 24;
+                Stepper(FString::Printf(TEXT("T%d DMG x"), TierIndex + 1), FString::Printf(TEXT("x%.2f"), TierDamage[TierIndex]), Y, [&]() { StepValue(TierDamage[TierIndex], -.05f, .05f, 20.f); }, [&]() { StepValue(TierDamage[TierIndex], .05f, .05f, 20.f); },
+                    TEXT("Damage multiplier of this pack's tier (every pack of the tier)."));
+                Y += 24;
+                if (bChanged) CireJunglePacks::SetStats(GetWorld(), Stats, TierHealth, TierDamage);
+                const int32 Tier = TierIndex + 1;
+                Wrapped(FString::Printf(TEXT("T%d: tank %s HP, melee %s, ranged / caster %s, healer %s; %s damage each (leader x%.1f HP)"), Tier,
+                    *FText::AsNumber(FMath::RoundToInt(CireJunglePacks::UnitHealth(ECirePackRole::Tank, Tier, false))).ToString(),
+                    *FText::AsNumber(FMath::RoundToInt(CireJunglePacks::UnitHealth(ECirePackRole::Melee, Tier, false))).ToString(),
+                    *FText::AsNumber(FMath::RoundToInt(CireJunglePacks::UnitHealth(ECirePackRole::Ranged, Tier, false))).ToString(),
+                    *FText::AsNumber(FMath::RoundToInt(CireJunglePacks::UnitHealth(ECirePackRole::Healer, Tier, false))).ToString(),
+                    *FText::AsNumber(FMath::RoundToInt(CireJunglePacks::UnitDamage(ECirePackRole::Melee, Tier))).ToString(), JR.LeaderHealth), IX, Y, IW, 8.f, CireUIColors::Muted, 3);
+                Y += 34;
+            }
         }
         if (M->Type == ML::BossSpawn)
         {

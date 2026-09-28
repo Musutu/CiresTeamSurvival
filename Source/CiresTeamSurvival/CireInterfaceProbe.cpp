@@ -200,7 +200,8 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
         // arena-portal: the shadow portals open beside both human champions (the lead-time trigger is skipped here).
         const int32 Opened=CireArenaPortal::ServerOpen(Mode);
         const auto Entry=CireArenaPortal::Portals(Mode->GetWorld(),0);
-        bool bPortalsRight=Opened==2&&Entry.Num()==2;
+        // arena-flow: the portals open with the prep, the prep is 30 s + the 7 s countdown, and the stage is published.
+        bool bPortalsRight=Opened==2&&Entry.Num()==2&&State->ArenaStage==1&&FMath::IsNearlyEqual(Mode->Clock.GetDurations().Intermission,CireArenaPortal::Config().PrepSeconds+CireArenaPortal::Config().CountdownSeconds,.01);
         for(const auto* Portal:Entry)bPortalsRight&=Portal->ArenaIndex==Mode->ArenaIndex&&(Portal->TeamId==0||Portal->TeamId==1)&&
             FVector::Dist2D(Portal->GetActorLocation(),Players[Portal->TeamId]->GetActorLocation())<700.f;
         if(!bPortalsRight){Fail(TEXT("SERVER"),TEXT("shadow portals did not open beside both champions"));Server.bDone=true;return true;}
@@ -229,7 +230,7 @@ bool CireInterfaceProbe::TickServer(ACireGameMode* Mode) {
         if(!CireArenaPortal::AllThrough(Mode->GetWorld())){if(Now-Server.StageStarted>3){Fail(TEXT("SERVER"),TEXT("all humans through did not start the arena countdown"));Server.bDone=true;}return true;}
         const float Countdown=CireArenaPortal::Config().CountdownSeconds;
         bool bFlagged=true;for(auto* Portal:CireArenaPortal::Portals(Mode->GetWorld(),0))bFlagged&=Portal->bAllThrough;
-        if(Mode->Clock.Phase()!=Cires::MatchPhase::Intermission||Mode->Clock.RemainingSeconds()>Countdown+.01||Mode->Clock.RemainingSeconds()<Countdown-1.||!bFlagged||!State->Announcement.StartsWith(TEXT("ALL THROUGH"))) {
+        if(Mode->Clock.Phase()!=Cires::MatchPhase::Intermission||Mode->Clock.RemainingSeconds()>Countdown+.01||Mode->Clock.RemainingSeconds()<Countdown-1.||!bFlagged||!State->Announcement.StartsWith(TEXT("ALL THROUGH"))||State->ArenaStage!=2) { // arena-flow: stage 2
             Fail(TEXT("SERVER"),TEXT("the all-through countdown is wrong"));Server.bDone=true;return true;
         }
         UE_LOG(LogCireInterface,Display,TEXT("CIRE_INTERFACE_SERVER_PORTAL_COUNTDOWN_PASS humans=2 prep_left=%.1f countdown=%.1f"),Mode->Clock.RemainingSeconds(),Countdown);

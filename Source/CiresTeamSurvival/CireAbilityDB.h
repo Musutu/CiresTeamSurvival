@@ -78,9 +78,15 @@ struct CIRESTEAMSURVIVAL_API FCireAbilityDef
     float ThreatScale = 1.f;             // rules-conformance: <1 = the cast drops (0) or reduces the caster's threat on every monster
     FName Level15Bonus;                  // dot, healCut, stun, slow, damageAmp, vulnerability, purge (actives/ultimates)
     FString Level15Special, Level15Label, Level15Trigger; // special: mechSlam, artilleryBomb, headshotTriple; trigger: hit|pulse
+    float Level15Scale = 1.f, Level15DurationScale = 1.f; // ability-tuner: optional "level15" {scale, durationScale} (magnitudes / seconds of the bonus)
     FName Aura15;                        // passives: attackSpeed, doubleAttack, crit, ... (team aura at level 15)
     FString Aura15Label;
     FCireUltimateUpgrade Upgrade;        // items-v2: ultimates only ("ultimateUpgrade")
+    // casting-rules (CireSkillTuning::ApplyCastRules, Content/Data/CastRules.json): derived at load, never authored.
+    FName CastRule;                      // none, aoeDamage, directHeal, aoeHeal
+    float AuthoredCastTime = 0;          // the row's own castTime before the rule
+    float HealScale = 1.f;               // multiplier on every heal this ability applies (CireCombat::ApplyHealing)
+    float CastMetric = 0;                // impact / heal power the rule placed the cast time with
     bool IsImplemented() const { return Status == TEXT("implemented"); }
     bool IsPassive() const { return Kind == TEXT("passive"); }
     bool IsUltimate() const { return Kind == TEXT("ultimate"); }
@@ -127,6 +133,9 @@ namespace CireAbilityDB
     CIRESTEAMSURVIVAL_API bool ParseJson(const FString& Json, TArray<FCireAbilityDef>& OutAbilities, TMap<FString, FCireChampionKit>& OutKits,
         TMap<FName, TArray<FCireModifier>>& OutModifiers, FString& Error);
     CIRESTEAMSURVIVAL_API bool Reload();
+    /** ability-tuner (CireAbilityTuner.h): swaps one row in place (pointers from Find stay valid). The row's previous and
+     *  original display names keep resolving through FindByName (combat events carry names). False for an unknown id. */
+    CIRESTEAMSURVIVAL_API bool ReplaceRow(const FCireAbilityDef& Row);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSmoke();
 #endif

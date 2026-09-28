@@ -131,10 +131,16 @@ const CireSoundEvents::FData& CireSoundEvents::Data(bool bReload)
                 }
                 GData.Weapons.Add(FName(*Pair.Key), W);
             }
-    for(const TCHAR* Table : {TEXT("abilities"), TEXT("extraIds")})
+    // paragon-champions: Content/Data/ParagonChampions.json "audio" rows (same shape) for the Paragon abilities.
+    TSharedPtr<FJsonObject> Paragon; FString ParagonText;
+    if(FFileHelper::LoadFileToString(ParagonText, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/ParagonChampions.json"))))
+        FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(ParagonText), Paragon);
+    for(const TCHAR* Table : {TEXT("abilities"), TEXT("extraIds"), TEXT("audio")})
     {
         const TSharedPtr<FJsonObject>* Abilities = nullptr;
-        if(!Root->TryGetObjectField(Table, Abilities)) continue;
+        const TSharedPtr<FJsonObject>& Source = FCString::Strcmp(Table, TEXT("audio")) == 0 ? Paragon : Root;
+        if(!Source.IsValid() || !Source->TryGetObjectField(Table, Abilities)) continue;
+
         for(const auto& Pair : (*Abilities)->Values)
             if(const TSharedPtr<FJsonObject> O = Pair.Value->AsObject())
             {
@@ -142,6 +148,19 @@ const CireSoundEvents::FData& CireSoundEvents::Data(bool bReload)
                 GData.Abilities.Add(Normalize(FString(Pair.Key)), Row);
                 FString Name; if(O->TryGetStringField(TEXT("name"), Name)) GData.Abilities.FindOrAdd(Normalize(Name), Row);
             }
+    }
+    // ability-expansion: AudioEvents.expansion.json "abilities" rows (same shape) for the expansion pool; the main table wins.
+    {
+        FString XText; TSharedPtr<FJsonObject> XRoot; const TSharedPtr<FJsonObject>* XAbilities = nullptr;
+        if(FFileHelper::LoadFileToString(XText, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/AudioEvents.expansion.json"))) &&
+           FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(XText), XRoot) && XRoot && XRoot->TryGetObjectField(TEXT("abilities"), XAbilities))
+            for(const auto& Pair : (*XAbilities)->Values)
+                if(const TSharedPtr<FJsonObject> O = Pair.Value->AsObject())
+                {
+                    FAbilitySound Row; ReadAbility(O, Row);
+                    if(!GData.Abilities.Contains(Normalize(FString(Pair.Key)))) GData.Abilities.Add(Normalize(FString(Pair.Key)), Row);
+                    FString Name; if(O->TryGetStringField(TEXT("name"), Name)) GData.Abilities.FindOrAdd(Normalize(Name), Row);
+                }
     }
     const TSharedPtr<FJsonObject>* Layers = nullptr;
     if(Root->TryGetObjectField(TEXT("layers"), Layers))

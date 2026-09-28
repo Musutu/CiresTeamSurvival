@@ -243,6 +243,21 @@ the most expensive items (a team affords one around round 3 on the current Econo
 The old Vigil aura (3 HP/s) merged into the banner's active; the old 40% Oathshield guard became the
 party shield.
 
+## Blink Dagger (initiation, Playtest 6 L)
+
+| Item (`id`) | Total (recipe) | Build path | Stats | Active |
+|---|---|---|---|---|
+| Phase Shard (`phase_shard`) | 260g | basic | +150 Mana | Builds into the Blink Dagger. |
+| Blink Dagger (`blink_dagger`) *(unique)* | 650g (250g) | Phase Shard + Bone Dagger | +6 Primary, +150 Mana | **Blink** (`blink`): instantly blink up to 12 m toward the cursor; 14 s cooldown. Damage from an enemy champion disrupts it for 3 s (debuff "Blink Disrupted", `xp_blink_locked`); a disrupted use costs nothing. |
+
+* Sold by **every** merchant: Vendors.json `shared` now lists the `blink` tag (both items carry it). The shop-anywhere
+  pricing rules (vendor discount / out-of-town surcharge) apply to it like any other item once that branch merges.
+* Aim: item keys and action-bar item slots send the cursor point (`UCireInventory::ServerUseAt`); a blink walks back from
+  the aimed point to the nearest standable, in-realm spot (it passes walls, never into them). Blue-violet lightning flash
+  out (`blink_dagger` impact) and in (cast), arcane blink sound (`AudioEvents.expansion.json`).
+* Code: `CireInitiation.cpp` (blink, lockout), `EffectKind::Blink` (Rules/CireItemRules), `UCireInventory::UseSlot` precondition.
+* Bots do not buy it (it is not in any recommended build; see Docs/RESUME-initiation.md).
+
 ## Boots and dodge-roll charges
 
 One pair of boots (group `boots`; upgrades consume the Road-Worn Boots). New unique boots:

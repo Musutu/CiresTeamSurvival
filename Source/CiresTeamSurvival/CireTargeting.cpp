@@ -15,6 +15,7 @@
 #include "CireAbilityLibrary.h"
 #include "CireSkillRuntime.h"
 #include "CireConstruct.h"
+#include "CireCrowdControl.h" // casting-rules
 #include "CireLanePath.h"
 #include "CireAbilityVFX.h" // ability-vfx
 #include "CireSpellMesh.h" // ability-vfx
@@ -212,7 +213,7 @@ FCireTargetDescriptor CireTargeting::Describe(const FString& Id)
         return D;
     }
     if(const auto* A=CireAbilityLibrary::Find(Id))
-    {D.Kind=ECireTargetKind::Ground;D.Label=TEXT("Ground");D.Range=A->CastRange;D.Footprint=A->Area;D.bHasFootprint=true;D.bDirectional=A->Area.Shape==ECireAreaShape::Cone||A->Area.Shape==ECireAreaShape::Line;return D;}
+    {D.Kind=ECireTargetKind::Ground;D.Label=TEXT("Ground");D.Range=A->CastRange;D.Footprint=A->Area;ACireAreaEffect::NormalizeShape(D.Footprint);D.bHasFootprint=true;D.bDirectional=A->Area.Shape==ECireAreaShape::Cone||A->Area.Shape==ECireAreaShape::Line;return D;} // casting-rules: normalized shape
     if(Id==TEXT("ember_lance")||Id==TEXT("frost_bind")||Id==TEXT("piercing_shot"))
     {
         if(const auto* S=CireSkillTuning::FindSkillshot(Id)){D.Kind=ECireTargetKind::Ground;D.Label=TEXT("Ground aim / Enemy skillshot");D.Range=S->CastRange;D.bDirectional=D.bProjectile=D.bHasFootprint=true;D.Footprint.Shape=ECireAreaShape::Line;D.Footprint.Length=FMath::Min(S->MaxRange,S->Speed*S->LifetimeSeconds);D.Footprint.Width=S->Radius*2;}
@@ -258,6 +259,29 @@ bool CireTargeting::ValidateGround(ACireHero* H,const FString& Id,FVector Point,
     const int32 Phase=CireSkillRuntime::Phase(H->GetWorld());if(Phase!=0&&Phase!=2)return Fail(TEXT("Abilities require an active combat phase."));
     const auto D=Describe(Id);if(D.Kind!=ECireTargetKind::Ground)return Fail(TEXT("This skill does not target ground."));
     if(D.bNeedsHostile&&!H->IsHostile(H->Target))return Fail(TEXT("Select an Enemy before placing these summons."));
+    // casting-rules (Playtest 6): barriers, constructs and summons ignore clipping. The aim is pulled into range, snapped onto
+    // the ground / navmesh, and only the realm edge and the castle goal zone can refuse it (the server applies the same rule).
+    {
+        const FCireAbilityDef* Def=CireAbilityDB::Find(Id);
+        const bool bPlacement=CireSkillTuning::FindConstruct(Id)||CireSkillTuning::FindSummon(Id)||
+            (Def&&(Def->IsConstruct()||Def->Section==TEXT("construct")||Def->Section==TEXT("summon")));
+        if(bPlacement)
+        {
+            const FVector From=H->GetActorLocation();const float Reach=FVector::Dist2D(From,Point);
+            if(Reach>D.Range*1.25f+50.f)return Fail(TEXT("Ground is outside casting range."));
+            if(Reach>D.Range){const FVector Dir=(Point-From).GetSafeNormal2D();Point.X=From.X+Dir.X*D.Range;Point.Y=From.Y+Dir.Y*D.Range;}
+            ACireConstruct::SnapToGround(H->GetWorld(),Point);
+            if(!InRealm(H,Point))return Fail(TEXT("Aim inside your battlefield."));
+            const FVector Direction=(Point-From).GetSafeNormal2D();
+            Heading=Direction.IsNearlyZero()?H->GetActorRotation():Direction.Rotation();Heading.Pitch=0;Heading.Roll=0;Center=Point;
+            if(CireSkillTuning::FindConstruct(Id)&&CireSkillRuntime::Phase(H->GetWorld())!=2)
+            {
+                const FVector Goal=CireLanePath::GoalZoneCenter(H->GetWorld(),H->TeamId,0);const FVector2D TE=CireLanePath::GoalZoneExtent(H->GetWorld());
+                if(FMath::Abs(Goal.X-Center.X)<=TE.X&&FMath::Abs(Goal.Y-Center.Y)<=TE.Y)return Fail(TEXT("Construct cannot overlap town."));
+            }
+            Reason=TEXT("Left click to place.");return true;
+        }
+    }
     if(!InRealm(H,Point))return Fail(TEXT("Aim inside your battlefield."));
     if(FVector::DistSquared2D(H->GetActorLocation(),Point)>FMath::Square(D.Range))return Fail(TEXT("Ground is outside casting range."));
     FVector Ground;if(!FloorAt(H,Point,Ground)||FMath::Abs(Ground.Z-Point.Z)>35)return Fail(TEXT("Aim at supported ground."));
@@ -494,7 +518,7 @@ bool CireTargeting::RunDescriptorSmoke()
     for(const TCHAR* Id:{TEXT("venom_ground"),TEXT("cinder_cone"),TEXT("grave_line"),TEXT("ashen_square"),TEXT("blight_sigil")})
     {
         const auto D=Describe(Id);const auto* A=CireAbilityLibrary::Find(Id);Check(A&&D.Kind==ECireTargetKind::Ground&&D.Range==A->CastRange);
-        if(A)Check(ACireAreaEffect::BoundaryPoints(D.Footprint)==ACireAreaEffect::BoundaryPoints(A->Area));
+        if(A){FCireAreaSpec N=A->Area;ACireAreaEffect::NormalizeShape(N);Check(ACireAreaEffect::BoundaryPoints(D.Footprint)==ACireAreaEffect::BoundaryPoints(N));} // casting-rules: Line/Barrier/Cone/Circle
     }
     const auto Shot=Describe(TEXT("piercing_shot"));const auto* S=CireSkillTuning::FindSkillshot(TEXT("piercing_shot"));
     Check(S&&Shot.bDirectional&&Shot.bProjectile&&Shot.Footprint.Width==S->Radius*2&&Shot.Footprint.Length==FMath::Min(S->MaxRange,S->Speed*S->LifetimeSeconds));
@@ -548,7 +572,7 @@ bool CireTargeting::RunRuntimeSmoke(ACireGameMode* Mode)
     Check(ValidateGround(Hero,TEXT("cinder_cone"),Aim,Center,Heading,Reason)&&Center.Equals(Ground,.1)&&Heading.IsNearlyZero(),TEXT("directional cone anchors beneath caster and faces cursor"));
     Check(ValidateGround(Hero,TEXT("summoned_wall"),Aim,Center,Heading,Reason),TEXT("clear supported construct footprint accepted"));
     auto* Obstacle=Box(Aim+FVector(0,0,80),FVector(20,20,80));
-    Check(Obstacle&&!ValidateGround(Hero,TEXT("summoned_wall"),Aim,Center,Heading,Reason),TEXT("occupied construct footprint rejected"));
+    Check(Obstacle&&ValidateGround(Hero,TEXT("summoned_wall"),Aim,Center,Heading,Reason),TEXT("casting-rules: an occupied construct footprint is still accepted (placement ignores clipping)"));
     if(Obstacle)Obstacle->SetActorEnableCollision(false);
     auto AreaCount=[&](){int32 N=0;for(TCireActorIterator<ACireAreaEffect> It(Mode->GetWorld());It;++It)if(!It->IsActorBeingDestroyed())++N;return N;};
     const int32 Before=AreaCount();const float ManaBefore=Hero->Mana;
@@ -569,7 +593,7 @@ bool CireTargeting::RunRuntimeSmoke(ACireGameMode* Mode)
     Check(!Snapshot(Controller).bActive,TEXT("death immediately cancels local aiming"));Hero->bDead=false;
     Controller->ServerCastAt_Implementation(0,Ground+FVector(1500,0,0));
     Check(AreaCount()==Before&&Hero->Mana==ManaBefore&&Hero->Cooldowns[0]==0,TEXT("authoritative RPC rejects invalid aim without payment"));
-    Controller->ServerCastAt_Implementation(0,Aim);
+    Controller->ServerCastAt_Implementation(0,Aim);CireCrowdControl::CompleteCastNow(Hero); // casting-rules: venom_ground has a cast time
     Check(AreaCount()==Before+1&&Hero->Mana<ManaBefore&&Hero->Cooldowns[0]>0,TEXT("confirmed authoritative aim creates one paid native ground effect"));
     bool Found=false;for(TCireActorIterator<ACireAreaEffect> It(Mode->GetWorld());It;++It)
         if(!It->IsActorBeingDestroyed()&&FVector::DistSquared2D(It->GetActorLocation(),Aim)<1&&FMath::Abs(It->GetActorLocation().Z-Aim.Z)<20)

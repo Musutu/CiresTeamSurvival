@@ -75,12 +75,12 @@ struct CIRESTEAMSURVIVAL_API FCireMapMarker
     /** layout-wiring: Monster Spawn: split its units across its paths by path weight (JSON "split": "weighted") or evenly. */
     bool bSplitWeighted = false;
     /** jungle-packs: Challenge Pack type (a race id or "mixed"; JSON "pack", missing = mixed) and the composition override
-     *  (JSON "comp": [tanks, healers, dps]; all zero = the automatic composition from the pack's seed, type and tier). */
+     *  (JSON "comp": [tanks, healers, dps] or [tanks, healers, any dps, melee, ranged, caster] (pack-formations); all zero = the automatic composition from the pack's seed, type and tier). */
     FName PackType = CireJunglePacks::Mixed;
     FCirePackComposition Comp = {0, 0, 0};
     /** outdoor-bosses: Boss Spawn: health multiplier of this marker's boss (JSON "hp", default 1). */
     float HealthScale = 1.f;
-    bool HasCompOverride() const { return Comp.Tanks > 0 || Comp.Healers > 0 || Comp.Dps > 0; }
+    bool HasCompOverride() const { return !Comp.IsZero(); }
 };
 
 /** Vendor sub-handles. */
