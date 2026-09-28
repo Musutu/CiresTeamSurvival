@@ -104,7 +104,7 @@ ABILITY_VFX = {
     "troll_returning_axes": {"c": "Blood_Magic_Slash2", "p": "Blood_Magic_Projectile4", "a": "Blood_Magic_Spike1", "i": "Blood_Magic_Crystal1"},
     # --- Dryad ---
     "dryad_root_snare": {"c": "Explosion_Cast_Nature", "a": "Vine_attack2"},
-    "dryad_seed_mend": {"c": "HealBeam", "p": "Projectile_Grenade_Nature", "i": "Explosion_Nature"},
+    "dryad_seed_mend": {"c": "HealBeam", "p": "Projectile_Grenade_Nature", "i": "State_VFX_Heal1"},
     "dryad_thorn_line": {"c": "Earth_Spells_Spike_Line3", "a": "Vine_attack1"},
     "dryad_grove_renewal": {"c": "Aura_Nature", "a": ("AreaBuff", 1.25)},
     # --- Whisp ---

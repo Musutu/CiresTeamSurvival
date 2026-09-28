@@ -23,6 +23,7 @@
 #include "Sound/SoundConcurrency.h"
 #include "CireSoundEvents.h" // audio-overhaul
 #include "CireFootsteps.h" // pack-usage: target armour class picks the hit signature (blood / sparks / stone / wood)
+#include "CireParagonChampions.h" // paragon-champions: the heroes' own Paragon FX
 #include <limits>
 
 namespace
@@ -263,8 +264,9 @@ void ACireSpellVisual::Rebuild()
     // vfx-scale: decorative geometry grows with the spell-effect scale. Casts on a unit grow from its feet (rings stay on the
     // ground, helices grow taller); impacts, criticals and launches grow about their point. Modes add marks for hand pivots
     // and for geometry that joins real positions (chain bolts, hop arcs), which never scales.
-    FxScale=CireAbilityVFX::SpellEffectScale(GetWorld());ScaleMarks.Reset();
     const bool bAtPoint=Cue==ECireSpellCue::Impact||Cue==ECireSpellCue::Critical||Cue==ECireSpellCue::Launch;
+    // pack-usage-3: hit visuals (impacts, criticals) take the hitEffectScale on top (playtest 6: hits -20%).
+    FxScale=CireAbilityVFX::SpellEffectScale(GetWorld())*((Cue==ECireSpellCue::Impact||Cue==ECireSpellCue::Critical)?CireAbilityVFX::DesignHitEffectScale():1.f);ScaleMarks.Reset();
     MarkScale(M,Soft,bAtPoint?FVector::ZeroVector:FVector(0,0,GroundZ),DecorScale());
     if(RebuildModes(M,Soft,T,Fade,Expand)) {} // ability-vfx: telegraphs, projectiles, impacts, flares
     else if(bFollowArea && FollowedArea.IsValid())
@@ -718,7 +720,9 @@ ACireSpellVisual* CireSpellPresentation::Play(UWorld* World,FName SkillId,FVecto
     auto* Visual=World->SpawnActor<ACireSpellVisual>(To,FRotator::ZeroRotator,P);
     if(Visual) Visual->Configure(SkillId,From,To,Cue,Scale,bSound);
     if(Visual) Visual->SetStartDelay(ReleaseDelay(World,SkillId,Cue,From)); // ability-vfx: appear on the clip's release frame
+    CireParagonChampions::PlayFX(World,SkillId,From,To,Cue,Scale); // paragon-champions: Paragon cast / impact systems on top of the school visual
     return Visual;
+
 }
 ACireSpellVisual* CireSpellPresentation::FollowArea(ACireAreaEffect* Area)
 {

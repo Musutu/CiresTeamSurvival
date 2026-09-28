@@ -12,6 +12,8 @@
 #include "CireGame.h"
 #include "CireItems.h"
 #include "CireKitSkills.h"
+#include "CireInitiation.h" // initiation: Set-up synergy, blink lockout
+#include "CireSkillCasting.h" // casting-rules: PlacementAim
 #include "CireScalingKits.h"
 #include "CireSkillRuntime.h"
 #include "CireSkillShop.h"
@@ -38,7 +40,8 @@ namespace CireXpDetail
 enum class EDel : uint8
 {
     Passive, Bolt, Pierce, Line, Cone, Circle, Zone, Nova, Chain, Strike, Leap, Dash, Heal, HealZone, Barrier,
-    SelfBuff, PartyBuff, Summon, Construct, Wall, Barrage
+    SelfBuff, PartyBuff, Summon, Construct, Wall, Barrage,
+    Vacuum, Charge, Hook, Cage // initiation: pull-together, gap-close slam, hook, trapping wall ring
 };
 struct FDelName { const TCHAR* Name; EDel D; };
 const FDelName DelNames[] = {
@@ -47,7 +50,7 @@ const FDelName DelNames[] = {
     {TEXT("chain"), EDel::Chain}, {TEXT("strike"), EDel::Strike}, {TEXT("leap"), EDel::Leap}, {TEXT("dash"), EDel::Dash},
     {TEXT("heal"), EDel::Heal}, {TEXT("healZone"), EDel::HealZone}, {TEXT("barrier"), EDel::Barrier}, {TEXT("selfBuff"), EDel::SelfBuff},
     {TEXT("partyBuff"), EDel::PartyBuff}, {TEXT("summon"), EDel::Summon}, {TEXT("construct"), EDel::Construct}, {TEXT("wall"), EDel::Wall},
-    {TEXT("barrage"), EDel::Barrage}};
+    {TEXT("barrage"), EDel::Barrage}, {TEXT("vacuum"), EDel::Vacuum}, {TEXT("charge"), EDel::Charge}, {TEXT("hook"), EDel::Hook}, {TEXT("cage"), EDel::Cage}};
 
 /** One expansion row's delivery recipe (everything else is the Ability DB row). */
 struct FRecipe
@@ -69,15 +72,49 @@ struct FRecipe
     int32 Waves = 5; float Interval = .45f, SubRadius = 220;
     // Passives.
     FName Hook; float Chance = 0, Threshold = 0;
+    // initiation: engage riders. PullCenter = fraction of the distance to the cast centre pulled per hit; Knockup = launch
+    // speed (cm/s); Echo = extra damage per additional enemy caught by a nova; Cage = trapping wall ring; Setup = Set-up debuff.
+    float PullCenter = 0, Knockup = 0, Echo = 0, CageSeconds = 3.5f; int32 CageSegments = 10; bool bSetup = false;
     // Constructs: the tech recipe row (kept as JSON; parsed by AppendConstructRecipes).
     TSharedPtr<FJsonObject> Construct;
 };
 
-struct FTable { TMap<FString, FRecipe> Rows; TArray<FString> Ids; bool bLoaded = false; };
+struct FTable { TMap<FString, FRecipe> Rows, Authored; TArray<FString> Ids; bool bLoaded = false; }; // ability-tuner: Authored = file rows (tuner reset)
 FTable& Table() { static FTable T; return T; }
 
 float Num(const TSharedPtr<FJsonObject>& J, const TCHAR* Key, float Default = 0) { double V = Default; return J && J->TryGetNumberField(Key, V) && FMath::IsFinite(V) ? static_cast<float>(V) : Default; }
 FString Str(const TSharedPtr<FJsonObject>& J, const TCHAR* Key) { FString V; if (J) J->TryGetStringField(Key, V); return V; }
+
+/** One recipe object -> FRecipe (clamped); false for an unknown delivery. ability-tuner: shared by Load and SetRecipeOverride. */
+bool ParseRecipe(const FString& Id, const TSharedPtr<FJsonObject>& J, FRecipe& R)
+{
+    R = FRecipe(); R.Id = Id; R.DeliveryName = Str(J, TEXT("delivery"));
+    bool bKnown = false;
+    for (const FDelName& N : DelNames) if (R.DeliveryName == N.Name) { R.D = N.D; bKnown = true; }
+    if (!bKnown) { UE_LOG(LogCireExpansion, Warning, TEXT("Unknown delivery %s for %s"), *R.DeliveryName, *R.Id); return false; }
+    R.Angle = FMath::Clamp(Num(J, TEXT("angle"), 60), 10.f, 170.f); R.Warning = FMath::Clamp(Num(J, TEXT("warning")), 0.f, 3.f);
+    R.Speed = FMath::Clamp(Num(J, TEXT("speed")), 0.f, 6000.f); R.Hits = FMath::Clamp(static_cast<int32>(Num(J, TEXT("hits"), 1)), 1, 12);
+    R.Knockback = FMath::Clamp(Num(J, TEXT("knockback")), 0.f, 800.f); R.Pull = FMath::Clamp(Num(J, TEXT("pull")), 0.f, 1.f);
+    R.Bleed = FMath::Clamp(Num(J, TEXT("bleed")), 0.f, 2.f); R.Lifesteal = FMath::Clamp(Num(J, TEXT("lifesteal")), 0.f, 1.f);
+    R.ExecuteBelow = FMath::Clamp(Num(J, TEXT("executeBelow")), 0.f, .5f); R.ExecuteBonus = FMath::Clamp(Num(J, TEXT("executeBonus")), 0.f, 3.f);
+    const FString Buff = Str(J, TEXT("buff")); R.Buff = Buff.IsEmpty() ? NAME_None : FName(*Buff);
+    R.BuffValue = FMath::Clamp(Num(J, TEXT("buffValue")), 0.f, 200.f); R.BuffSeconds = FMath::Clamp(Num(J, TEXT("buffSeconds")), 0.f, 60.f);
+    R.BarrierFraction = FMath::Clamp(Num(J, TEXT("barrier")), 0.f, 3.f);
+    J->TryGetBoolField(TEXT("cleanse"), R.bCleanse);
+    R.Count = FMath::Clamp(static_cast<int32>(Num(J, TEXT("count"), 1)), 1, 6); R.Visual = FMath::Clamp(static_cast<int32>(Num(J, TEXT("visual"))), 0, 3);
+    R.SummonHealth = FMath::Clamp(Num(J, TEXT("health"), 300), 10.f, 20000.f); R.SummonHealthPrimary = FMath::Clamp(Num(J, TEXT("healthPrimary"), 6), 0.f, 100.f);
+    R.MoveSpeed = FMath::Clamp(Num(J, TEXT("moveSpeed"), 430), 100.f, 1200.f); R.AttackRange = FMath::Clamp(Num(J, TEXT("attackRange"), 180), 80.f, 1400.f);
+    J->TryGetBoolField(TEXT("commandable"), R.bCommandable); R.SummonName = Str(J, TEXT("summonName"));
+    R.Waves = FMath::Clamp(static_cast<int32>(Num(J, TEXT("waves"), 5)), 1, 20); R.Interval = FMath::Clamp(Num(J, TEXT("interval"), .45f), .1f, 3.f);
+    R.SubRadius = FMath::Clamp(Num(J, TEXT("subRadius"), 220), 60.f, 800.f);
+    const FString Hook = Str(J, TEXT("hook")); R.Hook = Hook.IsEmpty() ? NAME_None : FName(*Hook);
+    R.Chance = FMath::Clamp(Num(J, TEXT("chance")), 0.f, 1.f); R.Threshold = FMath::Clamp(Num(J, TEXT("threshold")), 0.f, 1.f);
+    R.PullCenter = FMath::Clamp(Num(J, TEXT("pullCenter")), 0.f, 1.f); R.Knockup = FMath::Clamp(Num(J, TEXT("knockup")), 0.f, 1600.f);
+    R.Echo = FMath::Clamp(Num(J, TEXT("echo")), 0.f, 1.f); R.CageSeconds = FMath::Clamp(Num(J, TEXT("cageSeconds"), 3.5f), .5f, 10.f);
+    R.CageSegments = FMath::Clamp(static_cast<int32>(Num(J, TEXT("cageSegments"), 10)), 4, 20); J->TryGetBoolField(TEXT("setup"), R.bSetup);
+    const TSharedPtr<FJsonObject>* C = nullptr; if (J->TryGetObjectField(TEXT("construct"), C)) R.Construct = *C;
+    return true;
+}
 
 void Load()
 {
@@ -91,32 +128,10 @@ void Load()
     {
         const TSharedPtr<FJsonObject>* Row = nullptr; const TSharedPtr<FJsonObject>* Rec = nullptr;
         if (!Pair.Value->TryGetObject(Row) || !(*Row)->TryGetObjectField(TEXT("recipe"), Rec)) continue;
-        const TSharedPtr<FJsonObject>& J = *Rec;
-        FRecipe R; R.Id = FString(Pair.Key); R.DeliveryName = Str(J, TEXT("delivery"));
-        bool bKnown = false;
-        for (const FDelName& N : DelNames) if (R.DeliveryName == N.Name) { R.D = N.D; bKnown = true; }
-        if (!bKnown) { UE_LOG(LogCireExpansion, Warning, TEXT("Unknown delivery %s for %s"), *R.DeliveryName, *R.Id); continue; }
-        R.Angle = FMath::Clamp(Num(J, TEXT("angle"), 60), 10.f, 170.f); R.Warning = FMath::Clamp(Num(J, TEXT("warning")), 0.f, 3.f);
-        R.Speed = FMath::Clamp(Num(J, TEXT("speed")), 0.f, 6000.f); R.Hits = FMath::Clamp(static_cast<int32>(Num(J, TEXT("hits"), 1)), 1, 12);
-        R.Knockback = FMath::Clamp(Num(J, TEXT("knockback")), 0.f, 800.f); R.Pull = FMath::Clamp(Num(J, TEXT("pull")), 0.f, 1.f);
-        R.Bleed = FMath::Clamp(Num(J, TEXT("bleed")), 0.f, 2.f); R.Lifesteal = FMath::Clamp(Num(J, TEXT("lifesteal")), 0.f, 1.f);
-        R.ExecuteBelow = FMath::Clamp(Num(J, TEXT("executeBelow")), 0.f, .5f); R.ExecuteBonus = FMath::Clamp(Num(J, TEXT("executeBonus")), 0.f, 3.f);
-        const FString Buff = Str(J, TEXT("buff")); R.Buff = Buff.IsEmpty() ? NAME_None : FName(*Buff);
-        R.BuffValue = FMath::Clamp(Num(J, TEXT("buffValue")), 0.f, 200.f); R.BuffSeconds = FMath::Clamp(Num(J, TEXT("buffSeconds")), 0.f, 60.f);
-        R.BarrierFraction = FMath::Clamp(Num(J, TEXT("barrier")), 0.f, 3.f);
-        J->TryGetBoolField(TEXT("cleanse"), R.bCleanse);
-        R.Count = FMath::Clamp(static_cast<int32>(Num(J, TEXT("count"), 1)), 1, 6); R.Visual = FMath::Clamp(static_cast<int32>(Num(J, TEXT("visual"))), 0, 3);
-        R.SummonHealth = FMath::Clamp(Num(J, TEXT("health"), 300), 10.f, 20000.f); R.SummonHealthPrimary = FMath::Clamp(Num(J, TEXT("healthPrimary"), 6), 0.f, 100.f);
-        R.MoveSpeed = FMath::Clamp(Num(J, TEXT("moveSpeed"), 430), 100.f, 1200.f); R.AttackRange = FMath::Clamp(Num(J, TEXT("attackRange"), 180), 80.f, 1400.f);
-        J->TryGetBoolField(TEXT("commandable"), R.bCommandable); R.SummonName = Str(J, TEXT("summonName"));
-        R.Waves = FMath::Clamp(static_cast<int32>(Num(J, TEXT("waves"), 5)), 1, 20); R.Interval = FMath::Clamp(Num(J, TEXT("interval"), .45f), .1f, 3.f);
-        R.SubRadius = FMath::Clamp(Num(J, TEXT("subRadius"), 220), 60.f, 800.f);
-        const FString Hook = Str(J, TEXT("hook")); R.Hook = Hook.IsEmpty() ? NAME_None : FName(*Hook);
-        R.Chance = FMath::Clamp(Num(J, TEXT("chance")), 0.f, 1.f); R.Threshold = FMath::Clamp(Num(J, TEXT("threshold")), 0.f, 1.f);
-        const TSharedPtr<FJsonObject>* C = nullptr; if (J->TryGetObjectField(TEXT("construct"), C)) R.Construct = *C;
+        FRecipe R; if (!ParseRecipe(FString(Pair.Key), *Rec, R)) continue;
         T.Ids.Add(R.Id); T.Rows.Add(R.Id, MoveTemp(R));
     }
-    T.Ids.Sort();
+    T.Ids.Sort(); T.Authored = T.Rows;
     UE_LOG(LogCireExpansion, Display, TEXT("CIRE_ABILITY_EXPANSION_LOADED recipes=%d"), T.Ids.Num());
 }
 const FTable& Loaded() { FTable& T = Table(); if (!T.bLoaded) Load(); return T; }
@@ -259,6 +274,11 @@ AActor* NearestEnemy(ACireHero* H, FVector From, float Radius)
     return Best;
 }
 float Seconds(UWorld* W, float S) { return CireDeveloperTools::EffectSeconds(W, S); }
+// initiation: the last cast centre per caster and skill (pull-to-centre riders resolve against it).
+TMap<FString, FVector>& Centers() { static TMap<FString, FVector> M; return M; }
+FString CenterKey(const AActor* H, const FString& Id) { return FString::Printf(TEXT("%u/%s"), H ? H->GetUniqueID() : 0u, *Id); }
+void SetCenter(const AActor* H, const FString& Id, FVector P) { Centers().Add(CenterKey(H, Id), P); }
+const FVector* CenterOf(const AActor* H, const FString& Id) { return Centers().Find(CenterKey(H, Id)); }
 float ControlSeconds(AActor* Source, float Base) { return Base * CireKits::ControlScale(Source); }
 void Push(AActor* Unit, FVector Away, float Distance)
 {
@@ -305,6 +325,14 @@ using namespace CireXpDetail;
 
 // ============================================================================================ identity
 void CireAbilityExpansion::Reload() { Table().bLoaded = false; Load(); }
+bool CireAbilityExpansion::SetRecipeOverride(const FString& Id, const TSharedPtr<FJsonObject>& Recipe)
+{
+    Loaded(); FTable& T = Table();
+    const FRecipe* Authored = T.Authored.Find(Id); if (!Authored) return false;
+    if (!Recipe.IsValid()) { T.Rows.Add(Id, *Authored); return true; } // ability-tuner: reset to the file row
+    FRecipe R; if (!ParseRecipe(Id, Recipe, R) || R.D != Authored->D) return false; // the delivery kind itself is not tunable
+    T.Rows.Add(Id, MoveTemp(R)); return true;
+}
 const TArray<FString>& CireAbilityExpansion::AllIds() { return Loaded().Ids; }
 bool CireAbilityExpansion::Knows(const FString& Id) { return Find(Id) != nullptr; }
 bool CireAbilityExpansion::Handles(const FString& Id) { const FRecipe* R = Find(Id); return R && R->D != EDel::Passive; }
@@ -412,6 +440,7 @@ bool CireAbilityExpansion::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     {
         if (!NeedGround(true)) return false;
         if (!ACireAreaEffect::Spawn(Hero, AreaFor(*Def, ECireAreaShape::Circle, Radius, Rec->Warning, Amount), Aim, FRotator::ZeroRotator)) return Fail(TEXT("Cannot create that area here."));
+        SetCenter(Hero, Id, Aim);
         break;
     }
     case EDel::Zone:
@@ -421,12 +450,70 @@ bool CireAbilityExpansion::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
         A.bPersistent = true; A.DurationSeconds = FMath::Clamp(Duration, .5f, 20.f); A.TickInterval = .5f;
         A.DamagePerSecond = Amount; // Amount is damage per second (base + coef x PRIMARY)
         if (!ACireAreaEffect::Spawn(Hero, A, Aim, FRotator::ZeroRotator)) return Fail(TEXT("Cannot create that area here."));
+        SetCenter(Hero, Id, Aim);
         break;
     }
     case EDel::Nova:
     {
-        if (!ACireAreaEffect::Spawn(Hero, AreaFor(*Def, ECireAreaShape::Circle, Radius, Rec->Warning, Amount), Feet, FRotator::ZeroRotator)) return Fail(TEXT("Cannot unleash that here."));
+        float Damage = Amount;
+        if (Rec->Echo > 0) Damage *= 1.f + Rec->Echo * FMath::Max(0, Enemies(Hero, Origin, Radius).Num() - 1); // initiation: Echo Slam
+        if (!ACireAreaEffect::Spawn(Hero, AreaFor(*Def, ECireAreaShape::Circle, Radius, Rec->Warning, Damage), Feet, FRotator::ZeroRotator)) return Fail(TEXT("Cannot unleash that here."));
+        SetCenter(Hero, Id, Feet);
         Aim = Feet; break;
+    }
+    case EDel::Vacuum: // initiation: everything in the circle is dragged to its centre when it resolves
+    {
+        if (!NeedGround(true)) return false;
+        if (!ACireAreaEffect::Spawn(Hero, AreaFor(*Def, ECireAreaShape::Circle, Radius, Rec->Warning, Amount), Aim, FRotator::ZeroRotator)) return Fail(TEXT("Cannot create that area here."));
+        SetCenter(Hero, Id, Aim);
+        break;
+    }
+    case EDel::Charge: // initiation: rush to the selected enemy and slam around the landing spot
+    {
+        if (!NeedEnemy(Range)) return Fail(TEXT("Select a hostile target in range and line of sight."));
+        const FVector Toward = (Target->GetActorLocation() - Origin).GetSafeNormal2D();
+        const float Gap = FMath::Max(0.f, static_cast<float>(FVector::Dist2D(Origin, Target->GetActorLocation())) - Body(Target) - Body(Hero) - 20.f);
+        const float Free = FreeTravel(Hero, Toward, Gap);
+        if (Free > 40.f && !MoveTo(Hero, Origin + Toward * Free)) return Fail(TEXT("The path is blocked."));
+        SetCenter(Hero, Id, FeetOf(Hero));
+        ACireAreaEffect::Spawn(Hero, AreaFor(*Def, ECireAreaShape::Circle, Radius, 0.f, Amount), FeetOf(Hero), FRotator::ZeroRotator);
+        Aim = Target->GetActorLocation(); break;
+    }
+    case EDel::Hook: // initiation: the first enemy in the chain lane is struck and dragged to you
+    {
+        const float Width = FMath::Max(40.f, Def->Radius);
+        AActor* First = nullptr; float Best = TNumericLimits<float>::Max();
+        for (AActor* U : Enemies(Hero, Origin + Direction * Range * .5f, Range * .5f + Width + 100.f))
+        {
+            const float Along = static_cast<float>(FVector::DotProduct(U->GetActorLocation() - Origin, Direction));
+            if (Along < 0 || Along > Range || SegmentDistance(U->GetActorLocation(), Origin, Origin + Direction * Range) > Width + Body(U) || !Sight(Hero, U)) continue;
+            if (Along < Best) { Best = Along; First = U; }
+        }
+        CireCombat::PlayCue(Hero, First, FName(*Id), Origin, First ? First->GetActorLocation() : Origin + Direction * Range, ECireSpellCue::Launch, 1.f, true);
+        if (First)
+        {
+            SetCenter(Hero, Id, Origin + Direction * (Body(Hero) + 80.f));
+            CireCombat::ApplyDamage(Hero, First, Amount, Name);
+            if (!IsBoss(First)) PullTo(First, Origin + Direction * (Body(Hero) + 80.f), 1.f);
+        }
+        Hero->SetActorRotation(Direction.Rotation()); Aim = Origin + Direction * Range; bCue = false; break;
+    }
+    case EDel::Cage: // initiation: a ring of walls traps whoever is inside (allies walk through)
+    {
+        if (!CireSkillCasting::PlacementAim(Hero, Aim, Range)) return false; // casting-rules: placement ignores clipping
+        SetCenter(Hero, Id, Aim);
+        ACireAreaEffect::Spawn(Hero, AreaFor(*Def, ECireAreaShape::Circle, Radius, Rec->Warning, Amount), Aim, FRotator::ZeroRotator);
+        const int32 N = Rec->CageSegments; const float Seg = 2.f * PI * Radius / N * 1.08f;
+        for (int32 I = 0; I < N; ++I)
+        {
+            const float A = 2.f * PI * I / N; const FVector Out(FMath::Cos(A), FMath::Sin(A), 0);
+            FCireConstructSpec W; W.Kind = ECireConstructKind::Wall; W.MaxHealth = FMath::Min(20000.f, Amount * 4.f); W.LifetimeSeconds = Seconds(World, Rec->CageSeconds);
+            W.Width = FMath::Max(60.f, Seg); W.Depth = 40.f; W.Height = 220.f; W.ManaCost = 0; W.EnergyCost = 0; W.CooldownSeconds = 0; W.CastRange = Range + Radius + 200.f;
+            W.bBlockMovement = true; W.bBlockProjectiles = false; W.bDestructible = true; W.bBlockFriendly = false; W.Color = Tint(*Def, false); W.Color.A = .9f;
+            FVector P = Aim + Out * Radius; GroundAt(Hero, P);
+            ACireConstruct::Spawn(Hero, W, P, Out.Rotation(), Name);
+        }
+        break;
     }
     case EDel::Chain:
     {
@@ -534,7 +621,7 @@ bool CireAbilityExpansion::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
         Spec.DurationSeconds = Duration; Spec.ManaCost = 0; Spec.EnergyCost = 0; Spec.CooldownSeconds = 0; Spec.bCommandable = Rec->bCommandable;
         Spec.CastRange = Range + 250.f; Spec.MoveSpeed = Rec->MoveSpeed; Spec.AttackRange = Rec->AttackRange; Spec.ArchetypeVisual = Rec->Visual;
         FVector At = Hero->bHasCastAim ? Aim : Origin + Direction * 180.f;
-        if (!GroundAt(Hero, At)) At = Origin + Direction * 180.f;
+        if (!CireSkillCasting::PlacementAim(Hero, At, Range)) return false; // casting-rules: placement ignores clipping
         // SpawnGroup places at most 3 per call: larger packs arrive in groups of up to 3 side by side.
         TArray<ACireSummon*> Units;
         for (int32 Left = Rec->Count, Group = 0; Left > 0; ++Group)
@@ -554,14 +641,14 @@ bool CireAbilityExpansion::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     }
     case EDel::Construct:
     {
-        if (!NeedGround(true)) return false;
+        if (!CireSkillCasting::PlacementAim(Hero, Aim, Range)) return false; // casting-rules: placement ignores clipping
         FString Why;
         if (CireTechConstructs::Deploy(Hero, FName(*Id), Aim, &Why).IsEmpty()) return Fail(Why.IsEmpty() ? FString(TEXT("Cannot build there.")) : Why);
         break;
     }
     case EDel::Wall:
     {
-        if (!NeedGround(true)) return false;
+        if (!CireSkillCasting::PlacementAim(Hero, Aim, Range)) return false; // casting-rules: placement ignores clipping
         for (TCireActorIterator<ACireConstruct> It(World); It; ++It) if (It->GetSourceActor() == Hero && It->GetDisplayName() == Name) It->Destroy(); // one per owner
         FCireConstructSpec W; W.Kind = ECireConstructKind::Wall; W.MaxHealth = FMath::Min(20000.f, Amount); W.LifetimeSeconds = Duration;
         W.Width = FMath::Max(120.f, Radius * 2.f); W.Depth = 60.f; W.Height = 230.f; W.ManaCost = 0; W.EnergyCost = 0; W.CooldownSeconds = Def->Base.Cooldown; W.CastRange = Range + 60.f;
@@ -631,6 +718,10 @@ bool CireAbilityExpansion::DescribeShape(const FString& Id, FCireHitShape& R)
     case EDel::Zone: Circle(Radius, false); R.bGroundAim = true; R.LingerSeconds = Def->Duration; break;
     case EDel::Barrage: Circle(Radius, false); R.bGroundAim = true; R.LingerSeconds = FMath::Max(1.f, Rec->Waves * Rec->Interval); break;
     case EDel::Nova: Circle(Radius, true); break;
+    case EDel::Vacuum: Circle(Radius, false); R.bGroundAim = true; R.LingerSeconds = .5f; break;
+    case EDel::Charge: Circle(Radius, false); R.bAtTarget = true; break;
+    case EDel::Hook: Lane(Range, FMath::Max(40.f, Def->Radius) * 2.f); R.LingerSeconds = .5f; break;
+    case EDel::Cage: Circle(Radius, false); R.bGroundAim = true; R.LingerSeconds = Rec->CageSeconds; break;
     case EDel::Leap: Circle(Radius, false); R.bGroundAim = true; break;
     case EDel::Chain: R.Kind = ECireHitShape::Chain; R.Radius = Radius; R.bAtTarget = true; break;
     case EDel::Strike: R.Kind = ECireHitShape::Unit; break;
@@ -660,6 +751,7 @@ bool CireAbilityExpansion::DescribeShape(const FString& Id, FCireHitShape& R)
 // ============================================================================================ hooks
 float CireAbilityExpansion::ModifyOutgoingDamage(AActor* Source, AActor* Target, float Amount, const FString& AbilityName)
 {
+    Amount = CireInitiation::ModifyOutgoingDamage(Source, Target, Amount); // initiation: Set-up follow-ups
     if (!IsValid(Target) || Amount <= 0 || Loaded().Ids.IsEmpty()) return Amount;
     float M = 1.f;
     if (const auto* E = ActiveBuff(Target, FortifiedId)) M *= 1.f - FMath::Clamp(E->Stacks / 100.f, 0.f, .7f);
@@ -688,6 +780,7 @@ float CireAbilityExpansion::ModifyOutgoingDamage(AActor* Source, AActor* Target,
 
 void CireAbilityExpansion::OnAbilityHit(AActor* Source, AActor* Target, const FString& AbilityName, float Applied)
 {
+    CireInitiation::OnDamageDealt(Source, Target, Applied); // initiation: champion damage disrupts a Blink Dagger
     if (!IsValid(Source) || !Source->HasAuthority() || !IsValid(Target) || Applied <= 0 || Loaded().Ids.IsEmpty()) return;
     auto* H = Cast<ACireHero>(Source);
     if (!H || H->IsA<ACireSummon>()) return;
@@ -710,6 +803,9 @@ void CireAbilityExpansion::OnAbilityHit(AActor* Source, AActor* Target, const FS
         if (Rec->Knockback > 0) Push(Target, Target->GetActorLocation() - H->GetActorLocation(), Rec->Knockback);
         if (Rec->Pull > 0) PullTo(Target, H->GetActorLocation(), Rec->Pull);
         if (Rec->Bleed > 0) AddBleed(H, Target, Applied * Rec->Bleed, D->Name);
+        if (Rec->bSetup) CireInitiation::ApplySetUp(H, Target, D->Name); // initiation
+        if (Rec->Knockup > 0 && !IsBoss(Target)) if (auto* C = Cast<ACharacter>(Target)) C->LaunchCharacter(FVector(0, 0, Rec->Knockup), false, true);
+        if (Rec->PullCenter > 0) if (const FVector* Center = CenterOf(H, D->Id)) PullTo(Target, *Center, Rec->PullCenter);
         if (Rec->Lifesteal > 0) CireCombat::ApplyHealing(H, H, Applied * Rec->Lifesteal, D->Name);
     }
     // ---- on-hit passives: skill damage only (the name resolves to an Ability DB row; echoes / bleeds never chain)
@@ -765,6 +861,8 @@ bool CireAbilityExpansion::BotWantsCast(ACireHero* Hero, const FString& Id)
     case EDel::Barrier: case EDel::SelfBuff: case EDel::PartyBuff: case EDel::Summon: case EDel::Construct: case EDel::Wall:
         return NearestEnemy(Hero, Hero->GetActorLocation(), 1400.f) != nullptr;
     case EDel::Passive: return false;
-    default: return true;
+    default:
+        if (R->bSetup) return Enemies(Hero, Hero->GetActorLocation(), Range + FMath::Max(300.f, D->Radius)).Num() >= 2; // initiation: engage a group, not one straggler
+        return true;
     }
 }

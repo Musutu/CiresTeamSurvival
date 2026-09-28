@@ -29,6 +29,9 @@ public:
     const FString& GetProfileId() const { return ProfileId; }
     /** kit-editor: the local preview champion (effect placement preview); null while none is shown. */
     ACireHero* GetPreviewHero() const { return Preview; }
+    // paragon-champions: show the preview in a skin ("" = default); the body re-binds on the next update.
+    void SetPreviewSkin(const FString& Skin);
+
     UTextureRenderTarget2D* GetRenderTarget() const { return Target; }
     // True once the body is bound, bounded, framed and metered (exposure converged or timed out).
     bool IsPreviewReady() const;

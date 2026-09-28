@@ -4,6 +4,8 @@
 #include "CireSkillTuning.h" // casting-rules
 #include "CireChampionRoster.h"
 #include "CireKitEditor.h" // kit-editor: champion kit templates join the purchasable lists
+#include "CireAbilityTuner.h" // ability-tuner: override layer
+#include "CireParagonChampions.h" // paragon-champions
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -107,6 +109,8 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
         {
             const FString Bonus=Str(*L15,TEXT("bonus"));D.Level15Bonus=Bonus.IsEmpty()||Bonus==TEXT("none")?NAME_None:FName(*Bonus);
             D.Level15Special=Str(*L15,TEXT("special"));D.Level15Label=Str(*L15,TEXT("label"));D.Level15Trigger=Str(*L15,TEXT("trigger"));
+            D.Level15Scale=Num(*L15,TEXT("scale"),1.f);D.Level15DurationScale=Num(*L15,TEXT("durationScale"),1.f); // ability-tuner
+            if(D.Level15Scale<0||D.Level15Scale>10||D.Level15DurationScale<0||D.Level15DurationScale>10)return Fail(TEXT("level15 scale must be 0..10: ")+D.Id);
         }
         const TSharedPtr<FJsonObject>* Aura=nullptr;
         if(J->TryGetObjectField(TEXT("aura15"),Aura)){D.Aura15=FName(*Str(*Aura,TEXT("aura")));D.Aura15Label=Str(*Aura,TEXT("label"));}
@@ -187,10 +191,18 @@ bool CireAbilityDB::Reload()
             for(auto& Pair:XM)if(!M.Contains(Pair.Key))M.Add(Pair.Key,MoveTemp(Pair.Value));
         }
     }
+    CireParagonChampions::MergeAbilities(A,K); // paragon-champions: Paragon kits + Skill Shop pool (installed packs only)
     GAbilities=MoveTemp(A);GKits=MoveTemp(K);GModifiers=MoveTemp(M);GIndex.Reset();GNameIndex.Reset();
     for(int32 I=0;I<GAbilities.Num();++I){GIndex.Add(GAbilities[I].Id,I);GNameIndex.Add(GAbilities[I].Name,I);}
     CireKitEditor::MergeIntoKits(GKits); // kit-editor: saved base kits are purchasable (Content/Data/ChampionKitTemplates.json)
     UE_LOG(LogCireAbilityDB,Display,TEXT("CIRE_ABILITY_DB_LOADED abilities=%d champions=%d"),GAbilities.Num(),GKits.Num());
+    CireAbilityTuner::OnDatabaseReloaded(); // ability-tuner: startup profile + live overrides on top of the fresh rows
+    return true;
+}
+bool CireAbilityDB::ReplaceRow(const FCireAbilityDef& Row)
+{
+    LoadOnce();const int32* I=GIndex.Find(Row.Id);if(!I)return false;
+    GAbilities[*I]=Row;GNameIndex.Add(Row.Name,*I); // earlier names stay mapped (combat events, hard-coded lookups)
     return true;
 }
 
@@ -238,11 +250,13 @@ FString CireAbilityDB::ScalingWord(const FCireAbilityDef& D)
 TArray<FString> CireAbilityDB::PurchasableSkills(const FString& ProfileId,bool bImplementedOnly)
 {
     const FCireChampionKit* K=Kit(ProfileId);if(!K)return {};
-    return bImplementedOnly?K->PurchasableImplemented:K->Purchasable;
+    TArray<FString> Out=bImplementedOnly?K->PurchasableImplemented:K->Purchasable;
+    Out.RemoveAll([](const FString& Id){return CireAbilityTuner::IsDisabled(Id);}); // ability-tuner: disabled abilities leave every shop
+    return Out;
 }
 bool CireAbilityDB::CanLearn(const FString& ProfileId,const FString& AbilityId)
 {
-    const FCireChampionKit* K=Kit(ProfileId);return K&&K->Purchasable.Contains(AbilityId);
+    const FCireChampionKit* K=Kit(ProfileId);return K&&K->Purchasable.Contains(AbilityId)&&!CireAbilityTuner::IsDisabled(AbilityId);
 }
 TArray<FString> CireAbilityDB::OpeningSkills(const FString& ProfileId)
 {

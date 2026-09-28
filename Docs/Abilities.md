@@ -674,7 +674,7 @@ mines, bots roll, 20 DB rows); `CireMobilityTests` drives the real `StartRoll` t
 <!-- AUTO:expansion -->
 ## Expansion pool (ability-expansion)
 
-111 abilities from `Content/Data/AbilitiesExpansion.json` (written by `Tools/BuildAbilityExpansion.py`), merged additively into the
+123 abilities from `Content/Data/AbilitiesExpansion.json` (written by `Tools/BuildAbilityExpansion.py`), merged additively into the
 Ability Database by `CireAbilityDB::Reload`; gameplay in `CireAbilityExpansion.cpp` (generic delivery recipes routed from `CireSignatureSkills`).
 Every row scales off the PRIMARY stat (damage / heal / barrier / summon and construct hits: `base + coef x Primary`; buffs and passives: potency
 +0.4% per Primary, max +40%), carries a level-15 bonus (actives) or team aura (passives), a Skill Shop section, role types and a true telegraph.
@@ -793,6 +793,18 @@ Signature Fab systems (`FabVFX.expansion.json`) come from the purchased packs' p
 | Warlord's Anthem (`warlords_anthem`) | ultimate | partyBuff | physical | TANK/DPS | ultimate | 120 + 2x barrier health | slow | cast: Blood_Magic_Explo2 (tinted) | 4 |
 | Earthshatter (`earthshatter`) | ultimate | line | earth | TANK/DPS | ultimate | 200 + 3x damage | vulnerability | cast: Earth_Spells_Area_Spike_Line3 (tinted) | 4 |
 | Tidal Cataclysm (`tidal_cataclysm`) | ultimate | zone | tide | DPS/HEAL | ultimate | 50 + 1x damage per second | slow | area: P_ky_aquaStorm (tinted) | 6 |
+| Tidal Ravage (`tidal_ravage`) | active | nova | tide | TANK/DPS | initiation | 70 + 1.1x damage | vulnerability | area: Water_Magic_Wall2 | 21 |
+| Reverse Polarity (`reverse_polarity`) | active | nova | storm | TANK/DPS | initiation | 60 + 1.1x damage | damageAmp | area: Lightning_Magic_Tunder_Circle1 (tinted) | 21 |
+| Vacuum Rift (`vacuum_rift`) | active | vacuum | void | DPS/TANK | initiation | 60 + 1x damage | vulnerability | area: Dark_Magic_AOE | 21 |
+| Black Hole (`black_hole`) | active | zone | void | DPS | initiation | 40 + 0.8x damage per second | slow | area: Dark_Magic_Circle | 12 |
+| Chronofield (`chronofield`) | active | circle | arcane | DPS/HEAL | initiation | 30 + 0.6x impact damage | vulnerability | area: Earth_Spells_Circle | 20 |
+| Warpath Charge (`warpath_charge`) | active | charge | physical | TANK/DPS | initiation | 70 + 1.2x damage | vulnerability | impact: Blood_Magic_Explo2 (tinted) | 21 |
+| Titanfall Leap (`titanfall_leap`) | active | leap | earth | TANK/DPS | initiation | 70 + 1.2x damage | slow | impact: Earth_Spells_Spike3 | 21 |
+| Challenger's Roar (`challengers_roar`) | active | nova | earth | TANK | initiation | 40 + 0.8x damage | stun | area: Earth_Magic_Shockwave | 10 |
+| Hallowed Cage (`hallowed_cage`) | active | cage | holy | TANK/HEAL | initiation | 40 + 0.8x damage | stun | area: Light_Magic_Sword_Circle | 18 |
+| Upheaval (`upheaval`) | active | line | earth | TANK/DPS | initiation | 75 + 1.3x damage | vulnerability | cast: Earth_Spells_Area_Spike_Line1 (tinted) | 21 |
+| Soul Hook (`soul_hook`) | active | hook | shadow | TANK/DPS | initiation | 80 + 1.3x damage | healCut | impact: Shadow_Magic_Hit3 (tinted) | 21 |
+| Echo Slam (`echo_slam`) | active | nova | earth | TANK/DPS | initiation | 80 + 1.3x damage | damageAmp | area: Posion_Magic_AreaWave | 21 |
 
-Champion pool growth: aetheri_artificer +31, aetheri_warden +30, bear +28, drakish_footman +30, dryad +24, dwarf_miner +27, ether_golem_bruiser +31, ether_golem_support +18, ether_golem_tank +27, evergrove_centaur +31, gunblade +31, huntress +31, keeper_of_light +16, knight +30, lancer +31, orc_chieftain +30, paladin_holy +15, paladin_righteous +30, ranger +31, scholar +22, summoner +30, totemic_behemoth +26, troll_berserker_melee +30, troll_berserker_ranged +30, whisp +22, witch_slayer +30, wizard +30
+Champion pool growth: aetheri_artificer +41, aetheri_warden +41, bear +38, drakish_footman +40, dryad +26, dwarf_miner +37, ether_golem_bruiser +43, ether_golem_support +20, ether_golem_tank +37, evergrove_centaur +42, gunblade +41, huntress +41, keeper_of_light +18, knight +40, lancer +41, orc_chieftain +41, paladin_holy +17, paladin_righteous +40, ranger +41, scholar +24, summoner +40, totemic_behemoth +36, troll_berserker_melee +40, troll_berserker_ranged +40, whisp +24, witch_slayer +40, wizard +41
 <!-- /AUTO:expansion -->

@@ -313,12 +313,16 @@ float CireKits::ModifyOutgoingDamage(AActor* Source,AActor* Target,float Amount,
 void CireKits::ApplyLevel15(ACireHero* H,const FCireAbilityDef& D,AActor* Target,float Hit)
 {
     if(!H||!H->HasAuthority()||!IsValid(Target)||!CireCombat::IsAlive(Target))return;
-    const auto& N=K::L15();const FName B=D.Level15Bonus;
+    K::Level15Numbers N=K::L15();const FName B=D.Level15Bonus;
+    { // ability-tuner: per-ability level-15 magnitude / duration scales (Ability Tuner, "level15" {scale, durationScale})
+        const double M=D.Level15Scale,S=D.Level15DurationScale;
+        N.HealCutFraction=FMath::Clamp(N.HealCutFraction*M,0.0,1.0);N.DotSeconds*=S;N.HealCutSeconds*=S;N.StunSeconds*=S;N.SlowSeconds*=S;N.DamageAmpSeconds*=S;N.VulnerabilitySeconds*=S;
+    }
     auto* Sub=UCireKitsSubsystem::Get(H->GetWorld());
     if(B==TEXT("dot"))
     {
         if(Sub&&Hit>0){UCireKitsSubsystem::FDot X;X.Source=H;X.Target=Target;X.Ticks=FMath::RoundToInt(N.DotSeconds);
-            X.PerTick=static_cast<float>(K::DotTotal(Hit)/FMath::Max(1,X.Ticks));X.Name=D.Name+TEXT(" burn (Lv 15)");Sub->Dots.Add(X);}
+            X.PerTick=static_cast<float>(K::DotTotal(Hit)*D.Level15Scale/FMath::Max(1,X.Ticks));X.Name=D.Name+TEXT(" burn (Lv 15)");Sub->Dots.Add(X);}
     }
     else if(B==TEXT("healCut"))CireCrowdControl::HealCut(Target,static_cast<float>(N.HealCutFraction),static_cast<float>(N.HealCutSeconds),H);
     else if(B==TEXT("stun"))

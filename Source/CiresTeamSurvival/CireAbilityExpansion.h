@@ -52,6 +52,8 @@ namespace CireAbilityExpansion
     CIRESTEAMSURVIVAL_API const TArray<FName>& BuffIds();
     /** Re-read the recipes (tests / live data edits; the Ability DB rows reload with CireAbilityDB::Reload). */
     CIRESTEAMSURVIVAL_API void Reload();
+    /** ability-tuner: replaces one row's "recipe" numbers live (null = the file row again). False: unknown id or a changed delivery. */
+    CIRESTEAMSURVIVAL_API bool SetRecipeOverride(const FString& Id, const TSharedPtr<class FJsonObject>& Recipe);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunSmoke(ACireGameMode* Mode);
 #endif

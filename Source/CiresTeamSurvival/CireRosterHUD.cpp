@@ -52,6 +52,7 @@
 #include "UObject/Package.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "CireWaves.h" // waves-modes: GAME TYPE picker
+#include "CireParagonChampions.h" // paragon-champions: locally captured portraits
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireDraft,Log,All);
 
@@ -239,6 +240,8 @@ UTexture2D* Portrait(const FString& Id)
     if(const auto* Found=Cache.Find(Id))return Found->Get();
     const FString Path=FString::Printf(TEXT("/Game/UI/Draft/Portraits/T_Portrait_%s.T_Portrait_%s"),*Id,*Id);
     UTexture2D* Texture=FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))?LoadObject<UTexture2D>(nullptr,*Path):nullptr;
+    if(!Texture)Texture=CireParagonChampions::Portrait(Id); // paragon-champions: /Game/ParagonDerived/Portraits (local only)
+
     Cache.Add(Id,TStrongObjectPtr<UTexture2D>(Texture));
     return Texture;
 }
@@ -364,6 +367,8 @@ FString BackgroundId(const FString& ProfileId)
     for(const TCHAR* Family:{TEXT("ether_golem"),TEXT("paladin"),TEXT("troll_berserker")})if(ProfileId.StartsWith(Family))return Family;
     if(const FDraftBackgroundRow* Row=DraftBackgroundRows().Find(ProfileId))
         return HasBackgroundTexture(Row->Background)?Row->Background:Row->Fallback; // new-champions: painted slot, or the role-themed stand-in
+    if(const FString Paragon=CireParagonChampions::DraftBackground(ProfileId);!Paragon.IsEmpty())return Paragon; // paragon-champions: closest-theme painting
+
     return ProfileId;
 }
 UTexture2D* Background(const FString& Id)
@@ -1443,8 +1448,39 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         PanelAlpha=Fade;
     }
 
+    // ---------- SKIN (paragon-champions: Paragon reskins, cycled with the arrows or [ and ]) ----------
+    if(Selected&&!bSelectedBlocked)
+    {
+        const TArray<FString> Skins=CireParagonChampions::Skins(Selected->Id);
+        static TMap<FString,int32> SkinPick; // 0 = default body
+        if(Skins.Num()>0)
+        {
+            int32& Pick=SkinPick.FindOrAdd(Selected->Id);Pick=FMath::Clamp(Pick,0,Skins.Num());
+            const float UIK=FMath::Clamp(BtnR.H/56.f,1.f,1.4f);const float SH=30.f*UIK,SW=FMath::Min(BtnR.W,360.f*UIK);const FRect SkinR{BtnR.X+(BtnR.W-SW)*.5f,BtnR.Y-SH-10.f*UIK,SW,SH};
+            const FRect LeftA{SkinR.X,SkinR.Y,SH,SH},RightA{SkinR.R()-SH,SkinR.Y,SH,SH};
+            const bool bOverL=Interactive&&Hit(LeftA.X,LeftA.Y,LeftA.W,LeftA.H),bOverR=Interactive&&Hit(RightA.X,RightA.Y,RightA.W,RightA.H);
+            CireUIStyle::Button(Pen(),SkinR.X,SkinR.Y,SkinR.W,SkinR.H,FString(),ECireButtonState::Normal,Gold,12.f);
+            CireUIStyle::Button(Pen(),LeftA.X,LeftA.Y,LeftA.W,LeftA.H,TEXT("<"),bOverL?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
+            CireUIStyle::Button(Pen(),RightA.X,RightA.Y,RightA.W,RightA.H,TEXT(">"),bOverR?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
+            FString SkinName=TEXT("Default");if(Pick>0){Skins[Pick-1].Split(TEXT("|"),nullptr,&SkinName);}
+            Line(FString::Printf(TEXT("SKIN  %s  (%d/%d)"),*SkinName.ToUpper(),Pick+1,Skins.Num()+1),SkinR.X+SH+6,SkinR.Y+(SH-LH(12.f*UIK,ECireFont::Heading))*.5f,SkinR.W-2*SH-12,12.f*UIK,BrightGold,SkinR,ECireFont::Heading,1,true);
+            int32 Step=0;
+            if(Clicked&&bOverL){Step=-1;Clicked=false;}else if(Clicked&&bOverR){Step=1;Clicked=false;}
+            if(Interactive&&!bTyping&&PlayerOwner){if(PlayerOwner->WasInputKeyJustPressed(EKeys::LeftBracket))Step=-1;if(PlayerOwner->WasInputKeyJustPressed(EKeys::RightBracket))Step=1;}
+            const FString Key=Pick>0?Skins[Pick-1].Left(Skins[Pick-1].Find(TEXT("|"))):FString();
+            if(Step!=0&&!bLockedView)
+            {
+                Pick=(Pick+Step+Skins.Num()+1)%(Skins.Num()+1);
+                const FString NewKey=Pick>0?Skins[Pick-1].Left(Skins[Pick-1].Find(TEXT("|"))):FString();
+                if(Controller)Controller->ServerSetChampionSkin(Selected->Id,NewKey);
+            }
+            if(Stage&&Stage->GetProfileId()==Selected->Id)Stage->SetPreviewSkin(Pick>0?Skins[Pick-1].Left(Skins[Pick-1].Find(TEXT("|"))):FString());
+            (void)Key;
+        }
+    }
     // ---------- LOCK IN ----------
     {
+
         const bool bCanLock=!bLockedView&&Selected&&!bSelectedBlocked&&!bPending;
         const bool bOver=Interactive&&bCanLock&&Hit(BtnR.X,BtnR.Y,BtnR.W,BtnR.H);
         if(bCanLock)CireUIStyle::Glow(Pen(),BtnR.X-6,BtnR.Y-6,BtnR.W+12,BtnR.H+12,FLinearColor(1.f,.75f,.3f,.26f+.18f*FMath::Sin(static_cast<float>(Now)*3.5f)));

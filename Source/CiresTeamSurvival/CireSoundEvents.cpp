@@ -131,10 +131,16 @@ const CireSoundEvents::FData& CireSoundEvents::Data(bool bReload)
                 }
                 GData.Weapons.Add(FName(*Pair.Key), W);
             }
-    for(const TCHAR* Table : {TEXT("abilities"), TEXT("extraIds")})
+    // paragon-champions: Content/Data/ParagonChampions.json "audio" rows (same shape) for the Paragon abilities.
+    TSharedPtr<FJsonObject> Paragon; FString ParagonText;
+    if(FFileHelper::LoadFileToString(ParagonText, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Data/ParagonChampions.json"))))
+        FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(ParagonText), Paragon);
+    for(const TCHAR* Table : {TEXT("abilities"), TEXT("extraIds"), TEXT("audio")})
     {
         const TSharedPtr<FJsonObject>* Abilities = nullptr;
-        if(!Root->TryGetObjectField(Table, Abilities)) continue;
+        const TSharedPtr<FJsonObject>& Source = FCString::Strcmp(Table, TEXT("audio")) == 0 ? Paragon : Root;
+        if(!Source.IsValid() || !Source->TryGetObjectField(Table, Abilities)) continue;
+
         for(const auto& Pair : (*Abilities)->Values)
             if(const TSharedPtr<FJsonObject> O = Pair.Value->AsObject())
             {

@@ -16,6 +16,11 @@ Only object paths are stored: the packs are licensed and never committed.
   python Tools/InventoryFabVFX.py                    # rescan, keep reviewed fields
   python Tools/InventoryFabVFX.py --catalog DIR      # also fold in reach/colors from a RunFabVFXCatalog gallery.log
   python Tools/InventoryFabVFX.py --summary          # counts per pack and quality
+  python Tools/InventoryFabVFX.py --ratings FILE --catalog DIR   # fold in a review (index|label|A/B/C|look|swirl lines)
+
+Review convention (pack-usage-3): a system that draws nothing on the static catalogue stage at both frames (projectiles,
+dashes, beams, splines: they need motion or a target) is left unrated (quality "") with the tag "stage-blank"; it is not
+a C. "swirl" tags a circular teal / green swirl look (the playtest-6 on-hit complaint): keep those for the few hits that suit.
 """
 from __future__ import annotations
 
@@ -104,20 +109,51 @@ def parse_catalog(directory: Path):
     return out
 
 
+def parse_ratings(path: Path, catalog: Path | None):
+    """{object path or stem: (quality, look, tags)} from review lines 'index|label|Q|look|swirl'."""
+    by_index = {}
+    lst = (catalog / "list.json") if catalog and catalog.is_dir() else None
+    if lst and lst.exists():
+        by_index = {i: s["path"] for i, s in enumerate(json.loads(lst.read_text(encoding="utf-8"))["systems"])}
+    out = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        parts = line.strip().split("|")
+        if len(parts) < 4 or not parts[0].isdigit():
+            continue
+        q, look = parts[2].strip().upper(), parts[3].strip()
+        tags = []
+        if "blank on stage" in look.lower():
+            q, tags = "", ["stage-blank"]
+        if len(parts) > 4 and parts[4].strip() == "1":
+            tags.append("swirl")
+        key = by_index.get(int(parts[0])) or parts[1].split("/")[-1]
+        out[key] = (q if q in ("A", "B", "C") else "", look, tags)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--catalog", type=Path, help="RunFabVFXCatalog capture directory (or its gallery.log) to fold in reach/colors")
     ap.add_argument("--summary", action="store_true")
+    ap.add_argument("--ratings", type=Path, help="review lines index|label|A/B/C|look|swirl (with --catalog for the index -> path map)")
     args = ap.parse_args()
     previous = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
     prev_rows = {r["path"]: r for r in previous.get("systems", [])}
     rows = scan(main_checkout())
     measured = parse_catalog(args.catalog) if args.catalog else {}
+    ratings = parse_ratings(args.ratings, args.catalog) if args.ratings else {}
     for r in rows:
         old = prev_rows.get(r["path"], {})
         for key in ("quality", "look", "tags"):
             if key in old:
                 r[key] = old[key]
+        rated = ratings.get(r["path"]) or ratings.get(r["stem"])
+        if rated:
+            r["quality"], r["look"] = rated[0], rated[1]
+            keep = [t for t in r.get("tags", []) if t not in ("stage-blank", "swirl")]
+            r["tags"] = keep + rated[2]
+            if not r["tags"]:
+                del r["tags"]
         r.setdefault("quality", "")
         r.setdefault("look", "")
         for key in ("colors", "reach"):
