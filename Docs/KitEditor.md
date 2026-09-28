@@ -79,6 +79,11 @@ Values are clamped when the file is read. A malformed file keeps the previous te
 The pool is `CireAbilityDB::All()`, and the champions are `CireChampionRoster::All()`. New abilities (feat/ability-expansion) and new champions
 (feat/paragon-champions) show up with no code change. An unknown `section` value gets its own block after the eight known ones.
 
+Ability Tuner (F7, feat/ability-tuner): cards, names, numbers and tooltips read the live (tuned) rows every frame. The Hero Creator also
+subscribes to `CireAbilityTuner::OnChanged()` (and polls `Version()`): on each change it respawns the looping preview effect (tuned VFX
+scale / tint), drops a selection that no longer exists and shows a status line. Tuner-disabled abilities stay in the pool, dimmed with a
+red "DISABLED BY TUNER" caption; they can still be assigned (templates outlive one match) but cannot be cast while disabled.
+
 ## Code
 
 | File | Contents |
