@@ -258,7 +258,8 @@ bool CireCrowdControl::TickMonster(ACireMonster* M,float)
 void CireCrowdControl::OnAbilityHit(AActor* Source,AActor* Target,const FString& AbilityName)
 {
     if(!IsValid(Source)||!Source->HasAuthority()||!IsValid(Target))return;
-    const FCireAbilityDef* D=CireAbilityDB::FindByName(AbilityName);if(!D)return;
+    const auto* Caster=Cast<ACireHero>(Source); // paragon-names: a shared display name resolves to the caster's own row
+    const FCireAbilityDef* D=CireAbilityDB::FindByNameFor(AbilityName,Caster?&Caster->Skills:nullptr);if(!D)return;
     static const FName Stun(TEXT("stun")),Silence(TEXT("silence")),Interrupt(TEXT("interrupt")),HealCutT(TEXT("healCut")),HealCutDoneT(TEXT("healCutDone")),ArmorT(TEXT("armorBreak"));
     for(const FCireAbilityEffect& E:D->Effects)
     {

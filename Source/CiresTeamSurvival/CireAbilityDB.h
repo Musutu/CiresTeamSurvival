@@ -115,6 +115,13 @@ namespace CireAbilityDB
     CIRESTEAMSURVIVAL_API const FCireAbilityDef* Find(const FString& Id);
     /** Lookup by display name (combat events carry names). */
     CIRESTEAMSURVIVAL_API const FCireAbilityDef* FindByName(const FString& Name);
+    /** paragon-names: display names are not unique once the Paragon packs are installed (Paragon "Soul Hook", "Shield Bash",
+     *  "Starfall"... share names with roster / expansion rows). FindByName keeps the FIRST row registered under a name (roster,
+     *  then expansion, then Paragon), so installing Paragon never re-routes an existing ability. FindByNameFor prefers the
+     *  same-name row the casting champion actually knows (Known = its Skills), so a Paragon hero's hit resolves to its own row. */
+    CIRESTEAMSURVIVAL_API const FCireAbilityDef* FindByNameFor(const FString& Name, const TArray<FString>* Known);
+    /** Every row registered under a display name, in registration order (tests / tools). */
+    CIRESTEAMSURVIVAL_API TArray<const FCireAbilityDef*> AllByName(const FString& Name);
     CIRESTEAMSURVIVAL_API FCireAbilityStats EffectiveStats(const FString& Id, int32 Level);
     /** Tooltip text: current values at Level and what Level+1 adds. */
     CIRESTEAMSURVIVAL_API FString Describe(const FString& Id, int32 Level);
