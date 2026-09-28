@@ -109,4 +109,11 @@ Use the UE python for everything: `F:/UE_5.8/Engine/Binaries/ThirdParty/Python3/
 
 ## Gates
 
-(filled in below as they run)
+All three PASS on b4aa72a6 (main merged, build `Saved/AgentLogs/build-i6.log`):
+* native: CIRE_COMBAT_EXPANSION_PASS (CIRE_MONSTER_ART_PASS checks=15630, CIRE_GRIP_PASS) -
+  `Saved/ExpansionChecks/20260928T045509734171Z/report.json`
+* network: CIRE_NETWORK_SMOKE_PASS - `Saved/NetworkSmoke/20260928T051327292158Z/report.json`
+* interface: CIRE_INTERFACE_SMOKE_PASS - `Saved/InterfaceSmoke/20260928T051409202170Z/report.json`
+* Earlier network/interface failures were client/server startup timeouts during the Paragon asset scan (environmental; the
+  coordinator has since unlinked Paragon from this worktree).
+* Monster grip gallery (12 stages): `Saved/MonsterGallery/20260928-051531`.
