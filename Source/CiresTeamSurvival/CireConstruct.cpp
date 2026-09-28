@@ -8,6 +8,7 @@
 #include "CireSpellPresentation.h"
 #include "CireTechConstructs.h" // new-champions
 #include "CireAreaEffects.h" // new-champions: pylon fields
+#include "CireNav.h" // casting-rules: placement snaps to the navmesh
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -91,17 +92,28 @@ bool ACireConstruct::ValidatePlacementFor(AActor* Source, const FCireConstructSp
     const int32 SourceTeam = CireSkillRuntime::Team(Source);
     if (SourceTeam < 0 || SourceTeam > 1) return Fail(TEXT("Construct owner has no team"));
     auto* Mode = Source->GetWorld()->GetAuthGameMode<ACireGameMode>();
-    if (!Mode || !Mode->IsCombatPhase() || FVector::DistSquared2D(Source->GetActorLocation(), Ground) > FMath::Square(Spec.CastRange)) return Fail(TEXT("Construct is outside casting range"));
+    if (!Mode || !Mode->IsCombatPhase()) return Fail(TEXT("Construct is outside casting range"));
+    // casting-rules (Playtest 6): placement IGNORES clipping. A slightly long aim is pulled back into range, the footprint
+    // snaps onto the navmesh / ground under the aim, and slopes, ledges, props, units or other constructs never refuse a
+    // spot (units caught inside a new wall are let through by RefreshMovementExceptions). Only the realm and the castle
+    // goal zone remain rules.
+    const FVector From = Source->GetActorLocation();
+    const float Reach = FVector::Dist2D(From, Ground);
+    if (Reach > Spec.CastRange * 1.25f + 50.f) return Fail(TEXT("Construct is outside casting range"));
+    if (Reach > Spec.CastRange) { const FVector Dir = (Ground - From).GetSafeNormal2D(); Ground.X = From.X + Dir.X * Spec.CastRange; Ground.Y = From.Y + Dir.Y * Spec.CastRange; }
+    SnapToGround(Source->GetWorld(), Ground);
     const FQuat Rotation = FRotator(0, Heading.Yaw, 0).Quaternion();
     const FVector Half = Extents(Spec);
-    // Test the oriented footprint, including its edges, against town and realm.
-    // Sampling edges catches a wall spanning town while its corners lie outside.
-    for (int32 X = -1; X <= 1; ++X)
-        for (int32 Y = -1; Y <= 1; ++Y)
-        {
-            const FVector P = Ground + Rotation.RotateVector(FVector(X * Half.X, Y * Half.Y, 0));
-            if (!CireSkillRuntime::InRealmBounds(Mode, SourceTeam, P, 10)) return Fail(TEXT("Construct footprint crosses the realm boundary"));
-        }
+    // Test the oriented footprint, including its edges, against town and realm; a footprint poking over the realm edge is
+    // pulled back toward the caster first. Sampling edges catches a wall spanning town while its corners lie outside.
+    auto InRealm = [&](const FVector& Center)
+    {
+        for (int32 X = -1; X <= 1; ++X) for (int32 Y = -1; Y <= 1; ++Y)
+            if (!CireSkillRuntime::InRealmBounds(Mode, SourceTeam, Center + Rotation.RotateVector(FVector(X * Half.X, Y * Half.Y, 0)), 10)) return false;
+        return true;
+    };
+    for (int32 Step = 0; Step < 6 && !InRealm(Ground); ++Step) { const FVector Back = (From - Ground).GetSafeNormal2D() * 60.f; Ground.X += Back.X; Ground.Y += Back.Y; }
+    if (!InRealm(Ground)) return Fail(TEXT("Construct footprint crosses the realm boundary"));
     if (Mode->Clock.Phase() != Cires::MatchPhase::Arena)
     {
         // Separating-axis rectangle test prevents thin rotated walls clipping town.
@@ -115,41 +127,22 @@ bool ACireConstruct::ValidatePlacementFor(AActor* Source, const FCireConstructSp
             FMath::Abs(FVector::DotProduct(Offset, YAxis)) > Half.Y + TE.X * FMath::Abs(YAxis.X) + TE.Y * FMath::Abs(YAxis.Y);
         if (!bSeparated || IsTown(Ground, SourceTeam)) return Fail(TEXT("Construct overlaps town"));
     }
-    FCollisionQueryParams Params(SCENE_QUERY_STAT(CireConstructPlacement), false);
-    FCollisionObjectQueryParams GroundObjects(ECC_WorldStatic);
-    FHitResult Floor;
-    if (!Source->GetWorld()->LineTraceSingleByObjectType(Floor, Ground + FVector(0, 0, 300), Ground - FVector(0, 0, 500), GroundObjects, Params) || Floor.ImpactNormal.Z < .9f)
-        return Fail(TEXT("Construct requires level supporting ground"));
-    Ground.Z = Floor.ImpactPoint.Z + 3.f;
-    // All four corners must have support at the same height; no hovering over ledges.
-    for (int32 X : {-1, 1}) for (int32 Y : {-1, 1})
-    {
-        const FVector P = Ground + Rotation.RotateVector(FVector(X * Half.X, Y * Half.Y, 0));
-        FHitResult Support;
-        if (!Source->GetWorld()->LineTraceSingleByObjectType(Support, P + FVector(0, 0, 40), P - FVector(0, 0, 50), GroundObjects, Params) ||
-            Support.ImpactNormal.Z < .9f || FMath::Abs(Support.ImpactPoint.Z + 3.f - Ground.Z) > 12.f) return Fail(TEXT("Construct footprint lacks level ground"));
-    }
-    FCollisionObjectQueryParams Objects;
-    Objects.AddObjectTypesToQuery(ECC_WorldStatic); Objects.AddObjectTypesToQuery(ECC_WorldDynamic); Objects.AddObjectTypesToQuery(ECC_Pawn);
-    TArray<FOverlapResult> Overlaps;
-    Source->GetWorld()->OverlapMultiByObjectType(Overlaps, Ground + FVector(0, 0, Half.Z), Rotation, Objects, FCollisionShape::MakeBox(Half), Params);
-    for (const auto& Overlap : Overlaps)
-    {
-        if (!Overlap.GetComponent()) continue;
-        // new-champions: tech constructs do not block units, so only solid world geometry, walls and other tech rule them out.
-        if (Spec.IsTech())
-        {
-            if (const auto* Other = Cast<ACireConstruct>(Overlap.GetActor()))
-            {
-                if (Spec.Kind != ECireConstructKind::Skitter && Other->ConstructSpec.Kind != ECireConstructKind::Skitter) return Fail(TEXT("Construct overlaps another construct"));
-                continue;
-            }
-            if (Cast<ACharacter>(Overlap.GetActor())) continue;
-        }
-        if (Cast<ACharacter>(Overlap.GetActor()) || Cast<ACireConstruct>(Overlap.GetActor()) ||
-            Overlap.GetComponent()->GetCollisionResponseToChannel(ECC_Pawn) == ECR_Block) return Fail(TEXT("Construct overlaps a unit, wall, or world object"));
-    }
+    Ground.Z += 3.f;
     return true;
+}
+
+bool ACireConstruct::SnapToGround(const UWorld* World, FVector& Point, float AgentRadius)
+{
+    if (!World || Point.ContainsNaN()) return false;
+    bool bFound = false;
+    FVector Nav;
+    if (CireNav::HasNavigation(World) && CireNav::Project(World, Point, Nav, FVector(220, 220, 900), AgentRadius)) { Point = Nav; bFound = true; }
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(CireSnapToGround), false);
+    FHitResult Floor;
+    // Exact surface height under the (possibly nav-corrected) point: from just above, so a roof above is not picked.
+    if (World->LineTraceSingleByObjectType(Floor, Point + FVector(0, 0, bFound ? 120 : 300), Point - FVector(0, 0, bFound ? 200 : 800), FCollisionObjectQueryParams(ECC_WorldStatic), Params))
+    { Point.Z = Floor.ImpactPoint.Z; bFound = true; }
+    return bFound;
 }
 
 ACireConstruct* ACireConstruct::Spawn(ACireHero* Source, const FCireConstructSpec& InputSpec, FVector Ground, FRotator Heading, const FString& Name)

@@ -45,6 +45,16 @@ bool ACireSkillshot::ValidateSpec(const FCireSkillshotSpec& S, FString* Error)
 ACireSkillshot* ACireSkillshot::Spawn(AActor* Source, const FCireSkillshotSpec& InputSpec, FVector AimPoint, const FString& Name)
 {
     FCireSkillshotSpec Spec=InputSpec;if(Source)CireDeveloperTools::AdjustSkillshot(Source->GetWorld(),Spec);
+    // casting-rules (Playtest 6): champion projectiles visually carry through their target, so they pierce to match.
+    bool bRulePierce = false;
+    if (CireSkillTuning::ShouldPierce(Source, !Name.IsEmpty() ? Name : Spec.AbilityName) &&
+        (Spec.PlayerCollision == ECireProjectileCollision::Stop || Spec.MonsterCollision == ECireProjectileCollision::Stop))
+    {
+        if (Spec.PlayerCollision == ECireProjectileCollision::Stop) Spec.PlayerCollision = ECireProjectileCollision::Pierce;
+        if (Spec.MonsterCollision == ECireProjectileCollision::Stop) Spec.MonsterCollision = ECireProjectileCollision::Pierce;
+        Spec.HitLimit = FMath::Max(Spec.HitLimit, CireSkillTuning::CastRules().PierceHitLimit);
+        bRulePierce = true;
+    }
     if (!CireSkillRuntime::Alive(Source) || !Source->HasAuthority() || !ValidateSpec(Spec) || AimPoint.ContainsNaN() || Name.Len() > 80) return nullptr;
     UWorld* World = Source->GetWorld();
     auto* Mode = World->GetAuthGameMode<ACireGameMode>();
@@ -66,6 +76,7 @@ ACireSkillshot* ACireSkillshot::Spawn(AActor* Source, const FCireSkillshotSpec& 
     Result->AbilityName = !Name.IsEmpty() ? Name : !Spec.AbilityName.IsEmpty() ? Spec.AbilityName : TEXT("Skillshot");
     Result->StartServerTime = World->GetTimeSeconds();
     Result->bReleased = Spec.WarningSeconds <= 0;
+    if (bRulePierce) { Result->PierceFalloff = CireSkillTuning::CastRules().PierceFalloff; Result->PierceMinDamage = CireSkillTuning::CastRules().PierceMinDamage; }
     Result->FinishSpawning(Transform);
     return Result;
 }
@@ -200,7 +211,8 @@ void ACireSkillshot::Travel(float Distance)
             if (!PreviousHit || (ShotSpec.bHitSameTargetAgain && *PreviousHit != ReflectionCount))
             {
                 HitGeneration.Add(Target, ReflectionCount); ++HitCount;
-                const float Dealt=CireCombat::ApplyStrike(SourceActor, Target, ShotSpec.Damage, AbilityName, ShotSpec.bCanCrit);
+                const float HitDamage = ShotSpec.Damage * FMath::Max(PierceMinDamage, 1.f - PierceFalloff * (HitCount - 1)); // casting-rules: pierce falloff
+                const float Dealt=CireCombat::ApplyStrike(SourceActor, Target, HitDamage, AbilityName, ShotSpec.bCanCrit);
                 if(Dealt>0&&CireCombat::IsAlive(Target)&&AbilityName==TEXT("Frost Bind")){
                     const float Until=GetWorld()->GetTimeSeconds()+CireDeveloperTools::EffectSeconds(GetWorld(),4.f);
                     if(auto* Hero=Cast<ACireHero>(Target)){Hero->SlowUntil=FMath::Max(Hero->SlowUntil,Until);Hero->ForceNetUpdate();}

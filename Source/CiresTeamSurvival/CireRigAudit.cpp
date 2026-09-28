@@ -259,7 +259,7 @@ bool CireRigAudit::Initialize(ACireGameMode* Mode)
             UAnimSequence* Clip = LoadObject<UAnimSequence>(nullptr, *(*Clips)[C], nullptr, LOAD_NoWarn | LOAD_Quiet);
             if (!Clip) continue;
             const float Length = Clip->GetPlayLength();
-            float ClipWorst = 180.f, ClipTwist = 0.f; int32 ClipHyper = 0, ClipTwisted = 0;
+            float ClipWorst = 180.f, ClipTwist = 0.f; int32 ClipHyper = 0, ClipTwisted = 0; int32 WorstSide = -1; float WorstAt = 0.f;
             for (int32 S = 0; S < 12; ++S)
             {
                 TArray<FTransform> Pose;
@@ -269,7 +269,7 @@ bool CireRigAudit::Initialize(ACireGameMode* Mode)
                     const FArm A = MeasurePose(*Body, Pose, bRight);
                     if (!A.bValid) continue;
                     ++Samples;
-                    ClipWorst = FMath::Min(ClipWorst, A.ElbowDeg);
+                    if (A.ElbowDeg < ClipWorst) { ClipWorst = A.ElbowDeg; WorstSide = bRight ? 1 : 0; WorstAt = Length * (S + .5f) / 12.f; }
                     if (FMath::Abs(A.TwistDeg) > FMath::Abs(ClipTwist)) ClipTwist = A.TwistDeg;
                     ClipHyper += IsDefect(A); ClipTwisted += FMath::Abs(A.TwistDeg) > 150.f; // twist: reported only
                 }
@@ -282,6 +282,7 @@ bool CireRigAudit::Initialize(ACireGameMode* Mode)
                 TSharedPtr<FJsonObject> B = MakeShared<FJsonObject>();
                 B->SetStringField(TEXT("clip"), (*Clips)[C]); B->SetNumberField(TEXT("worstElbow"), ClipWorst); B->SetNumberField(TEXT("worstTwist"), ClipTwist);
                 B->SetNumberField(TEXT("hyperSamples"), ClipHyper); B->SetNumberField(TEXT("twistSamples"), ClipTwisted);
+                B->SetStringField(TEXT("worstSide"), WorstSide == 1 ? TEXT("r") : WorstSide == 0 ? TEXT("l") : TEXT("-")); B->SetNumberField(TEXT("worstAt"), WorstAt);
                 BadClips.Add(MakeShared<FJsonValueObject>(B));
             }
         }

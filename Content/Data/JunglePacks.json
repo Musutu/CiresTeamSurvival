@@ -1,12 +1,30 @@
 {
-  "schemaVersion": 1,
-  "_comment": "jungle-packs (Docs/JunglePacks.md): challenge packs as jungle mobs. tiers[i]: abilities = non-basic abilities each pack monster uses (\"full\" = its complete kit), health / damage = multipliers on top of the challenge curve (health already grows 1 + 0.65 x (tier - 1) in Cires::ChallengeHealthMultiplier), gold = multiplier on every pack kill's bounty, unlockRound / unlockWave = when packs of that tier first appear (round = match cycle). kitFloor: every pack unit's complete kit is topped up to at least this many abilities from its race (so T4 > T3). leader.healthMultiplier: the pack's first tank leads it. families: creatures outside every race borrow abilities from this race (they only appear in Mixed packs). exclude: never in packs (non-combat bonus creatures).",
+  "schemaVersion": 2,
+  "_comment": "jungle-packs + pack-formations (Docs/JunglePacks.md): challenge packs as jungle mobs. tiers[i]: abilities = non-basic abilities each pack monster uses (\"full\" = its complete kit), health / damage = per-tier multipliers on the challenge-mob stats below, gold = multiplier on every pack kill's bounty, unlockRound / unlockWave = when authored packs of that tier first appear (round = match cycle; 1 / 1 = from the start, so every authored pack spawns). stats: baseDamage (every role), tankHealth, the other roles' health as shares of the tank's, and the global multipliers (live in F8 > Packs and the layout editor; SAVE writes this file). formations: the preset formation per pack size 3..8 (Eric's pack-formations.png), each slot a role (tank / healer / dps) at forward (toward the pack's facing, the front) and right, in formation units (1 = one monster spacing, about half the pack radius in cm). kitFloor: every pack unit's complete kit is topped up to at least this many abilities from its race (so T4 > T3). leader.healthMultiplier: the pack's first tank leads it. families: creatures outside every race borrow abilities from this race (they only appear in Mixed packs). exclude: never in packs (non-combat bonus creatures).",
   "tiers": [
     { "tier": 1, "abilities": 2, "health": 1.0, "damage": 1.0, "gold": 1.0, "unlockRound": 1, "unlockWave": 1 },
-    { "tier": 2, "abilities": 3, "health": 1.0, "damage": 1.1, "gold": 1.5, "unlockRound": 1, "unlockWave": 3 },
-    { "tier": 3, "abilities": 5, "health": 1.0, "damage": 1.25, "gold": 2.25, "unlockRound": 2, "unlockWave": 1 },
-    { "tier": 4, "abilities": "full", "health": 1.0, "damage": 1.4, "gold": 3.0, "unlockRound": 3, "unlockWave": 1 }
+    { "tier": 2, "abilities": 3, "health": 1.65, "damage": 1.1, "gold": 1.5, "unlockRound": 1, "unlockWave": 1 },
+    { "tier": 3, "abilities": 5, "health": 2.3, "damage": 1.25, "gold": 2.25, "unlockRound": 1, "unlockWave": 1 },
+    { "tier": 4, "abilities": "full", "health": 2.95, "damage": 1.4, "gold": 3.0, "unlockRound": 1, "unlockWave": 1 }
   ],
+  "stats": {
+    "baseDamage": 200,
+    "tankHealth": 1500,
+    "healerShare": 0.5,
+    "meleeShare": 0.75,
+    "rangedShare": 0.65,
+    "casterShare": 0.65,
+    "globalHealth": 1.0,
+    "globalDamage": 1.0
+  },
+  "formations": {
+    "3": [ { "role": "tank", "forward": 0.35, "right": 0 }, { "role": "healer", "forward": -0.18, "right": 0.53 }, { "role": "dps", "forward": -0.18, "right": -0.53 } ],
+    "4": [ { "role": "tank", "forward": 0.26, "right": 0.31 }, { "role": "tank", "forward": 0.26, "right": -0.83 }, { "role": "healer", "forward": -0.26, "right": 0.79 }, { "role": "dps", "forward": -0.27, "right": -0.26 } ],
+    "5": [ { "role": "tank", "forward": 0.57, "right": 0 }, { "role": "dps", "forward": 0.28, "right": -0.85 }, { "role": "dps", "forward": 0.28, "right": 0.85 }, { "role": "healer", "forward": -0.55, "right": 1.23 }, { "role": "healer", "forward": -0.55, "right": -1.23 } ],
+    "6": [ { "role": "dps", "forward": 0.42, "right": -1.5 }, { "role": "dps", "forward": 0.42, "right": 1.5 }, { "role": "tank", "forward": 0.12, "right": 0.57 }, { "role": "tank", "forward": 0.12, "right": -0.57 }, { "role": "healer", "forward": -0.55, "right": -1.15 }, { "role": "healer", "forward": -0.55, "right": 1.15 } ],
+    "7": [ { "role": "dps", "forward": 0.5, "right": -1.5 }, { "role": "dps", "forward": 0.5, "right": 1.5 }, { "role": "tank", "forward": 0.2, "right": 0.57 }, { "role": "tank", "forward": 0.2, "right": -0.57 }, { "role": "healer", "forward": -0.47, "right": -1.15 }, { "role": "healer", "forward": -0.47, "right": 1.15 }, { "role": "dps", "forward": -0.47, "right": 0 } ],
+    "8": [ { "role": "tank", "forward": 0.78, "right": 0 }, { "role": "dps", "forward": 0.4, "right": -1.5 }, { "role": "dps", "forward": 0.4, "right": 1.5 }, { "role": "tank", "forward": 0.1, "right": 0.62 }, { "role": "tank", "forward": 0.1, "right": -0.62 }, { "role": "healer", "forward": -0.58, "right": 1.15 }, { "role": "dps", "forward": -0.58, "right": 0 }, { "role": "healer", "forward": -0.58, "right": -1.15 } ]
+  },
   "kitFloor": 6,
   "leader": { "healthMultiplier": 1.5 },
   "families": { "storm_griffon": "feral_kin", "frostfang_alpha": "feral_kin", "cinder_drake": "drakkari" },

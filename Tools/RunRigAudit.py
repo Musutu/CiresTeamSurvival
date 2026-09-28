@@ -33,7 +33,7 @@ def summarize(path: Path) -> str:
                          f"bind={b['bindElbowL']:.1f}/{b['bindElbowR']:.1f}")
             for c in sorted(b["badClips"], key=lambda c: -c["hyperSamples"])[:6]:
                 if c["hyperSamples"]:
-                    lines.append(f"      {c['clip'].split('.')[-1]:52s} samples={c['hyperSamples']:3d} worstElbow={c['worstElbow']:7.1f}")
+                    lines.append(f"      {c['clip'].split('.')[-1]:52s} samples={c['hyperSamples']:3d} worstElbow={c['worstElbow']:7.1f} side={c.get('worstSide','-')} at={c.get('worstAt',0):.2f}s")
     return "\n".join(lines)
 
 

@@ -531,8 +531,23 @@ void UCireCreatureArt::AttachProps(ACireHero& Hero,USkeletalMeshComponent* Body,
         Part->SetStaticMesh(PropMesh);Prepare(*Part);Part->SetCastShadow(true);Part->ComponentTags.AddUnique(TEXT("CireWeaponProp"));
         const CireGrip::FWeapon* Grip=(Bone==TEXT("hand_l")||Bone==TEXT("hand_r"))?CireGrip::FindWeapon(PropMesh):nullptr;
         CireGrip::FWeapon Pointed=Grip?*Grip:CireGrip::FWeapon();if(Grip)Pointed.Axis=CireWeapons::BusinessAxis(*PropMesh,*Grip); // blender-rig
-        const CireGrip::FPlacement Placement=Grip?CireGrip::Place(Skeletal,Bone,Pointed,1.f,BodyScale):CireGrip::FPlacement();
-        if(Placement.bValid){Part->SetupAttachment(Body,Placement.Bone);Part->SetRelativeTransform(Placement.Relative);}
+        // blender-rig: WeaponLoadouts.json sizeClasses on held creature/rider weapons too (1H and maces 2x, capped at the
+        // class's fraction of the body's bind height, girth kept closable by a handle-axis stretch).
+        FString SizeClass;float Size=1.f,Girth=1.f,Cap=0.f;
+        if(Grip&&CireWeapons::HeldSizeClass(*PropMesh,*Grip,SizeClass,Size,Girth,Cap))
+        {
+            const FReferenceSkeleton& Ref=Skeletal.GetRefSkeleton();
+            const bool bHuman=Ref.FindBoneIndex(TEXT("head"))!=INDEX_NONE&&Ref.FindBoneIndex(TEXT("foot_l"))!=INDEX_NONE;
+            const float Height=bHuman?static_cast<float>(RefComponent(Skeletal,TEXT("head")).GetLocation().Z-RefComponent(Skeletal,TEXT("foot_l")).GetLocation().Z)*1.1f*BodyScale:0.f;
+            const float Length=static_cast<float>(PropMesh->GetBounds().BoxExtent.GetMax()*2);
+            if(Cap>0.f&&Height>50.f&&Length*Size>Cap*Height)Size=FMath::Max(1.f,Cap*Height/Length);
+            Part->ComponentTags.AddUnique(FName(*(TEXT("CireSizeClass_")+SizeClass)));
+        }
+        else Girth=1.f;
+        const CireGrip::FPlacement Placement=Grip?CireGrip::Place(Skeletal,Bone,Pointed,Size*Girth,BodyScale):CireGrip::FPlacement();
+        const bool bSized=Placement.bValid&&(Size>1.001f||Size<.999f);
+        if(Placement.bValid){Part->SetupAttachment(Body,Placement.Bone);Part->SetRelativeTransform(Placement.Relative);
+            if(Girth<.999f)Part->SetRelativeTransform(CireWeapons::HandleStretch(*Grip,1.f/Girth)*Part->GetRelativeTransform());}
         else
         {
             // Holstered / belt props: an offset in real centimetres on the bone, props at world scale 1.
@@ -545,7 +560,7 @@ void UCireCreatureArt::AttachProps(ACireHero& Hero,USkeletalMeshComponent* Body,
             const float BoneScale=FMath::Max(.0001f,static_cast<float>(BoneRef.GetScale3D().GetAbsMax())*BodyScale);
             Part->SetRelativeLocation(Offset/BoneScale);Part->SetRelativeRotation(Rotation);
         }
-        Part->SetAbsolute(false,false,true);Part->SetWorldScale3D(FVector::OneVector);
+        if(!bSized){Part->SetAbsolute(false,false,true);Part->SetWorldScale3D(FVector::OneVector);} // a sized prop keeps its placed scale
         Part->RegisterComponent();Props.Add(Part);
     }
 }

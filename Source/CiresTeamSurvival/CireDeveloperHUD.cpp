@@ -64,9 +64,11 @@ void ACireHUD::DrawDeveloperPanel(float X,float Y)
     // wave-director: an eighth "Waves" page (id 7) hosts the live wave composer.
     // nav-paths: a ninth "Paths" page (id 8) hosts the route/navmesh page and opens the in-world path editor.
     // progression-shop: a tenth "Economy" page (id 9) edits kill gold and the Skill Shop live.
-    const TCHAR* Pages[]={TEXT("Quick start"),TEXT("Match"),TEXT("Spawn/stats"),TEXT("Waves"),TEXT("Paths"),TEXT("Economy"),TEXT("Effects"),TEXT("Movement"),TEXT("Balance lab"),TEXT("Replays")};
-    const int32 PageIds[]={5,0,1,7,8,9,2,6,3,4};
-    for(int32 I=0;I<10;++I){if(DeveloperPage==PageIds[I])Panel(X+I*62-2,Y-3,62,31,Hover);if(Button(Pages[I],X+I*62,Y,59))DeveloperPage=PageIds[I];}
+    // pack-formations: an eleventh "Packs" page (id 10) edits the challenge-mob stats live.
+    const TCHAR* Pages[]={TEXT("Quick start"),TEXT("Match"),TEXT("Spawn/stats"),TEXT("Waves"),TEXT("Paths"),TEXT("Economy"),TEXT("Packs"),TEXT("Effects"),TEXT("Movement"),TEXT("Balance lab"),TEXT("Replays")};
+    const int32 PageIds[]={5,0,1,7,8,9,10,2,6,3,4};
+    for(int32 I=0;I<11;++I){if(DeveloperPage==PageIds[I])Panel(X+I*56-2,Y-3,56,31,Hover);if(Button(Pages[I],X+I*56,Y,53))DeveloperPage=PageIds[I];}
+    if(DeveloperPage==10){DrawPackStatsPage(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+418,595,10,Gold,2);return;}
     if(DeveloperPage==9){DrawEconomyPage(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+418,595,10,Gold,2);return;}
     if(DeveloperPage==7){DrawWaveEditor(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+444,595,10,Gold,2);return;} // monster-expansion: one more row (rares, bonus wave)
     if(DeveloperPage==8){DrawRoutePage(X,Y);if(!DeveloperMessage.IsEmpty())Wrapped(DeveloperMessage,X,Y+418,595,10,Gold,2);return;}

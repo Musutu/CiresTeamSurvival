@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "_comment": "Wave game-mode presets (Docs/Waves.md). Hosting lists them under GAME TYPE. defaultDamage: every wave attacks heroes (true) or only paths to the castle (false); defaultFightBack: packs (1-based) that fight back when a wave's damage is off; waves: per-wave overrides {wave, damage, fightBack}; scale: live health/damage/speed; packSizeBonus: added to every pack; pvpAfterWaves: optional PvP schedule override. Save the current F8 settings as a preset with F8 > Waves > Modes & Scale.",
+  "presets": [
+    {
+      "id": "standard",
+      "label": "Standard",
+      "description": "Every wave fights the heroes, except the armored marches. 25 waves, 4 PvP rounds, then Sudden Death.",
+      "builtIn": true,
+      "defaultDamage": true,
+      "defaultFightBack": [],
+      "waves": [],
+      "scale": {
+        "health": 1,
+        "damage": 1,
+        "speed": 1
+      },
+      "packSizeBonus": 0
+    },
+    {
+      "id": "hero_td",
+      "label": "Hero TD / PvP",
+      "description": "Pure hero tower defence: waves never attack, they path to the castle like armored rounds. Stop them before the gate.",
+      "builtIn": true,
+      "defaultDamage": false,
+      "defaultFightBack": [],
+      "waves": [],
+      "scale": {
+        "health": 1,
+        "damage": 1,
+        "speed": 1
+      },
+      "packSizeBonus": 0
+    },
+    {
+      "id": "hybrid",
+      "label": "Hybrid",
+      "description": "Hero TD with teeth: waves march to the castle, but the vanguard, middle and rear-guard packs (1, 4, 7) fight back, and boss waves fight in full.",
+      "builtIn": true,
+      "defaultDamage": false,
+      "defaultFightBack": [
+        1,
+        4,
+        7
+      ],
+      "waves": [
+        {
+          "wave": 5,
+          "damage": true
+        },
+        {
+          "wave": 10,
+          "damage": true
+        },
+        {
+          "wave": 15,
+          "damage": true
+        },
+        {
+          "wave": 20,
+          "damage": true
+        },
+        {
+          "wave": 25,
+          "damage": true
+        }
+      ],
+      "scale": {
+        "health": 1,
+        "damage": 1,
+        "speed": 1
+      },
+      "packSizeBonus": 0
+    }
+  ]
+}

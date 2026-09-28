@@ -51,6 +51,8 @@ public:
     UPROPERTY(Replicated) FString Announcement;
     // progression-shop: skill progression mode, 0 = Classic Draft (level-up offers), 1 = Skill Shop (default).
     UPROPERTY(Replicated) uint8 ProgressionMode = 1;
+    // waves-modes: the host's game type (a WavePresets.json id: standard, hero_td, hybrid, or a saved custom preset).
+    UPROPERTY(Replicated) FName WavePreset;
     // wave-director: current / next wave for the match plate (CireWaves.h).
     UPROPERTY(Replicated) FString WaveLabel;
     UPROPERTY(Replicated) FString NextWaveLabel;

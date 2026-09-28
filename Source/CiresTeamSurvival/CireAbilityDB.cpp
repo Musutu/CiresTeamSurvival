@@ -1,6 +1,7 @@
 #include "CireAbilityDB.h"
 #include "CireAbilityShapes.h" // aoe-scale
 #include "CireChampionProfiles.h"
+#include "CireSkillTuning.h" // casting-rules
 #include "CireChampionRoster.h"
 #include "CireKitEditor.h" // kit-editor: champion kit templates join the purchasable lists
 #include "Dom/JsonObject.h"
@@ -131,6 +132,7 @@ bool CireAbilityDB::ParseJson(const FString& Json,TArray<FCireAbilityDef>& OutAb
             U.bValid=D.IsUltimate()&&U.Effects.Num()>0;
             if(!U.bValid)return Fail(TEXT("ultimateUpgrade needs an ultimate with effects: ")+D.Id);
         }
+        CireSkillTuning::ApplyCastRules(D,Str(J,TEXT("castRule")),J->HasField(TEXT("castWhileMoving"))); // casting-rules: formula cast times + heal scale
         Seen.Add(D.Id);Parsed.Add(MoveTemp(D));
     }
     TMap<FString,FCireChampionKit> Kits;
@@ -167,6 +169,24 @@ bool CireAbilityDB::Reload()
     const FString Path=FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/Abilities.json"));
     if(!FFileHelper::LoadFileToString(Json,*Path)||!ParseJson(Json,A,K,M,Error))
     {UE_LOG(LogCireAbilityDB,Error,TEXT("Ability database rejected; keeping previous: %s"),*Error);return false;}
+    // ability-expansion: Content/Data/AbilitiesExpansion.json (same row format) is merged additively: new rows only,
+    // each champion's purchasable list grows by the expansion ids listed for it, buff modifier rows join the table.
+    FString XJson,XError;TArray<FCireAbilityDef> XA;TMap<FString,FCireChampionKit> XK;TMap<FName,TArray<FCireModifier>> XM;
+    if(FFileHelper::LoadFileToString(XJson,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/AbilitiesExpansion.json"))))
+    {
+        if(!ParseJson(XJson,XA,XK,XM,XError)){UE_LOG(LogCireAbilityDB,Error,TEXT("Ability expansion rejected: %s"),*XError);}
+        else
+        {
+            TSet<FString> Have;for(const auto& D:A)Have.Add(D.Id);
+            for(auto& D:XA){if(Have.Contains(D.Id)){UE_LOG(LogCireAbilityDB,Warning,TEXT("Expansion row %s duplicates a base ability; skipped"),*D.Id);continue;}Have.Add(D.Id);A.Add(MoveTemp(D));}
+            for(const auto& Pair:XK)if(FCireChampionKit* Base=K.Find(Pair.Key))
+            {
+                for(const FString& S:Pair.Value.Purchasable)Base->Purchasable.AddUnique(S);
+                for(const FString& S:Pair.Value.PurchasableImplemented)Base->PurchasableImplemented.AddUnique(S);
+            }
+            for(auto& Pair:XM)if(!M.Contains(Pair.Key))M.Add(Pair.Key,MoveTemp(Pair.Value));
+        }
+    }
     GAbilities=MoveTemp(A);GKits=MoveTemp(K);GModifiers=MoveTemp(M);GIndex.Reset();GNameIndex.Reset();
     for(int32 I=0;I<GAbilities.Num();++I){GIndex.Add(GAbilities[I].Id,I);GNameIndex.Add(GAbilities[I].Name,I);}
     CireKitEditor::MergeIntoKits(GKits); // kit-editor: saved base kits are purchasable (Content/Data/ChampionKitTemplates.json)
@@ -191,7 +211,8 @@ FCireAbilityStats CireAbilityDB::EffectiveStats(const FString& Id,int32 Level)
 FString CireAbilityDB::Describe(const FString& Id,int32 Level)
 {
     const FCireAbilityDef* D=Find(Id);if(!D)return FString();
-    const FCireAbilityStats Now=EffectiveStats(Id,Level),Next=EffectiveStats(Id,Level+1);
+    FCireAbilityStats Now=EffectiveStats(Id,Level),Next=EffectiveStats(Id,Level+1);
+    if(D->ScaleComponent==TEXT("heal")){Now.Effect*=D->HealScale;Next.Effect*=D->HealScale;} // casting-rules: tooltips show the healing actually applied
     FString Text=D->Description.Replace(TEXT("{effect}"),*Trim(Now.Effect));
     TArray<FString> Parts;
     Parts.Add(FString::Printf(TEXT("Level %d"),Now.Level));
@@ -201,7 +222,8 @@ FString CireAbilityDB::Describe(const FString& Id,int32 Level)
     if(Now.Cooldown>0)Parts.Add(FString::Printf(TEXT("%.1fs cooldown (-%.1fs)"),Now.Cooldown,Now.Cooldown-Next.Cooldown));
     if(Now.CastTime>0)Parts.Add(FString::Printf(TEXT("%.1fs cast"),Now.CastTime));
     FString Extra; // scaling-kits: universal primary scaling + level-15 line
-    if(D->ScalePrimary>0)Extra+=FString::Printf(TEXT("\n%s + %sx Primary %s"),*Trim(D->ScaleBase),*FString::SanitizeFloat(D->ScalePrimary,0),*ScalingWord(*D));
+    const float Hs=D->ScaleComponent==TEXT("heal")?D->HealScale:1.f; // casting-rules
+    if(D->ScalePrimary>0)Extra+=FString::Printf(TEXT("\n%s + %sx Primary %s"),*Trim(D->ScaleBase*Hs),*FString::SanitizeFloat(D->ScalePrimary*Hs,0),*ScalingWord(*D));
     else if(D->PotencyPerPoint>0)Extra+=FString::Printf(TEXT("\nPotency: +%s%% effect per Primary (max +%.0f%%)"),*FString::SanitizeFloat(D->PotencyPerPoint,0),D->PotencyCap); // kits-complete
     const FString L15=!D->Aura15Label.IsEmpty()?D->Aura15Label:D->Level15Label;
     if(!L15.IsEmpty())Extra+=TEXT("\n")+L15;
@@ -246,6 +268,15 @@ bool CireAbilityDB::RunSmoke()
     int32 Checks=0;bool bPass=true;
     const auto Check=[&](bool b,const TCHAR* Why){++Checks;if(!b){bPass=false;UE_LOG(LogCireAbilityDB,Error,TEXT("CIRE_ABILITY_DB_FAIL %s"),Why);}};
     Check(Reload()&&All().Num()>=100,TEXT("database loads 100+ abilities"));
+    // ability-expansion: the expansion file merges (rows + champion purchasable lists).
+    {
+        FString XJson,XError;TArray<FCireAbilityDef> XA;TMap<FString,FCireChampionKit> XK;TMap<FName,TArray<FCireModifier>> XM;
+        const bool bParsed=FFileHelper::LoadFileToString(XJson,*FPaths::Combine(FPaths::ProjectContentDir(),TEXT("Data/AbilitiesExpansion.json")))&&ParseJson(XJson,XA,XK,XM,XError);
+        Check(bParsed&&XA.Num()>0,TEXT("AbilitiesExpansion.json parses"));
+        bool bMerged=true;for(const auto& D:XA)bMerged&=Find(D.Id)!=nullptr;
+        for(const auto& Pair:XK)for(const FString& S:Pair.Value.Purchasable)bMerged&=CanLearn(Pair.Key,S);
+        Check(bMerged,TEXT("expansion rows and purchasable lists merged"));
+    }
     for(const auto& S:Cires::StarterSkillPool())Check(Find(UTF8_TO_TCHAR(S.Id.c_str()))&&Find(UTF8_TO_TCHAR(S.Id.c_str()))->IsImplemented(),TEXT("every pool skill has an implemented row"));
     for(const auto& P:CireChampionRoster::All())
     {

@@ -54,6 +54,11 @@ public:
     static bool ValidateSpec(const FCireAreaSpec& Spec, FString* Error = nullptr);
     static bool ContainsPoint(const FCireAreaSpec& Spec, FVector Center, FRotator Heading, FVector Point);
     static TArray<FVector2D> BoundaryPoints(const FCireAreaSpec& Spec);
+    // casting-rules (Playtest 6): gameplay ground effects are exactly Line / Barrier / Cone / Circle. Square becomes the circle
+    // of its half width; a Custom polygon stays only when it is a rectangle (a Barrier footprint), otherwise it becomes the
+    // circle of its authored Radius. Spawn and every telegraph (CireAbilityShapes) run this, so hit == telegraph.
+    static void NormalizeShape(FCireAreaSpec& Spec);
+    static bool IsBarrierPolygon(const TArray<FVector2D>& Polygon);
     static void ClearAll(UWorld* World);
     // Call on death/teleport: remove only this actor's memberships; destroy areas
     // they own. Other poison areas keep their own independent memberships.
