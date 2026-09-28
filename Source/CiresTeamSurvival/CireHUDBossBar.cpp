@@ -91,6 +91,7 @@ void ACireHUD::DrawRaidBossBars(ACireHero* Hero, ACireController* Controller)
         // Backplate: the theme's card frame, glowing in the theme accent when this boss is your target.
         CireUIStyle::Frame(P, 0, Y, W, RowH, bSelected ? Accent * 1.3f : Trim, ECireFrame::Card);
         if (bSelected) CireUIStyle::Glow(P, 0, Y, W, RowH, CireUIColors::ThemeGlow * FLinearColor(1, 1, 1, .16f));
+        if (bBig) CireUIStyle::Ornament(P, W * .5f, Y, 13.f); // the theme's crest crowns the encounter frame
         // Portrait (the boss spikes and skull badge come with the shared unit portrait).
         const float PR = bBig ? 21.f : 11.5f, PCX = bBig ? 30.f : 18.f, PCY = Y + RowH * .5f;
         DrawPortrait(M, PCX, PCY, PR, !bBig);
@@ -126,7 +127,6 @@ void ACireHUD::DrawRaidBossBars(ACireHero* Hero, ACireController* Controller)
                     P.Tri(FVector2D(TX - S + 1, DY), FVector2D(TX + S - 1, DY), FVector2D(TX, DY + Dir * (S * 1.3f - 1.f)), Tick);
                 }
             }
-            CireUIStyle::Ornament(P, BX + BW * .5f, BarY - 1.f, 11.f);
             // Under the bar: its cast (interruptible gold / locked grey), else what it is doing.
             if (!DrawCastBar(M, BX, BarY + BarH + 4, BW, 10, 8.f))
             {

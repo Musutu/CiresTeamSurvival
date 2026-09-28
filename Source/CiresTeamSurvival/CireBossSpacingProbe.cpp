@@ -12,6 +12,7 @@
 
 #if !UE_BUILD_SHIPPING
 #include "CireGame.h"
+#include "CireHUD.h"
 #include "CireLanePath.h"
 #include "CireNav.h"
 #include "CireNPCArchetypes.h"
@@ -53,6 +54,9 @@ struct FSpacingProbe
     float BossStart = 0, LastMoveAt = 0, LongestStall = 0;
     FVector LastPos = FVector::ZeroVector;
     FCireUnitSpacing Saved;
+    FString SavedTheme;
+    FVector ShotSpot = FVector::ZeroVector;
+    float FramedAt = -1.f, ArmedAt = -1.f;
 };
 FSpacingProbe SP;
 void SPNote(const FString& Line) { UE_LOG(LogCireBossSpacingProbe, Display, TEXT("%s"), *Line); SP.Lines.Add(Line); }
@@ -153,27 +157,75 @@ void CheckGiants(ACireGameMode* Mode)
     }
     SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_GIANTS outdoor_bosses=%d"), Count));
 }
+/** The realm's world boss closest (by Large-agent path) to the player spawn: the one in the most open, reachable spot. */
 ACireMonster* NearestOutdoorBoss(ACireGameMode* Mode, int32 Realm)
 {
-    for (ACireMonster* M : Mode->Monsters) if (IsValid(M) && M->Health > 0 && CireOutdoorBosses::IsOutdoorBoss(M) && M->Lane == Realm) return M;
-    return nullptr;
+    static TWeakObjectPtr<ACireMonster> Picked;
+    if (Picked.IsValid() && Picked->Health > 0) return Picked.Get();
+    UWorld* World = Mode->GetWorld();
+    const FVector Spawn = CireLanePath::PlayerSpawnTransform(World, Realm, 0).GetLocation();
+    float Best = MAX_flt;
+    for (ACireMonster* M : Mode->Monsters)
+    {
+        if (!IsValid(M) || M->Health <= 0 || !CireOutdoorBosses::IsOutdoorBoss(M) || M->Lane != Realm) continue;
+        const FCireNavPath Path = CireNav::FindPath(World, M->GetActorLocation(), Spawn, 72.f, true);
+        const float Length = Path.bValid ? Path.Length : static_cast<float>(FVector::Dist2D(M->GetActorLocation(), Spawn)) * 3.f;
+        if (Length < Best) { Best = Length; Picked = M; }
+    }
+    return Picked.Get();
 }
 ACireHero* LocalHero(UWorld* World)
 {
     APlayerController* PC = World->GetFirstPlayerController();
     return PC ? Cast<ACireHero>(PC->GetPawn()) : nullptr;
 }
-/** Puts the local hero Back cm behind Subject (seen from Dir), facing it, and targets it (raid bar selected). */
-void Frame(UWorld* World, ACireMonster* Subject, const FVector& Dir, float Back)
+ACireHUD* ProbeHUD(UWorld* World)
+{
+    APlayerController* PC = World->GetFirstPlayerController();
+    return PC ? Cast<ACireHUD>(PC->GetHUD()) : nullptr;
+}
+/** The HUD re-applies its profile theme every frame: switch the profile's theme (not saved). */
+void ProbeTheme(UWorld* World, const FString& Id)
+{
+    if (ACireHUD* HUD = ProbeHUD(World)) { if (SP.SavedTheme.IsEmpty()) SP.SavedTheme = HUD->UISettings.UITheme; HUD->UISettings.UITheme = Id; }
+}
+/** A walkable spot Along cm from Subject on its Large-agent path toward Goal (a street, not a house interior). */
+FVector StreetSpot(UWorld* World, const ACireMonster* Subject, const FVector& Goal, float Along)
+{
+    const FCireNavPath Path = CireNav::FindPath(World, Subject->GetActorLocation(), Goal, 72.f, true);
+    float Left = Along;
+    for (int32 I = 1; I < Path.Points.Num(); ++I)
+    {
+        const float Seg = static_cast<float>(FVector::Dist2D(Path.Points[I - 1], Path.Points[I]));
+        if (Seg >= Left) return FMath::Lerp(Path.Points[I - 1], Path.Points[I], Left / FMath::Max(1.f, Seg));
+        Left -= Seg;
+    }
+    return Path.Points.Num() ? Path.Points.Last() : OnNav(World, Subject->GetActorLocation() + FVector(Along, 0, 0));
+}
+/** Holds the local hero on Floor facing Subject, camera level with the giant, and targets it (raid bar selected). */
+void FrameAt(UWorld* World, ACireMonster* Subject, const FVector& Floor)
 {
     ACireHero* Hero = LocalHero(World);
     if (!Hero || !Subject) return;
-    const FVector Floor = OnNav(World, Subject->GetActorLocation() - Dir.GetSafeNormal2D() * Back);
+    Hero->bDrafted = true;
     Hero->SetActorLocation(Floor + FVector(0, 0, Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2.f), false, nullptr, ETeleportType::TeleportPhysics);
     const FRotator Face = (Subject->GetActorLocation() - Hero->GetActorLocation()).GetSafeNormal2D().Rotation();
     Hero->SetActorRotation(Face);
-    if (APlayerController* PC = World->GetFirstPlayerController()) PC->SetControlRotation(FRotator(-8.f, Face.Yaw, 0));
+    if (APlayerController* PC = World->GetFirstPlayerController()) PC->SetControlRotation(FRotator(4.f, Face.Yaw, 0));
     Hero->Target = Subject;
+}
+/** One theme per step: switch, wait for the HUD to redraw, shoot. True when all four are taken. */
+bool ShootThemes(UWorld* World, const TCHAR* Prefix)
+{
+    static const TCHAR* Themes[] = {TEXT("GildedCitadel"), TEXT("Ironbound"), TEXT("ArcaneVeil"), TEXT("VerdantBloom")};
+    if (SP.Shot >= 4) return true;
+    if (SP.ArmedAt < 0) { ProbeTheme(World, Themes[SP.Shot]); SP.ArmedAt = SP.Clock + .8f; return false; }
+    if (SP.Clock < SP.ArmedAt) return false;
+    const FString File = SP.Directory / FString::Printf(TEXT("%s_%s.png"), Prefix, Themes[SP.Shot]);
+    FScreenshotRequest::RequestScreenshot(File, true, false, false, FIntRect(), true);
+    SPNote(TEXT("CIRE_BOSS_SPACING_PROBE_SHOT ") + File);
+    SP.ArmedAt = -1.f;
+    return ++SP.Shot >= 4;
 }
 }
 
@@ -265,20 +317,12 @@ bool CireUnitSpacing::TickProbe(ACireGameMode* Mode, float Delta)
         SP.Boss->Health = SP.Boss->MaxHealth;
         if (FVector::Dist2D(SP.Boss->GetActorLocation(), SP.LastPos) > 60.f) { SP.LastPos = SP.Boss->GetActorLocation(); SP.LastMoveAt = SP.Clock; }
         SP.LongestStall = FMath::Max(SP.LongestStall, SP.Clock - SP.LastMoveAt);
-        // Mid-march captures: the giant in the town street with its raid bar.
-        if (SP.bShots && SP.Clock - SP.StageAt > 18.f && SP.Shot < 4)
+        // Mid-march captures: the giant coming down the town street with its raid bar (hero ahead of it on its road).
+        if (SP.bShots && SP.Clock - SP.StageAt > 16.f && SP.Shot < 4 && Local)
         {
-            if (Local) { Local->bDrafted = true; Frame(World, SP.Boss, SP.Boss->GetVelocity().IsNearlyZero() ? FVector(1, 0, 0) : -SP.Boss->GetVelocity(), 2000.f); }
-            static const TCHAR* Themes[] = {TEXT("GildedCitadel"), TEXT("Ironbound"), TEXT("ArcaneVeil"), TEXT("VerdantBloom")};
-            static float ArmedAt = -1.f;
-            if (ArmedAt < 0) { CireUITheme::SetActive(Themes[SP.Shot]); ArmedAt = SP.Clock + .8f; }
-            else if (SP.Clock >= ArmedAt)
-            {
-                const FString File = SP.Directory / FString::Printf(TEXT("siege_boss_%s.png"), Themes[SP.Shot]);
-                FScreenshotRequest::RequestScreenshot(File, true, false, false, FIntRect(), true);
-                SPNote(TEXT("CIRE_BOSS_SPACING_PROBE_SHOT ") + File);
-                ++SP.Shot; ArmedAt = -1.f;
-            }
+            if (SP.FramedAt < 0) { SP.FramedAt = SP.Clock; SP.ShotSpot = OnNav(World, CireLanePath::PointAlongRoute(World, SP.Team, CireLanePath::RouteProgress(World, SP.Team, SP.Boss->GetActorLocation()) + 6000.f / FMath::Max(1.f, CireLanePath::RouteLength(World, SP.Team)), 110)); }
+            FrameAt(World, SP.Boss, SP.ShotSpot);
+            if (SP.Clock - SP.FramedAt > 5.f) ShootThemes(World, TEXT("siege_boss")); // after the zone banner
         }
         if (SP.Clock - SP.StageAt < 45.f) return true;
         const float Now = CireLanePath::RouteProgress(World, SP.Team, SP.Boss->GetActorLocation()) * CireLanePath::RouteLength(World, SP.Team);
@@ -286,28 +330,23 @@ bool CireUnitSpacing::TickProbe(ACireGameMode* Mode, float Delta)
             SP.Boss->GetActorLocation().X, SP.Boss->GetActorLocation().Y));
         if (Now - SP.BossStart < 2000.f) SPFail(TEXT("the giant wave boss did not march 20 m along the town road"));
         if (SP.LongestStall > 6.f) SPFail(TEXT("the giant wave boss stalled on the road"));
-        SP.Stage = SP.bShots ? EStage::Shots : EStage::Done; SP.StageAt = SP.Clock; SP.Shot = 0;
+        SP.Stage = SP.bShots ? EStage::Shots : EStage::Done; SP.StageAt = SP.Clock; SP.Shot = 0; SP.FramedAt = -1.f; SP.ArmedAt = -1.f;
         if (!SP.bShots) SPFinish();
         return true;
     }
     case EStage::Shots:
     {
-        // A world boss in its lair, raid bar on top, per theme.
-        if (SP.Shot >= 4) { if (SP.Clock - SP.StageAt > 2.f) { CireUITheme::SetActive(CireUITheme::DefaultId()); SPFinish(); } return true; } // let the last PNG write
-        ACireMonster* World0 = NearestOutdoorBoss(Mode, SP.Team);
-        if (!World0 || !Local) { SPNote(TEXT("CIRE_BOSS_SPACING_PROBE_SHOT skipped: no world boss")); SPFinish(); return true; }
-        Local->bDrafted = true;
-        Frame(World, World0, FVector(1, .4f, 0), 1600.f);
-        static const TCHAR* Themes[] = {TEXT("GildedCitadel"), TEXT("Ironbound"), TEXT("ArcaneVeil"), TEXT("VerdantBloom")};
-        static float ArmedAt = -1.f;
-        if (SP.Shot == 0 && SP.Clock - SP.StageAt < 2.f) return true;
-        if (ArmedAt < 0) { CireUITheme::SetActive(Themes[SP.Shot]); ArmedAt = SP.Clock + .8f; return true; }
-        if (SP.Clock < ArmedAt) return true;
-        const FString File = SP.Directory / FString::Printf(TEXT("world_boss_%s.png"), Themes[SP.Shot]);
-        FScreenshotRequest::RequestScreenshot(File, true, false, false, FIntRect(), true);
-        SPNote(TEXT("CIRE_BOSS_SPACING_PROBE_SHOT ") + File);
-        ArmedAt = -1.f;
-        if (++SP.Shot >= 4) SP.StageAt = SP.Clock;
+        // A world boss at its lair seen from the street leading to it, raid bar on top, per theme.
+        if (SP.Shot >= 4)
+        {
+            if (SP.Clock - SP.StageAt > 2.f) { if (ACireHUD* HUD = ProbeHUD(World); HUD && !SP.SavedTheme.IsEmpty()) HUD->UISettings.UITheme = SP.SavedTheme; SPFinish(); } // let the last PNG write
+            return true;
+        }
+        ACireMonster* Giant = NearestOutdoorBoss(Mode, SP.Team);
+        if (!Giant || !Local) { SPNote(TEXT("CIRE_BOSS_SPACING_PROBE_SHOT skipped: no world boss")); SPFinish(); return true; }
+        if (SP.FramedAt < 0) { SP.FramedAt = SP.Clock; SP.ShotSpot = StreetSpot(World, Giant, OnNav(World, CireLanePath::PlayerSpawnTransform(World, SP.Team, 0).GetLocation(), 72.f), 3200.f); }
+        FrameAt(World, Giant, SP.ShotSpot);
+        if (SP.Clock - SP.FramedAt > 5.f && ShootThemes(World, TEXT("world_boss"))) SP.StageAt = SP.Clock;
         return true;
     }
     default: return true;
