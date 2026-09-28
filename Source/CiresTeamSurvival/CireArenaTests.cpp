@@ -224,19 +224,22 @@ bool CireArenaFlow::RunTests(ACireGameMode* Mode)
     Check(State->EmberArenaBuffs == 2 && State->DuskArenaDebuffs == 2, TEXT("a draw changes nothing"));
     const FCireEffectInfo* Victor = CireEffects::Find(VictorId); const FCireEffectInfo* Vanquished = CireEffects::Find(VanquishedId);
     Check(Victor && !Victor->IsHarmful() && Vanquished && Vanquished->IsHarmful(), TEXT("buff rows: Arena Victor (buff), Arena Vanquished (debuff)"));
-    if (Team[0].Num() > 0 && Team[1].Num() > 0)
+    // Icons and killing blows do not need a drafted champion: any champion on each side will do.
+    TArray<ACireHero*> Side[2];
+    for (ACireHero* H : Mode->Heroes) if (IsValid(H) && !H->bDead && H->TeamId >= 0 && H->TeamId < 2) Side[H->TeamId].Add(H);
+    if (Side[0].Num() > 0 && Side[1].Num() > 0)
     {
         TArray<FCireActiveEffect> Effects;
-        CireEffects::Gather(Team[0][0], CireBuffs::ServerNow(World), Effects);
+        CireEffects::Gather(Side[0][0], CireBuffs::ServerNow(World), Effects);
         const FCireActiveEffect* Mine = Effects.FindByPredicate([](const FCireActiveEffect& E) { return E.Id == VictorId; });
         Check(Mine && Mine->Stacks == 2 && !Effects.ContainsByPredicate([](const FCireActiveEffect& E) { return E.Id == VanquishedId; }), TEXT("winners show the Arena Victor icon with 2 stacks"));
-        CireEffects::Gather(Team[1][0], CireBuffs::ServerNow(World), Effects);
+        CireEffects::Gather(Side[1][0], CireBuffs::ServerNow(World), Effects);
         const FCireActiveEffect* Theirs = Effects.FindByPredicate([](const FCireActiveEffect& E) { return E.Id == VanquishedId; });
         Check(Theirs && Theirs->Stacks == 2, TEXT("losers show the Arena Vanquished icon with 2 stacks"));
 
         // Killing blow: +50 g in the arena only, only for an enemy champion.
         const Cires::MatchClock SavedClock = Mode->Clock;
-        ACireHero* A = Team[0][0]; ACireHero* B = Team[1][0];
+        ACireHero* A = Side[0][0]; ACireHero* B = Side[1][0];
         const int32 GoldA = A->Gold, GoldB = B->Gold;
         const FString NoticeA = A->Notice;
         OnHeroKilled(Mode, B, A);
@@ -250,7 +253,7 @@ bool CireArenaFlow::RunTests(ACireGameMode* Mode)
         Check(KillerHero(A) == A && KillerHero(nullptr) == nullptr, TEXT("killer resolution"));
         Mode->Clock = SavedClock; A->Gold = GoldA; A->Notice = NoticeA;
     }
-    else UE_LOG(LogCireArenaTests, Display, TEXT("CIRE_ARENA_FLOW_NOTE no drafted champions on both teams: icon and kill checks skipped"));
+    else UE_LOG(LogCireArenaTests, Display, TEXT("CIRE_ARENA_FLOW_NOTE no champion on both teams: icon and kill checks skipped"));
     for (auto& Pair : Gold) if (IsValid(Pair.Key)) Pair.Key->Gold = Pair.Value;
     State->EmberArenaBuffs = Saved[0]; State->EmberArenaDebuffs = Saved[1]; State->DuskArenaBuffs = Saved[2]; State->DuskArenaDebuffs = Saved[3];
     Mode->Rewards[0] = SavedRewards[0]; Mode->Rewards[1] = SavedRewards[1];
