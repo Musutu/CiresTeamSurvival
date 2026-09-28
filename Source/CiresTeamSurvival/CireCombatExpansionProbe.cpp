@@ -6,6 +6,7 @@
 #include "CireTownTrim.h" // town-trim
 #include "CireKitSkills.h" // kits-complete
 #include "CireKitEditor.h" // kit-editor
+#include "CireProfiles.h" // game-profiles
 #include "CireScalingKits.h" // scaling-kits
 #include "CireWaves.h" // wave-director
 #include "CireRollSkills.h" // champion-draft: dodge-roll skills
@@ -144,6 +145,7 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireKits::RunSmoke(Mode)&&Good; // scaling-kits: primary scaling, inheritance, construct threat, shield block, Mech Tank, level 15, Headshot, Artillery
     Good=CireKitSkills::RunSmoke(Mode)&&Good; // kits-complete: the 63 roster signature skills, potency, heal casts, shield gating, big Bear
     Good=CireAbilityExpansion::RunSmoke(Mode)&&Good; // ability-expansion: the expansion pool (data, shapes, every cast, riders, passives, summons, constructs)
+    Good=CireProfiles::RunTests(Mode)&&Good; // game-profiles: named profiles (save as / load / rename / delete), every domain round trip, a game type applying each profile
     Good=CireKitEditor::RunTests(Mode)&&Good; // kit-editor: Hero Creator: profiles + fallback, presets, buttons, save/load, purchasable merge, draft grant, placement, pool
     Good=CireInitiation::RunSmoke(Mode)&&Good; // initiation: engage spells, Set-up synergy, Blink Dagger
     Good=CirePets::RunSmoke(Mode)&&Good; // pets: companions (summon, follow, stances, commands, threat share, death/revive, scaling, on-foot Huntress)

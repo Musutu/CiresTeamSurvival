@@ -23,6 +23,7 @@
 #include "CireShopArt.h"  // rules-conformance: scroll / crest icons for the mode picker
 #include "CireSkillShop.h"
 #include "CireKitEditor.h" // kit-editor: Champion Select > HERO CREATOR
+#include "CireProfiles.h" // game-profiles: game type bundle summary
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "EngineFontServices.h"
@@ -1225,7 +1226,7 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         const TArray<FCireWavePreset>& Types=CireWaveDirector::Presets();
         const ACireGameState* TGS=World?World->GetGameState<ACireGameState>():nullptr;
         const FName Now2=TGS&&!TGS->WavePreset.IsNone()?TGS->WavePreset:CireWaveDirector::Config(World).Preset;
-        const float IH=40.f,LW=FMath::Max(S.TypeR.W,340.f);
+        const float IH=56.f,LW=FMath::Max(S.TypeR.W,380.f); // game-profiles: a third line with the bundle summary
         const FRect L{S.TypeR.R()-LW,S.TypeR.B()+4,LW,Types.Num()*IH+30};
         Panel(L.X,L.Y,L.W,L.H,ThemeUI(8,12,20,250));Outline(L,1,Gold);
         Line(TEXT("CUSTOM GAME TYPE  |  WAVE PRESETS"),L.X+10,L.Y+6,L.W-20,9.5f,Gold,L,ECireFont::Heading);
@@ -1237,7 +1238,8 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             if(bOn)Panel(R.X,R.Y,3,R.H,BrightGold);
             Line(P.Label+(P.bBuiltIn?FString():FString(TEXT("  (custom)"))),R.X+10,R.Y+3,R.W-20,11.5f,bOn?Gold:Text,R,ECireFont::Heading);
             Line(P.Description,R.X+10,R.Y+21,R.W-20,9.f,Muted,R,ECireFont::Body);
-            Tip(P.Label,P.Description+FString::Printf(TEXT("\nHero kits: %s profile."),*CireKitEditor::ProfileForMode(P.KitProfile)),R.X,R.Y,R.W,R.H); // kit-editor
+            Line(CireGameProfiles::Summary(P),R.X+10,R.Y+36,R.W-20,9.f,bOn?Gold:Text,R,ECireFont::Body); // game-profiles: what this game type bundles
+            Tip(P.Label,P.Description+FString::Printf(TEXT("\nHero kits: %s profile.\nProfiles: %s."),*CireKitEditor::ProfileForMode(P.KitProfile),*CireGameProfiles::Summary(P)),R.X,R.Y,R.W,R.H); // kit-editor, game-profiles
             if(bOver&&Clicked){if(Controller)Controller->ServerAction(11,I,nullptr);S.bTypeDropdown=false;PlayWowSound(4,.45f);Clicked=false;}
         }
         if(Clicked&&!Hit(L.X,L.Y,L.W,L.H)&&!Hit(S.TypeR.X,S.TypeR.Y,S.TypeR.W,S.TypeR.H)){S.bTypeDropdown=false;}

@@ -190,6 +190,11 @@ struct CIRESTEAMSURVIVAL_API FCireWavePreset
     bool bBuiltIn = false;
     /** kit-editor: the Hero Creator kit profile this game type uses (empty / unknown = "Standard"). */
     FString KitProfile;
+    /** game-profiles: the other bundle keys (layout, tuningProfile, economyProfile, packProfile, movementProfile,
+     *  matchProfile, spacingProfile, worldEdit) -> profile name; missing = Default (CireProfiles.h). */
+    TMap<FString, FString> Bundle;
+    /** ability-tuner "allowTuning" kept through a save (-1 = absent). */
+    int32 AllowTuning = -1;
     bool operator==(const FCireWavePreset& O) const;
 };
 
@@ -413,6 +418,8 @@ namespace CireWaveDirector
     CIRESTEAMSURVIVAL_API bool SavePreset(const FCireWavePreset& Preset, FString* Error = nullptr, const FString& Path = FString());
     /** Host: select the match's game type (before the first wave). Replicates on ACireGameState::WavePreset. */
     CIRESTEAMSURVIVAL_API bool SelectPreset(ACireGameMode* Mode, FName Id, FString* Error = nullptr);
+    /** game-profiles: an in-memory game type (probe fixtures); listed by Presets() after the file's. */
+    CIRESTEAMSURVIVAL_API void RegisterRuntimePreset(const FCireWavePreset& Preset);
 
     // ---- neutral challenge packs ----
     /** Challenge-pack units start neutral; a player's attack turns the whole pack hostile. */
