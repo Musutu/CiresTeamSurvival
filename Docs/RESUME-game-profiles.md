@@ -85,3 +85,9 @@ each editor plays with.
 
 ## Gate logs
 See the bottom section (updated at each run).
+
+### 2026-09-28 (branch == main 013e221e + this work; main had not moved)
+Build: Result: Succeeded. All three gates PASS:
+- native: Saved/ExpansionChecks/20260928T095102752524Z/report.json (CIRE_PROFILES_TESTS PASS checks=66)
+- network: Saved/NetworkSmoke/20260928T095315146309Z/report.json (CIRE_NET_SERVER_PROFILES_PASS, CIRE_NET_CLIENT_PROFILES PASS)
+- interface: Saved/InterfaceSmoke/20260928T095405649249Z/report.json
