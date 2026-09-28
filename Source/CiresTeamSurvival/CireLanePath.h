@@ -56,7 +56,9 @@ struct FCireRouteSpot
     FString Kind;
     /** outdoor-bosses: the boss's per-marker health multiplier. */
     float HealthScale = 1.f;
-    bool operator==(const FCireRouteSpot& O) const { return Position == O.Position && Yaw == O.Yaw && Radius == O.Radius && bWeighted == O.bWeighted && Id == O.Id && Name == O.Name && Kind == O.Kind && HealthScale == O.HealthScale; }
+    /** bosses-spacing: the boss's per-marker model size multiplier (x UnitSpacing.json boss.outdoorBoss). */
+    float SizeScale = 1.f;
+    bool operator==(const FCireRouteSpot& O) const { return SizeScale == O.SizeScale && Position == O.Position && Yaw == O.Yaw && Radius == O.Radius && bWeighted == O.bWeighted && Id == O.Id && Name == O.Name && Kind == O.Kind && HealthScale == O.HealthScale; }
 };
 
 struct FCireBattlefieldRoutes

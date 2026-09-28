@@ -1,0 +1,360 @@
+// bosses-spacing: -CireBossSpacingProbe (Tools/RunBossSpacingProbe.py). Runs in a real match world (the town with Eric's
+// MapLayout.json when -CireTown -CireUseMapLayout, else the Citadel):
+//   1. CROWD before/after: 16 melee monsters engage one (unkillable) hero on the lane road, once with the legacy spacing
+//      (capsule 38, no reach bonus, no separation) and once with UnitSpacing.json; over the last seconds it measures the
+//      pairs whose drawn footprints overlap and the mean nearest-neighbour gap. After must overlap less.
+//   2. GIANTS: every outdoor world boss is 5x its legacy size with the Large-agent capsule, stands on the navmesh and has a
+//      Large-agent path from its lair to the realm's player spawn (it can chase you through the streets).
+//   3. MARCH: a 5x wave boss (Siege Host) marches the lane road through the town for 45 s without stalling.
+//   4. CAPTURES (-CireBossSpacingShots, rendering): the marching boss and a world boss with the raid bar, in all 4 HUD themes.
+// Logs CIRE_BOSS_SPACING_PROBE_PASS / _FAIL; writes Saved/BossSpacing/<stamp>/probe.txt (+ PNGs).
+#include "CireUnitSpacing.h"
+
+#if !UE_BUILD_SHIPPING
+#include "CireGame.h"
+#include "CireHUD.h"
+#include "CireLanePath.h"
+#include "CireNav.h"
+#include "CireNPCArchetypes.h"
+#include "CireNPCCombat.h"
+#include "CireNPCState.h"
+#include "CireOutdoorBosses.h"
+#include "CireThreat.h"
+#include "CireTownMap.h"
+#include "CireUITheme.h"
+#include "Components/CapsuleComponent.h"
+#include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
+#include "HAL/FileManager.h"
+#include "Misc/CommandLine.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Parse.h"
+#include "Misc/Paths.h"
+#include "UnrealClient.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogCireBossSpacingProbe, Log, All);
+
+namespace
+{
+enum class EStage : uint8 { Setup, CrowdBefore, CrowdAfter, Giants, March, Shots, Done };
+struct FSpacingProbe
+{
+    bool bEnabled = false, bPass = true, bShots = false;
+    EStage Stage = EStage::Setup;
+    float Clock = 0, StageAt = 0, NextSample = 0;
+    int32 Team = 0, Shot = 0;
+    FString Directory;
+    TArray<FString> Lines;
+    TArray<ACireMonster*> Crowd;
+    ACireHero* Victim = nullptr;
+    FVector Centre = FVector::ZeroVector;
+    TArray<CireUnitSpacing::FCrowd> Samples;
+    CireUnitSpacing::FCrowd Before, After;
+    ACireMonster* Boss = nullptr;
+    float BossStart = 0, LastMoveAt = 0, LongestStall = 0;
+    FVector LastPos = FVector::ZeroVector;
+    FCireUnitSpacing Saved;
+    FString SavedTheme;
+    FVector ShotSpot = FVector::ZeroVector;
+    float FramedAt = -1.f, ArmedAt = -1.f;
+};
+FSpacingProbe SP;
+void SPNote(const FString& Line) { UE_LOG(LogCireBossSpacingProbe, Display, TEXT("%s"), *Line); SP.Lines.Add(Line); }
+void SPFail(const FString& Why) { SP.bPass = false; UE_LOG(LogCireBossSpacingProbe, Error, TEXT("CIRE_BOSS_SPACING_PROBE_CHECK_FAIL %s"), *Why); SP.Lines.Add(TEXT("FAIL ") + Why); }
+void SPFinish()
+{
+    SP.Stage = EStage::Done;
+    CireUnitSpacing::Set(SP.Saved);
+    SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_%s"), SP.bPass ? TEXT("PASS") : TEXT("FAIL")));
+    FFileHelper::SaveStringToFile(FString::Join(SP.Lines, TEXT("\n")) + TEXT("\n"), *(SP.Directory / TEXT("probe.txt")));
+    FPlatformMisc::RequestExitWithStatus(false, SP.bPass ? 0 : 1);
+}
+FVector OnNav(UWorld* World, const FVector& At, float Radius = 48.f)
+{
+    FVector Out;
+    if (CireNav::Project(World, At + FVector(0, 0, 100), Out, FVector(300, 300, 1500), Radius)) return Out;
+    return At;
+}
+ACireMonster* SpawnUnit(ACireGameMode* Mode, const FVector& Floor, FName Id, bool bLaneBoss)
+{
+    FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    auto* M = Mode->GetWorld()->SpawnActor<ACireMonster>(ACireMonster::StaticClass(), Floor + FVector(0, 0, 100), FRotator::ZeroRotator, Params);
+    if (!M) return nullptr;
+    M->Lane = SP.Team;
+    CireNPCCombat::ConfigureArchetype(M, Id, 1, 0, 1, bLaneBoss);
+    M->SetActorLocation(Floor + FVector(0, 0, M->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2.f));
+    M->SpawnPosition = M->GetActorLocation();
+    Mode->Monsters.Add(M);
+    return M;
+}
+void ClearCrowd(ACireGameMode* Mode)
+{
+    for (ACireMonster* M : SP.Crowd) if (IsValid(M)) { Mode->Monsters.Remove(M); M->Destroy(); }
+    SP.Crowd.Reset();
+}
+void StartCrowd(ACireGameMode* Mode, bool bLegacy)
+{
+    CireUnitSpacing::Set(bLegacy ? FCireUnitSpacing::Legacy() : SP.Saved);
+    UWorld* World = Mode->GetWorld();
+    const FName Melee = CireNPCArchetypes::Get().LegacyKinds.IsValidIndex(0) ? CireNPCArchetypes::Get().LegacyKinds[0] : NAME_None;
+    SP.Victim->SetActorLocation(SP.Centre + FVector(0, 0, SP.Victim->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2.f));
+    SP.Victim->Health = SP.Victim->MaxHealth = 1.e8f;
+    for (int32 I = 0; I < 16; ++I)
+    {
+        const float A = I * 2.f * PI / 16.f, R = 520.f + (I % 2) * 140.f;
+        ACireMonster* M = SpawnUnit(Mode, OnNav(World, SP.Centre + FVector(FMath::Cos(A) * R, FMath::Sin(A) * R, 0)), Melee, false);
+        if (!M) continue;
+        M->Damage = 1.f; // the crowd is about spacing, not killing
+        CireThreat::Engage(M, SP.Victim);
+        SP.Crowd.Add(M);
+    }
+    SP.Samples.Reset(); SP.StageAt = SP.Clock; SP.NextSample = SP.Clock + 7.f;
+}
+CireUnitSpacing::FCrowd Average(const TArray<CireUnitSpacing::FCrowd>& S)
+{
+    CireUnitSpacing::FCrowd A; if (S.IsEmpty()) return A;
+    float Pairs = 0;
+    for (const auto& C : S) { A.Units = FMath::Max(A.Units, C.Units); Pairs += C.OverlapPairs; A.MeanNearest += C.MeanNearest / S.Num(); A.MeanOverlapDepth += C.MeanOverlapDepth / S.Num(); }
+    A.OverlapPairs = FMath::RoundToInt(Pairs / S.Num());
+    return A;
+}
+bool TickCrowd(ACireGameMode* Mode, const TCHAR* Label, CireUnitSpacing::FCrowd& Out)
+{
+    SP.Victim->Health = SP.Victim->MaxHealth;
+    SP.Victim->SetActorLocation(SP.Centre + FVector(0, 0, SP.Victim->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2.f));
+    for (ACireMonster* M : SP.Crowd) if (IsValid(M) && M->Victim != SP.Victim) CireThreat::Engage(M, SP.Victim);
+    if (SP.Clock >= SP.NextSample) { SP.Samples.Add(CireUnitSpacing::Measure(SP.Crowd)); SP.NextSample += .5f; }
+    if (SP.Clock - SP.StageAt < 12.f) return false;
+    Out = Average(SP.Samples);
+    int32 Engaged = 0; for (ACireMonster* M : SP.Crowd) Engaged += IsValid(M) && M->Victim == SP.Victim && FVector::Dist2D(M->GetActorLocation(), SP.Centre) < 500.f;
+    SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_CROWD %s units=%d engaged_near=%d overlap_pairs=%d mean_overlap=%.0fcm mean_nearest=%.0fcm samples=%d"), Label, Out.Units, Engaged,
+        Out.OverlapPairs, Out.MeanOverlapDepth, Out.MeanNearest, SP.Samples.Num()));
+    if (Engaged < 10) SPFail(FString::Printf(TEXT("%s: only %d of the crowd reached the hero"), Label, Engaged));
+    ClearCrowd(Mode);
+    return true;
+}
+void CheckGiants(ACireGameMode* Mode)
+{
+    UWorld* World = Mode->GetWorld();
+    int32 Count = 0;
+    for (ACireMonster* M : Mode->Monsters)
+    {
+        if (!IsValid(M) || M->Health <= 0 || !CireOutdoorBosses::IsOutdoorBoss(M)) continue;
+        ++Count;
+        const UCapsuleComponent* Cap = M->GetCapsuleComponent();
+        const int32 Realm = M->Lane < 0 ? 0 : M->Lane;
+        FVector Nav; const bool bNav = CireNav::Project(World, M->GetActorLocation() - FVector(0, 0, Cap->GetScaledCapsuleHalfHeight()) + FVector(0, 0, 60), Nav, FVector(200, 200, 600), CireNav::AgentRadius(M));
+        const FVector Home = OnNav(World, CireLanePath::PlayerSpawnTransform(World, Realm, 0).GetLocation(), CireNav::AgentRadius(M));
+        const FCireNavPath Path = CireNav::FindPath(World, bNav ? Nav : M->GetActorLocation(), Home, CireNav::AgentRadius(M), false);
+        const bool bPath = Path.bValid && !Path.bPartial;
+        SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_GIANT realm=%d boss=%s marker_size=%.2f boss_size=%.2f scale=%.2f capsule=%.0f/%.0f drawn_height=%.0fm on_nav=%d path_to_spawn=%d length=%.0fm"), Realm,
+            *(M->NPCState ? M->NPCState->ArchetypeId.ToString() : FString()), M->NPCState ? M->NPCState->BodySize : 1.f, CireUnitSpacing::BossSize(M), M->GetActorScale3D().X, Cap->GetScaledCapsuleRadius(), Cap->GetScaledCapsuleHalfHeight(),
+            CireUnitSpacing::BaseHalfHeight * 2.f * M->GetActorScale3D().Z / 100.f, bNav ? 1 : 0, bPath ? 1 : 0, Path.Length / 100.f));
+        // bosses-spacing: outdoor bosses are drawn boss.outdoorBoss x their marker's size x their normal size.
+        const float Want = CireUnitSpacing::Get().OutdoorBossSize * (M->NPCState ? M->NPCState->BodySize : 1.f);
+        if (CireUnitSpacing::BossBodyOf(M) != CireUnitSpacing::EBossBody::Outdoor || !FMath::IsNearlyEqual(CireUnitSpacing::BossSize(M), Want, .01f) || M->GetActorScale3D().X < .9f * Want)
+            SPFail(TEXT("an outdoor boss is not drawn outdoorBoss x its marker size"));
+        if (Cap->GetScaledCapsuleRadius() > 72.5f || Cap->GetScaledCapsuleHalfHeight() > 150.5f) SPFail(TEXT("an outdoor boss capsule exceeds the Large nav agent"));
+        if (!bNav) SPFail(TEXT("an outdoor boss stands off the navmesh"));
+        if (!bPath) SPFail(TEXT("an outdoor boss has no Large-agent path to the player spawn"));
+    }
+    SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_GIANTS outdoor_bosses=%d"), Count));
+}
+/** The realm's world boss closest (by Large-agent path) to the player spawn: the one in the most open, reachable spot. */
+ACireMonster* NearestOutdoorBoss(ACireGameMode* Mode, int32 Realm)
+{
+    static TWeakObjectPtr<ACireMonster> Picked;
+    if (Picked.IsValid() && Picked->Health > 0) return Picked.Get();
+    UWorld* World = Mode->GetWorld();
+    const FVector Spawn = CireLanePath::PlayerSpawnTransform(World, Realm, 0).GetLocation();
+    float Best = MAX_flt;
+    for (ACireMonster* M : Mode->Monsters)
+    {
+        if (!IsValid(M) || M->Health <= 0 || !CireOutdoorBosses::IsOutdoorBoss(M) || M->Lane != Realm) continue;
+        const FCireNavPath Path = CireNav::FindPath(World, M->GetActorLocation(), Spawn, 72.f, true);
+        const float Length = Path.bValid ? Path.Length : static_cast<float>(FVector::Dist2D(M->GetActorLocation(), Spawn)) * 3.f;
+        if (Length < Best) { Best = Length; Picked = M; }
+    }
+    return Picked.Get();
+}
+ACireHero* LocalHero(UWorld* World)
+{
+    APlayerController* PC = World->GetFirstPlayerController();
+    return PC ? Cast<ACireHero>(PC->GetPawn()) : nullptr;
+}
+ACireHUD* ProbeHUD(UWorld* World)
+{
+    APlayerController* PC = World->GetFirstPlayerController();
+    return PC ? Cast<ACireHUD>(PC->GetHUD()) : nullptr;
+}
+/** The HUD re-applies its profile theme every frame: switch the profile's theme (not saved). */
+void ProbeTheme(UWorld* World, const FString& Id)
+{
+    if (ACireHUD* HUD = ProbeHUD(World)) { if (SP.SavedTheme.IsEmpty()) SP.SavedTheme = HUD->UISettings.UITheme; HUD->UISettings.UITheme = Id; }
+}
+/** A walkable spot Along cm from Subject on its Large-agent path toward Goal (a street, not a house interior). */
+FVector StreetSpot(UWorld* World, const ACireMonster* Subject, const FVector& Goal, float Along)
+{
+    const FCireNavPath Path = CireNav::FindPath(World, Subject->GetActorLocation(), Goal, 72.f, true);
+    float Left = Along;
+    for (int32 I = 1; I < Path.Points.Num(); ++I)
+    {
+        const float Seg = static_cast<float>(FVector::Dist2D(Path.Points[I - 1], Path.Points[I]));
+        if (Seg >= Left) return FMath::Lerp(Path.Points[I - 1], Path.Points[I], Left / FMath::Max(1.f, Seg));
+        Left -= Seg;
+    }
+    return Path.Points.Num() ? Path.Points.Last() : OnNav(World, Subject->GetActorLocation() + FVector(Along, 0, 0));
+}
+/** Holds the local hero on Floor facing Subject, camera level with the giant, and targets it (raid bar selected). */
+void FrameAt(UWorld* World, ACireMonster* Subject, const FVector& Floor)
+{
+    ACireHero* Hero = LocalHero(World);
+    if (!Hero || !Subject) return;
+    Hero->bDrafted = true;
+    Hero->SetActorLocation(Floor + FVector(0, 0, Hero->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2.f), false, nullptr, ETeleportType::TeleportPhysics);
+    const FRotator Face = (Subject->GetActorLocation() - Hero->GetActorLocation()).GetSafeNormal2D().Rotation();
+    Hero->SetActorRotation(Face);
+    if (APlayerController* PC = World->GetFirstPlayerController()) PC->SetControlRotation(FRotator(4.f, Face.Yaw, 0));
+    Hero->Target = Subject;
+}
+/** One theme per step: switch, wait for the HUD to redraw, shoot. True when all four are taken. */
+bool ShootThemes(UWorld* World, const TCHAR* Prefix)
+{
+    static const TCHAR* Themes[] = {TEXT("GildedCitadel"), TEXT("Ironbound"), TEXT("ArcaneVeil"), TEXT("VerdantBloom")};
+    if (SP.Shot >= 4) return true;
+    if (SP.ArmedAt < 0) { ProbeTheme(World, Themes[SP.Shot]); SP.ArmedAt = SP.Clock + .8f; return false; }
+    if (SP.Clock < SP.ArmedAt) return false;
+    const FString File = SP.Directory / FString::Printf(TEXT("%s_%s.png"), Prefix, Themes[SP.Shot]);
+    FScreenshotRequest::RequestScreenshot(File, true, false, false, FIntRect(), true);
+    SPNote(TEXT("CIRE_BOSS_SPACING_PROBE_SHOT ") + File);
+    SP.ArmedAt = -1.f;
+    return ++SP.Shot >= 4;
+}
+}
+
+void CireUnitSpacing::InitializeProbe(ACireGameMode* Mode)
+{
+    SP = FSpacingProbe();
+    SP.bEnabled = Mode && FParse::Param(FCommandLine::Get(), TEXT("CireBossSpacingProbe"));
+    if (!SP.bEnabled) return;
+    SP.bShots = FParse::Param(FCommandLine::Get(), TEXT("CireBossSpacingShots"));
+    SP.Saved = Get();
+    if (!FParse::Value(FCommandLine::Get(), TEXT("CireBossSpacingDir="), SP.Directory))
+        SP.Directory = FPaths::ProjectSavedDir() / TEXT("BossSpacing") / FDateTime::UtcNow().ToString(TEXT("%Y%m%d-%H%M%S"));
+    SP.Directory = FPaths::ConvertRelativePathToFull(SP.Directory);
+    IFileManager::Get().MakeDirectory(*SP.Directory, true);
+    Mode->BotFillTimer = 0;
+    SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_READY town=%d shots=%d"), CireTownMap::IsActive() ? 1 : 0, SP.bShots ? 1 : 0));
+}
+
+bool CireUnitSpacing::TickProbe(ACireGameMode* Mode, float Delta)
+{
+    if (!SP.bEnabled || !Mode) return false;
+    if (SP.Stage == EStage::Done) return true;
+    UWorld* World = Mode->GetWorld();
+    auto* State = Mode->GetGameState<ACireGameState>();
+    SP.Clock += Delta;
+    Mode->WaveTimer = 1.e6f; // no waves: only the probe's units, the packs and the world bosses
+    ACireHero* Local = LocalHero(World);
+    // The probe's player drafts as a bot so the match fills (like the outdoor boss probe); it is handed back after setup.
+    if (SP.Stage == EStage::Setup) { for (auto* H : Mode->Heroes) if (IsValid(H) && !H->bBot) { H->Draft(2); H->bBot = true; H->bAutoAttack = false; } }
+    // Everyone but the probe's hero stands aside: undrafted bots aggro nothing and nothing aggroes them.
+    if (SP.Stage != EStage::Setup)
+        for (auto* H : Mode->Heroes) if (IsValid(H) && H != SP.Victim && H != Local) { H->bDrafted = false; H->Target = nullptr; H->bAutoAttack = false; }
+    if (Local && SP.Stage != EStage::Setup) { Local->bBot = false; Local->bAutoAttack = false; Local->Health = Local->MaxHealth; if (SP.Stage != EStage::Shots) Local->bDrafted = false; }
+    switch (SP.Stage)
+    {
+    case EStage::Setup:
+    {
+        if (!Mode->bBotsFilled || !CireNav::IsReady(World) || !State || State->Phase != 0)
+        {
+            if (SP.Clock > (CireTownMap::IsActive() ? 900.f : 150.f))
+            {
+                SPFail(FString::Printf(TEXT("setup timed out (bots_filled=%d nav_ready=%d phase=%d)"), Mode->bBotsFilled ? 1 : 0, CireNav::IsReady(World) ? 1 : 0, State ? State->Phase : -1));
+                SPFinish();
+            }
+            return true;
+        }
+        SP.Team = Local ? FMath::Clamp(Local->TeamId, 0, 1) : 0;
+        SP.Centre = OnNav(World, CireLanePath::PointAlongRoute(World, SP.Team, .45f, 110));
+        FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        SP.Victim = World->SpawnActor<ACireHero>(SP.Centre + FVector(0, 0, 100), FRotator::ZeroRotator, Params);
+        if (!SP.Victim) { SPFail(TEXT("no probe hero")); SPFinish(); return true; }
+        SP.Victim->TeamId = SP.Team; SP.Victim->Draft(0); SP.Victim->HeroName = TEXT("Spacing probe tank"); SP.Victim->bAutoAttack = false;
+        Mode->Heroes.Add(SP.Victim);
+        SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_SETUP team=%d centre=(%.0f,%.0f,%.0f) after: radius=%.0f melee_bonus=%.0f pad=%.0f boss outdoor=%.1fx wave=%.1fx leader=%.1fx"), SP.Team, SP.Centre.X, SP.Centre.Y, SP.Centre.Z,
+            SP.Saved.MonsterCapsuleRadius, SP.Saved.MeleeReachBonus, SP.Saved.SeparationPadding, SP.Saved.OutdoorBossSize, SP.Saved.WaveBossSize, SP.Saved.PackLeaderBossSize));
+        StartCrowd(Mode, true);
+        SP.Stage = EStage::CrowdBefore;
+        return true;
+    }
+    case EStage::CrowdBefore:
+        if (TickCrowd(Mode, TEXT("before(legacy)"), SP.Before)) { StartCrowd(Mode, false); SP.Stage = EStage::CrowdAfter; }
+        return true;
+    case EStage::CrowdAfter:
+        if (!TickCrowd(Mode, TEXT("after"), SP.After)) return true;
+        SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_OVERLAP before=%d after=%d (%.0f%% fewer) nearest %.0f -> %.0f cm"), SP.Before.OverlapPairs, SP.After.OverlapPairs,
+            SP.Before.OverlapPairs > 0 ? 100.f * (SP.Before.OverlapPairs - SP.After.OverlapPairs) / SP.Before.OverlapPairs : 0.f, SP.Before.MeanNearest, SP.After.MeanNearest));
+        if (SP.After.OverlapPairs >= SP.Before.OverlapPairs && SP.Before.OverlapPairs > 0) SPFail(TEXT("the new spacing does not reduce overlapping units"));
+        if (SP.After.MeanNearest <= SP.Before.MeanNearest) SPFail(TEXT("the new spacing does not spread units further apart"));
+        Mode->Heroes.Remove(SP.Victim); SP.Victim->Destroy(); SP.Victim = nullptr;
+        CireUnitSpacing::Set(SP.Saved);
+        SP.Stage = EStage::Giants; SP.StageAt = SP.Clock;
+        return true;
+    case EStage::Giants:
+    {
+        CheckGiants(Mode);
+        const FName WaveBoss = CireNPCArchetypes::Get().WaveBoss;
+        SP.Boss = SpawnUnit(Mode, OnNav(World, CireLanePath::SpawnPosition(World, SP.Team), 72.f), WaveBoss, true);
+        if (!SP.Boss) { SPFail(TEXT("no wave boss")); SPFinish(); return true; }
+        SP.BossStart = CireLanePath::RouteProgress(World, SP.Team, SP.Boss->GetActorLocation()) * CireLanePath::RouteLength(World, SP.Team);
+        SP.LastPos = SP.Boss->GetActorLocation(); SP.LastMoveAt = SP.Clock; SP.LongestStall = 0;
+        SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_MARCH_START boss=%s scale=%.2f capsule=%.0f/%.0f nav_agent_radius=%.0f"), *WaveBoss.ToString(), SP.Boss->GetActorScale3D().X,
+            SP.Boss->GetCapsuleComponent()->GetScaledCapsuleRadius(), SP.Boss->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), CireNav::AgentRadius(SP.Boss)));
+        if (CireUnitSpacing::BossBodyOf(SP.Boss) != CireUnitSpacing::EBossBody::Wave || !FMath::IsNearlyEqual(CireUnitSpacing::BossSize(SP.Boss), CireUnitSpacing::Get().WaveBossSize, .01f))
+            SPFail(TEXT("the wave boss is not drawn boss.waveBoss x its normal size"));
+        SP.Stage = EStage::March; SP.StageAt = SP.Clock;
+        return true;
+    }
+    case EStage::March:
+    {
+        if (!IsValid(SP.Boss) || SP.Boss->Health <= 0) { SPFail(TEXT("the marching boss vanished")); SPFinish(); return true; }
+        SP.Boss->Health = SP.Boss->MaxHealth;
+        if (FVector::Dist2D(SP.Boss->GetActorLocation(), SP.LastPos) > 60.f) { SP.LastPos = SP.Boss->GetActorLocation(); SP.LastMoveAt = SP.Clock; }
+        SP.LongestStall = FMath::Max(SP.LongestStall, SP.Clock - SP.LastMoveAt);
+        // Mid-march captures: the giant coming down the town street with its raid bar (hero ahead of it on its road).
+        if (SP.bShots && SP.Clock - SP.StageAt > 16.f && SP.Shot < 4 && Local)
+        {
+            if (SP.FramedAt < 0) { SP.FramedAt = SP.Clock; SP.ShotSpot = OnNav(World, CireLanePath::PointAlongRoute(World, SP.Team, CireLanePath::RouteProgress(World, SP.Team, SP.Boss->GetActorLocation()) + 6000.f / FMath::Max(1.f, CireLanePath::RouteLength(World, SP.Team)), 110)); }
+            FrameAt(World, SP.Boss, SP.ShotSpot);
+            if (SP.Clock - SP.FramedAt > 5.f) ShootThemes(World, TEXT("siege_boss")); // after the zone banner
+        }
+        if (SP.Clock - SP.StageAt < 45.f) return true;
+        const float Now = CireLanePath::RouteProgress(World, SP.Team, SP.Boss->GetActorLocation()) * CireLanePath::RouteLength(World, SP.Team);
+        SPNote(FString::Printf(TEXT("CIRE_BOSS_SPACING_PROBE_MARCH advanced=%.1fm in 45s longest_stall=%.1fs at=(%.0f,%.0f)"), (Now - SP.BossStart) / 100.f, SP.LongestStall,
+            SP.Boss->GetActorLocation().X, SP.Boss->GetActorLocation().Y));
+        if (Now - SP.BossStart < 2000.f) SPFail(TEXT("the giant wave boss did not march 20 m along the town road"));
+        if (SP.LongestStall > 6.f) SPFail(TEXT("the giant wave boss stalled on the road"));
+        SP.Stage = SP.bShots ? EStage::Shots : EStage::Done; SP.StageAt = SP.Clock; SP.Shot = 0; SP.FramedAt = -1.f; SP.ArmedAt = -1.f;
+        if (!SP.bShots) SPFinish();
+        return true;
+    }
+    case EStage::Shots:
+    {
+        // A world boss at its lair seen from the street leading to it, raid bar on top, per theme.
+        if (SP.Shot >= 4)
+        {
+            if (SP.Clock - SP.StageAt > 2.f) { if (ACireHUD* HUD = ProbeHUD(World); HUD && !SP.SavedTheme.IsEmpty()) HUD->UISettings.UITheme = SP.SavedTheme; SPFinish(); } // let the last PNG write
+            return true;
+        }
+        ACireMonster* Giant = NearestOutdoorBoss(Mode, SP.Team);
+        if (!Giant || !Local) { SPNote(TEXT("CIRE_BOSS_SPACING_PROBE_SHOT skipped: no world boss")); SPFinish(); return true; }
+        if (SP.FramedAt < 0) { SP.FramedAt = SP.Clock; SP.ShotSpot = StreetSpot(World, Giant, OnNav(World, CireLanePath::PlayerSpawnTransform(World, SP.Team, 0).GetLocation(), 72.f), 3200.f); }
+        FrameAt(World, Giant, SP.ShotSpot);
+        if (SP.Clock - SP.FramedAt > 5.f && ShootThemes(World, TEXT("world_boss"))) SP.StageAt = SP.Clock;
+        return true;
+    }
+    default: return true;
+    }
+}
+#endif

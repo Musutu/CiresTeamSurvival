@@ -107,6 +107,7 @@ public:
     UPROPERTY(Replicated) uint8 SkillTier = 0;                     // 0 none, 1..3 = I..III
     UPROPERTY(Replicated) bool bLoadoutSet = false;                // false = every authored ability (legacy/tests)
     UPROPERTY(Replicated) TArray<FName> Loadout;                   // active non-basic abilities when bLoadoutSet
+    UPROPERTY(Replicated) float BodySize = 1.f;                    // bosses-spacing: the Boss Spawn marker's model "size" (outdoor bosses)
     bool IsAbilityActive(FName AbilityId) const;
 
     // ---- read API (valid on server and clients) ----

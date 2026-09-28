@@ -175,6 +175,14 @@ private:
     // ---- WoW-style frames and feedback (CireHUDWow.cpp) ----
     void DrawPortrait(AActor* Actor, float CX, float CY, float R, bool bSmall);
     void DrawBossFrames(ACireHero* Hero, ACireController* Controller);
+    // bosses-spacing: top-of-screen raid-boss bars (CireHUDBossBar.cpp, panel "RaidBoss").
+    void DrawRaidBossBars(ACireHero* Hero, ACireController* Controller);
+    int32 LastRaidBars = 0;
+public:
+    int32 DebugRaidBarsDrawn() const { return LastRaidBars; }
+    /** bosses-spacing: raid-bar phase ticks (health fractions, descending) from the boss's authored thresholds. */
+    static TArray<float> RaidBossPhases(const class ACireMonster* Monster);
+private:
 public:
     /** vfx-scale: special-state icons (rare, bonus loot, boss, enraged; CireZones::BadgesOf) drawn left to right from X,
      *  centred on CY, each S px. Returns the width used (0 when the unit has none). Replaces the old body glows. */

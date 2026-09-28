@@ -402,6 +402,7 @@ void CireMapLayout::SyncTwin(FCireMapLayout& L, const FString& Id)
     T->Weight = Source.Weight; T->bSplitWeighted = Source.bSplitWeighted; // layout-wiring
     T->PackType = Source.PackType; T->Comp = Source.Comp; // jungle-packs
     T->HealthScale = Source.HealthScale; // outdoor-bosses
+    T->SizeScale = Source.SizeScale; // bosses-spacing
     T->Owner = OtherTeam(Source.Owner);
     T->Target = IsTeam(Source.Target) ? OtherTeam(Source.Target) : Source.Target;
     T->From = MapLink(L, Source.From); T->MergeInto = MapLink(L, Source.MergeInto);
@@ -513,6 +514,11 @@ bool CireMapLayout::SetHealthScale(FCireMapLayout& L, const FString& Id, float S
 {
     FCireMapMarker* M = Find(L, Id); if (!M || M->Type != BossSpawn || !FMath::IsFinite(Scale)) return false;
     M->HealthScale = FMath::Clamp(FMath::RoundToFloat(Scale * 100.f) / 100.f, .1f, 20.f); SyncTwin(L, Id); return true;
+}
+bool CireMapLayout::SetBossSize(FCireMapLayout& L, const FString& Id, float Scale) // bosses-spacing
+{
+    FCireMapMarker* M = Find(L, Id); if (!M || M->Type != BossSpawn || !FMath::IsFinite(Scale)) return false;
+    M->SizeScale = FMath::Clamp(FMath::RoundToFloat(Scale * 20.f) / 20.f, .2f, 3.f); SyncTwin(L, Id); return true;
 }
 bool CireMapLayout::SetWeight(FCireMapLayout& L, const FString& Id, float Weight)
 {
@@ -794,7 +800,7 @@ TArray<FCireLayoutIssue> CireMapLayout::Validate(const FCireMapLayout& L, const 
                     T->From == MapLink(L, M.From) && T->MergeInto == MapLink(L, M.MergeInto) &&
                     SameXY(T->SignPos, M.SignPos) && SameXY(T->StallPos, M.StallPos) && T->SignYaw == M.SignYaw && T->StallYaw == M.StallYaw &&
                     T->SignHeight == M.SignHeight && T->StallSize == M.StallSize && T->Weight == M.Weight && T->bSplitWeighted == M.bSplitWeighted &&
-                    T->PackType == M.PackType && T->Comp == M.Comp && T->HealthScale == M.HealthScale;
+                    T->PackType == M.PackType && T->Comp == M.Comp && T->HealthScale == M.HealthScale && T->SizeScale == M.SizeScale;
                 if (!bSync) Issue(true, OwnerValue(M.Owner), M.Id, FString::Printf(TEXT("%s is out of sync with its mirrored twin"), *Label));
             }
         }
@@ -899,6 +905,7 @@ FString CireMapLayout::ToJson(const FCireMapLayout& L)
         if (T.bTier || M.Tier > 0) F.Add(FString::Printf(TEXT("\"tier\": %d"), M.Tier));
         if (!M.Kind.IsEmpty()) F.Add(FString::Printf(TEXT("\"kind\": %s"), *Q(M.Kind)));
         if (M.Type == BossSpawn && M.HealthScale != 1.f) F.Add(FString::Printf(TEXT("\"hp\": %s"), *FString::SanitizeFloat(M.HealthScale))); // outdoor-bosses
+        if (M.Type == BossSpawn && M.SizeScale != 1.f) F.Add(FString::Printf(TEXT("\"size\": %s"), *FString::SanitizeFloat(M.SizeScale))); // bosses-spacing
         if (M.Type == ChallengePack) // jungle-packs
         {
             F.Add(FString::Printf(TEXT("\"pack\": %s"), *Q(M.PackType.ToString())));
@@ -949,6 +956,7 @@ bool CireMapLayout::ParseJson(const FString& Json, FCireMapLayout& Out, FString&
         M.Target = O->TryGetNumberField(TEXT("target"), Target) ? OwnerOf(static_cast<int32>(Target)) : M.Owner;
         O->TryGetStringField(TEXT("name"), M.Name); O->TryGetStringField(TEXT("kind"), M.Kind);
         { double Hp = 1; if (O->TryGetNumberField(TEXT("hp"), Hp) && FMath::IsFinite(Hp)) M.HealthScale = FMath::Clamp(static_cast<float>(Hp), .1f, 20.f); } // outdoor-bosses
+        { double Size = 1; if (O->TryGetNumberField(TEXT("size"), Size) && FMath::IsFinite(Size)) M.SizeScale = FMath::Clamp(static_cast<float>(Size), .2f, 3.f); } // bosses-spacing
         O->TryGetStringField(TEXT("from"), M.From); O->TryGetStringField(TEXT("mergeInto"), M.MergeInto); O->TryGetStringField(TEXT("pair"), M.Pair);
         O->TryGetBoolField(TEXT("mirror"), M.bMirror);
         const TArray<TSharedPtr<FJsonValue>>* Points = nullptr;
@@ -1156,7 +1164,7 @@ bool CireMapLayout::CompileRoutes(const FCireMapLayout& L, const FCireBattlefiel
         if (Other && !SameXY(Other->Position, Goal->Position)) Notes.Add(TEXT("The T2 objective differs from T1's; the game uses one goal zone (T1's) in both realms"));
     }
     const FVector2D GoalHalf = Out.GoalSize * .5;
-    auto Spot = [](const FCireMapMarker& M) { FCireRouteSpot S; S.Position = M.Position; S.Yaw = M.Yaw; S.Radius = M.Radius; S.Id = M.Id; S.Name = M.Name; if (M.Type == BossSpawn) { S.Kind = M.Kind; S.HealthScale = M.HealthScale; } /* outdoor-bosses */ return S; };
+    auto Spot = [](const FCireMapMarker& M) { FCireRouteSpot S; S.Position = M.Position; S.Yaw = M.Yaw; S.Radius = M.Radius; S.Id = M.Id; S.Name = M.Name; if (M.Type == BossSpawn) { S.Kind = M.Kind; S.HealthScale = M.HealthScale; S.SizeScale = M.SizeScale; } /* outdoor-bosses */ return S; };
     for (int32 Realm = 0; Realm < 2; ++Realm)
     {
         const ECireMarkerOwner Team = TeamOfRealm(Realm);

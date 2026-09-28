@@ -319,7 +319,7 @@ void Capture(int32 Stage)
     {
         // Default WoW layout: the main frames never overlap each other at 1080p.
         const TCHAR* Ids[]={TEXT("Player"),TEXT("Party"),TEXT("Target"),TEXT("Focus"),TEXT("Match"),TEXT("Minimap"),TEXT("Boss"),TEXT("Threat"),
-            TEXT("Meter"),TEXT("Skills"),TEXT("Chat"),TEXT("Inventory"),TEXT("Bar2"),TEXT("Pet"),TEXT("Stats")};
+            TEXT("Meter"),TEXT("Skills"),TEXT("Chat"),TEXT("Inventory"),TEXT("Bar2"),TEXT("Pet"),TEXT("Stats"),TEXT("RaidBoss")}; // bosses-spacing: RaidBoss
         for(int32 A=0;A<UE_ARRAY_COUNT(Ids);++A)for(int32 B=A+1;B<UE_ARRAY_COUNT(Ids);++B)
         {
             const FCireUIRect RA=HUD->UISettings.GetRect(Ids[A],View),RB=HUD->UISettings.GetRect(Ids[B],View);
