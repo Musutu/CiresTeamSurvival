@@ -48,6 +48,22 @@ struct CIRESTEAMSURVIVAL_API FCireKitEffectPlacement
     bool operator==(const FCireKitEffectPlacement& O) const;
 };
 
+/** Where one champion's projectiles leave from (the MUZZLE): skillshots of its abilities and its ranged basic attack.
+ *  Authored like a cast placement (attach point + offset on the live preview body); the editor bakes the resulting point
+ *  into champion space ("point") on save, because a dedicated server does not animate bodies: the server spawns the
+ *  projectile at ActorTransform * Point, so every machine sees the same replicated start. */
+struct CIRESTEAMSURVIVAL_API FCireKitMuzzle
+{
+    FString Attach;                         // anchor key or literal socket / bone ("" = the champion's old spawn point)
+    FVector Offset = FVector::ZeroVector;   // cm, champion space (+X forward, +Y right, +Z up), added to the attach point
+    FVector Point = FVector::ZeroVector;    // baked champion-space muzzle (unscaled actor-local cm); valid when bHasPoint
+    bool bHasPoint = false;
+    bool IsDefault() const;
+    /** Authoring equality (Attach + Offset); the baked point follows them. */
+    bool operator==(const FCireKitMuzzle& O) const;
+    bool operator!=(const FCireKitMuzzle& O) const { return !(*this == O); }
+};
+
 /** One named loadout: the ability on each skill button. Slots 0-5 = keys 1-6, 6 = ultimate (R), 7 = passive. */
 struct FCireKitLoadout
 {
@@ -83,6 +99,9 @@ struct CIRESTEAMSURVIVAL_API FCireKitData
 {
     TArray<FCireKitProfile> Profiles;       // "Standard" is always present (first)
     TMap<FString, TMap<FString, FCireKitEffectPlacement>> Effects; // champion -> ability -> placement
+    /** champion -> muzzle key -> muzzle. Key "*" = every projectile of the champion (abilities + basic attack); an ability
+     *  id = that ability only (overrides "*"). */
+    TMap<FString, TMap<FString, FCireKitMuzzle>> Muzzles;
     const FCireKitProfile* FindProfile(const FString& Name) const;
     FCireKitProfile* FindProfile(const FString& Name);
 };
@@ -146,6 +165,21 @@ namespace CireKitEditor
     CIRESTEAMSURVIVAL_API UFXSystemComponent* SpawnPlacedCast(UWorld* World, FName Skill, FVector CasterAt, UFXSystemAsset* System, float Scale,
         const CireFabVFX::FEntry* Entry = nullptr);
     CIRESTEAMSURVIVAL_API UFXSystemAsset* CastSystem(const FString& AbilityId, float* OutScale = nullptr, const CireFabVFX::FEntry** OutEntry = nullptr);
+
+    // ---- projectile muzzle (per champion, optional per-ability override) ----
+    inline const TCHAR* MuzzleAll = TEXT("*");
+    /** The muzzle for this champion's ability (id or display name; "" = basic attack): the ability's own, else "*". */
+    CIRESTEAMSURVIVAL_API const FCireKitMuzzle* FindMuzzle(const FString& ChampionId, const FString& AbilityIdOrName);
+    /** Champion-space muzzle point (baked point, else OldLocalStart + offset), clamped to a sane box around the body. */
+    CIRESTEAMSURVIVAL_API FVector MuzzleLocal(const FCireKitMuzzle& Muzzle, const FVector& OldLocalStart);
+    /** Bakes Point from a posed body (the editor preview): resolved socket + offset, into the hero's actor space. */
+    CIRESTEAMSURVIVAL_API bool BakeMuzzle(FCireKitMuzzle& Muzzle, const ACireHero* PosedBody);
+    /** World muzzle on a posed body right now (live socket + offset; no attach = the old basic-attack point + offset). */
+    CIRESTEAMSURVIVAL_API FVector MuzzleWorldPosed(const ACireHero* PosedBody, const FCireKitMuzzle& Muzzle);
+    /** Server hook for every projectile spawn: Source's muzzle for the ability ("" = basic attack) when Source is a champion
+     *  with a muzzle and the point is reachable (no wall between body and muzzle), else DefaultStart unchanged.
+     *  A hand-edited muzzle without a baked point = DefaultStart (in champion space) + its offset. */
+    CIRESTEAMSURVIVAL_API FVector ProjectileStart(const AActor* Source, const FString& AbilityIdOrName, const FVector& DefaultStart);
 
     // ---- pool (every ability, the Skill Shop's sections) ----
     CIRESTEAMSURVIVAL_API bool MatchesSearch(const FCireAbilityDef& Def, const FString& Search);

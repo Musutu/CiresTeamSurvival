@@ -96,6 +96,27 @@ TSharedRef<FJsonObject> KitPlacementJson(const FCireKitEffectPlacement& P)
     }
     return E;
 }
+// Muzzle points stay within this box around the body (champion space, cm): projectiles must still sweep through capsules.
+FVector KitClampMuzzle(const FVector& V)
+{
+    return FVector(FMath::Clamp(V.X, -200.0, 200.0), FMath::Clamp(V.Y, -200.0, 200.0), FMath::Clamp(V.Z, -90.0, 160.0));
+}
+bool KitParseMuzzle(const TSharedPtr<FJsonObject>& Obj, FCireKitMuzzle& M)
+{
+    Obj->TryGetStringField(TEXT("attach"), M.Attach);
+    float V3[3];
+    if (KitVector(Obj, TEXT("offset"), 3, V3)) M.Offset = FVector(FMath::Clamp(V3[0], -200.f, 200.f), FMath::Clamp(V3[1], -200.f, 200.f), FMath::Clamp(V3[2], -200.f, 200.f));
+    if (KitVector(Obj, TEXT("point"), 3, V3)) { M.Point = KitClampMuzzle(FVector(V3[0], V3[1], V3[2])); M.bHasPoint = true; }
+    return !M.IsDefault();
+}
+TSharedRef<FJsonObject> KitMuzzleJson(const FCireKitMuzzle& M)
+{
+    TSharedRef<FJsonObject> E = MakeShared<FJsonObject>();
+    if (!M.Attach.IsEmpty()) E->SetStringField(TEXT("attach"), M.Attach);
+    if (!M.Offset.IsNearlyZero(.01f)) E->SetArrayField(TEXT("offset"), KitNumbers({float(M.Offset.X), float(M.Offset.Y), float(M.Offset.Z)}));
+    if (M.bHasPoint) E->SetArrayField(TEXT("point"), KitNumbers({float(M.Point.X), float(M.Point.Y), float(M.Point.Z)}));
+    return E;
+}
 // Slot keys in the file: "1".."6", "R", "P".
 FString KitSlotKey(int32 Slot) { return Slot == FCireKitLoadout::UltimateSlot ? TEXT("R") : Slot == FCireKitLoadout::PassiveSlot ? TEXT("P") : FString::FromInt(Slot + 1); }
 int32 KitSlotFromKey(const FString& Key)
@@ -134,6 +155,8 @@ bool FCireKitEffectPlacement::operator==(const FCireKitEffectPlacement& O) const
         Tint.Equals(O.Tint, .002f) && FMath::IsNearlyEqual(TintStrength, O.TintStrength, .002f);
 }
 // ------------------------------------------------------------------ value types
+bool FCireKitMuzzle::IsDefault() const { return Attach.IsEmpty() && Offset.IsNearlyZero(.01f); }
+bool FCireKitMuzzle::operator==(const FCireKitMuzzle& O) const { return Attach == O.Attach && Offset.Equals(O.Offset, .01f); }
 TArray<FString> FCireKitLoadout::Skills() const
 {
     TArray<FString> Out;
@@ -271,6 +294,19 @@ bool CireKitEditor::ParseJson(const FString& Json, FCireKitData& Out, FString& E
             const TSharedPtr<FJsonObject>* CObj = nullptr;
             if (CE.Value->TryGetObject(CObj) && CObj) KitParseEffects(FString(CE.Key), *CObj, Parsed);
         }
+    const TSharedPtr<FJsonObject>* Muzzles = nullptr;
+    if (Root->TryGetObjectField(TEXT("muzzles"), Muzzles) && Muzzles)
+        for (const auto& CM : (*Muzzles)->Values)
+        {
+            const TSharedPtr<FJsonObject>* CObj = nullptr;
+            if (!CM.Value->TryGetObject(CObj) || !CObj) continue;
+            for (const auto& E : (*CObj)->Values)
+            {
+                const TSharedPtr<FJsonObject>* O = nullptr;
+                FCireKitMuzzle M;
+                if (!FString(E.Key).IsEmpty() && E.Value->TryGetObject(O) && O && KitParseMuzzle(*O, M)) Parsed.Muzzles.FindOrAdd(FString(CM.Key)).Add(FString(E.Key), M);
+            }
+        }
     // Standard always exists and comes first.
     const int32 Std = Parsed.Profiles.IndexOfByPredicate([](const FCireKitProfile& P) { return P.Name.Equals(StandardProfile, ESearchCase::IgnoreCase); });
     if (Std == INDEX_NONE) { FCireKitProfile S; S.Name = StandardProfile; Parsed.Profiles.Insert(S, 0); }
@@ -327,6 +363,16 @@ FString CireKitEditor::ToJson(const FCireKitData& In)
         if (CObj->Values.Num()) Effects->SetObjectField(Id, CObj);
     }
     Root->SetObjectField(TEXT("effects"), Effects);
+    TSharedRef<FJsonObject> Muzzles = MakeShared<FJsonObject>();
+    TArray<FString> MChampions; In.Muzzles.GetKeys(MChampions); MChampions.Sort();
+    for (const FString& Id : MChampions)
+    {
+        TSharedRef<FJsonObject> CObj = MakeShared<FJsonObject>();
+        TArray<FString> Keys; In.Muzzles[Id].GetKeys(Keys); Keys.Sort();
+        for (const FString& K : Keys) if (!In.Muzzles[Id][K].IsDefault()) CObj->SetObjectField(K, KitMuzzleJson(In.Muzzles[Id][K]));
+        if (CObj->Values.Num()) Muzzles->SetObjectField(Id, CObj);
+    }
+    Root->SetObjectField(TEXT("muzzles"), Muzzles);
     FString Out;
     const auto Writer = TJsonWriterFactory<TCHAR, TPrettyJsonPrintPolicy<TCHAR>>::Create(&Out);
     FJsonSerializer::Serialize(Root, Writer);
@@ -363,6 +409,11 @@ bool CireKitEditor::Save(const FCireKitData& In, FString* Error)
             else if (!It.Value().Find(It.Value().DefaultLoadout)) It.Value().DefaultLoadout = It.Value().Loadouts[0].Name;
         }
     for (auto It = Clean.Effects.CreateIterator(); It; ++It)
+    {
+        for (auto E = It.Value().CreateIterator(); E; ++E) if (E.Value().IsDefault()) E.RemoveCurrent();
+        if (It.Value().IsEmpty()) It.RemoveCurrent();
+    }
+    for (auto It = Clean.Muzzles.CreateIterator(); It; ++It)
     {
         for (auto E = It.Value().CreateIterator(); E; ++E) if (E.Value().IsDefault()) E.RemoveCurrent();
         if (It.Value().IsEmpty()) It.RemoveCurrent();
@@ -653,6 +704,64 @@ UFXSystemAsset* CireKitEditor::CastSystem(const FString& AbilityId, float* OutSc
     if (OutScale) *OutScale = Entry ? Entry->Scale : 1.f;
     if (OutEntry) *OutEntry = System ? Entry : nullptr;
     return System;
+}
+
+// ------------------------------------------------------------------ projectile muzzle
+const FCireKitMuzzle* CireKitEditor::FindMuzzle(const FString& ChampionId, const FString& AbilityIdOrName)
+{
+    const TMap<FString, FCireKitMuzzle>* Map = ChampionId.IsEmpty() ? nullptr : Data().Muzzles.Find(ChampionId);
+    if (!Map || Map->IsEmpty()) return nullptr;
+    if (!AbilityIdOrName.IsEmpty())
+    {
+        if (const FCireKitMuzzle* Own = Map->Find(AbilityIdOrName); Own && !Own->IsDefault()) return Own;
+        const FCireAbilityDef* Def = CireAbilityDB::Find(AbilityIdOrName);
+        if (!Def) Def = CireAbilityDB::FindByName(AbilityIdOrName);
+        if (Def && Def->Id != AbilityIdOrName) if (const FCireKitMuzzle* Own = Map->Find(Def->Id); Own && !Own->IsDefault()) return Own;
+    }
+    const FCireKitMuzzle* All = Map->Find(MuzzleAll);
+    return All && !All->IsDefault() ? All : nullptr;
+}
+
+FVector CireKitEditor::MuzzleLocal(const FCireKitMuzzle& M, const FVector& OldLocalStart)
+{
+    return KitClampMuzzle(M.bHasPoint ? M.Point : OldLocalStart + M.Offset);
+}
+
+bool CireKitEditor::BakeMuzzle(FCireKitMuzzle& M, const ACireHero* Body)
+{
+    M.bHasPoint = false; M.Point = FVector::ZeroVector;
+    if (M.IsDefault() || !Body) return false;
+    M.Point = KitClampMuzzle(Body->GetActorTransform().InverseTransformPosition(MuzzleWorldPosed(Body, M)));
+    M.bHasPoint = true;
+    return true;
+}
+
+FVector CireKitEditor::MuzzleWorldPosed(const ACireHero* Body, const FCireKitMuzzle& M)
+{
+    if (!Body) return FVector::ZeroVector;
+    const USkeletalMeshComponent* Mesh = Body->GetMesh();
+    const FName Socket = ResolveAttach(Mesh, M.Attach);
+    // No attach point: the offset is relative to the basic attack's old spawn point (chest height, in front).
+    const FTransform Actor = Body->GetActorTransform();
+    const FVector Base = Mesh && !Socket.IsNone() ? Mesh->GetSocketLocation(Socket) : Actor.TransformPosition(FVector(45, 0, 45));
+    return Base + Body->GetActorRotation().RotateVector(M.Offset * Body->GetActorScale3D().Z);
+}
+
+FVector CireKitEditor::ProjectileStart(const AActor* Source, const FString& AbilityIdOrName, const FVector& DefaultStart)
+{
+    const ACireHero* Hero = Cast<ACireHero>(Source);
+    if (!Hero || !Hero->HasAuthority() || Hero->ChampionProfileId.IsEmpty() || Data().Muzzles.IsEmpty()) return DefaultStart;
+    const FCireKitMuzzle* M = FindMuzzle(Hero->ChampionProfileId, AbilityIdOrName);
+    if (!M) return DefaultStart;
+    const FTransform Actor = Hero->GetActorTransform();
+    const FVector Start = Actor.TransformPosition(MuzzleLocal(*M, Actor.InverseTransformPosition(DefaultStart)));
+    if (!Start.ContainsNaN() && Hero->GetWorld())
+    {
+        // Never start a projectile inside / behind a wall the body is touching.
+        FCollisionQueryParams Params(SCENE_QUERY_STAT(CireKitMuzzle), false, Hero);
+        if (!Hero->GetWorld()->LineTraceTestByObjectType(Hero->GetActorLocation(), Start, FCollisionObjectQueryParams(ECC_WorldStatic), Params)) return Start;
+    }
+    return DefaultStart;
 }
 
 // ------------------------------------------------------------------ pool (every ability, Skill Shop sections)

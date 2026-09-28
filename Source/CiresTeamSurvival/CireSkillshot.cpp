@@ -4,6 +4,7 @@
 #include "CireConstruct.h"
 #include "CireCombatEvents.h"
 #include "CireSkillRuntime.h"
+#include "CireKitEditor.h" // kit-editor: per-champion projectile muzzle
 #include "CireSpellPresentation.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -60,10 +61,20 @@ ACireSkillshot* ACireSkillshot::Spawn(AActor* Source, const FCireSkillshotSpec& 
     auto* Mode = World->GetAuthGameMode<ACireGameMode>();
     const int32 Team = CireSkillRuntime::Team(Source);
     if (!Mode || !Mode->IsCombatPhase() || Team < 0 || Team > 1 || (Cast<ACireMonster>(Source) && Mode->Clock.Phase() != Cires::MatchPhase::Survival)) return nullptr;
-    const FVector Origin = Source->GetActorLocation();
+    FVector Origin = Source->GetActorLocation();
     if (!CireSkillRuntime::InRealmBounds(Mode, Team, Origin)) return nullptr;
     FVector Direction = AimPoint - Origin; Direction.Z = 0;
     if (!Direction.Normalize()) return nullptr;
+    {
+        // kit-editor: the champion's projectile muzzle (Hero Creator); aim from it unless the aim point is beside / behind it.
+        const FVector Muzzle = CireKitEditor::ProjectileStart(Source, !Name.IsEmpty() ? Name : Spec.AbilityName, Origin);
+        FVector MuzzleDir = AimPoint - Muzzle; MuzzleDir.Z = 0;
+        if (Muzzle != Origin && CireSkillRuntime::InRealmBounds(Mode, Team, Muzzle))
+        {
+            Origin = Muzzle;
+            if (MuzzleDir.Normalize() && FVector::DotProduct(MuzzleDir, Direction) > .5f) Direction = MuzzleDir;
+        }
+    }
     int32 Total = 0, Owned = 0;
     for (TCireActorIterator<ACireSkillshot> It(World); It; ++It)
         if (!It->IsActorBeingDestroyed()) { ++Total; if (It->SourceActor == Source) ++Owned; }
