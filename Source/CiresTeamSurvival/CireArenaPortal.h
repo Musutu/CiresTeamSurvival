@@ -15,6 +15,7 @@
 #include "CireArenaPortal.generated.h"
 
 class ACireGameMode;
+class ACireGameState;
 class ACireHero;
 class UBoxComponent;
 class UStaticMeshComponent;
@@ -127,7 +128,7 @@ namespace CireArenaFlow
     /** Multiplier on a team's damage to monsters (never to champions). */
     CIRESTEAMSURVIVAL_API float PvEDamageMultiplier(const UWorld* World, int32 Team);
     /** Seconds to show on prep timers: while the portals are open the countdown is not part of the prep. */
-    CIRESTEAMSURVIVAL_API float PrepSecondsLeft(const class ACireGameState* State);
+    CIRESTEAMSURVIVAL_API float PrepSecondsLeft(const ACireGameState* State);
     /** The champion (owner) behind a damage causer: the hero itself, or the owner/instigator of a pet, summon or construct. */
     CIRESTEAMSURVIVAL_API ACireHero* KillerHero(AActor* Causer);
 #if !UE_BUILD_SHIPPING
