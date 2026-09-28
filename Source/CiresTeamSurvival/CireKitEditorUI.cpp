@@ -17,6 +17,7 @@
 #include "CireKitEditor.h"
 #include "CireAbilityDB.h"
 #include "CireAbilityIcons.h"
+#include "CireAbilityTuner.h" // ability-tuner: refresh on live retunes
 #include "CireAbilityVFX.h"
 #include "CireChampionActions.h"
 #include "CireChampionProfiles.h"
@@ -100,6 +101,8 @@ struct FKitEditorState
     bool bGallery = false, bGalleryDone = false;
     double GalleryStart = 0, GalleryShotAt = 0;
     int32 GalleryStage = 0;
+    uint32 TunerVersion = 0;                 // CireAbilityTuner::Version() the screen last refreshed for
+    bool bTunerDirty = false;                // set by the OnChanged subscription
 };
 TMap<TWeakObjectPtr<const ACireHUD>, FKitEditorState> GKitEditorStates;
 FKitEditorState& KitState(const ACireHUD* HUD)
@@ -197,6 +200,37 @@ bool KitCommit(FKitEditorState& S, const FString& Name)
     KitLoadChampion(S, S.Champion, Name);
     return true;
 }
+// ability-tuner: the Ability Tuner renamed / retuned / disabled abilities. Cards and tooltips already read the live rows each
+// frame; drop what is cached across frames (the looping preview effect keeps the old VFX scale / tint, hover lift of rows that
+// may have moved, a selection that no longer exists) and tell the user.
+uint32 GKitTunerStamp = 0;
+FDelegateHandle GKitTunerHook;
+void KitEnsureTunerHook()
+{
+    if (GKitTunerHook.IsValid()) return;
+    GKitTunerHook = CireAbilityTuner::OnChanged().AddLambda([]()
+    {
+        ++GKitTunerStamp;
+        for (auto& Pair : GKitEditorStates) Pair.Value.bTunerDirty = true;
+    });
+}
+void KitTunerRefresh(FKitEditorState& S)
+{
+    const bool bFirst = S.TunerVersion == 0 && !S.bTunerDirty;
+    S.TunerVersion = CireAbilityTuner::Version();
+    S.bTunerDirty = false;
+    if (bFirst) return;
+    S.LiveKey.Reset();
+    if (UFXSystemComponent* Live = S.Live.Get()) Live->DestroyComponent();
+    S.Live.Reset();
+    S.Lift.Reset();
+    if (!S.Selected.IsEmpty() && !CireAbilityDB::Find(S.Selected)) S.Selected.Reset();
+    if (!S.PressId.IsEmpty() && !CireAbilityDB::Find(S.PressId)) { S.PressId.Reset(); S.bDragging = false; }
+    int32 Disabled = 0;
+    for (const FString& Id : S.Work.Skills()) Disabled += CireAbilityTuner::IsDisabled(Id) ? 1 : 0;
+    if (Disabled) KitStatus(S, FString::Printf(TEXT("Ability Tuner: %d button%s of this loadout %s disabled in this match."), Disabled, Disabled == 1 ? TEXT("") : TEXT("s"), Disabled == 1 ? TEXT("is") : TEXT("are")), KitWarn);
+    else KitStatus(S, TEXT("Ability Tuner changed abilities: cards and effects refreshed."), Muted * 1.4f);
+}
 FString KitKeyLabel(ACireHUD& HUD, int32 Slot)
 {
     if (Slot == FCireKitLoadout::PassiveSlot) return FString();
@@ -212,6 +246,12 @@ FString KitSlotWord(ACireHUD& HUD, int32 Slot)
 }
 
 // ------------------------------------------------------------------ open / close
+uint32 CireKitEditor::TunerStamp()
+{
+    KitEnsureTunerHook();
+    return GKitTunerStamp;
+}
+
 bool CireKitEditor::IsOpen(const ACireHUD* HUD)
 {
     if (!HUD || !IsAvailable()) return false;
@@ -235,6 +275,8 @@ void CireKitEditor::Open(ACireHUD* HUD, bool bOpen, const FString& ChampionId)
     if (bOpen && !S.bOpen)
     {
         S.bOpen = true;
+        KitEnsureTunerHook(); // ability-tuner
+        S.TunerVersion = CireAbilityTuner::Version(); S.bTunerDirty = false;
         if (Controller) { S.SavedSearch = Controller->DraftSearch; Controller->DraftSearch.Reset(); Controller->bDraftSearch = false; }
         if (!Data().FindProfile(S.Profile)) S.Profile = StandardProfile;
         const FString Want = !ChampionId.IsEmpty() && CireChampionRoster::Find(ChampionId) ? ChampionId
@@ -263,6 +305,8 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
     if (!World || !Hero) return;
     if (!Data().FindProfile(S.Profile)) S.Profile = StandardProfile;
     if (S.Champion.IsEmpty() && CireChampionRoster::Count()) KitLoadChampion(S, CireChampionRoster::All()[0].Id);
+    KitEnsureTunerHook();
+    if (S.bTunerDirty || S.TunerVersion != CireAbilityTuner::Version()) KitTunerRefresh(S); // ability-tuner: live retune
     const FCireChampionProfile* Profile = CireChampionRoster::Find(S.Champion);
     const double Now = FPlatformTime::Seconds();
     const float Time = static_cast<float>(FMath::Fmod(Now, 10000.0));
@@ -611,10 +655,12 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
             const float CW = CardW * Grow, CH = CardH * Grow, X = C.X - (CW - CardW) * .5f, Y2 = C.Y - (CH - CardH) * .5f - 5.f * Lift;
             const int32 On = S.Work.Slots.IndexOfByKey(C.Id);
             const EKind K = KindOf(C.Id);
-            const FString Caption = On != INDEX_NONE ? (On == FCireKitLoadout::PassiveSlot ? FString(TEXT("ON PASSIVE")) : FString::Printf(TEXT("ON KEY %s"), *KitKeyLabel(HUD, On)))
+            const bool bTunerOff = CireAbilityTuner::IsDisabled(C.Id); // ability-tuner: still assignable (templates outlive a match), flagged
+            const FString Caption = bTunerOff ? FString(TEXT("DISABLED BY TUNER"))
+                : On != INDEX_NONE ? (On == FCireKitLoadout::PassiveSlot ? FString(TEXT("ON PASSIVE")) : FString::Printf(TEXT("ON KEY %s"), *KitKeyLabel(HUD, On)))
                 : K == EKind::Ultimate ? FString(TEXT("ULTIMATE")) : K == EKind::Passive ? FString(TEXT("PASSIVE")) : FString(TEXT("ACTIVE"));
             if (On != INDEX_NONE) CireShopArt::Glow(P, X - CW * .06f, Y2 - CH * .04f, CW * 1.12f, CH * 1.08f, FLinearColor(1.f, .8f, .35f, .45f));
-            CireShopUI::DrawSkillCard(P, C.Id, X, Y2, CW, CH, Time, Lift, false, Caption, On != INDEX_NONE ? TEXT("ASSIGNED") : TEXT("ASSIGN"), On != INDEX_NONE ? KitGood : BrightGold);
+            CireShopUI::DrawSkillCard(P, C.Id, X, Y2, CW, CH, Time, Lift, bTunerOff, Caption, On != INDEX_NONE ? TEXT("ASSIGNED") : TEXT("ASSIGN"), bTunerOff ? KitBad : On != INDEX_NONE ? KitGood : BrightGold);
             if (C.Id == HoverId && S.PressId.IsEmpty())
             {
                 const int32 Target = TargetSlot(S.Work, C.Id, S.SelectedSlot);
@@ -890,7 +936,7 @@ void CireKitEditor::Draw(ACireHUD& HUD, ACireHero* Hero, ACireController* Contro
             {
                 const FCireKitEffectPlacement Now1 = S.Effects[S.Selected];
                 const float Base = DataScale * CireAbilityVFX::SpellEffectScale(World);
-                const FString Key = FString::Printf(TEXT("%s|%s|%s|%s|%.3f"), *S.Champion, *S.Selected, *ResolveAttach(Mesh, Now1.Attach).ToString(), *Now1.Tint.ToString(), Now1.TintStrength);
+                const FString Key = FString::Printf(TEXT("%s|%s|%s|%s|%.3f|%u"), *S.Champion, *S.Selected, *ResolveAttach(Mesh, Now1.Attach).ToString(), *Now1.Tint.ToString(), Now1.TintStrength, S.TunerVersion);
                 UFXSystemComponent* Live = S.Live.Get();
                 const bool bWaitRelease = S.CastReleaseAt > 0 && Now < S.CastReleaseAt;
                 UNiagaraComponent* Nia = ::Cast<UNiagaraComponent>(Live);

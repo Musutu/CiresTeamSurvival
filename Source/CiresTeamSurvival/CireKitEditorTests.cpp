@@ -3,6 +3,7 @@
 
 #if !UE_BUILD_SHIPPING
 #include "CireAbilityDB.h"
+#include "CireAbilityTuner.h"
 #include "CireChampionRoster.h"
 #include "CireFabVFX.h"
 #include "CireGame.h"
@@ -78,6 +79,26 @@ bool CireKitEditor::RunTests(ACireGameMode* Mode)
         for (const auto& G : Pool(Role)) for (const FCireAbilityDef* D : G.Value) T.Check(D->Types.Contains(TEXT("TANK")), D->Id + TEXT(": role chip"));
         const FCireAbilityDef& Probe = All[All.Num() / 2];
         T.Check(MatchesSearch(Probe, Probe.Name.ToUpper()) && MatchesSearch(Probe, TEXT("  ")) && !MatchesSearch(Probe, TEXT("zzqqxx_no_such")), TEXT("search: name, blank, miss"));
+    }
+
+    // ---------------- ability-tuner: live retunes reach the Hero Creator cards ----------------
+    {
+        const FCireTuningSet Saved = CireAbilityTuner::Active();
+        const FString Id = All[All.Num() / 3].Id;
+        const uint32 Stamp0 = TunerStamp(), Version0 = CireAbilityTuner::Version();
+        FCireAbilityOverride Rename; Rename.Name = FString(TEXT("Kitprobe Retuned Scroll"));
+        FString Error;
+        T.Check(CireAbilityTuner::ApplyLocal(Id, Rename, &Error), TEXT("tuner rename applies: ") + Error);
+        T.Check(TunerStamp() > Stamp0 && CireAbilityTuner::Version() != Version0, TEXT("Hero Creator hears CireAbilityTuner::OnChanged"));
+        FPoolFilter Search; Search.Search = TEXT("Kitprobe Retuned");
+        int32 Hits = 0; for (const auto& G : Pool(Search)) for (const FCireAbilityDef* D : G.Value) Hits += D->Id == Id ? 1 : 0;
+        T.Check(Hits == 1, Id + TEXT(": renamed card found by its tuned name"));
+        FCireAbilityOverride Off; Off.bEnabled = false;
+        T.Check(CireAbilityTuner::ApplyLocal(Id, Off) && CireAbilityTuner::IsDisabled(Id), TEXT("tuner disables the ability"));
+        int32 Listed = 0; for (const auto& G : Pool(FPoolFilter())) Listed += G.Value.Num();
+        T.Check(Listed == CireAbilityDB::All().Num(), TEXT("disabled ability stays listed (flagged) in the Hero Creator"));
+        CireAbilityTuner::ApplySetLocal(Saved);
+        T.Check(!CireAbilityTuner::IsDisabled(Id) || Saved.Contains(Id), TEXT("tuner set restored"));
     }
 
     // ---------------- skill buttons ----------------

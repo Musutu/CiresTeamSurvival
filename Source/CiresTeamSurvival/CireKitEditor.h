@@ -159,6 +159,9 @@ namespace CireKitEditor
     };
     /** Ability DB rows grouped by Skill Shop section index (sorted by name); empty sections omitted. */
     CIRESTEAMSURVIVAL_API TArray<TPair<int32, TArray<const FCireAbilityDef*>>> Pool(const FPoolFilter& Filter);
+    /** ability-tuner: how many CireAbilityTuner::OnChanged() notifications the Hero Creator has received (subscribes on
+     *  first call). Every open Hero Creator refreshes its cards, live preview effect and selection on each one. */
+    CIRESTEAMSURVIVAL_API uint32 TunerStamp();
 
     // ---- editor UI (CireKitEditorUI.cpp) ----
     CIRESTEAMSURVIVAL_API bool IsAvailable();
