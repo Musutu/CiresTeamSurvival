@@ -124,6 +124,40 @@ struct CIRESTEAMSURVIVAL_API FCireRoleSkillSpec
     float FlatPower=0,PrimaryScaling=0,MaxHealthFraction=0;
 };
 
+// casting-rules (Playtest 6, Content/Data/CastRules.json): cast times and healing are derived from each
+// ability's own numbers by formula, so every ability (including ones added later) inherits them.
+//   AoE damage  : 0.5-3.5 s, scaled by impact = (damage at the reference PRIMARY) x sqrt(radius / 300) x (1 + control bonus)
+//   Direct heal : 1.5-3.5 s, scaled by heal power (single target / ally / small aimed spot)
+//   AoE heal    : 0-1.5 s, scaled by heal power per ally; the effect is cut (65% instant .. 85% at 1.5 s)
+//   All ability healing x abilityHealingScale (0.85). Champion skillshots pierce (hit limit 5, -15% per extra target).
+enum class ECireCastRule : uint8 { None, AoEDamage, DirectHeal, AoEHeal };
+
+struct CIRESTEAMSURVIVAL_API FCireCastRules
+{
+    bool bEnabled = true;
+    float ReferencePrimary = 40.f, ReferenceMaxHealth = 1500.f;
+    float AoEMinRadius = 150.f, AoEHealMinRadius = 100.f, SelfAuraSeconds = 6.f; // authored radii (before aoe-scale)
+    float AoEDamageMinCast = .5f, AoEDamageMaxCast = 3.5f, AoEImpactLow = 60.f, AoEImpactHigh = 420.f, AoEAreaReference = 300.f, AoEControlBonus = .25f;
+    float DirectHealMinCast = 1.5f, DirectHealMaxCast = 3.5f, DirectHealPowerLow = 80.f, DirectHealPowerHigh = 400.f;
+    float AoEHealMaxCast = 1.5f, AoEHealPowerLow = 150.f, AoEHealPowerHigh = 700.f, AoEHealInstantEffect = .65f, AoEHealFullCastEffect = .85f;
+    float HealingScale = .85f;
+    float CastStep = .1f;
+    bool bPierceChampionSkillshots = true;
+    int32 PierceHitLimit = 5;
+    float PierceFalloff = .15f, PierceMinDamage = .4f;
+    TSet<FString> Exempt, NeverPierce;
+};
+
+struct CIRESTEAMSURVIVAL_API FCireCastVerdict
+{
+    ECireCastRule Rule = ECireCastRule::None;
+    float CastTime = 0.f;   // seconds (only meaningful when Rule != None)
+    float HealScale = 1.f;  // multiplier on every heal this ability applies
+    float Metric = 0.f;     // impact (AoE damage) or heal power used to place the cast time
+};
+
+struct FCireAbilityDef;
+
 struct CIRESTEAMSURVIVAL_API FCireTuningData
 {
     FCireGlobalCombatTuning Globals;
@@ -148,7 +182,28 @@ namespace CireSkillTuning
     // stable until a successful explicit reload; copy a spec into spawned actors.
     CIRESTEAMSURVIVAL_API bool ParseJson(const FString& Json, FCireTuningData& Out, FString& Error);
     CIRESTEAMSURVIVAL_API bool Reload(FString* Error = nullptr);
+
+    // casting-rules
+    CIRESTEAMSURVIVAL_API const FCireCastRules& CastRules();
+    CIRESTEAMSURVIVAL_API bool ParseCastRules(const FString& Json, FCireCastRules& Out, FString& Error);
+    /** Reloads Content/Data/CastRules.json, then the Ability Database so every row re-derives its cast time. */
+    CIRESTEAMSURVIVAL_API bool ReloadCastRules(FString* Error = nullptr);
+#if !UE_BUILD_SHIPPING
+    /** Tests: use these rules until ReloadCastRules (does not reload the Ability Database). */
+    CIRESTEAMSURVIVAL_API void DebugSetCastRules(const FCireCastRules& Rules);
+#endif
+    /** Pure formula. Forced: the row's "castRule" ("exempt", "aoeDamage", "directHeal", "aoeHeal" or empty). */
+    CIRESTEAMSURVIVAL_API FCireCastVerdict EvaluateCastRule(const FCireAbilityDef& Def, const FCireCastRules& Rules, const FString& Forced = FString());
+    /** Ability Database loader hook: writes CastTime / Base.CastTime / HealScale / CastRule (and castWhileMoving when not authored). */
+    CIRESTEAMSURVIVAL_API void ApplyCastRules(FCireAbilityDef& Def, const FString& Forced, bool bCastWhileMovingAuthored);
+    CIRESTEAMSURVIVAL_API FString CastRuleName(ECireCastRule Rule);
+    /** Heal multiplier for a champion ability by display name (1 for items, traits and unknown names). */
+    CIRESTEAMSURVIVAL_API float HealScaleFor(const FString& AbilityName);
+    /** Projectiles that visually carry through their target pierce: champion ability skillshots (not probes / monsters). */
+    CIRESTEAMSURVIVAL_API bool ShouldPierce(const AActor* Source, const FString& AbilityName);
 #if !UE_BUILD_SHIPPING
     CIRESTEAMSURVIVAL_API bool RunValidationSmoke();
+    /** casting-rules: formula bounds for every Ability Database row, inheritance by new rows, heal scale, shape audit. */
+    CIRESTEAMSURVIVAL_API bool RunCastRulesSmoke();
 #endif
 }

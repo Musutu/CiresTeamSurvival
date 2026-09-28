@@ -258,6 +258,29 @@ bool CireTargeting::ValidateGround(ACireHero* H,const FString& Id,FVector Point,
     const int32 Phase=CireSkillRuntime::Phase(H->GetWorld());if(Phase!=0&&Phase!=2)return Fail(TEXT("Abilities require an active combat phase."));
     const auto D=Describe(Id);if(D.Kind!=ECireTargetKind::Ground)return Fail(TEXT("This skill does not target ground."));
     if(D.bNeedsHostile&&!H->IsHostile(H->Target))return Fail(TEXT("Select an Enemy before placing these summons."));
+    // casting-rules (Playtest 6): barriers, constructs and summons ignore clipping. The aim is pulled into range, snapped onto
+    // the ground / navmesh, and only the realm edge and the castle goal zone can refuse it (the server applies the same rule).
+    {
+        const FCireAbilityDef* Def=CireAbilityDB::Find(Id);
+        const bool bPlacement=CireSkillTuning::FindConstruct(Id)||CireSkillTuning::FindSummon(Id)||
+            (Def&&(Def->IsConstruct()||Def->Section==TEXT("construct")||Def->Section==TEXT("summon")));
+        if(bPlacement)
+        {
+            const FVector From=H->GetActorLocation();const float Reach=FVector::Dist2D(From,Point);
+            if(Reach>D.Range*1.25f+50.f)return Fail(TEXT("Ground is outside casting range."));
+            if(Reach>D.Range){const FVector Dir=(Point-From).GetSafeNormal2D();Point.X=From.X+Dir.X*D.Range;Point.Y=From.Y+Dir.Y*D.Range;}
+            ACireConstruct::SnapToGround(H->GetWorld(),Point);
+            if(!InRealm(H,Point))return Fail(TEXT("Aim inside your battlefield."));
+            const FVector Direction=(Point-From).GetSafeNormal2D();
+            Heading=Direction.IsNearlyZero()?H->GetActorRotation():Direction.Rotation();Heading.Pitch=0;Heading.Roll=0;Center=Point;
+            if(CireSkillTuning::FindConstruct(Id)&&CireSkillRuntime::Phase(H->GetWorld())!=2)
+            {
+                const FVector Goal=CireLanePath::GoalZoneCenter(H->GetWorld(),H->TeamId,0);const FVector2D TE=CireLanePath::GoalZoneExtent(H->GetWorld());
+                if(FMath::Abs(Goal.X-Center.X)<=TE.X&&FMath::Abs(Goal.Y-Center.Y)<=TE.Y)return Fail(TEXT("Construct cannot overlap town."));
+            }
+            Reason=TEXT("Left click to place.");return true;
+        }
+    }
     if(!InRealm(H,Point))return Fail(TEXT("Aim inside your battlefield."));
     if(FVector::DistSquared2D(H->GetActorLocation(),Point)>FMath::Square(D.Range))return Fail(TEXT("Ground is outside casting range."));
     FVector Ground;if(!FloorAt(H,Point,Ground)||FMath::Abs(Ground.Z-Point.Z)>35)return Fail(TEXT("Aim at supported ground."));

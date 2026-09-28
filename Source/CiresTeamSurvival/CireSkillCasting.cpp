@@ -25,32 +25,20 @@ bool CostFor(const FString& Id, FCost& Cost)
     if (PlayerSummon(Id)) { if (const auto* S = CireSkillTuning::FindSummon(Id)) { Cost = {S->ManaCost, S->EnergyCost, S->CooldownSeconds, S->CastRange}; return true; } }
     return false;
 }
-bool GroundAim(ACireHero* Hero, FVector& Aim)
-{
-    FCollisionQueryParams Query(SCENE_QUERY_STAT(CireGroundCast), false, Hero);
-    FHitResult Hit;
-    if (!Hero->GetWorld()->LineTraceSingleByObjectType(Hit, Aim + FVector(0, 0, 300), Aim - FVector(0, 0, 500),
-        FCollisionObjectQueryParams(ECC_WorldStatic), Query) || Hit.ImpactNormal.Z < .8f) return false;
-    Aim = Hit.ImpactPoint;
-    return true;
-}
-bool PlacementSight(ACireHero* Hero, FVector Ground)
-{
-    FCollisionQueryParams Query(SCENE_QUERY_STAT(CirePlacementSight), false, Hero);
-    FCollisionObjectQueryParams Objects;
-    Objects.AddObjectTypesToQuery(ECC_WorldStatic); Objects.AddObjectTypesToQuery(ECC_WorldDynamic);
-    TArray<FHitResult> Hits;
-    Hero->GetWorld()->LineTraceMultiByObjectType(Hits, Hero->GetActorLocation(), Ground + FVector(0, 0, 92), Objects, Query);
-    for (const auto& Hit : Hits)
-    {
-        if (const auto* Construct = ::Cast<ACireConstruct>(Hit.GetActor()))
-        { if (Construct->IsWall() && Construct->ConstructSpec.bBlockMovement) return false; }
-        else if (Hit.GetComponent() && Hit.GetComponent()->GetCollisionResponseToChannel(ECC_Pawn) == ECR_Block) return false;
-    }
-    return true;
-}
 }
 
+bool CireSkillCasting::PlacementAim(ACireHero* Hero, FVector& Aim, float Range)
+{
+    if (!IsValid(Hero) || Aim.ContainsNaN()) return false;
+    auto* Mode = Hero->GetWorld()->GetAuthGameMode<ACireGameMode>();
+    const FVector From = Hero->GetActorLocation();
+    const float Reach = FVector::Dist2D(From, Aim);
+    if (!Mode || Reach > Range * 1.25f + 50.f) { Hero->Notice = TEXT("Aim within your realm and casting range."); return false; }
+    if (Reach > Range) { const FVector Dir = (Aim - From).GetSafeNormal2D(); Aim.X = From.X + Dir.X * Range; Aim.Y = From.Y + Dir.Y * Range; }
+    ACireConstruct::SnapToGround(Hero->GetWorld(), Aim);
+    if (!CireSkillRuntime::InRealmBounds(Mode, Hero->TeamId, Aim)) { Hero->Notice = TEXT("Aim within your realm and casting range."); return false; }
+    return true;
+}
 bool CireSkillCasting::Handles(const FString& Id) { return CireSignatureSkills::Handles(Id)||CireRollSkills::IsActive(Id)||CireRoleSkills::Handles(Id)||PlayerShot(Id) || PlayerConstruct(Id) || PlayerSummon(Id); }
 FString CireSkillCasting::Name(const FString& Id)
 {
@@ -82,7 +70,7 @@ FString CireSkillCasting::Description(const FString& Id)
     else if (PlayerConstruct(Id))
     {
         const auto& S = *CireSkillTuning::FindConstruct(Id);
-        Detail = FString::Printf(TEXT("Place %s: %.0f health for %.0fs; %.0f x %.0f cm footprint. Requires clear ground."),
+        Detail = FString::Printf(TEXT("Place %s: %.0f health for %.0fs; %.0f x %.0f cm footprint. Snaps to the ground under the aim."),
             S.Kind == ECireConstructKind::Wall ? TEXT("a wall blocking units") : TEXT("projectile protection"), S.MaxHealth, S.LifetimeSeconds, S.Width, S.Depth);
     }
     else
@@ -113,13 +101,12 @@ bool CireSkillCasting::Cast(ACireHero* Hero, int32 Slot, const FString& Id)
     const bool bTargetHostile = CireCombat::AreHostile(Hero, Hero->Target);
     FVector Aim = Hero->bHasCastAim ? Hero->CastAimPoint : bTargetHostile ? Hero->Target->GetActorLocation() :
         Hero->GetActorLocation() + Hero->GetActorForwardVector().GetSafeNormal2D() * FMath::Min(500.f, Cost.Range);
-    if (Aim.ContainsNaN() || !CireSkillRuntime::InRealmBounds(Mode, Hero->TeamId, Aim) ||
-        FVector::DistSquared2D(Hero->GetActorLocation(), Aim) > FMath::Square(Cost.Range)) return Fail(TEXT("Aim within your realm and casting range."));
-    if (!PlayerShot(Id))
+    if (PlayerShot(Id))
     {
-        if (!GroundAim(Hero, Aim)) return Fail(TEXT("Aim at supported battlefield ground."));
-        if (!PlacementSight(Hero, Aim)) return Fail(TEXT("A wall or world object blocks that placement."));
+        if (Aim.ContainsNaN() || !CireSkillRuntime::InRealmBounds(Mode, Hero->TeamId, Aim) ||
+            FVector::DistSquared2D(Hero->GetActorLocation(), Aim) > FMath::Square(Cost.Range)) return Fail(TEXT("Aim within your realm and casting range."));
     }
+    else if (!PlacementAim(Hero, Aim, Cost.Range)) return false; // casting-rules: barriers / summons ignore clipping
     const FString AbilityName = ACireHero::SkillName(Id);
     bool bSpawned = false;
     const float Power = Mode->Power(Hero->TeamId);
