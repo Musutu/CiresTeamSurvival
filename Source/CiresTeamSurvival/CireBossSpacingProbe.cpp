@@ -201,8 +201,8 @@ bool CireUnitSpacing::TickProbe(ACireGameMode* Mode, float Delta)
     SP.Clock += Delta;
     Mode->WaveTimer = 1.e6f; // no waves: only the probe's units, the packs and the world bosses
     ACireHero* Local = LocalHero(World);
-    for (auto* H : Mode->Heroes) if (IsValid(H) && !H->bBot && H != Local) { H->Draft(2); H->bBot = true; H->bAutoAttack = false; }
-    if (Local && !Local->bDrafted && Mode->bBotsFilled) Local->Draft(2);
+    // The probe's player drafts as a bot so the match fills (like the outdoor boss probe); it is handed back after setup.
+    if (SP.Stage == EStage::Setup) { for (auto* H : Mode->Heroes) if (IsValid(H) && !H->bBot) { H->Draft(2); H->bBot = true; H->bAutoAttack = false; } }
     // Everyone but the probe's hero stands aside: undrafted bots aggro nothing and nothing aggroes them.
     if (SP.Stage != EStage::Setup)
         for (auto* H : Mode->Heroes) if (IsValid(H) && H != SP.Victim && H != Local) { H->bDrafted = false; H->Target = nullptr; H->bAutoAttack = false; }
@@ -213,7 +213,11 @@ bool CireUnitSpacing::TickProbe(ACireGameMode* Mode, float Delta)
     {
         if (!Mode->bBotsFilled || !CireNav::IsReady(World) || !State || State->Phase != 0)
         {
-            if (SP.Clock > (CireTownMap::IsActive() ? 900.f : 150.f)) { SPFail(TEXT("setup timed out")); SPFinish(); }
+            if (SP.Clock > (CireTownMap::IsActive() ? 900.f : 150.f))
+            {
+                SPFail(FString::Printf(TEXT("setup timed out (bots_filled=%d nav_ready=%d phase=%d)"), Mode->bBotsFilled ? 1 : 0, CireNav::IsReady(World) ? 1 : 0, State ? State->Phase : -1));
+                SPFinish();
+            }
             return true;
         }
         SP.Team = Local ? FMath::Clamp(Local->TeamId, 0, 1) : 0;

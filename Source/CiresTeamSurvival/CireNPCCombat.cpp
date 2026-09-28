@@ -144,9 +144,9 @@ bool SpawnArea(ACireMonster* M,const FCireNPCAbility& A,ECireAreaShape Shape,FVe
 {
     FCireAreaSpec S;
     S.Shape=Shape;S.Radius=A.Radius;S.ConeAngleDegrees=FMath::Clamp(A.Angle,1.f,179.f);S.Length=Length>0?Length:A.Length;S.Width=A.Width;
-    // bosses-spacing: a giant's own cone / stomp starts at its body's edge, not inside its legs.
-    if(const float Body=CireUnitSpacing::BodyReachBonus(M);Body>0&&FVector::DistSquared2D(Ground,M->GetActorLocation())<FMath::Square(50.f))
-    {S.Radius+=Body;if(S.Length>0)S.Length+=Body;}
+    // bosses-spacing: a giant's own cone / line starts at its body's edge (authored shape unchanged), not inside its legs.
+    if(const float Body=CireUnitSpacing::BodyReachBonus(M);Body>0&&Shape!=ECireAreaShape::Circle&&FVector::DistSquared2D(Ground,M->GetActorLocation())<FMath::Square(50.f))
+        Ground+=Heading.Vector().GetSafeNormal2D()*(Body*.85f);
     S.WarningSeconds=A.CastTime;S.TickInterval=.5f;
     const bool bPool=A.DamagePerSecond>0&&A.Duration>0;
     S.bPersistent=bPool;S.bPoison=bPool;S.DurationSeconds=bPool?A.Duration:.3f;
