@@ -132,6 +132,8 @@ public:
     void PlayInterfaceSound(int32 Index,float Volume=1.f) { PlayWowSound(Index,Volume); }
     // F8 > Economy page (CireEconomyPage.cpp).
     void DrawEconomyPage(float X,float Y);
+    // pack-formations: F8 > Packs (CirePackStatsPage.cpp): challenge-mob stats, live.
+    void DrawPackStatsPage(float X,float Y);
     // Skill Shop READY button shares the match plate's breather Ready state (wave-director).
     bool IsBreatherReadyLocal(int32 Wave) const { return BreatherReadyWave==Wave&&bBreatherReadyLocal; }
     void SetBreatherReadyLocal(int32 Wave,bool bReady) { BreatherReadyWave=Wave; bBreatherReadyLocal=bReady; }
@@ -223,6 +225,7 @@ private:
     void DrawNameplates(ACireHero* Hero);
     void DrawVendorPlates(ACireHero* Hero); // vendors: merchant plates + interact prompt
     void DrawPortalPlates(ACireHero* Hero); // arena-portal: shadow portal plates + countdown prompt
+    void DrawArenaCountdown(); // arena-flow: big centre countdown once every champion is in the arena
     void DrawStatuses(AActor* Actor,float X,float Y,float Size,int32 MaxIcons=4);
     FString EffectSigil(FName Id,const struct FCireEffectInfo& I);
     FString StatusIconId(const struct FCireEffectInfo& I);

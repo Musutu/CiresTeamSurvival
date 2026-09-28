@@ -213,6 +213,8 @@ public:
     UFUNCTION(Server, Reliable) void ServerSell(int32 Index, bool bBeltSlot);
     UFUNCTION(Server, Reliable) void ServerUndo();
     UFUNCTION(Server, Reliable) void ServerUse(int32 Index, bool bBeltSlot);
+    /** initiation: use with the cursor point (Blink Dagger aims with it; other items ignore it). */
+    UFUNCTION(Server, Reliable) void ServerUseAt(int32 Index, bool bBeltSlot, FVector_NetQuantize Aim);
     UFUNCTION(Server, Reliable) void ServerSwap(int32 From, int32 To);
     UFUNCTION(Server, Reliable) void ServerShopOpen(bool bOpen);
     UFUNCTION(Client, Reliable) void ClientFeedback(const FCireShopFeedback& Feedback);

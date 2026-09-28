@@ -1,4 +1,6 @@
 #include "CireVideoSettings.h"
+#include "CireAbilityTuner.h" // ability-tuner
+#include "CireAbilityTunerUI.h" // ability-tuner
 #include "CireActorIterator.h" // town-perf: fast actor iteration in editor-binary -game
 #include "CireLocomotionLab.h" // movement-feel
 #include "CireWaves.h" // wave-director
@@ -141,6 +143,8 @@ bool TickClientProbe(ACireController* Controller) {
             FMath::IsNearlyEqual(Hero->Mana,Hero->MaxMana)&&FMath::IsNearlyEqual(Hero->Energy,100.f)&&
             Hero->Target==Probe.Selected.Get()&&Hero->IsHostile(Hero->Target);
         if(!Valid) {Fail(TEXT("invalid action mutated authoritative state"));return true;}
+        {FString TunerWhy;const bool bTuned=CireAbilityTuner::VerifyNetProbeOnClient(Controller,&TunerWhy); // ability-tuner: the server's override replicated
+         UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_TUNER %s %s"),bTuned?TEXT("PASS"):TEXT("FAIL"),*TunerWhy);if(!bTuned){Fail(TEXT("ability tuner override did not replicate"));return true;}}
         UE_LOG(LogCireNetClient,Display,TEXT("CIRE_NET_CLIENT_PASS team=%d phase=%d gold=%d skills=%d target_replicated=1 rejection_ack=1"),Hero->TeamId,State->Phase,Hero->Gold,Hero->Skills.Num());
         Probe.Done=true;FPlatformMisc::RequestExitWithStatus(false,0);
     }
@@ -235,6 +239,8 @@ void ACireController::PlayerTick(float Dt) {
         if(Camera.bClick){CireTargeting::Confirm(this);bClickUsed=true;}
         else if(Camera.bRightClick&&(!Interface||Interface->UISettings.bRightClickCancelsAim)){CireTargeting::Cancel(this);H->Notice=TEXT("Aim cancelled.");}
     }
+    // ability-tuner: a focused Ability Tuner text box owns the keyboard.
+    if(CireAbilityTunerUI::OwnsKeyboard()){CireTargeting::Cancel(this);CireAbilityTunerUI::TickKeys(this);return;}
     // champion-select: while the draft search box is focused it owns the keyboard.
     if(bDraftSearch) {
         if(H->bDrafted){bDraftSearch=false;}
@@ -259,6 +265,7 @@ void ACireController::PlayerTick(float Dt) {
     if(Keys.WasPressed(this,TEXT("ToggleLayoutEditor"))&&Interface)Interface->ToggleLayoutEditor();
     if(Keys.WasPressed(this,TEXT("ToggleOptions"))&&Interface)Interface->ToggleSettings();
     if(Keys.WasPressed(this,TEXT("ToggleDeveloperTools"))&&Interface)Interface->ToggleDeveloperTools();
+    if(Keys.WasPressed(this,TEXT("ToggleAbilityTuner")))CireAbilityTunerUI::Toggle(this); // ability-tuner
 #if !UE_BUILD_SHIPPING
     // layout-wiring: Alt+F5 restarts the match on the applied map layout (host / standalone).
     if(WasInputKeyJustPressed(EKeys::F5)&&(IsInputKeyDown(EKeys::LeftAlt)||IsInputKeyDown(EKeys::RightAlt))&&!CireTownMap::IsExplore())CireLayoutRuntime::RequestRestart(this);
@@ -305,8 +312,8 @@ void ACireController::PlayerTick(float Dt) {
     if(Keys.WasPressed(this,TEXT("ToggleLootLog"))&&Interface){Interface->UISettings.bShowLootLog=!Interface->UISettings.bShowLootLog;Interface->UISettings.Save();}
     if(Keys.WasPressed(this,TEXT("ToggleSkillShop")))CireShopUI::ToggleSkillShop(this);
     if(H->bDrafted&&H->Inventory&&H->Offers.IsEmpty()) {
-        for(int32 Index=0;Index<3;++Index)if(Keys.WasPressed(this,CireItems::BeltAction(Index)))H->Inventory->ServerUse(Index,true);
-        for(int32 Index=0;Index<6;++Index)if(Keys.WasPressed(this,CireItems::ItemAction(Index)))H->Inventory->ServerUse(Index,false);
+        for(int32 Index=0;Index<3;++Index)if(Keys.WasPressed(this,CireItems::BeltAction(Index)))H->Inventory->ServerUseAt(Index,true,CursorAim()); // initiation: cursor aim (Blink Dagger)
+        for(int32 Index=0;Index<6;++Index)if(Keys.WasPressed(this,CireItems::ItemAction(Index)))H->Inventory->ServerUseAt(Index,false,CursorAim());
     }
     if(!H->bDrafted&&Interface) {
         if(Keys.WasPressed(this,TEXT("RosterPreviousPage")))Interface->ChangeDraftRosterPage(-1);
@@ -322,7 +329,7 @@ void ACireController::PlayerTick(float Dt) {
         else if(!bShop) {
             // progression-shop: an action-bar slot may hold an active item ("item:<id>").
             const int32 Item=CireItems::ResolveItemSlot(Keys,*H,Slot);
-            if(Item!=INDEX_NONE){if(H->Inventory)H->Inventory->ServerUse(Item,false);continue;}
+            if(Item!=INDEX_NONE){if(H->Inventory)H->Inventory->ServerUseAt(Item,false,CursorAim());continue;} // initiation: cursor aim
             const int32 Skill=CireKeybindings::ResolveSlot(Keys,*H,Slot);if(Skill!=INDEX_NONE)RequestCast(Skill);
         }
     }
@@ -378,6 +385,7 @@ void ACireController::PlayerTick(float Dt) {
 void ACireController::ServerAction_Implementation(int32 Action,int32 Value,AActor* Selected) {
     auto* H=Cast<ACireHero>(GetPawn()); auto* M=GetWorld()->GetAuthGameMode<ACireGameMode>();if(!H||!M)return;
     if(Action==10) {CireWaveDirector::SetPlayerReady(H,Value!=0);return;} // wave-director: breather Ready (Skill Shop window)
+    if(Action==11) {if(IsLocalController()){const auto& P=CireWaveDirector::Presets();if(P.IsValidIndex(Value))CireWaveDirector::SelectPreset(M,P[Value].Id);}return;} // waves-modes: host picks the game type
     if(Action==9) {if(M->Clock.Phase()==Cires::MatchPhase::Finished)GetWorld()->ServerTravel(TEXT("/Game/Maps/Citadel"));return;}
     if(Action==5) {if(Value>=0&&Value<5&&!H->bDrafted)H->Draft(Value);return;}
     if(!H->bDrafted)return;

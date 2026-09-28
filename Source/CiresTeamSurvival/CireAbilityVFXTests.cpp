@@ -102,7 +102,7 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             Check(SameBoundary(D.Footprint,Shape.AsArea()),Name+TEXT(" aim preview boundary equals the hit boundary"));
             Check(D.bDirectional==(Shape.bFromCaster&&(Shape.Kind==ECireHitShape::Line||Shape.Kind==ECireHitShape::Cone)),Name+TEXT(" lines/cones anchor at the caster, circles at the cursor"));
         }
-        if(const auto* A=CireAbilityLibrary::Find(Name))Check(SameBoundary(A->Area,Shape.AsArea())&&Near(A->Area.WarningSeconds,Shape.WarningSeconds,.001f),Name+TEXT(" telegraph matches the authored area and warning"));
+        if(const auto* A=CireAbilityLibrary::Find(Name))Check(SameBoundary([&]{FCireAreaSpec N=A->Area;ACireAreaEffect::NormalizeShape(N);return N;}(),Shape.AsArea()) /* casting-rules: Line/Barrier/Cone/Circle */&&Near(A->Area.WarningSeconds,Shape.WarningSeconds,.001f),Name+TEXT(" telegraph matches the authored area and warning"));
         if(const auto* P=Name.StartsWith(TEXT("basic_"))?nullptr:CireSkillTuning::FindSkillshot(Name))
             Check(Shape.Kind==ECireHitShape::Line&&Shape.bProjectile&&Near(Shape.Width,P->Radius*2)&&Near(Shape.Length,FMath::Min(P->MaxRange,P->Speed*P->LifetimeSeconds)),
                 Name+TEXT(" skillshot telegraph is a line of the collision diameter and true travel"));
@@ -219,7 +219,7 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             auto* Out=MakeMonster(Center+FVector(0,-(Radius+25.f),0),TEXT("hollow_infantry"));
             if(!In||!Out)return;
             Ready(Hero,Id);Hero->Target=Target?Target:In;const float InBefore=In->Health,OutBefore=Out->Health;
-            Hero->Cast(0);
+            Hero->Cast(0);CireCrowdControl::CompleteCastNow(Hero); // casting-rules: AoE damage spells have cast times
             const FString Name(Id);
             if(FString(Id)==TEXT("war_cry"))Check(In->ForcedVictim==Hero&&Out->ForcedVictim!=Hero,Name+TEXT(" taunts inside its drawn radius only"));
             else Check(In->Health<InBefore&&Out->Health==OutBefore,Name+FString::Printf(TEXT(" hits inside its drawn %.0f cm radius only"),Radius));
@@ -733,7 +733,8 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
     PurgeNew();
     {
         ReloadVFXTuning();
-        Check(FMath::IsNearlyEqual(DesignSpellEffectScale(),1.3f,.001f),FString::Printf(TEXT("design spell-effect scale from VFXTuning.json is 1.3 (%.2f)"),DesignSpellEffectScale()));
+        Check(FMath::IsNearlyEqual(DesignSpellEffectScale(),1.17f,.001f),FString::Printf(TEXT("design spell-effect scale from VFXTuning.json is 1.17 (%.2f)"),DesignSpellEffectScale()));
+        Check(FMath::IsNearlyEqual(DesignHitEffectScale()*DesignSpellEffectScale(),.8f*1.3f,.01f),FString::Printf(TEXT("hit visuals are 80%% of the former 1.3 size (%.2f)"),DesignHitEffectScale()*DesignSpellEffectScale()));
         Check(FMath::IsNearlyEqual(SpellEffectScaleFor(1.f),DesignSpellEffectScale())&&FMath::IsNearlyEqual(SpellEffectScaleFor(std::numeric_limits<float>::quiet_NaN()),DesignSpellEffectScale()),
             TEXT("player multiplier 1 (or garbage) = the design scale"));
         Check(FMath::IsNearlyEqual(SpellEffectScaleFor(10.f),MaxSpellEffectScale)&&FMath::IsNearlyEqual(SpellEffectScaleFor(.01f),MinSpellEffectScale),TEXT("effective scale clamped 0.5..2"));
@@ -761,10 +762,12 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             {
                 SetScale(1.f);Hit->SetPreviewAge(.2f);const float Before=Extent(Hit->CoreBounds()),SplashBefore=GroundReach(Hit);
                 SetScale(1.3f);Hit->SetPreviewAge(.2f);const float After=Extent(Hit->CoreBounds()),SplashAfter=GroundReach(Hit);
-                Check(Before>1&&FMath::IsNearlyEqual(After/Before,1.3f,.02f)&&FMath::IsNearlyEqual(Hit->EffectScale(),1.3f),
+                Check(Before>1&&FMath::IsNearlyEqual(After/Before,1.3f,.02f)&&FMath::IsNearlyEqual(Hit->EffectScale(),1.3f*DesignHitEffectScale()), // pack-usage-3: hits carry hitEffectScale
+
                     FString::Printf(TEXT("impact burst grows 30%% (%.0f -> %.0f cm)"),Before,After));
                 UE_LOG(LogCireAbilityVFX,Display,TEXT("CIRE_VFX_SCALE impact core %.1f -> %.1f cm, splash %.1f -> %.1f cm"),Before,After,SplashBefore,SplashAfter);
-                Check(SplashBefore>1&&FMath::IsNearlyEqual(SplashAfter/SplashBefore,1.3f,.05f),FString::Printf(TEXT("decorative impact splash grows too (%.0f -> %.0f cm)"),SplashBefore,SplashAfter));
+                Check(SplashBefore>1&&SplashAfter/SplashBefore>1.2f&&SplashAfter/SplashBefore<1.35f, // a fixed rim keeps small splashes a little under 30%
+                    FString::Printf(TEXT("decorative impact splash grows too (%.0f -> %.0f cm)"),SplashBefore,SplashAfter));
                 Hit->Destroy();
             }
             // (b) self circle (War Cry): the decorative ring grows, the ground shockwave still reaches the TRUE radius.
@@ -831,10 +834,10 @@ bool CireAbilityVFX::RunTests(ACireGameMode* Mode)
             }
             // (e) buff / aura layers: 1.1x, hand / weapon glows 1.2x (Eric's follow-up), tethers and overhead marks unscaled.
             {
-                Check(FMath::IsNearlyEqual(DesignAuraLayerScale(),1.1f,.001f)&&FMath::IsNearlyEqual(DesignHandGlowScale(),1.2f,.001f),
-                    FString::Printf(TEXT("aura layers 1.1, hand / weapon glows 1.2 from VFXTuning.json (%.2f / %.2f)"),DesignAuraLayerScale(),DesignHandGlowScale()));
+                Check(FMath::IsNearlyEqual(DesignAuraLayerScale(),.99f,.001f)&&FMath::IsNearlyEqual(DesignHandGlowScale(),1.08f,.001f),
+                    FString::Printf(TEXT("aura layers .99, hand / weapon glows 1.08 from VFXTuning.json (%.2f / %.2f)"),DesignAuraLayerScale(),DesignHandGlowScale()));
                 SetScale(DesignSpellEffectScale());
-                Check(FMath::IsNearlyEqual(AuraLayerScale(World),1.1f,.01f)&&FMath::IsNearlyEqual(HandGlowScale(World),1.2f,.01f),TEXT("live aura / hand scales at the design size"));
+                Check(FMath::IsNearlyEqual(AuraLayerScale(World),.99f,.01f)&&FMath::IsNearlyEqual(HandGlowScale(World),1.08f,.01f),TEXT("live aura / hand scales at the design size"));
                 using CireAuraVisuals::LayerScale;
                 Check(FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Ring,1.1f,1.2f),1.1f)&&FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Shell,1.1f,1.2f),1.1f)&&
                     FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Hands,1.1f,1.2f),1.2f)&&FMath::IsNearlyEqual(LayerScale(ECireAuraShape::Weapon,1.1f,1.2f),1.2f)&&

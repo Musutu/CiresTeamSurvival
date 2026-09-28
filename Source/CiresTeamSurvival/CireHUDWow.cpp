@@ -40,6 +40,7 @@
 #include "CireAbilityVFX.h" // pack-usage: spell-effect scale
 #include "CireUnitSpacing.h" // bosses-spacing
 #include "UObject/ConstructorHelpers.h"
+#include "CireArenaPortal.h" // arena-flow
 
 namespace
 {
@@ -1097,12 +1098,13 @@ void ACireHUD::DrawCombatText(ACireHero* Hero,ACireController* Controller)
     {
         if(!E.bLocalTarget&&!E.bLocalSource)return false;
         if(!(E.bLocalTarget&&UISettings.bShowIncoming)&&!(E.bLocalSource&&UISettings.bShowOutgoing))return false;
-        if(E.Outcome!=ECireHitOutcome::Hit&&E.Outcome!=ECireHitOutcome::Block&&!UISettings.bShowMisses)return false; // scaling-kits: BLOCK always shows
+        if(E.Outcome!=ECireHitOutcome::Hit&&E.Outcome!=ECireHitOutcome::Block&&E.Outcome!=ECireHitOutcome::SetUp&&!UISettings.bShowMisses)return false; // scaling-kits: BLOCK always shows; initiation: SET UP! too
         return E.bHealing?UISettings.bShowHealing:UISettings.bShowDamage;
     };
     auto ColorFor=[&](const FCireCombatEvent& E,bool bIncomingLane)
     {
         if(E.Outcome==ECireHitOutcome::Block)return FLinearColor(.55f,.8f,1.f,1); // scaling-kits: shield block
+        if(E.Outcome==ECireHitOutcome::SetUp)return FLinearColor(1.f,.62f,.12f,1); // initiation: SET UP! (engage orange)
         if(E.Outcome!=ECireHitOutcome::Hit)return FLinearColor(.78f,.83f,.9f,1);
         if(E.bHealing)return FLinearColor(.35f,1.f,.55f,1);
         if(bIncomingLane)return FLinearColor(1.f,.28f,.24f,1);
@@ -1111,7 +1113,7 @@ void ACireHUD::DrawCombatText(ACireHero* Hero,ACireController* Controller)
     };
     auto NumberFor=[](const FCireCombatEvent& E,float Amount,bool bIncoming)
     {
-        if(E.Outcome!=ECireHitOutcome::Hit)return E.Outcome==ECireHitOutcome::Block?FString(TEXT("BLOCK")):CireCombat::OutcomeText(E.Outcome); // scaling-kits: shield block
+        if(E.Outcome!=ECireHitOutcome::Hit)return E.Outcome==ECireHitOutcome::Block?FString(TEXT("BLOCK")):E.Outcome==ECireHitOutcome::SetUp?FString(TEXT("SET UP!")):CireCombat::OutcomeText(E.Outcome); // scaling-kits: shield block; initiation
         return FString::Printf(TEXT("%s%.0f"),E.bHealing?TEXT("+"):bIncoming?TEXT("-"):TEXT(""),Amount);
     };
     // Crit "pop": starts large and settles, WoW style.
@@ -1379,6 +1381,7 @@ void ACireHUD::DrawNameplates(ACireHero* Hero)
     LayoutAndDraw();
     DrawVendorPlates(Hero);
     DrawPortalPlates(Hero); // arena-portal
+    DrawArenaCountdown(); // arena-flow: the 7 s countdown once everyone is in
 }
 
 // vendors: WoW-style merchant plates: emblem, keeper name in the shop colour, <Shop name> under it, and the
@@ -1434,11 +1437,11 @@ void ACireHUD::UpdateBanners(ACireHero* Hero,ACireGameState* State)
     else if(!State->bSuddenDeath)bBannerSuddenDeath=false;
     if(!bFirst&&State->Phase!=BannerSeenPhase)
     {
-        const int32 Seconds=FMath::Max(0,FMath::RoundToInt(State->SecondsLeft));
+        const int32 Seconds=FMath::Max(0,FMath::RoundToInt(CireArenaFlow::PrepSecondsLeft(State))); // arena-flow
         switch(State->Phase)
         {
         case 0:CireBanners::Show(ECireBanner::WaveIncoming,TEXT("Survival"),TEXT("Hold your lane. Three cleared waves lead back to town."),TEXT("THE GATES OPEN"));break;
-        case 1:CireBanners::Show(ECireBanner::PrepPhase,TEXT("Prep Phase"),FString::Printf(TEXT("%d seconds to buy gear and tomes. The portal opens onto %s."),Seconds,*CireArenas::DisplayName(State->ArenaIndex)));break; // arenas
+        case 1:CireBanners::Show(ECireBanner::PrepPhase,TEXT("PvP Prep"),FString::Printf(TEXT("%d seconds to prepare. A shadow portal to %s is open beside you: enter early, or be drawn through."),Seconds,*CireArenas::DisplayName(State->ArenaIndex)));break; // arenas, arena-flow
         case 2: // arenas: announce the randomly picked arena by name
         {
             const CireArenas::FArena* ArenaDef=CireArenas::Get(State->ArenaIndex);

@@ -35,32 +35,28 @@ TArray<ACireSummon*> ACireSummon::SpawnGroup(ACireHero* Source, const FCireSummo
         (!Spec.bCommandable && !CireCombat::AreHostile(Source, TargetActor))) return Result;
     UWorld* World = Source->GetWorld();
     auto* Mode = World->GetAuthGameMode<ACireGameMode>();
-    if (!Mode || !Mode->IsCombatPhase() || FVector::DistSquared2D(Source->GetActorLocation(), Point) > FMath::Square(Spec.CastRange)) return Result;
+    if (!Mode || !Mode->IsCombatPhase() || FVector::DistSquared2D(Source->GetActorLocation(), Point) > FMath::Square(Spec.CastRange * 1.25f + 50.f)) return Result; // casting-rules: slightly long aims are pulled in below
     int32 Owned = 0, Total = 0;
     for (TCireActorIterator<ACireSummon> It(World); It; ++It)
         if (!It->IsActorBeingDestroyed()) { ++Total; if (It->OwnerHero == Source) ++Owned; }
     if (Owned + Spec.Count > 6 || Total + Spec.Count > 48) return Result;
     TArray<FVector> Positions;
-    FCollisionQueryParams Params(SCENE_QUERY_STAT(CireSummonPlacement), false);
-    FCollisionObjectQueryParams GroundObjects(ECC_WorldStatic), Objects;
-    Objects.AddObjectTypesToQuery(ECC_WorldStatic); Objects.AddObjectTypesToQuery(ECC_WorldDynamic); Objects.AddObjectTypesToQuery(ECC_Pawn);
-    // Resolve every position first, so a blocked pack cast creates no partial pack.
+    // casting-rules (Playtest 6): summon placement IGNORES clipping. Each unit snaps onto the navmesh (so it can walk and
+    // fight) and the ground under it; props, slopes and other units never refuse a spot. Only the realm edge and a small
+    // spacing between the new units are respected. A slightly long aim is pulled back into range.
+    const FVector From = Source->GetActorLocation();
+    if (FVector::DistSquared2D(From, Point) > FMath::Square(Spec.CastRange))
+    { const FVector Dir = (Point - From).GetSafeNormal2D(); Point.X = From.X + Dir.X * Spec.CastRange; Point.Y = From.Y + Dir.Y * Spec.CastRange; }
     for (int32 Attempt = 0; Attempt < 25 && Positions.Num() < Spec.Count; ++Attempt)
     {
         const float Angle = Attempt * 2.399963f;
         const float Radius = Attempt == 0 ? 0 : 100.f + 25.f * FMath::Sqrt(static_cast<float>(Attempt));
         FVector P = Point + FVector(FMath::Cos(Angle), FMath::Sin(Angle), 0) * Radius;
-        if (!CireSkillRuntime::InRealmBounds(Mode, Source->TeamId, P, 45) || FVector::DistSquared2D(Source->GetActorLocation(), P) > FMath::Square(Spec.CastRange + 250.f)) continue;
-        FHitResult Floor;
-        if (!World->LineTraceSingleByObjectType(Floor, P + FVector(0, 0, 250), P - FVector(0, 0, 500), GroundObjects, Params) || Floor.ImpactNormal.Z < .8f) continue;
-        P.Z = Floor.ImpactPoint.Z + 94.f;
+        ACireConstruct::SnapToGround(World, P, 40.f);
+        if (!CireSkillRuntime::InRealmBounds(Mode, Source->TeamId, P, 45)) continue;
+        P.Z += 94.f;
         bool bBlocked = false;
         for (FVector Other : Positions) if (FVector::DistSquared2D(P, Other) < FMath::Square(90.f)) bBlocked = true;
-        TArray<FOverlapResult> Overlaps;
-        World->OverlapMultiByObjectType(Overlaps, P, FQuat::Identity, Objects, FCollisionShape::MakeCapsule(40.f, 91.f), Params);
-        for (const auto& Hit : Overlaps)
-            if (::Cast<ACharacter>(Hit.GetActor()) || ::Cast<ACireConstruct>(Hit.GetActor()) ||
-                (Hit.GetComponent() && Hit.GetComponent()->GetCollisionResponseToChannel(ECC_Pawn) == ECR_Block)) bBlocked = true;
         if (!bBlocked) Positions.Add(P);
     }
     if (Positions.Num() != Spec.Count) return Result;

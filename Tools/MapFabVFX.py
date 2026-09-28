@@ -104,8 +104,8 @@ def scan(main: Path):
 # Curated picks by exact system name (Lord Enot "Big Pack Magic Effects" / "Shadow Magic" naming:
 # NS_<Element>_Magic_<Type>). Tried before the keyword heuristic; first existing stem wins per slot.
 CURATED = {
-    "fire":   {"projectile": ["Fire_Magic_Projectile", "Fire_Magic_Orb"], "impact": ["Fire_Magic_Hit", "Fire_Magic_Explosion"],
-               "cast": ["Fire_Magic_Muzzle"], "area": ["Fire_Magic_AOE", "Fire_Magic_Circle"], "aura": ["Fire_Magic_Aura"]},
+    "fire":   {"projectile": ["Fire_Magic_Projectile", "Fire_Magic_Orb"], "impact": ["Fire_Magic_SpearSplash", "Fire_Magic_Explosion"],
+               "cast": ["Fire_Magic_Muzzle"], "area": ["Fire_Magic_AOE", "Fire_Magic_Shockwave"], "aura": ["Fire_Magic_Aura"]},
     "frost":  {"projectile": ["Ice_Magic_Projectile", "Ice_Magic_Spear"], "impact": ["Ice_Magic_Hit", "Ice_Magic_Splash"],
                "cast": ["Ice_Magic_Muzzle"], "area": ["Ice_Magic_Circle1", "Ice_Magic_Snowstorm"], "aura": ["Ice_Magic_Aura"]},
     "storm":  {"projectile": ["Lightning_Magic_Projectile1", "Lightning_Magic_Orb"], "impact": ["Lightning_Magic_Tunder", "Lightning_Magic_Shockwave"],
@@ -119,22 +119,22 @@ CURATED = {
     "life":   {"cast": ["Light_Magic_Heal"], "impact": ["Light_Magic_Heal_Hit"], "area": ["Light_Magic_Top_Area", "Light_Magic_Circle"],
                "aura": ["Light_Magic_Buff"], "projectile": ["Light_Magic_Orb2"]},
     "poison": {"projectile": ["Posion_Magic_Projectile1", "Posion_Magic_Orb"], "impact": ["Posion_Magic_Hit", "Posion_Magic_Explosion1"],
-               "cast": ["Posion_Magic_Target"], "area": ["Posion_Magic_Area1", "Posion_Magic_AreaWave"], "aura": ["Posion_Magic_Aura"]},
+               "cast": ["Posion_Magic_Buff"], "area": ["Posion_Magic_Area1", "Posion_Magic_AreaWave"], "aura": ["Posion_Magic_Aura"]},
     "earth":  {"projectile": ["Earth_Magic_Projectile", "Earth_Magic_Stone1"], "impact": ["Earth_Magic_Hit", "Earth_Magic_Splash"],
-               "cast": ["Earth_Magic_Muzzle"], "area": ["Earth_Magic_Circle1", "Earth_Magic_Shockwave"], "aura": ["Earth_Magic_Aura"]},
+               "cast": ["Earth_Magic_Muzzle"], "area": ["Earth_Magic_Shockwave"], "aura": ["Earth_Magic_Aura"]},
     "tide":   {"projectile": ["Water_Magic_Projectile1", "Water_Magic_Orb"], "impact": ["Water_Magic_Hit", "Water_Magic_Splash1"],
                "cast": ["Water_Magic_Muzzle"], "area": ["Water_Magic_Area1", "Water_Magic_Shockwave"], "aura": ["Water_Magic_Aura"]},
     "blood":  {"projectile": ["Blood_Magic_Projectile1", "Blood_Magic_Orb"], "impact": ["Blood_Magic_Hit", "Blood_Magic_Explo"],
                "cast": ["Blood_Magic_Muzzle"], "area": ["Blood_Magic_Area1"], "aura": ["Blood_Magic_Aura"]},
-    "arcane": {"projectile": ["Air_Magic_Projectile1", "Air_Magic_Orb"], "impact": ["Air_Magic_Hit1", "Air_Magic_Splash"],
+    "arcane": {"projectile": ["Air_Magic_Projectile1", "Air_Magic_Orb"], "impact": ["Air_Magic_Hit1", "Air_Magic_Hit4"],
                "cast": ["Air_Magic_Muzzle1"], "area": ["Air_Magic_AOE"], "aura": ["Air_Magic_Aura"]},
-    "spirit": {"projectile": ["Air_Magic_Air_Ball"], "impact": ["Air_Magic_Hit2"], "cast": ["Air_Magic_Muzzle2"], "aura": ["Air_Magic_Buff"]},
+    "spirit": {"projectile": ["Air_Magic_Air_Ball"], "impact": ["Air_Magic_Hit2"], "cast": ["Air_Magic_Muzzle2"], "aura": ["Air_Magic_Aura"]},
 }
 # Dedicated packs lead their school (tried first, Lord Enot stays as the fallback candidate).
 DEDICATED = {
     "earth": {"projectile": ["Earth_Spells_Projectile1"], "impact": ["Earth_Spells_Hit1"], "cast": ["Earth_Spells_Attack_Up"],
               "area": ["Earth_Spells_Circle"], "aura": ["Earth_Spells_Aura"]},
-    "nature": {"projectile": ["Ribbon_Nature"], "impact": ["Explosion_Small_Nature"], "cast": ["Explosion_Cast_Nature"],
+    "nature": {"projectile": ["Ribbon_Nature"], "impact": ["Explosion_Small_Nature"], "cast": ["TextureParticle_Forest"],
                "area": ["AreaBuff"], "aura": ["Aura_Nature"]},
     "life": {"area": ["AreaBuff"]},
     # Physical hits: restrained realistic blood (low intensity) - dark-fantasy, not splatter.
@@ -146,7 +146,7 @@ DEDICATED = {
 # Exact status effects (BuffVisuals ids) -> State VFX Niagara loops.
 CURATED_STATES = {
     "npc_rooted": "State_VFX_Root1", "stunned": "Stun1", "interrupted": "Stun1", "silenced": "State_VFX_Silence1",
-    "npc_silenced": "State_VFX_Silence1", "slowed": "State_VFX_Slow1", "frost_bind": "State_VFX_Freeze1",
+    "npc_silenced": "State_VFX_Silence1", "slowed": "State_VFX_Slow1", "frost_bind": "Ice_Magic_Aura",
     "poisoned": "State_VFX_Poison1", "npc_spores": "State_VFX_Poison1", "npc_dragonfire": "State_VFX_Burn1",
     "healing_cut": "State_VFX_Cursed1", "heal_cut_done": "State_VFX_Cursed1", "bounty_mark": "State_VFX_Cursed1",
     "witch_mark": "State_VFX_Cursed1", "npc_profane": "State_VFX_Cursed1", "npc_mind": "State_VFX_Charm1",
@@ -158,9 +158,9 @@ CURATED_BUFFS = {
     "buff.fire": ["Fire_Magic_Buff"], "buff.frost": ["Ice_Magic_Buff"], "buff.storm": ["Lightning_Magic_Buff1"],
     "buff.shadow": ["Shadow_Magic_Buff1"], "buff.void": ["Dark_Magic_Buff"], "buff.holy": ["Light_Magic_Buff"],
     "buff.life": ["Light_Magic_Buff"], "buff.poison": ["Posion_Magic_Buff"], "buff.earth": ["Earth_Magic_Buff"],
-    "buff.tide": ["Water_Magic_Buff"], "buff.blood": ["Blood_Magic_Buff"], "buff.arcane": ["Air_Magic_Buff"],
-    "debuff.shadow": ["Dark_Magic_Debuff"], "debuff.void": ["Dark_Magic_Debuff"], "debuff.poison": ["Posion_Magic_Debuff"],
-    "debuff.blood": ["Blood_Magic_Debuff"], "debuff.frost": ["Ice_Magic_Frozen"], "debuff.fire": ["Dark_Magic_DOT"],
+    "buff.tide": ["Water_Magic_Buff"], "buff.blood": ["Blood_Magic_Buff"], "buff.arcane": ["Air_Magic_Aura"],
+    "debuff.shadow": ["Dark_Magic_Debuff"], "debuff.void": ["Dark_Magic_Debuff"], "debuff.poison": ["State_VFX_Poison1"],
+    "debuff.blood": ["Blood_Magic_Debuff"], "debuff.frost": ["Ice_Magic_Aura"], "debuff.fire": ["Dark_Magic_DOT"],
 }
 
 
@@ -238,6 +238,10 @@ def build_abilities(found, existing):
     for f in found:
         by_stem.setdefault(f["path"].rsplit(".", 1)[1].replace("NS_", "", 1), f["path"])
     missing = []
+    # pack-usage: monster abilities, hit / kill signatures and events join the champion table (Tools/FabMonsterVFXTable.py).
+    spec_m = importlib.util.spec_from_file_location("FabMonsterVFXTable", str(Path(__file__).with_name("FabMonsterVFXTable.py")))
+    monsters = importlib.util.module_from_spec(spec_m)
+    spec_m.loader.exec_module(monsters)
 
     def entry(value, role):
         # pack-usage: a value is a stem, (stem, scale) or {"s": stem, "scale":, "tint": [r,g,b], "strength": 0..1}
@@ -246,6 +250,12 @@ def build_abilities(found, existing):
             stem, scale, tint, strength = value["s"], value.get("scale"), value.get("tint"), value.get("strength")
         else:
             stem, scale = (value if isinstance(value, tuple) else (value, None))
+        # pack-usage-3: a C-rated (visible, weak) system is swapped for its A/B replacement (monsters.DEMOTED).
+        if stem in monsters.DEMOTED:
+            rep = monsters.as_dict(monsters.DEMOTED[stem])
+            stem = rep["s"]
+            tint = tint if tint else rep.get("tint")
+            scale = scale if scale is not None else rep.get("scale")
         if stem not in by_stem:
             missing.append(stem)
             return None
@@ -259,10 +269,6 @@ def build_abilities(found, existing):
                 e["tintStrength"] = round(float(strength), 3)
         return e
     abilities = {}
-    # pack-usage: monster abilities, hit / kill signatures and events join the champion table (Tools/FabMonsterVFXTable.py).
-    spec_m = importlib.util.spec_from_file_location("FabMonsterVFXTable", str(Path(__file__).with_name("FabMonsterVFXTable.py")))
-    monsters = importlib.util.module_from_spec(spec_m)
-    spec_m.loader.exec_module(monsters)
     combined = list(table.ABILITY_VFX.items()) + list(monsters.build_monster_table().items())
     combined += list(monsters.HIT_VFX.items()) + list(monsters.KILL_VFX.items()) + list(monsters.EVENT_VFX.items())
     for ability, roles in combined:

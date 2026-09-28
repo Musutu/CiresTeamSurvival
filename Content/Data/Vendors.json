@@ -4,7 +4,8 @@
   "interactRange": 450,
   "nameplateRange": 2600,
   "shared": [
-    "consumable"
+    "consumable",
+    "blink"
   ],
   "rules": [
     {

@@ -223,8 +223,12 @@ void Load()
         auto Present = [](const FString& Path) { const FString Package = FPackageName::ObjectPathToPackageName(Path);
             return FPackageName::IsValidLongPackageName(Package) && FPackageName::DoesPackageExist(Package); };
         // monster-expansion: RaceMeshes.fabx.json (the Bestiary.json creatures, Tools/BuildFabExpansionCreatures.py) is read the same way.
-        for (const TCHAR* FabFile : {TEXT("RaceMeshes.fab.json"), TEXT("RaceMeshes.fabx.json")})
-        if (!FParse::Param(FCommandLine::Get(), TEXT("CireNoFabCreatures")) && !FParse::Param(FCommandLine::Get(), TEXT("CireNoFab")) && ReadFile(FabFile, FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
+        // paragon-champions: RaceMeshes.paragon.json "units" (Paragon skins and minions as extra variants of race units, opt-in
+        // with -CireParagonMonsters) are MERGED into the unit's bodies instead of replacing them.
+        for (const TCHAR* FabFile : {TEXT("RaceMeshes.fab.json"), TEXT("RaceMeshes.fabx.json"), TEXT("RaceMeshes.paragon.json")})
+        if (!FParse::Param(FCommandLine::Get(), TEXT("CireNoFabCreatures")) && !FParse::Param(FCommandLine::Get(), TEXT("CireNoFab")) &&
+            // paragon-champions: opt-in until the Paragon rigs pass the monster-body checks (stride, props, hit poses).
+            (FCString::Strcmp(FabFile, TEXT("RaceMeshes.paragon.json")) != 0 || FParse::Param(FCommandLine::Get(), TEXT("CireParagonMonsters"))) && ReadFile(FabFile, FabMeshes) && (FabMeshes->TryGetObjectField(TEXT("archetypes"), FabUnits) || FabMeshes->TryGetObjectField(TEXT("units"), FabUnits)))
             for (const auto& Pair : (*FabUnits)->Values)
             {
                 const FName Id(FString(Pair.Key.ToView()));
@@ -243,9 +247,16 @@ void Load()
                 if ((*Entry)->TryGetArrayField(TEXT("alternates"), Alternates))
                     for (const auto& Value : *Alternates) { const TSharedPtr<FJsonObject>* Alt = nullptr; if (Value->TryGetObject(Alt)) Add(*Alt); }
                 if (Bodies.IsEmpty()) continue;
+                if (FCString::Strcmp(FabFile, TEXT("RaceMeshes.paragon.json")) == 0 && ByArchetype.Contains(Id))
+                {
+                    ByArchetype[Id].Append(Bodies); RaceArt.Add(Id); // paragon-champions: extra variants
+                    UE_LOG(LogCireMonsterArt, Log, TEXT("CIRE_MONSTER_ART_PARAGON unit=%s variants+=%d"), *Id.ToString(), Bodies.Num());
+                    continue;
+                }
                 ByArchetype.Add(Id, Bodies); RaceArt.Add(Id);
                 TArray<FString> Keys; Bodies.GetKeys(Keys); Recommended.Add(Id, Keys[0]);
                 UE_LOG(LogCireMonsterArt, Log, TEXT("CIRE_MONSTER_ART_FAB unit=%s bodies=%d"), *Id.ToString(), Bodies.Num());
+
             }
     }
     // world-dressing: RaceMeshes.free.json (CC0 animated creatures, /Game/Free/Creatures) is the lowest-priority

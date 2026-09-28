@@ -50,6 +50,8 @@
 #include "ContentStreaming.h"
 #include "UObject/Package.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "CireWaves.h" // waves-modes: GAME TYPE picker
+#include "CireParagonChampions.h" // paragon-champions: locally captured portraits
 
 DEFINE_LOG_CATEGORY_STATIC(LogCireDraft,Log,All);
 
@@ -221,6 +223,7 @@ struct FDraftUI
     bool bInitialized=false;
     FRect FigurePx;float FigureUV[4]={0,0,1,1}; // last live figure draw (gallery diagnostics)
     uint8 LastMode=255;double ModeFlashAt=-100; // rules-conformance: game-mode picker feedback (any client sees the host's change)
+    bool bTypeDropdown=false;FRect TypeR;FName LastType;double TypeFlashAt=-100; // waves-modes: GAME TYPE (wave preset) picker
 };
 TMap<TWeakObjectPtr<const ACireHUD>,FDraftUI> States;
 FDraftUI& StateFor(const ACireHUD* HUD)
@@ -236,6 +239,8 @@ UTexture2D* Portrait(const FString& Id)
     if(const auto* Found=Cache.Find(Id))return Found->Get();
     const FString Path=FString::Printf(TEXT("/Game/UI/Draft/Portraits/T_Portrait_%s.T_Portrait_%s"),*Id,*Id);
     UTexture2D* Texture=FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))?LoadObject<UTexture2D>(nullptr,*Path):nullptr;
+    if(!Texture)Texture=CireParagonChampions::Portrait(Id); // paragon-champions: /Game/ParagonDerived/Portraits (local only)
+
     Cache.Add(Id,TStrongObjectPtr<UTexture2D>(Texture));
     return Texture;
 }
@@ -361,6 +366,8 @@ FString BackgroundId(const FString& ProfileId)
     for(const TCHAR* Family:{TEXT("ether_golem"),TEXT("paladin"),TEXT("troll_berserker")})if(ProfileId.StartsWith(Family))return Family;
     if(const FDraftBackgroundRow* Row=DraftBackgroundRows().Find(ProfileId))
         return HasBackgroundTexture(Row->Background)?Row->Background:Row->Fallback; // new-champions: painted slot, or the role-themed stand-in
+    if(const FString Paragon=CireParagonChampions::DraftBackground(ProfileId);!Paragon.IsEmpty())return Paragon; // paragon-champions: closest-theme painting
+
     return ProfileId;
 }
 UTexture2D* Background(const FString& Id)
@@ -980,6 +987,39 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
                         FString(ModeBlurbs[I])+TEXT("\n")+Why,R.X,R.Y,R.W,R.H);
                 }
             }
+            // waves-modes: GAME TYPE picker (the Custom game type: the saved wave presets, Standard / Hero TD / Hybrid shipped)
+            // left of the mode picker; the host opens the list, everyone sees the pick (ACireGameState::WavePreset).
+            {
+                const FName TypeId=GS&&!GS->WavePreset.IsNone()?GS->WavePreset:CireWaveDirector::Config(World).Preset;
+                const FCireWavePreset* Type=CireWaveDirector::FindPreset(TypeId);
+                const FString TypeLabel=Type?Type->Label.ToUpper():TypeId.ToString().ToUpper();
+                if(S.LastType!=TypeId){if(!S.LastType.IsNone()){S.TypeFlashAt=Now;PlayWowSound(4,.5f);}S.LastType=TypeId;}
+                const float TypeW=FMath::Clamp(TW(TypeLabel,BS,ECireFont::Heading)+34,96.f,200.f);
+                const float TX=LX+CW-ModeW-10-TypeW;
+                S.TypeR=FRect{TX,PY,TypeW,BH};
+                // Caption left of the box at the GAME MODE caption size (readability floor), only when it fits.
+                const FString TypeCap=TEXT("GAME TYPE");const float TypeCapW=TW(TypeCap,CapS,ECireFont::Heading)+12;
+                if(bCaption&&TX-TypeCapW>=MinX)Txt(TypeCap,TX-TypeCapW,PY+(BH-LH(CapS,ECireFont::Heading))*.5f,CapS,Gold,FRect{TX-TypeCapW,PY,TypeCapW,BH},ECireFont::Heading);
+                if(TX>=MinX)
+                {
+                    const FRect& R=S.TypeR;
+                    const bool bCan=Interactive&&bHost&&!bModeLocked,bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H);
+                    const float FlashAge=static_cast<float>(Now-S.TypeFlashAt);
+                    if(FlashAge<.9f)CireUIStyle::Glow(Pen(),R.X-8,R.Y-8,R.W+16,R.H+16,FLinearColor(1.f,.8f,.35f,.55f*(1.f-FlashAge/.9f)));
+                    Panel(R.X,R.Y,R.W,R.H,S.bTypeDropdown?SRGB(46,36,14,242):bOver&&bCan?SRGB(24,30,42,235):SRGB(10,14,22,215));
+                    Outline(R,1,S.bTypeDropdown||(bOver&&bCan)?Gold:WithAlpha(GoldDim,.9f));
+                    Line(TypeLabel,R.X+8,R.Y+(BH-LH(BS,ECireFont::Heading))*.5f,R.W-26,BS,Text,R,ECireFont::Heading);
+                    const float CX=R.R()-11,CY=R.Y+R.H*.5f; // chevron
+                    if(bCan)Tri(FVector2D(CX-4,CY-2),FVector2D(CX+4,CY-2),FVector2D(CX,CY+3),S.bTypeDropdown?BrightGold:Gold);
+                    else{const float LkX=R.R()-9,LkY=R.Y+7;Panel(LkX-3,LkY+2,7,5,Muted);Circle(LkX+.5f,LkY+1,2.5f,Muted,1.f,10);}
+                    if(bOver&&Clicked&&bCan){S.bTypeDropdown=!S.bTypeDropdown;PlayWowSound(4,.35f);Clicked=false;}
+                    const FString Why=!bHost?FString(TEXT("Only the host picks the game type; everyone sees the choice here.")):bModeLocked?FString(TEXT("Locked: the game type is fixed once the first wave starts.")):
+                        FString(TEXT("Click to choose the game type. New types are saved from F8 > Waves > Modes & Scale."));
+                    Tip(FString(TEXT("Game type: "))+(Type?Type->Label:TypeId.ToString()),(Type?Type->Description+TEXT("\n"):FString())+Why,R.X,R.Y,R.W,R.H);
+                }
+                else S.bTypeDropdown=false;
+                if(!bHost||bModeLocked)S.bTypeDropdown=false;
+            }
         }
     }
 
@@ -1171,6 +1211,29 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
             if(bOver&&Clicked){SetFilter(Scopes[I]);Clicked=false;}
         }
         if(Clicked&&!Hit(L.X,L.Y,L.W,L.H)){S.bDropdown=false;}
+    }
+    // waves-modes: GAME TYPE list (over the page): every wave preset with its description; the host's pick goes to the server.
+    if(S.bTypeDropdown&&!bLockedView)
+    {
+        const TArray<FCireWavePreset>& Types=CireWaveDirector::Presets();
+        const ACireGameState* TGS=World?World->GetGameState<ACireGameState>():nullptr;
+        const FName Now2=TGS&&!TGS->WavePreset.IsNone()?TGS->WavePreset:CireWaveDirector::Config(World).Preset;
+        const float IH=40.f,LW=FMath::Max(S.TypeR.W,340.f);
+        const FRect L{S.TypeR.R()-LW,S.TypeR.B()+4,LW,Types.Num()*IH+30};
+        Panel(L.X,L.Y,L.W,L.H,ThemeUI(8,12,20,250));Outline(L,1,Gold);
+        Line(TEXT("CUSTOM GAME TYPE  |  WAVE PRESETS"),L.X+10,L.Y+6,L.W-20,9.5f,Gold,L,ECireFont::Heading);
+        for(int32 I=0;I<Types.Num();++I)
+        {
+            const FCireWavePreset& P=Types[I];
+            const FRect R{L.X+4,L.Y+24+I*IH,L.W-8,IH-2};const bool bOver=Interactive&&Hit(R.X,R.Y,R.W,R.H),bOn=P.Id==Now2;
+            if(bOver||bOn)Panel(R.X,R.Y,R.W,R.H,bOver?ThemeUI(30,38,54,250):ThemeUI(22,28,40,250));
+            if(bOn)Panel(R.X,R.Y,3,R.H,BrightGold);
+            Line(P.Label+(P.bBuiltIn?FString():FString(TEXT("  (custom)"))),R.X+10,R.Y+3,R.W-20,11.5f,bOn?Gold:Text,R,ECireFont::Heading);
+            Line(P.Description,R.X+10,R.Y+21,R.W-20,9.f,Muted,R,ECireFont::Body);
+            Tip(P.Label,P.Description,R.X,R.Y,R.W,R.H);
+            if(bOver&&Clicked){if(Controller)Controller->ServerAction(11,I,nullptr);S.bTypeDropdown=false;PlayWowSound(4,.45f);Clicked=false;}
+        }
+        if(Clicked&&!Hit(L.X,L.Y,L.W,L.H)&&!Hit(S.TypeR.X,S.TypeR.Y,S.TypeR.W,S.TypeR.H)){S.bTypeDropdown=false;}
     }
 
     // ---------- Identity column (right): who they are, the key facts, the trait, how they play ----------
@@ -1378,8 +1441,39 @@ void ACireHUD::DrawDraftRoster(ACireHero* Hero,ACireController* Controller)
         PanelAlpha=Fade;
     }
 
+    // ---------- SKIN (paragon-champions: Paragon reskins, cycled with the arrows or [ and ]) ----------
+    if(Selected&&!bSelectedBlocked)
+    {
+        const TArray<FString> Skins=CireParagonChampions::Skins(Selected->Id);
+        static TMap<FString,int32> SkinPick; // 0 = default body
+        if(Skins.Num()>0)
+        {
+            int32& Pick=SkinPick.FindOrAdd(Selected->Id);Pick=FMath::Clamp(Pick,0,Skins.Num());
+            const float UIK=FMath::Clamp(BtnR.H/56.f,1.f,1.4f);const float SH=30.f*UIK,SW=FMath::Min(BtnR.W,360.f*UIK);const FRect SkinR{BtnR.X+(BtnR.W-SW)*.5f,BtnR.Y-SH-10.f*UIK,SW,SH};
+            const FRect LeftA{SkinR.X,SkinR.Y,SH,SH},RightA{SkinR.R()-SH,SkinR.Y,SH,SH};
+            const bool bOverL=Interactive&&Hit(LeftA.X,LeftA.Y,LeftA.W,LeftA.H),bOverR=Interactive&&Hit(RightA.X,RightA.Y,RightA.W,RightA.H);
+            CireUIStyle::Button(Pen(),SkinR.X,SkinR.Y,SkinR.W,SkinR.H,FString(),ECireButtonState::Normal,Gold,12.f);
+            CireUIStyle::Button(Pen(),LeftA.X,LeftA.Y,LeftA.W,LeftA.H,TEXT("<"),bOverL?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
+            CireUIStyle::Button(Pen(),RightA.X,RightA.Y,RightA.W,RightA.H,TEXT(">"),bOverR?ECireButtonState::Hover:ECireButtonState::Normal,Gold,14.f);
+            FString SkinName=TEXT("Default");if(Pick>0){Skins[Pick-1].Split(TEXT("|"),nullptr,&SkinName);}
+            Line(FString::Printf(TEXT("SKIN  %s  (%d/%d)"),*SkinName.ToUpper(),Pick+1,Skins.Num()+1),SkinR.X+SH+6,SkinR.Y+(SH-LH(12.f*UIK,ECireFont::Heading))*.5f,SkinR.W-2*SH-12,12.f*UIK,BrightGold,SkinR,ECireFont::Heading,1,true);
+            int32 Step=0;
+            if(Clicked&&bOverL){Step=-1;Clicked=false;}else if(Clicked&&bOverR){Step=1;Clicked=false;}
+            if(Interactive&&!bTyping&&PlayerOwner){if(PlayerOwner->WasInputKeyJustPressed(EKeys::LeftBracket))Step=-1;if(PlayerOwner->WasInputKeyJustPressed(EKeys::RightBracket))Step=1;}
+            const FString Key=Pick>0?Skins[Pick-1].Left(Skins[Pick-1].Find(TEXT("|"))):FString();
+            if(Step!=0&&!bLockedView)
+            {
+                Pick=(Pick+Step+Skins.Num()+1)%(Skins.Num()+1);
+                const FString NewKey=Pick>0?Skins[Pick-1].Left(Skins[Pick-1].Find(TEXT("|"))):FString();
+                if(Controller)Controller->ServerSetChampionSkin(Selected->Id,NewKey);
+            }
+            if(Stage&&Stage->GetProfileId()==Selected->Id)Stage->SetPreviewSkin(Pick>0?Skins[Pick-1].Left(Skins[Pick-1].Find(TEXT("|"))):FString());
+            (void)Key;
+        }
+    }
     // ---------- LOCK IN ----------
     {
+
         const bool bCanLock=!bLockedView&&Selected&&!bSelectedBlocked&&!bPending;
         const bool bOver=Interactive&&bCanLock&&Hit(BtnR.X,BtnR.Y,BtnR.W,BtnR.H);
         if(bCanLock)CireUIStyle::Glow(Pen(),BtnR.X-6,BtnR.Y-6,BtnR.W+12,BtnR.H+12,FLinearColor(1.f,.75f,.3f,.26f+.18f*FMath::Sin(static_cast<float>(Now)*3.5f)));

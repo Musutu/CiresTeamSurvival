@@ -1,4 +1,5 @@
 #include "CireCombatExpansionProbe.h"
+#include "CireAbilityTuner.h" // ability-tuner
 #include "CireLeash.h" // layout-wiring
 #include "CireOutdoorBosses.h" // outdoor-bosses
 #include "CireLayoutWiring.h" // layout-wiring
@@ -46,8 +47,12 @@
 #include "CireTechConstructs.h" // new-champions
 #include "CireSignatureSkills.h" // new-champions
 #include "CirePets.h" // pets
+#include "CireAbilityExpansion.h" // ability-expansion
+#include "CireInitiation.h" // initiation
 #include "CireVendors.h" // vendors
 #include "CireArenaPortal.h" // arena-portal
+#include "CireParagonChampions.h" // paragon-champions
+
 
 #if !UE_BUILD_SHIPPING
 DEFINE_LOG_CATEGORY_STATIC(LogCireExpansion,Log,All);
@@ -102,6 +107,8 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireTargeting::RunRuntimeSmoke(Mode)&&Good;
     Good=CireLanePath::RunSmoke(Mode)&&Good;
     Good=CireSkillTuning::RunValidationSmoke()&&Good;
+    Good=CireSkillTuning::RunCastRulesSmoke()&&Good; // casting-rules
+    Good=CireAbilityTuner::RunSmoke(Mode)&&Good; // ability-tuner: override layer, profiles, authority
     Good=CireThreat::RunSmoke(Mode)&&Good;
     Good=CireSkillshots::RunSkillshotSmoke(Mode)&&Good;
     Good=CireConstructs::RunConstructSmoke(Mode)&&Good;
@@ -135,7 +142,11 @@ bool CireCombatExpansion::Run(ACireGameMode* Mode){
     Good=CireSignatureSkills::RunSmoke(Mode)&&Good; // new-champions: kits, gunblade basic, glaive bounces, marks, mount, Aetheri race
     Good=CireKits::RunSmoke(Mode)&&Good; // scaling-kits: primary scaling, inheritance, construct threat, shield block, Mech Tank, level 15, Headshot, Artillery
     Good=CireKitSkills::RunSmoke(Mode)&&Good; // kits-complete: the 63 roster signature skills, potency, heal casts, shield gating, big Bear
+    Good=CireAbilityExpansion::RunSmoke(Mode)&&Good; // ability-expansion: the expansion pool (data, shapes, every cast, riders, passives, summons, constructs)
+    Good=CireInitiation::RunSmoke(Mode)&&Good; // initiation: engage spells, Set-up synergy, Blink Dagger
     Good=CirePets::RunSmoke(Mode)&&Good; // pets: companions (summon, follow, stances, commands, threat share, death/revive, scaling, on-foot Huntress)
+    Good=CireParagonChampions::RunSmoke(Mode)&&Good; // paragon-champions: registration, DB/pool merge, Paragon bodies + clips, every own ability casts, buffs
+
     UE_LOG(LogCireExpansion,Display,TEXT("CIRE_COMBAT_EXPANSION_%s"),Good?TEXT("PASS"):TEXT("FAIL"));return Good;
 }
 #endif
